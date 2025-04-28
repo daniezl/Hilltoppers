@@ -17,18 +17,24 @@ struct ContentView: View {
         dayType.lowercased().contains("white day")
     }
     var isGreenDay: Bool {
-        dayType.lowercased().contains("green day")
+        // dayType.lowercased().contains("green day")
+        true // Hardcoded for testing
     }
 
     var body: some View {
         ZStack {
-            // Set background color based on isGreenDay
-            (isGreenDay ? Color.green : Color.white)
-                .ignoresSafeArea()
+            // Main background always white
+            Color.white.ignoresSafeArea()
             VStack {
                 Text(dayType)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(isGreenDay ? .white : .primary)
                     .padding()
-                }
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                    )
+                    .padding()
             }
             .onAppear {
                 getTitle(from: schoolURL) { title in
@@ -81,8 +87,7 @@ struct ContentView: View {
             }
         }.resume()
     }
-
-
+}
 
 #Preview {
     ContentView()
