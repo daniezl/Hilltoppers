@@ -9,37 +9,36 @@ import SwiftUI
 import SwiftSoup
 
 struct ContentView: View {
-    @State private var htmlContent: String = "Loading..."
-    let googleURL: String = "https://www.google.com/"
-    let schoolURL: String = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
-    
+    @State private var htmlTitle = "Loading..."
+    let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
+
     var body: some View {
-        VStack {
-            Text(htmlContent)
-                .padding(.all, 26.0)
-                
-        }
-        .padding()
-        .onAppear {
-            getHTML(googleURL) { html in
-                htmlContent = html
+        Text(htmlTitle)
+            .padding()
+            .onAppear {
+                getTitle(from: schoolURL) { title in
+                    htmlTitle = title
+                }
             }
+    }
+
+    func getTitle(from urlString: String, completion: @escaping (String) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion("Invalid URL")
+            return
         }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let data = data, let html = String(data: data, encoding: .utf8) {
+                let shortHTML = html.prefix(500) + "..."
+                completion(String(shortHTML))
+            } else {
+                completion("Failed to load HTML")
+            }
+        }.resume()
     }
 }
 
-func getHTML(_ urlString: String, completion: @escaping (String) -> Void) {
-    guard let url = URL(string: urlString) else {
-        print("Invalid URL")
-        completion("")
-        return
-    }
-
-    URLSession.shared.dataTask(with: url) { data, _, _ in
-        let htmlString = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-        completion(htmlString)
-    }.resume()
-}
 
 #Preview {
     ContentView()
