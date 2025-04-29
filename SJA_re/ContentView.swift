@@ -111,6 +111,7 @@ struct ContentView: View {
 
 struct MonThursScheduleView: View {
     let testTime: (hour: Int, minute: Int)?
+    @State private var isLunchExpanded = false
     
     // Define schedule periods and times
     struct Period: Identifiable {
@@ -169,21 +170,64 @@ struct MonThursScheduleView: View {
             Text("Mon - Thurs Schedule")
                 .font(.headline)
                 .padding(.bottom, 4)
-            ForEach(Array(periods.enumerated()), id: \.element.id) { idx, period in
-                HStack {
-                    Text(period.name)
-                        .italic(period.name.contains("Lunch"))
-                    Spacer()
-                    Text("\(period.start)-\(period.end)")
+            
+            // Show blocks before lunch
+            ForEach(periods.prefix(4)) { period in
+                if !period.name.contains("Lunch") {
+                    ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
                 }
-                .padding(6)
-                .background(idx == highlightIdx ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
-                .cornerRadius(8)
+            }
+            
+            // Lunch section with disclosure group
+            DisclosureGroup(
+                isExpanded: $isLunchExpanded,
+                content: {
+                    ForEach(periods.filter { $0.name.contains("Lunch") }) { period in
+                        ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
+                            .padding(.leading)
+                    }
+                },
+                label: {
+                    HStack {
+                        Text("Lunch")
+                        Spacer()
+                        Text("10:45-12:20")
+                    }
+                    .padding(6)
+                    .background(highlightIdx == 3 ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
+                    .cornerRadius(8)
+                }
+            )
+            .accentColor(.primary)
+            
+            // Show blocks after lunch
+            ForEach(periods.suffix(3)) { period in
+                if !period.name.contains("Lunch") {
+                    ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
+                }
             }
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(white: 0.95)))
         .padding(.horizontal)
+    }
+}
+
+// Add this helper view for consistent row styling
+struct ScheduleRow: View {
+    let period: MonThursScheduleView.Period
+    let isHighlighted: Bool
+    
+    var body: some View {
+        HStack {
+            Text(period.name)
+                .italic(period.name.contains("Lunch"))
+            Spacer()
+            Text("\(period.start)-\(period.end)")
+        }
+        .padding(6)
+        .background(isHighlighted ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
+        .cornerRadius(8)
     }
 }
 
