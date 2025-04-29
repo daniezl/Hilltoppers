@@ -11,7 +11,7 @@ import SwiftSoup
 struct ContentView: View {
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
-    @State private var testTime: (hour: Int, minute: Int)? = (9, 31)  // Test time: 9:31 AM
+    @State private var testTime: (hour: Int, minute: Int)? = (11, 21)  // Test time
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -113,6 +113,11 @@ struct MonThursScheduleView: View {
     let testTime: (hour: Int, minute: Int)?
     @State private var isLunchExpanded = false
     
+    var isWednesday: Bool {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return weekday == 4  // 4 is Wednesday (1 is Sunday)
+    }
+    
     // Define schedule periods and times
     struct Period: Identifiable {
         let id = UUID()
@@ -123,20 +128,23 @@ struct MonThursScheduleView: View {
         let endMinutes: Int
     }
 
-    let periods: [Period] = [
-        Period(name: "Chapel/ Advisory WED", start: "8:00", end: "8:15", startMinutes: 8*60, endMinutes: 8*60+15),
-        Period(name: "A Block", start: "8:25", end: "9:30", startMinutes: 8*60+25, endMinutes: 9*60+30),
-        Period(name: "B Block", start: "9:35", end: "10:40", startMinutes: 9*60+35, endMinutes: 10*60+40),
-        Period(name: "C Block", start: "10:45", end: "12:20", startMinutes: 10*60+45, endMinutes: 12*60+20),
-        Period(name: "1st Lunch", start: "10:45", end: "11:05", startMinutes: 10*60+45, endMinutes: 11*60+5),
-        Period(name: "2nd Lunch", start: "11:05", end: "11:25", startMinutes: 11*60+5, endMinutes: 11*60+25),
-        Period(name: "3rd Lunch", start: "11:25", end: "11:45", startMinutes: 11*60+25, endMinutes: 11*60+45),
-        Period(name: "4th Lunch", start: "11:45", end: "12:05", startMinutes: 11*60+45, endMinutes: 12*60+5),
-        Period(name: "5th Lunch", start: "12:00", end: "12:20", startMinutes: 12*60, endMinutes: 12*60+20),
-        Period(name: "D Block", start: "12:25", end: "13:30", startMinutes: 12*60+25, endMinutes: 13*60+30),
-        Period(name: "E Block", start: "13:35", end: "14:40", startMinutes: 13*60+35, endMinutes: 14*60+40),
-        Period(name: "CP", start: "14:45", end: "15:05", startMinutes: 14*60+45, endMinutes: 15*60+5)
-    ]
+    var periods: [Period] {
+        let firstPeriodName = isWednesday ? "Advisory" : "Chapel"
+        return [
+            Period(name: firstPeriodName, start: "8:00", end: "8:15", startMinutes: 8*60, endMinutes: 8*60+15),
+            Period(name: "A Block", start: "8:25", end: "9:30", startMinutes: 8*60+25, endMinutes: 9*60+30),
+            Period(name: "B Block", start: "9:35", end: "10:40", startMinutes: 9*60+35, endMinutes: 10*60+40),
+            Period(name: "C Block", start: "10:45", end: "12:20", startMinutes: 10*60+45, endMinutes: 12*60+20),
+            Period(name: "1st Lunch", start: "10:45", end: "11:05", startMinutes: 10*60+45, endMinutes: 11*60+5),
+            Period(name: "2nd Lunch", start: "11:05", end: "11:25", startMinutes: 11*60+5, endMinutes: 11*60+25),
+            Period(name: "3rd Lunch", start: "11:25", end: "11:45", startMinutes: 11*60+25, endMinutes: 11*60+45),
+            Period(name: "4th Lunch", start: "11:45", end: "12:05", startMinutes: 11*60+45, endMinutes: 12*60+5),
+            Period(name: "5th Lunch", start: "12:00", end: "12:20", startMinutes: 12*60, endMinutes: 12*60+20),
+            Period(name: "D Block", start: "12:25", end: "13:30", startMinutes: 12*60+25, endMinutes: 13*60+30),
+            Period(name: "E Block", start: "13:35", end: "14:40", startMinutes: 13*60+35, endMinutes: 14*60+40),
+            Period(name: "CP", start: "14:45", end: "15:05", startMinutes: 14*60+45, endMinutes: 15*60+5)
+        ]
+    }
 
     // Modify currentMinutes to use test time
     func currentMinutes() -> Int {
@@ -153,12 +161,30 @@ struct MonThursScheduleView: View {
     // Find the current or next period index
     func highlightedPeriodIndex() -> Int? {
         let now = currentMinutes()
-        for (i, period) in periods.enumerated() {
+        let currentPeriods = periods.enumerated().filter { !$1.name.contains("Lunch") }
+        
+        for (idx, period) in currentPeriods {
             if now >= period.startMinutes && now < period.endMinutes {
-                return i
+                return idx
             }
-            if i < periods.count - 1 && now < periods[i+1].startMinutes && now >= period.endMinutes {
-                return i+1
+            // If we're between this period and the next one
+            if let nextPeriod = currentPeriods.first(where: { $0.0 > idx }) {
+                if now >= period.endMinutes && now < nextPeriod.1.startMinutes {
+                    return nextPeriod.0
+                }
+            }
+        }
+        return nil
+    }
+
+    // Add function to determine current lunch period
+    func currentLunchPeriod() -> Int? {
+        let now = currentMinutes()
+        let lunchPeriods = periods.enumerated().filter { $1.name.contains("Lunch") }
+        
+        for (idx, period) in lunchPeriods {
+            if now >= period.startMinutes && now < period.endMinutes {
+                return idx
             }
         }
         return nil
@@ -166,32 +192,37 @@ struct MonThursScheduleView: View {
 
     var body: some View {
         let highlightIdx = highlightedPeriodIndex()
+        let currentLunch = currentLunchPeriod()
+        
         VStack(alignment: .leading, spacing: 6) {
             Text("Mon - Thurs Schedule")
                 .font(.headline)
                 .padding(.bottom, 4)
             
-            // Show blocks before lunch
-            ForEach(periods.prefix(4)) { period in
+            // Show blocks before C Block
+            ForEach(Array(periods.prefix(3).enumerated()), id: \.1.id) { idx, period in
                 if !period.name.contains("Lunch") {
-                    ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
+                    ScheduleRow(period: period, isHighlighted: idx == highlightIdx)
                 }
             }
             
-            // Lunch section with disclosure group
+            // C Block with lunches
             DisclosureGroup(
                 isExpanded: $isLunchExpanded,
                 content: {
-                    ForEach(periods.filter { $0.name.contains("Lunch") }) { period in
-                        ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
+                    ForEach(Array(periods.enumerated().filter { $1.name.contains("Lunch") }), 
+                           id: \.1.id) { idx, period in
+                        ScheduleRow(period: period, isHighlighted: idx == currentLunch)
                             .padding(.leading)
                     }
                 },
                 label: {
                     HStack {
-                        Text("Lunch")
+                        Text("C Block")
                         Spacer()
                         Text("10:45-12:20")
+                            .frame(width: 100, alignment: .trailing)
+                            .monospacedDigit()
                     }
                     .padding(6)
                     .background(highlightIdx == 3 ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
@@ -200,10 +231,10 @@ struct MonThursScheduleView: View {
             )
             .accentColor(.primary)
             
-            // Show blocks after lunch
-            ForEach(periods.suffix(3)) { period in
-                if !period.name.contains("Lunch") {
-                    ScheduleRow(period: period, isHighlighted: periods.firstIndex(where: { $0.id == period.id }) == highlightIdx)
+            // Show blocks after C Block
+            ForEach(Array(periods.suffix(3).enumerated()), id: \.1.id) { idx, period in
+                if !period.name.contains("Lunch") && period.name != "C Block" {
+                    ScheduleRow(period: period, isHighlighted: idx + (periods.count - 3) == highlightIdx)
                 }
             }
         }
@@ -224,6 +255,8 @@ struct ScheduleRow: View {
                 .italic(period.name.contains("Lunch"))
             Spacer()
             Text("\(period.start)-\(period.end)")
+                .frame(width: 100, alignment: .trailing)
+                .monospacedDigit()
         }
         .padding(6)
         .background(isHighlighted ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
