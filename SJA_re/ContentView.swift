@@ -8,10 +8,11 @@
 import SwiftUI
 import SwiftSoup
 
-struct ContentView: View {
+struct ContentView: View {//
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var testTime: (hour: Int, minute: Int)? = (11,10)  // Test time, put nil to use current time
+    @State private var scheduleConfig: ScheduleConfiguration?
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -19,7 +20,6 @@ struct ContentView: View {
     }
     var isGreenDay: Bool {
          dayType.lowercased().contains("green day")
-//        true // Hardcoded for testing
     }
 
     var displayDayType: String {
@@ -53,10 +53,13 @@ struct ContentView: View {
                     )
                     .padding()
                 if isMonThurs {
-                    MonThursScheduleView(testTime: testTime)
+                    MonThursScheduleView(testTime: testTime, config: scheduleConfig)
                 }
             }
             .onAppear {
+                // Load schedule configuration
+                scheduleConfig = ScheduleConfiguration.load()
+                
                 getTitle(from: schoolURL) { title in
                     htmlTitle = title
                 }
@@ -111,12 +114,8 @@ struct ContentView: View {
 
 struct MonThursScheduleView: View {
     let testTime: (hour: Int, minute: Int)?
+    let config: ScheduleConfiguration?
     @State private var isLunchExpanded = false
-    
-    var isWednesday: Bool {
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        return weekday == 4  // 4 is Wednesday (1 is Sunday)
-    }
     
     // Define schedule periods and times
     struct Period: Identifiable {
@@ -127,23 +126,78 @@ struct MonThursScheduleView: View {
         let startMinutes: Int
         let endMinutes: Int
     }
+    
+    var isWednesday: Bool {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return weekday == 4  // 4 is Wednesday (1 is Sunday)
+    }
+    
+    // Get current schedule based on the day
+    var currentSchedule: ScheduleConfiguration.DaySchedule? {
+        guard let config = config else { return nil }
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return config.scheduleForWeekday(weekday)
+    }
 
+    // Convert schedule to periods for display
     var periods: [Period] {
-        let firstPeriodName = isWednesday ? "Advisory" : "Chapel"
-        return [
-            Period(name: firstPeriodName, start: "8:00", end: "8:15", startMinutes: 8*60, endMinutes: 8*60+15),
-            Period(name: "A Block", start: "8:25", end: "9:30", startMinutes: 8*60+25, endMinutes: 9*60+30),
-            Period(name: "B Block", start: "9:35", end: "10:40", startMinutes: 9*60+35, endMinutes: 10*60+40),
-            Period(name: "C Block", start: "10:45", end: "12:20", startMinutes: 10*60+45, endMinutes: 12*60+20),
-            Period(name: "1st Lunch", start: "10:45", end: "11:05", startMinutes: 10*60+45, endMinutes: 11*60+5),
-            Period(name: "2nd Lunch", start: "11:05", end: "11:25", startMinutes: 11*60+5, endMinutes: 11*60+25),
-            Period(name: "3rd Lunch", start: "11:25", end: "11:45", startMinutes: 11*60+25, endMinutes: 11*60+45),
-            Period(name: "4th Lunch", start: "11:45", end: "12:05", startMinutes: 11*60+45, endMinutes: 12*60+5),
-            Period(name: "5th Lunch", start: "12:00", end: "12:20", startMinutes: 12*60, endMinutes: 12*60+20),
-            Period(name: "D Block", start: "12:25", end: "13:30", startMinutes: 12*60+25, endMinutes: 13*60+30),
-            Period(name: "E Block", start: "13:35", end: "14:40", startMinutes: 13*60+35, endMinutes: 14*60+40),
-            Period(name: "CP", start: "14:45", end: "15:05", startMinutes: 14*60+45, endMinutes: 15*60+5)
-        ]
+        guard let schedule = currentSchedule else { 
+            // Fallback to hardcoded schedule if config is not available
+            let firstPeriodName = isWednesday ? "Advisory" : "Chapel"
+            return [
+                Period(name: firstPeriodName, start: "8:00", end: "8:15", startMinutes: 8*60, endMinutes: 8*60+15),
+                Period(name: "A Block", start: "8:25", end: "9:30", startMinutes: 8*60+25, endMinutes: 9*60+30),
+                Period(name: "B Block", start: "9:35", end: "10:40", startMinutes: 9*60+35, endMinutes: 10*60+40),
+                Period(name: "C Block", start: "10:45", end: "12:20", startMinutes: 10*60+45, endMinutes: 12*60+20),
+                Period(name: "1st Lunch", start: "10:45", end: "11:05", startMinutes: 10*60+45, endMinutes: 11*60+5),
+                Period(name: "2nd Lunch", start: "11:05", end: "11:25", startMinutes: 11*60+5, endMinutes: 11*60+25),
+                Period(name: "3rd Lunch", start: "11:25", end: "11:45", startMinutes: 11*60+25, endMinutes: 11*60+45),
+                Period(name: "4th Lunch", start: "11:45", end: "12:05", startMinutes: 11*60+45, endMinutes: 12*60+5),
+                Period(name: "5th Lunch", start: "12:00", end: "12:20", startMinutes: 12*60, endMinutes: 12*60+20),
+                Period(name: "D Block", start: "12:25", end: "13:30", startMinutes: 12*60+25, endMinutes: 13*60+30),
+                Period(name: "E Block", start: "13:35", end: "14:40", startMinutes: 13*60+35, endMinutes: 14*60+40),
+                Period(name: "CP", start: "14:45", end: "15:05", startMinutes: 14*60+45, endMinutes: 15*60+5)
+            ]
+        }
+        
+        var result: [Period] = []
+        
+        // Add first period
+        result.append(Period(
+            name: schedule.firstPeriod.name,
+            start: schedule.firstPeriod.start,
+            end: schedule.firstPeriod.end,
+            startMinutes: schedule.firstPeriod.startMinutes,
+            endMinutes: schedule.firstPeriod.endMinutes
+        ))
+        
+        // Add regular blocks
+        for block in schedule.regularBlocks {
+            if let block = block {
+                result.append(Period(
+                    name: block.name,
+                    start: block.start,
+                    end: block.end,
+                    startMinutes: TimeBlock.timeStringToMinutes(block.start),
+                    endMinutes: TimeBlock.timeStringToMinutes(block.end)
+                ))
+                
+                // Add lunch periods if present
+                if !block.lunches.isEmpty {
+                    for lunch in block.lunches {
+                        result.append(Period(
+                            name: lunch.name,
+                            start: lunch.start,
+                            end: lunch.end,
+                            startMinutes: lunch.startMinutes,
+                            endMinutes: lunch.endMinutes
+                        ))
+                    }
+                }
+            }
+        }
+        
+        return result
     }
 
     // Modify currentMinutes to use test time
