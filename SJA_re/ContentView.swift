@@ -12,7 +12,6 @@ struct ContentView: View {//
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var testTime: (hour: Int, minute: Int)? = (11,10)  // Test time, put nil to use current time
-    @State private var scheduleConfig: ScheduleConfiguration?
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -249,7 +248,7 @@ struct MonThursScheduleView: View {
         let currentLunch = currentLunchPeriod()
         
         VStack(alignment: .leading, spacing: 6) {
-            Text("\(weekdayName())")
+            Text("Mon - Thurs Schedule")
                 .font(.headline)
                 .padding(.bottom, 4)
             
@@ -295,16 +294,6 @@ struct MonThursScheduleView: View {
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(white: 0.95)))
         .padding(.horizontal)
-    }
-
-    // Add a function to get the weekday name
-    private func weekdayName() -> String {
-        let calendar = Calendar.current
-        let weekdayDate = testTime != nil ? Calendar.current.date(bySettingHour: testTime!.hour, minute: testTime!.minute, second: 0, of: Date()) : Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE"
-        let abbrev = formatter.string(from: weekdayDate ?? Date())
-        return abbrev.uppercased()
     }
 }
 
