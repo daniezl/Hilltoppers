@@ -11,7 +11,7 @@ import SwiftSoup
 struct ContentView: View {//
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
-    @State private var testTime: (hour: Int, minute: Int)? = (11,10)  // Test time, put nil to use current time
+    @State private var testTime: (hour: Int, minute: Int)? = (11, 21)  // Test time
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
