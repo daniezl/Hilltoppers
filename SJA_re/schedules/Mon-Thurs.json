@@ -1,0 +1,20 @@
+{
+  "dayType": "Mon-Thurs",
+  "periods": [
+    { "name": "Chapel", "startTime": "8:00", "endTime": "8:15" },
+    { "name": "A Block", "startTime": "8:25", "endTime": "9:30" },
+    { "name": "B Block", "startTime": "9:35", "endTime": "10:40" },
+    { "name": "C Block", "startTime": "10:45", "endTime": "12:20",
+      "subPeriods": [
+        { "name": "1st Lunch", "startTime": "10:45", "endTime": "11:05" },
+        { "name": "2nd Lunch", "startTime": "11:05", "endTime": "11:25" },
+        { "name": "3rd Lunch", "startTime": "11:25", "endTime": "11:45" },
+        { "name": "4th Lunch", "startTime": "11:45", "endTime": "12:05" },
+        { "name": "5th Lunch", "startTime": "12:00", "endTime": "12:20" }
+      ]
+    },
+    { "name": "D Block", "startTime": "12:25", "endTime": "1:30" },
+    { "name": "E Block", "startTime": "1:35", "endTime": "2:40" },
+    { "name": "CP", "startTime": "2:45", "endTime": "3:05" }
+  ]
+}
