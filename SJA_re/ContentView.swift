@@ -11,6 +11,7 @@ import SwiftSoup
 struct ContentView: View {
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
+    @State private var fullHTML: String? = nil
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -46,55 +47,50 @@ struct ContentView: View {
                     .padding()
             }
             .onAppear {
-                getTitle(from: schoolURL) { title in
-                    htmlTitle = title
-                }
-                getDayType(from: schoolURL) { dayType in
-                    self.dayType = dayType
-                }
+                fetchHTML(from: schoolURL)
             }
         }
     }
 
-    func getTitle(from urlString: String, completion: @escaping (String) -> Void) {
+    func fetchHTML(from urlString: String) {
         guard let url = URL(string: urlString) else {
-            completion("Invalid URL")
+            self.htmlTitle = "Invalid URL"
+            self.dayType = "Invalid URL"
             return
         }
-
         URLSession.shared.dataTask(with: url) { data, _, error in
             if let data = data, let html = String(data: data, encoding: .utf8) {
-                let shortHTML = html.prefix(500) + "..."
-                completion(String(shortHTML))
+                DispatchQueue.main.async {
+                    self.fullHTML = html
+                    self.htmlTitle = self.getTitleFromHTML(html: html)
+                    self.dayType = self.getDayTypeFromHTML(html: html)
+                }
             } else {
-                completion("Failed to load HTML")
+                DispatchQueue.main.async {
+                    self.htmlTitle = "Failed to load HTML"
+                    self.dayType = "Failed to load HTML"
+                }
             }
         }.resume()
     }
 
-    func getDayType(from urlString: String, completion: @escaping (String) -> Void) {
-        guard let url = URL(string: urlString) else {
-            completion("Invalid URL")
-            return
-        }
+    func getTitleFromHTML(html: String) -> String {
+        let shortHTML = html.prefix(500) + "..."
+        return String(shortHTML)
+    }
 
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let data = data, let html = String(data: data, encoding: .utf8) {
-                do {
-                    let doc: Document = try SwiftSoup.parse(html)
-                    if let span = try doc.select("span[style*=#939598]").first() {
-                        let dayType = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
-                        completion(dayType)
-                    } else {
-                        completion("Day type not found")
-                    }
-                } catch {
-                    completion("Parse error: \(error)")
-                }
+    func getDayTypeFromHTML(html: String) -> String {
+        do {
+            let doc: Document = try SwiftSoup.parse(html)
+            if let span = try doc.select("span[style*=#939598]").first() {
+                let dayType = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                return dayType
             } else {
-                completion("Failed to load HTML")
+                return "Day type not found"
             }
-        }.resume()
+        } catch {
+            return "Parse error: \(error)"
+        }
     }
 }
 
