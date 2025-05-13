@@ -8,12 +8,13 @@
 import SwiftUI
 import SwiftSoup
 
-struct ContentView: View {
+struct ContentView: View {//
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
+
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
     // Test date for debugging (set to nil to use real date)
     let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
@@ -142,6 +143,18 @@ struct ContentView: View {
         let shortHTML = html.prefix(500) + "..."
         return String(shortHTML)
     }
+    
+    var isWednesday: Bool {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return weekday == 4  // 4 is Wednesday (1 is Sunday)
+    }
+    
+    // Get current schedule based on the day
+    var currentSchedule: ScheduleConfiguration.DaySchedule? {
+        guard let config = config else { return nil }
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return config.scheduleForWeekday(weekday)
+    }
 
     func getDayTypeFromHTML(html: String) -> String {
         do {
@@ -187,6 +200,26 @@ struct ContentView: View {
             print("Error extracting or parsing date: \(error)")
         }
         return nil
+    }
+}
+
+// Add this helper view for consistent row styling
+struct ScheduleRow: View {
+    let period: MonThursScheduleView.Period
+    let isHighlighted: Bool
+    
+    var body: some View {
+        HStack {
+            Text(period.name)
+                .italic(period.name.contains("Lunch"))
+            Spacer()
+            Text("\(period.start)-\(period.end)")
+                .frame(width: 100, alignment: .trailing)
+                .monospacedDigit()
+        }
+        .padding(6)
+        .background(isHighlighted ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
+        .cornerRadius(8)
     }
 }
 
