@@ -11,7 +11,6 @@ import SwiftSoup
 struct ContentView: View {
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
-    @State private var testTime: (hour: Int, minute: Int)? = (9, 31)  // Test time: 9:31 AM
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -19,7 +18,6 @@ struct ContentView: View {
     }
     var isGreenDay: Bool {
          dayType.lowercased().contains("green day")
-//        true // Hardcoded for testing
     }
 
     var displayDayType: String {
@@ -30,12 +28,6 @@ struct ContentView: View {
         } else {
             return dayType
         }
-    }
-
-    var isMonThurs: Bool {
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        // Sunday = 1, Monday = 2, ..., Saturday = 7
-        return (2...5).contains(weekday)
     }
 
     var body: some View {
@@ -52,9 +44,6 @@ struct ContentView: View {
                             .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
                     )
                     .padding()
-                if isMonThurs {
-                    MonThursScheduleView(testTime: testTime)
-                }
             }
             .onAppear {
                 getTitle(from: schoolURL) { title in
@@ -106,84 +95,6 @@ struct ContentView: View {
                 completion("Failed to load HTML")
             }
         }.resume()
-    }
-}
-
-struct MonThursScheduleView: View {
-    let testTime: (hour: Int, minute: Int)?
-    
-    // Define schedule periods and times
-    struct Period: Identifiable {
-        let id = UUID()
-        let name: String
-        let start: String
-        let end: String
-        let startMinutes: Int
-        let endMinutes: Int
-    }
-
-    let periods: [Period] = [
-        Period(name: "Chapel/ Advisory WED", start: "8:00", end: "8:15", startMinutes: 8*60, endMinutes: 8*60+15),
-        Period(name: "A Block", start: "8:25", end: "9:30", startMinutes: 8*60+25, endMinutes: 9*60+30),
-        Period(name: "B Block", start: "9:35", end: "10:40", startMinutes: 9*60+35, endMinutes: 10*60+40),
-        Period(name: "C Block", start: "10:45", end: "12:20", startMinutes: 10*60+45, endMinutes: 12*60+20),
-        Period(name: "1st Lunch", start: "10:45", end: "11:05", startMinutes: 10*60+45, endMinutes: 11*60+5),
-        Period(name: "2nd Lunch", start: "11:05", end: "11:25", startMinutes: 11*60+5, endMinutes: 11*60+25),
-        Period(name: "3rd Lunch", start: "11:25", end: "11:45", startMinutes: 11*60+25, endMinutes: 11*60+45),
-        Period(name: "4th Lunch", start: "11:45", end: "12:05", startMinutes: 11*60+45, endMinutes: 12*60+5),
-        Period(name: "5th Lunch", start: "12:00", end: "12:20", startMinutes: 12*60, endMinutes: 12*60+20),
-        Period(name: "D Block", start: "12:25", end: "13:30", startMinutes: 12*60+25, endMinutes: 13*60+30),
-        Period(name: "E Block", start: "13:35", end: "14:40", startMinutes: 13*60+35, endMinutes: 14*60+40),
-        Period(name: "CP", start: "14:45", end: "15:05", startMinutes: 14*60+45, endMinutes: 15*60+5)
-    ]
-
-    // Modify currentMinutes to use test time
-    func currentMinutes() -> Int {
-        if let test = testTime {
-            return test.hour * 60 + test.minute
-        }
-        let now = Date()
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: now)
-        let minute = calendar.component(.minute, from: now)
-        return hour * 60 + minute
-    }
-
-    // Find the current or next period index
-    func highlightedPeriodIndex() -> Int? {
-        let now = currentMinutes()
-        for (i, period) in periods.enumerated() {
-            if now >= period.startMinutes && now < period.endMinutes {
-                return i
-            }
-            if i < periods.count - 1 && now < periods[i+1].startMinutes && now >= period.endMinutes {
-                return i+1
-            }
-        }
-        return nil
-    }
-
-    var body: some View {
-        let highlightIdx = highlightedPeriodIndex()
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Mon - Thurs Schedule")
-                .font(.headline)
-                .padding(.bottom, 4)
-            ForEach(Array(periods.enumerated()), id: \.element.id) { idx, period in
-                HStack {
-                    Text(period.name)
-                        .italic(period.name.contains("Lunch"))
-                    Spacer()
-                    Text("\(period.start)-\(period.end)")
-                }
-                .padding(6)
-                .background(idx == highlightIdx ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
-                .cornerRadius(8)
-            }
-        }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(white: 0.95)))
-        .padding(.horizontal)
     }
 }
 
