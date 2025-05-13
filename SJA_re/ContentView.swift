@@ -39,23 +39,33 @@ struct ContentView: View {
         ZStack {
             // Main background always white
             Color.white.ignoresSafeArea()
-            VStack {
-                if isDateToday == false {
-                    Text("The daily bulletin is not up to date. Please check back later.")
-                        .foregroundColor(.red)
-                        .font(.headline)
-                        .padding()
-                } else {
-                    Text(displayDayType)
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(isGreenDay ? .white : .primary)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
-                        )
-                        .padding()
+            ScrollView {
+                GeometryReader { geometry in
+                    VStack {
+                        if isDateToday == false {
+                            Text("The daily bulletin is not up to date. Please check back later.")
+                                .foregroundColor(.red)
+                                .font(.headline)
+                                .padding()
+                        } else {
+                            Text(displayDayType)
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(isGreenDay ? .white : .primary)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                                )
+                                .padding()
+                        }
+                    }
+                    .padding(.top, 300)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
+                .frame(height: UIScreen.main.bounds.height) // Ensures GeometryReader fills the screen
+            }
+            .refreshable {
+                fetchHTML(from: schoolURL)
             }
             .onAppear {
                 fetchHTML(from: schoolURL)
