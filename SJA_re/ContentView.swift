@@ -12,6 +12,8 @@ struct ContentView: View {
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
+    @State private var dailyBulletinHTML: String? = nil
+    @State private var isDateToday: Bool? = nil
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -36,15 +38,22 @@ struct ContentView: View {
             // Main background always white
             Color.white.ignoresSafeArea()
             VStack {
-                Text(displayDayType)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(isGreenDay ? .white : .primary)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
-                    )
-                    .padding()
+                if isDateToday == false {
+                    Text("The daily bulletin is not up to date. Please check back later.")
+                        .foregroundColor(.red)
+                        .font(.headline)
+                        .padding()
+                } else {
+                    Text(displayDayType)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(isGreenDay ? .white : .primary)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                        )
+                        .padding()
+                }
             }
             .onAppear {
                 fetchHTML(from: schoolURL)
@@ -62,13 +71,18 @@ struct ContentView: View {
             if let data = data, let html = String(data: data, encoding: .utf8) {
                 DispatchQueue.main.async {
                     self.fullHTML = html
-                    self.htmlTitle = self.getTitleFromHTML(html: html)
-                    self.dayType = self.getDayTypeFromHTML(html: html)
+                    let trimmedHTML = self.extractDailyBulletinSection(from: html)
+                    self.dailyBulletinHTML = trimmedHTML
+                    self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
+                    self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
+                    self.isDateToday = self.isBulletinDateToday(html: trimmedHTML ?? html)
                 }
             } else {
                 DispatchQueue.main.async {
                     self.htmlTitle = "Failed to load HTML"
                     self.dayType = "Failed to load HTML"
+                    self.dailyBulletinHTML = nil
+                    self.isDateToday = nil
                 }
             }
         }.resume()
@@ -91,6 +105,38 @@ struct ContentView: View {
         } catch {
             return "Parse error: \(error)"
         }
+    }
+
+    func extractDailyBulletinSection(from html: String) -> String? {
+        do {
+            let doc: Document = try SwiftSoup.parse(html)
+            if let section = try doc.select("section.daily-bulletin").first() {
+                return try section.outerHtml()
+            }
+        } catch {
+            print("Error extracting daily bulletin section: \(error)")
+        }
+        return nil
+    }
+
+    func isBulletinDateToday(html: String) -> Bool? {
+        do {
+            let doc: Document = try SwiftSoup.parse(html)
+            if let dateDiv = try doc.select("div.date").first() {
+                let dateText = try dateDiv.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                // Parse the date string (e.g., "May 13, 2025")
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMMM d, yyyy"
+                if let bulletinDate = formatter.date(from: dateText) {
+                    let calendar = Calendar.current
+                    let today = Date()
+                    return calendar.isDate(bulletinDate, inSameDayAs: today)
+                }
+            }
+        } catch {
+            print("Error extracting or parsing date: \(error)")
+        }
+        return nil
     }
 }
 

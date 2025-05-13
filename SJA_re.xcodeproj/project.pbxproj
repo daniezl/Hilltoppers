@@ -8,9 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A25EA3412DBA0B530037D8D9 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A25EA3402DBA0B530037D8D9 /* SwiftSoup */; };
-		A25EA3B02DC018000037D8D9 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */; };
-		A25EA3B22DC018000037D8D9 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3B12DC018000037D8D9 /* SwiftUI.framework */; };
-		A25EA3C02DC018010037D8D9 /* DayTypeWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A25EA3AD2DC018000037D8D9 /* DayTypeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,13 +25,6 @@
 			remoteGlobalIDString = A25EA2CE2DB9E0770037D8D9;
 			remoteInfo = SJA_re;
 		};
-		A25EA3BE2DC018010037D8D9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A25EA3AC2DC018000037D8D9;
-			remoteInfo = DayTypeWidgetExtension;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,7 +34,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A25EA3C02DC018010037D8D9 /* DayTypeWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,20 +44,9 @@
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A25EA3AD2DC018000037D8D9 /* DayTypeWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DayTypeWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = /System/Library/Frameworks/WidgetKit.framework; sourceTree = "<absolute>"; };
 		A25EA3B12DC018000037D8D9 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = /System/Library/Frameworks/SwiftUI.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A25EA3C42DC018010037D8D9 /* Exceptions for "DayTypeWidget" folder in "DayTypeWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = A25EA3AC2DC018000037D8D9 /* DayTypeWidgetExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A25EA2D12DB9E0770037D8D9 /* SJA_re */ = {
@@ -88,9 +66,6 @@
 		};
 		A25EA3B32DC018000037D8D9 /* DayTypeWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A25EA3C42DC018010037D8D9 /* Exceptions for "DayTypeWidget" folder in "DayTypeWidgetExtension" target */,
-			);
 			path = DayTypeWidget;
 			sourceTree = "<group>";
 		};
@@ -119,15 +94,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A25EA3AA2DC018000037D8D9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A25EA3B22DC018000037D8D9 /* SwiftUI.framework in Frameworks */,
-				A25EA3B02DC018000037D8D9 /* WidgetKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -149,7 +115,6 @@
 				A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */,
 				A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */,
 				A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */,
-				A25EA3AD2DC018000037D8D9 /* DayTypeWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -178,7 +143,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A25EA3BF2DC018010037D8D9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A25EA2D12DB9E0770037D8D9 /* SJA_re */,
@@ -237,28 +201,6 @@
 			productReference = A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		A25EA3AC2DC018000037D8D9 /* DayTypeWidgetExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A25EA3C52DC018010037D8D9 /* Build configuration list for PBXNativeTarget "DayTypeWidgetExtension" */;
-			buildPhases = (
-				A25EA3A92DC018000037D8D9 /* Sources */,
-				A25EA3AA2DC018000037D8D9 /* Frameworks */,
-				A25EA3AB2DC018000037D8D9 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A25EA3B32DC018000037D8D9 /* DayTypeWidget */,
-			);
-			name = DayTypeWidgetExtension;
-			packageProductDependencies = (
-			);
-			productName = DayTypeWidgetExtension;
-			productReference = A25EA3AD2DC018000037D8D9 /* DayTypeWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -279,9 +221,6 @@
 					A25EA2E62DB9E0780037D8D9 = {
 						CreatedOnToolsVersion = 16.3;
 						TestTargetID = A25EA2CE2DB9E0770037D8D9;
-					};
-					A25EA3AC2DC018000037D8D9 = {
-						CreatedOnToolsVersion = 16.3;
 					};
 				};
 			};
@@ -305,7 +244,6 @@
 				A25EA2CE2DB9E0770037D8D9 /* SJA_re */,
 				A25EA2DC2DB9E0780037D8D9 /* SJA_reTests */,
 				A25EA2E62DB9E0780037D8D9 /* SJA_reUITests */,
-				A25EA3AC2DC018000037D8D9 /* DayTypeWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -326,13 +264,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A25EA2E52DB9E0780037D8D9 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A25EA3AB2DC018000037D8D9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -363,13 +294,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A25EA3A92DC018000037D8D9 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -382,11 +306,6 @@
 			isa = PBXTargetDependency;
 			target = A25EA2CE2DB9E0770037D8D9 /* SJA_re */;
 			targetProxy = A25EA2E82DB9E0780037D8D9 /* PBXContainerItemProxy */;
-		};
-		A25EA3BF2DC018010037D8D9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A25EA3AC2DC018000037D8D9 /* DayTypeWidgetExtension */;
-			targetProxy = A25EA3BE2DC018010037D8D9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -665,80 +584,6 @@
 			};
 			name = Release;
 		};
-		A25EA3C22DC018010037D8D9 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = DayTypeWidget/DayTypeWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DayTypeWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = DayTypeWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-re.DayTypeWidget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Debug;
-		};
-		A25EA3C32DC018010037D8D9 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = DayTypeWidget/DayTypeWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DayTypeWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = DayTypeWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-re.DayTypeWidget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -774,15 +619,6 @@
 			buildConfigurations = (
 				A25EA2F82DB9E0780037D8D9 /* Debug */,
 				A25EA2F92DB9E0780037D8D9 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A25EA3C52DC018010037D8D9 /* Build configuration list for PBXNativeTarget "DayTypeWidgetExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A25EA3C22DC018010037D8D9 /* Debug */,
-				A25EA3C32DC018010037D8D9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
