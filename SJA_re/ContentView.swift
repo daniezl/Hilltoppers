@@ -50,7 +50,7 @@ struct ContentView: View {
                         } else {
                             Text(displayDayType)
                                 .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(isGreenDay ? .white : .primary)
+                                .foregroundColor(isGreenDay ? .white : .black)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
@@ -65,9 +65,15 @@ struct ContentView: View {
                 .frame(height: UIScreen.main.bounds.height) // Ensures GeometryReader fills the screen
             }
             .refreshable {
+                self.htmlTitle = "Loading..."
+                self.dayType = "Loading..."
+                self.isDateToday = nil
                 fetchHTML(from: schoolURL)
             }
             .onAppear {
+                self.htmlTitle = "Loading..."
+                self.dayType = "Loading..."
+                self.isDateToday = nil
                 fetchHTML(from: schoolURL)
             }
         }
