@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
+    // Test date for debugging (set to nil to use real date)
+    let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
     var isWhiteDay: Bool {
         dayType.lowercased().contains("white day")
@@ -129,7 +131,7 @@ struct ContentView: View {
                 formatter.dateFormat = "MMMM d, yyyy"
                 if let bulletinDate = formatter.date(from: dateText) {
                     let calendar = Calendar.current
-                    let today = Date()
+                    let today = testDate ?? Date()
                     return calendar.isDate(bulletinDate, inSameDayAs: today)
                 }
             }
