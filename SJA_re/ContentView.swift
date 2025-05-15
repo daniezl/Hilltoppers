@@ -115,12 +115,19 @@ struct ContentView: View {//
     func getDayTypeFromHTML(html: String) -> String {
         do {
             let doc: Document = try SwiftSoup.parse(html)
-            if let span = try doc.select("span[style*=#939598]").first() {
-                let dayType = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
-                return dayType
-            } else {
-                return "Day type not found"
+            let h4s = try doc.select("h4")
+            for h4 in h4s {
+                let spans = try h4.select("span")
+                for span in spans {
+                    let text = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                    if text.localizedCaseInsensitiveContains("white day") {
+                        return "White Day"
+                    } else if text.localizedCaseInsensitiveContains("green day") {
+                        return "Green Day"
+                    }
+                }
             }
+            return "Day type not found"
         } catch {
             return "Parse error: \(error)"
         }
