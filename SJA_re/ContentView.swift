@@ -112,18 +112,6 @@ struct ContentView: View {//
         return String(shortHTML)
     }
     
-    var isWednesday: Bool {
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        return weekday == 4  // 4 is Wednesday (1 is Sunday)
-    }
-    
-    // Get current schedule based on the day
-    var currentSchedule: ScheduleConfiguration.DaySchedule? {
-        guard let config = config else { return nil }
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        return config.scheduleForWeekday(weekday)
-    }
-
     func getDayTypeFromHTML(html: String) -> String {
         do {
             let doc: Document = try SwiftSoup.parse(html)
@@ -168,26 +156,6 @@ struct ContentView: View {//
             print("Error extracting or parsing date: \(error)")
         }
         return nil
-    }
-}
-
-// Add this helper view for consistent row styling
-struct ScheduleRow: View {
-    let period: MonThursScheduleView.Period
-    let isHighlighted: Bool
-    
-    var body: some View {
-        HStack {
-            Text(period.name)
-                .italic(period.name.contains("Lunch"))
-            Spacer()
-            Text("\(period.start)-\(period.end)")
-                .frame(width: 100, alignment: .trailing)
-                .monospacedDigit()
-        }
-        .padding(6)
-        .background(isHighlighted ? Color(red: 39/255, green: 92/255, blue: 48/255).opacity(0.25) : Color.clear)
-        .cornerRadius(8)
     }
 }
 
