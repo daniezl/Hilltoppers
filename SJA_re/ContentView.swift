@@ -18,10 +18,6 @@ struct ContentView: View {
     // Test date for debugging (set to nil to use real date)
     let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var lastRefreshDate = Calendar.current.startOfDay(for: Date())
-    @State private var timer: Timer? = nil
-
     var isWhiteDay: Bool {
         dayType.lowercased().contains("white day")
     }
@@ -79,34 +75,6 @@ struct ContentView: View {
                 self.dayType = "Loading..."
                 self.isDateToday = nil
                 fetchHTML(from: schoolURL)
-                // Start timer to check for date change
-                timer?.invalidate()
-                timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-                    let today = Calendar.current.startOfDay(for: Date())
-                    if today != lastRefreshDate {
-                        lastRefreshDate = today
-                        self.htmlTitle = "Loading..."
-                        self.dayType = "Loading..."
-                        self.isDateToday = nil
-                        fetchHTML(from: schoolURL)
-                    }
-                }
-            }
-            .onDisappear {
-                timer?.invalidate()
-                timer = nil
-            }
-            .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
-                    let today = Calendar.current.startOfDay(for: Date())
-                    if today != lastRefreshDate {
-                        lastRefreshDate = today
-                        self.htmlTitle = "Loading..."
-                        self.dayType = "Loading..."
-                        self.isDateToday = nil
-                        fetchHTML(from: schoolURL)
-                    }
-                }
             }
         }
     }
