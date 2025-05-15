@@ -19,6 +19,8 @@ struct ContentView: View {//
     // Test date for debugging (set to nil to use real date)
     let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var isWhiteDay: Bool {
         dayType.lowercased().contains("white day")
     }
@@ -76,6 +78,14 @@ struct ContentView: View {//
                 self.dayType = "Loading..."
                 self.isDateToday = nil
                 fetchHTML(from: schoolURL)
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    self.htmlTitle = "Loading..."
+                    self.dayType = "Loading..."
+                    self.isDateToday = nil
+                    fetchHTML(from: schoolURL)
+                }
             }
         }
     }
