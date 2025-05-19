@@ -22,10 +22,12 @@ struct ContentView: View {//
     @Environment(\.scenePhase) private var scenePhase
 
     var isWhiteDay: Bool {
-        dayType.lowercased().contains("white day")
+        let lower = dayType.lowercased()
+        return lower.contains("white day") && !lower.contains("green")
     }
     var isGreenDay: Bool {
-         dayType.lowercased().contains("green day")
+        let lower = dayType.lowercased()
+        return lower.contains("green day") && !lower.contains("white")
     }
 
     var displayDayType: String {
@@ -46,10 +48,28 @@ struct ContentView: View {//
                 GeometryReader { geometry in
                     VStack {
                         if isDateToday == false {
-                            Text("The daily bulletin is not up to date. Please check back later.")
-                                .foregroundColor(.red)
-                                .font(.headline)
-                                .padding()
+                            VStack(spacing: 8) {
+                                Text("The daily bulletin is not up to date. ")
+                                    .foregroundColor(.red)
+                                    .font(.headline)
+                                    .padding(.bottom, 4)
+                                let predicted = inverseDayType(from: dayType)
+                                Text(predicted)
+                                    .font(.system(size: 36, weight: .bold))
+                                    .foregroundColor(predicted == "Green Day" ? .white : .black)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                                    )
+                                    .padding()
+                                Text("This is a prediction based on the last posted day.\nIt may not be accurate.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.top, 2)
+                            }
+                            .padding()
                         } else {
                             Text(displayDayType)
                                 .font(.system(size: 36, weight: .bold))
@@ -173,6 +193,29 @@ struct ContentView: View {//
             print("Error extracting or parsing date: \(error)")
         }
         return nil
+    }
+
+    // func testTimeBlock() {
+    //     let chapel = TimeBlock(name: "Chapel", start: "8:00", end: "8:15")
+    //     let a = TimeBlock(name: "A Block", start: "8:25", end: "9:30")
+
+    //     chapel.printDetails()
+    //     a.printDetails()
+    // }
+
+    func inverseDayType(from dayType: String) -> String {
+        let lower = dayType.lowercased()
+        let hasGreen = lower.contains("green")
+        let hasWhite = lower.contains("white")
+        if hasGreen && hasWhite {
+            return "Unknown"
+        } else if hasGreen {
+            return "White Day"
+        } else if hasWhite {
+            return "Green Day"
+        } else {
+            return "Unknown"
+        }
     }
 }
 
