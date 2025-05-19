@@ -14,10 +14,11 @@ struct ContentView: View {//
     @State private var fullHTML: String? = nil
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
+    @State private var showBulletinInfo = false
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
     // Test date for debugging (set to nil to use real date)
-    let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
+    let testDate: Date? = DateComponents(calendar: .current, year: 2025, month: 5, day: 20).date // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -63,13 +64,30 @@ struct ContentView: View {//
                                             .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
                                     )
                                     .padding()
-                                Text("This is a prediction based on the last posted day.\nIt may not be accurate.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.top, 2)
+                                VStack(spacing: 0) {
+                                    HStack(spacing: 0) {
+                                        Text("This is a prediction based on the ")
+                                        Text("last posted day")
+                                            .foregroundColor(.blue)
+                                            .underline()
+                                            .onTapGesture { showBulletinInfo = true }
+                                        Text(".")
+                                    }
+                                    Text("It may not be accurate.")
+                                }
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 2)
                             }
                             .padding()
+                            .alert(isPresented: $showBulletinInfo) {
+                                Alert(
+                                    title: Text("\(dayType)"),
+                                    message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
+                                    dismissButton: .default(Text("OK"))
+                                )
+                            }
                         } else {
                             Text(displayDayType)
                                 .font(.system(size: 36, weight: .bold))
@@ -215,6 +233,43 @@ struct ContentView: View {//
             return "Green Day"
         } else {
             return "Unknown"
+        }
+    }
+
+    func bulletinDateString() -> String {
+        if let html = fullHTML,
+           let doc = try? SwiftSoup.parse(html),
+           let dateDiv = try? doc.select("div.date").first(),
+           let dateText = try? dateDiv.text().trimmingCharacters(in: .whitespacesAndNewlines) {
+            return dateText
+        }
+        return "Unknown"
+    }
+
+    func daysAwayFromBulletin() -> String {
+        guard let html = fullHTML,
+              let doc = try? SwiftSoup.parse(html),
+              let dateDiv = try? doc.select("div.date").first(),
+              let dateText = try? dateDiv.text().trimmingCharacters(in: .whitespacesAndNewlines) else {
+            return ""
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy"
+        guard let bulletinDate = formatter.date(from: dateText) else { return "" }
+        let today = testDate ?? Date()
+        let days = Calendar.current.dateComponents([.day], from: bulletinDate, to: today).day ?? 0
+        if days == 0 {
+            return "(Today)"
+        } else if days == 1 {
+            return "(1 day away)"
+        } else if days > 1 {
+            return "(\(days) days away)"
+        } else if days == -1 {
+            return "(1 day in the future)"
+        } else if days < -1 {
+            return "(\(-days) days in the future)"
+        } else {
+            return ""
         }
     }
 }
