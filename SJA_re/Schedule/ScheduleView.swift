@@ -30,7 +30,7 @@ struct ScheduleView: View {
                         .font(.subheadline)
                         .foregroundColor(.red)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 18)
             } else if let (nextBlock, minutes) = nextBlockInfo(), minutes <= 60 {
                 VStack {
                     Text("Next: \(nextBlock.name)")
@@ -149,4 +149,8 @@ struct BlockHeader: View {
         .background(isCurrent ? Color.green.opacity(0.2) : Color.clear)
         .cornerRadius(8)
     }
+}
+
+#Preview {
+    ScheduleView()
 }

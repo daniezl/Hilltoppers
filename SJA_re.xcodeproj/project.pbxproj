@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		A25EA3412DBA0B530037D8D9 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A25EA3402DBA0B530037D8D9 /* SwiftSoup */; };
+		A280A0F02DDCE7E300F98F3F /* schedule_mon_thu.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */; };
+		A280A0F12DDCE7E300F98F3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */; };
+		A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */; };
+		A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */; };
+		A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */; };
+		A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0EC2DDCE7E300F98F3F /* ContentView.swift */; };
+		A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,14 +53,17 @@
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = /System/Library/Frameworks/WidgetKit.framework; sourceTree = "<absolute>"; };
 		A25EA3B12DC018000037D8D9 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = /System/Library/Frameworks/SwiftUI.framework; sourceTree = "<absolute>"; };
+		A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_mon_thu.json; sourceTree = "<group>"; };
+		A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleLoader.swift; sourceTree = "<group>"; };
+		A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleModels.swift; sourceTree = "<group>"; };
+		A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
+		A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A280A0EC2DDCE7E300F98F3F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SJA_re.entitlements; sourceTree = "<group>"; };
+		A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SJA_reApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A25EA2D12DB9E0770037D8D9 /* SJA_re */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SJA_re;
-			sourceTree = "<group>";
-		};
 		A25EA2E02DB9E0780037D8D9 /* SJA_reTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SJA_reTests;
@@ -100,7 +110,7 @@
 		A25EA2C62DB9E0770037D8D9 = {
 			isa = PBXGroup;
 			children = (
-				A25EA2D12DB9E0770037D8D9 /* SJA_re */,
+				A280A0EF2DDCE7E300F98F3F /* SJA_re */,
 				A25EA2E02DB9E0780037D8D9 /* SJA_reTests */,
 				A25EA2EA2DB9E0780037D8D9 /* SJA_reUITests */,
 				A25EA3B32DC018000037D8D9 /* DayTypeWidget */,
@@ -128,6 +138,37 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		A280A0EA2DDCE7E300F98F3F /* Schedule */ = {
+			isa = PBXGroup;
+			children = (
+				A280A0F72DDCE7F700F98F3F /* scheduleConfig */,
+				A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */,
+				A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */,
+				A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */,
+			);
+			path = Schedule;
+			sourceTree = "<group>";
+		};
+		A280A0EF2DDCE7E300F98F3F /* SJA_re */ = {
+			isa = PBXGroup;
+			children = (
+				A280A0EA2DDCE7E300F98F3F /* Schedule */,
+				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
+				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
+				A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */,
+				A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */,
+			);
+			path = SJA_re;
+			sourceTree = "<group>";
+		};
+		A280A0F72DDCE7F700F98F3F /* scheduleConfig */ = {
+			isa = PBXGroup;
+			children = (
+				A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */,
+			);
+			path = scheduleConfig;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,9 +184,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A25EA2D12DB9E0770037D8D9 /* SJA_re */,
 			);
 			name = SJA_re;
 			packageProductDependencies = (
@@ -253,6 +291,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A280A0F02DDCE7E300F98F3F /* schedule_mon_thu.json in Resources */,
+				A280A0F12DDCE7E300F98F3F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +317,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */,
+				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
+				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
+				A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */,
+				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
