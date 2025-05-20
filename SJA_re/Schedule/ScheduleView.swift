@@ -40,6 +40,11 @@ struct ScheduleView: View {
                         .foregroundColor(.blue)
                 }
                 .padding(.vertical, 24)
+            } else {
+                // Always reserve the same space even if no message
+                Color.clear
+                    .frame(height: 89) // Adjust to match your .padding(.vertical, 24)
+                    // 24 + 41(text) + 24
             }
             List {
                 ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
