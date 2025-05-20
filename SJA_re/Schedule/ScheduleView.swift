@@ -39,15 +39,21 @@ struct ScheduleView: View {
                         .font(.subheadline)
                         .foregroundColor(.blue)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 18)
             }
             List {
-                ForEach(loader.blocks) { block in
-                    Section(header: BlockHeader(block: block, isCurrent: isCurrent(block: block), expanded: expandedBlockID == block.id, onTap: {
-                        withAnimation {
-                            expandedBlockID = expandedBlockID == block.id ? nil : block.id
+                ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
+                    Section(header: BlockHeader(
+                        block: block,
+                        isCurrent: isCurrent(block: block),
+                        isNext: isNextBlock(index: index),
+                        expanded: expandedBlockID == block.id,
+                        onTap: {
+                            withAnimation {
+                                expandedBlockID = expandedBlockID == block.id ? nil : block.id
+                            }
                         }
-                    })) {
+                    )) {
                         if let subBlocks = block.subBlocks, expandedBlockID == block.id {
                             ForEach(subBlocks) { sub in
                                 HStack {
@@ -118,11 +124,25 @@ struct ScheduleView: View {
         let comps = calendar.dateComponents([.year, .month, .day], from: currentTime)
         return calendar.date(bySettingHour: calendar.component(.hour, from: t), minute: calendar.component(.minute, from: t), second: 0, of: calendar.date(from: comps)!)
     }
+
+    func isNextBlock(index: Int) -> Bool {
+        guard !isCurrent(block: loader.blocks[index]) else { return false }
+        let block = loader.blocks[index]
+        let start = timeToday(block.start) ?? Date.distantFuture
+        if index == 0 {
+            // Before the first block
+            return currentTime < start
+        } else {
+            let prevEnd = timeToday(loader.blocks[index - 1].end) ?? Date.distantPast
+            return currentTime >= prevEnd && currentTime < start
+        }
+    }
 }
 
 struct BlockHeader: View {
     let block: Block
     let isCurrent: Bool
+    let isNext: Bool
     let expanded: Bool
     let onTap: () -> Void
 
@@ -131,7 +151,7 @@ struct BlockHeader: View {
             VStack(alignment: .leading) {
                 Text(block.name)
                     .font(.headline)
-                    .foregroundColor(isCurrent ? .green : .primary)
+                    .foregroundColor(isCurrent ? .green : (isNext ? .green : .primary))
                 Text("\(block.start) - \(block.end)")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -147,6 +167,13 @@ struct BlockHeader: View {
         }
         .padding(.vertical, 4)
         .background(isCurrent ? Color.green.opacity(0.2) : Color.clear)
+        .overlay(
+            isNext ?
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [6]))
+                    .foregroundColor(Color.green.opacity(0.7))
+                : nil
+        )
         .cornerRadius(8)
     }
 }
