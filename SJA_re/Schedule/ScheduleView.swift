@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ScheduleView: View {
     // Set this to a specific Date to test, or nil to use real time
-    let testTime: Date? = Calendar.current.date(bySettingHour: 8, minute: 2, second: 0, of: Date()) // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
+    let testTime: Date? = nil // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -63,7 +63,17 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                loader.loadSchedule(from: "schedule") // schedule.json
+                loader.loadSchedule(from: "schedule_mon_thu")
+                // let weekday = Calendar.current.component(.weekday, from: currentTime)
+                // let scheduleFile: String
+                // if weekday >= 2 && weekday <= 5 {
+                //     scheduleFile = "SchedulesJson/schedule_mon_thu.json"
+                // } else if weekday == 6 {
+                //     scheduleFile = "SchedulesJson/schedule_fri.json"
+                // } else {
+                //     scheduleFile = "SchedulesJson/schedule_mon_thu.json" // fallback or special
+                // }
+                // loader.loadSchedule(from: scheduleFile)
             }
             .onReceive(timer) { input in
                 now = Date()
