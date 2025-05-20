@@ -1,0 +1,9 @@
+[
+    { "name": "A Block", "start": "08:00", "end": "09:00" },
+    { "name": "B Block", "start": "09:05", "end": "10:00" },
+    { "name": "Lunch", "start": "12:00", "end": "13:00", "subBlocks": [
+        { "name": "Lunch A", "start": "12:00", "end": "12:30" },
+        { "name": "Lunch B", "start": "12:30", "end": "13:00" }
+      ]
+    }
+]

@@ -18,7 +18,7 @@ struct ContentView: View {//
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
     // Test date for debugging (set to nil to use real date)
-    let testDate: Date? = DateComponents(calendar: .current, year: 2025, month: 5, day: 20).date // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
+    let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -41,6 +41,7 @@ struct ContentView: View {//
         }
     }
 
+    /*
     var body: some View {
         ZStack {
             // Main background always white
@@ -126,6 +127,11 @@ struct ContentView: View {//
                 }
             }
         }
+    }
+    */
+
+    var body: some View {
+        ScheduleView()
     }
 
     func fetchHTML(from urlString: String) {
