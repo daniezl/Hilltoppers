@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ScheduleView: View {
     // Set this to a specific Date to test, or nil to use real time
-    let testTime: Date? = Calendar.current.date(bySettingHour: 11, minute: 30, second: 0, of: Date()) // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
+    let testTime: Date? = Calendar.current.date(bySettingHour: 11, minute: 50, second: 0, of: Date()) // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -68,6 +68,9 @@ struct ScheduleView: View {
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
+                                .padding(.vertical, 2)
+                                .background(isCurrent(subBlock: sub) ? Color.green.opacity(0.2) : Color.clear)
+                                .cornerRadius(8)
                             }
                         }
                     }
@@ -141,6 +144,11 @@ struct ScheduleView: View {
             let prevEnd = timeToday(loader.blocks[index - 1].end) ?? Date.distantPast
             return currentTime >= prevEnd && currentTime < start
         }
+    }
+
+    func isCurrent(subBlock: SubBlock) -> Bool {
+        guard let start = timeToday(subBlock.start), let end = timeToday(subBlock.end) else { return false }
+        return currentTime >= start && currentTime < end
     }
 }
 
