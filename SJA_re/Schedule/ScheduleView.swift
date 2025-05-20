@@ -165,7 +165,7 @@ struct BlockHeader: View {
                 .buttonStyle(PlainButtonStyle())
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 0)
         .background(isCurrent ? Color.green.opacity(0.2) : Color.clear)
         .overlay(
             isNext ?
