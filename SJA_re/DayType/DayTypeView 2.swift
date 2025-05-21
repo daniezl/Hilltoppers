@@ -51,7 +51,7 @@ struct DayTypeView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.2))
                         )
                     VStack(spacing: 0) {
                         HStack(spacing: 0) {
@@ -79,14 +79,17 @@ struct DayTypeView: View {
                 }
             } else {
                 Spacer()
-                    .frame(height: 8)
+                    .frame(height: 70)
                 Text(displayDayType)
                     .font(.system(size: 36, weight: .bold))
                     .foregroundColor(isGreenDay ? .white : .black)
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                            .fill(isGreenDay
+                                ? Color(red: 20/255, green: 54/255, blue: 27/255) // Green Day
+                                : Color(red: 248/255, green: 244/255, blue: 244/255) // White Day: #f8f4f4
+                            )
                     )
             }
         }

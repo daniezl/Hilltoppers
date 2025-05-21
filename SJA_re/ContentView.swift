@@ -10,7 +10,7 @@ import SwiftSoup
 
 struct ContentView: View {
     // Set this to a specific Date to test, or nil to use real time
-    let testDate: Date? = DateComponents(
+    let t: Date? = DateComponents(
         calendar: .current,
         year: 2025,
         month: 5,
@@ -24,6 +24,7 @@ struct ContentView: View {
             DayTypeView(testDate: nil)
             ScheduleView(testDate: nil)
         }
+        .preferredColorScheme(.light)
     }
 }
 
