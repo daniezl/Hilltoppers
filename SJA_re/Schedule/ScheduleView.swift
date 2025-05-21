@@ -86,17 +86,15 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                loader.loadSchedule(from: "schedule_mon_thu")
-                // let weekday = Calendar.current.component(.weekday, from: currentTime)
-                // let scheduleFile: String
-                // if weekday >= 2 && weekday <= 5 {
-                //     scheduleFile = "SchedulesJson/schedule_mon_thu.json"
-                // } else if weekday == 6 {
-                //     scheduleFile = "SchedulesJson/schedule_fri.json"
-                // } else {
-                //     scheduleFile = "SchedulesJson/schedule_mon_thu.json" // fallback or special
-                // }
-                // loader.loadSchedule(from: scheduleFile)
+                let weekday = Calendar.current.component(.weekday, from: currentTime)
+                let scheduleFile: String
+                if weekday == 4 { // 1=Sunday, 4=Wednesday
+                    scheduleFile = "schedule_wed"
+                } else {
+                    scheduleFile = "schedule_mon_thu"
+                }
+                loader.loadSchedule(from: scheduleFile)
+                // loader.loadSchedule(from: "schedule_mon_thu")
             }
             .onReceive(timer) { input in
                 now = Date()
