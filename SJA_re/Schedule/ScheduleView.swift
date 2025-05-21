@@ -88,13 +88,14 @@ struct ScheduleView: View {
             .onAppear {
                 let weekday = Calendar.current.component(.weekday, from: currentTime)
                 let scheduleFile: String
-                if weekday == 4 { // 1=Sunday, 4=Wednesday
+                if weekday == 4 { // Wednesday
                     scheduleFile = "schedule_wed"
+                } else if weekday == 6 { // Friday
+                    scheduleFile = "schedule_fri"
                 } else {
                     scheduleFile = "schedule_mon_thu"
                 }
                 loader.loadSchedule(from: scheduleFile)
-                // loader.loadSchedule(from: "schedule_mon_thu")
             }
             .onReceive(timer) { input in
                 now = Date()
