@@ -18,7 +18,7 @@ struct DayTypeView: View {
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
     // Test date for debugging (set to nil to use real date)
-    let testDate: Date? = nil // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
+    let testDate: Date? = DateComponents(calendar: .current, year: 2025, month: 5, day: 21).date // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -42,95 +42,23 @@ struct DayTypeView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Main background always white
-            Color.white.ignoresSafeArea()
-            ScrollView {
-                GeometryReader { geometry in
-                    VStack {
-                        if isDateToday == false {
-                            VStack(spacing: 8) {
-                                Text("The daily bulletin is not up to date. ")
-                                    .foregroundColor(.red)
-                                    .font(.headline)
-                                    .padding(.bottom, 4)
-                                let predicted = inverseDayType(from: dayType)
-                                Text(predicted)
-                                    .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(predicted == "Green Day" ? .white : .black)
-                                    .padding()
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
-                                    )
-                                    .padding()
-                                VStack(spacing: 0) {
-                                    HStack(spacing: 0) {
-                                        Text("This is a prediction based on the ")
-                                        Text("last posted day")
-                                            .foregroundColor(.blue)
-                                            .underline()
-                                            .onTapGesture { showBulletinInfo = true }
-                                        Text(".")
-                                    }
-                                    Text("It may not be accurate.")
-                                }
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.top, 2)
-                            }
-                            .padding()
-                            .alert(isPresented: $showBulletinInfo) {
-                                Alert(
-                                    title: Text("\(dayType)"),
-                                    message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
-                                    dismissButton: .default(Text("OK"))
-                                )
-                            }
-                        } else {
-                            Text(displayDayType)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(isGreenDay ? .white : .black)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
-                                )
-                                .padding()
-                        }
-                    }
-                    .padding(.top, 300)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                }
-                .frame(height: UIScreen.main.bounds.height) // Ensures GeometryReader fills the screen
-            }
-            .refreshable {
-                self.htmlTitle = "Loading..."
-                self.dayType = "Loading..."
-                self.isDateToday = nil
-                fetchHTML(from: schoolURL)
-            }
-            .onAppear {
-                self.htmlTitle = "Loading..."
-                self.dayType = "Loading..."
-                self.isDateToday = nil
-                fetchHTML(from: schoolURL)
-            }
-            .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
-                    self.htmlTitle = "Loading..."
-                    self.dayType = "Loading..."
-                    self.isDateToday = nil
-                    fetchHTML(from: schoolURL)
-                }
-            }
+        VStack(spacing: 0) {
+            Text(displayDayType)
+                .font(.system(size: 36, weight: .bold))
+                .foregroundColor(isGreenDay ? .white : .black)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                )
+        }
+        .onAppear {
+            self.htmlTitle = "Loading..."
+            self.dayType = "Loading..."
+            self.isDateToday = nil
+            fetchHTML(from: schoolURL)
         }
     }
-
-//    var body: some View {
-//        ScheduleView()
-//    }
 
     func fetchHTML(from urlString: String) {
         guard let url = URL(string: urlString) else {
@@ -279,5 +207,8 @@ struct DayTypeView: View {
 }
 
 #Preview {
-    DayTypeView()
+    VStack(spacing: 0) {
+        DayTypeView()
+        Text("Hello, World!") // This will be right below the banner
+    }
 }
