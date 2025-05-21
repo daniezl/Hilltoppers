@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftSoup
 
 struct DayTypeView: View {
+    let testDate: Date?
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -17,8 +18,6 @@ struct DayTypeView: View {
     @State private var showBulletinInfo = false
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
-    // Test date for debugging (set to nil to use real date)
-    let testDate: Date? = DateComponents(calendar: .current, year: 2025, month: 5, day: 21).date // Example: DateComponents(calendar: .current, year: 2025, month: 5, day: 13).date
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -43,14 +42,53 @@ struct DayTypeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(displayDayType)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundColor(isGreenDay ? .white : .black)
+            if isDateToday == false {
+                VStack(spacing: 0) {
+                    let predicted = inverseDayType(from: dayType)
+                    Text(predicted)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(predicted == "Green Day" ? .white : .black)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                        )
+                    VStack(spacing: 0) {
+                        HStack(spacing: 0) {
+                            Text("This is a prediction based on the ")
+                            Text("last posted day")
+                                .foregroundColor(.blue)
+                                .underline()
+                                .onTapGesture { showBulletinInfo = true }
+                            Text(".")
+                        }
+                        Text("It may not be accurate.")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+                }
                 .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
-                )
+                .alert(isPresented: $showBulletinInfo) {
+                    Alert(
+                        title: Text("\(dayType)"),
+                        message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
+            } else {
+                Spacer()
+                    .frame(height: 8)
+                Text(displayDayType)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(isGreenDay ? .white : .black)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.1))
+                    )
+            }
         }
         .onAppear {
             self.htmlTitle = "Loading..."
@@ -135,7 +173,7 @@ struct DayTypeView: View {
                 formatter.dateFormat = "MMMM d, yyyy"
                 if let bulletinDate = formatter.date(from: dateText) {
                     let calendar = Calendar.current
-                    let today = testDate ?? Date()
+                    let today = self.testDate ?? Date()
                     return calendar.isDate(bulletinDate, inSameDayAs: today)
                 }
             }
@@ -144,14 +182,6 @@ struct DayTypeView: View {
         }
         return nil
     }
-
-    // func testTimeBlock() {
-    //     let chapel = TimeBlock(name: "Chapel", start: "8:00", end: "8:15")
-    //     let a = TimeBlock(name: "A Block", start: "8:25", end: "9:30")
-
-    //     chapel.printDetails()
-    //     a.printDetails()
-    // }
 
     func inverseDayType(from dayType: String) -> String {
         let lower = dayType.lowercased()
@@ -188,7 +218,7 @@ struct DayTypeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         guard let bulletinDate = formatter.date(from: dateText) else { return "" }
-        let today = testDate ?? Date()
+        let today = self.testDate ?? Date()
         let days = Calendar.current.dateComponents([.day], from: bulletinDate, to: today).day ?? 0
         if days == 0 {
             return "(Today)"
@@ -208,7 +238,7 @@ struct DayTypeView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView()
+        DayTypeView(testDate: nil)
         Text("Hello, World!") // This will be right below the banner
     }
 }

@@ -6,8 +6,7 @@ import SwiftUI
 // ---
 
 struct ScheduleView: View {
-    // Set this to a specific Date to test, or nil to use real time
-    let testTime: Date? = nil // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
+    let testDate: Date?
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -17,7 +16,7 @@ struct ScheduleView: View {
 
     // Use this everywhere instead of 'now'
     var currentTime: Date {
-        testTime ?? now
+        testDate ?? now
     }
 
     var body: some View {
@@ -215,5 +214,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView()
+    ScheduleView(testDate: nil)
 }
