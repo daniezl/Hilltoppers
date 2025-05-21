@@ -15,6 +15,7 @@
 		A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */; };
 		A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0EC2DDCE7E300F98F3F /* ContentView.swift */; };
 		A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */; };
+		A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		A280A0EC2DDCE7E300F98F3F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SJA_re.entitlements; sourceTree = "<group>"; };
 		A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SJA_reApp.swift; sourceTree = "<group>"; };
+		A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DayTypeView 2.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -152,6 +154,7 @@
 		A280A0EF2DDCE7E300F98F3F /* SJA_re */ = {
 			isa = PBXGroup;
 			children = (
+				A280A0F82DDD54E400F98F3F /* DayType */,
 				A280A0EA2DDCE7E300F98F3F /* Schedule */,
 				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
 				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
@@ -167,6 +170,14 @@
 				A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */,
 			);
 			path = scheduleConfig;
+			sourceTree = "<group>";
+		};
+		A280A0F82DDD54E400F98F3F /* DayType */ = {
+			isa = PBXGroup;
+			children = (
+				A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */,
+			);
+			path = DayType;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -320,6 +331,7 @@
 				A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */,
 				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
+				A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */,
 				A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */,
 				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,
 			);

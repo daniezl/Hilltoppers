@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftSoup
 
-struct ContentView: View {//
+struct DayTypeView: View {
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -265,9 +265,9 @@ struct ContentView: View {//
         if days == 0 {
             return "(Today)"
         } else if days == 1 {
-            return "(1 day away)"
+            return "(Yesterday)"
         } else if days > 1 {
-            return "(\(days) days away)"
+            return "(\(days) days ago)"
         } else if days == -1 {
             return "(1 day in the future)"
         } else if days < -1 {
@@ -279,5 +279,5 @@ struct ContentView: View {//
 }
 
 #Preview {
-    ContentView()
+    DayTypeView()
 }
