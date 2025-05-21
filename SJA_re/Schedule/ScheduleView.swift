@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ScheduleView: View {
     // Set this to a specific Date to test, or nil to use real time
-    let testTime: Date? = Calendar.current.date(bySettingHour: 11, minute: 50, second: 0, of: Date()) // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
+    let testTime: Date? = nil // Example: Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -22,7 +22,16 @@ struct ScheduleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let (currentBlock, minutesLeft) = currentBlockInfo() {
+            if let (parent, sub, minutesLeft) = currentSubBlockInfo() {
+                VStack {
+                    Text("Now: \(sub.name)")
+                        .font(.headline)
+                    Text("Ends in \(minutesLeft) min")
+                        .font(.subheadline)
+                        .foregroundColor(.red)
+                }
+                .padding(.vertical, 24)
+            } else if let (currentBlock, minutesLeft) = currentBlockInfo() {
                 VStack {
                     Text("Now: \(currentBlock.name)")
                         .font(.headline)
@@ -149,6 +158,20 @@ struct ScheduleView: View {
     func isCurrent(subBlock: SubBlock) -> Bool {
         guard let start = timeToday(subBlock.start), let end = timeToday(subBlock.end) else { return false }
         return currentTime >= start && currentTime < end
+    }
+
+    func currentSubBlockInfo() -> (parent: Block, sub: SubBlock, minutesLeft: Int)? {
+        for block in loader.blocks {
+            guard let subBlocks = block.subBlocks else { continue }
+            for sub in subBlocks {
+                guard let start = timeToday(sub.start), let end = timeToday(sub.end) else { continue }
+                if currentTime >= start && currentTime < end {
+                    let minutesLeft = Int(end.timeIntervalSince(currentTime) / 60)
+                    return (block, sub, minutesLeft)
+                }
+            }
+        }
+        return nil
     }
 }
 
