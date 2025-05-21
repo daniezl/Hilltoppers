@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 // ---
 // To test the schedule at a specific time, set testTime below to a Date value.
 // Example: let testTime = Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
@@ -12,7 +13,7 @@ struct ScheduleView: View {
     @State private var now = Date()
     
     // Timer to update 'now' every minute
-    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     // Use this everywhere instead of 'now'
     var currentTime: Date {
@@ -21,29 +22,29 @@ struct ScheduleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let (parent, sub, minutesLeft) = currentSubBlockInfo() {
+            if let (parent, sub, secondsLeft) = currentSubBlockInfo() {
                 VStack {
                     Text("Now: \(sub.name)")
                         .font(.headline)
-                    Text("Ends in \(minutesLeft) min")
+                    Text("Ends in \(formatTime(secondsLeft))")
                         .font(.subheadline)
                         .foregroundColor(.red)
                 }
                 .padding(.vertical, 24)
-            } else if let (currentBlock, minutesLeft) = currentBlockInfo() {
+            } else if let (currentBlock, secondsLeft) = currentBlockInfo() {
                 VStack {
                     Text("Now: \(currentBlock.name)")
                         .font(.headline)
-                    Text("Ends in \(minutesLeft) min")
+                    Text("Ends in \(formatTime(secondsLeft))")
                         .font(.subheadline)
                         .foregroundColor(.red)
                 }
                 .padding(.vertical, 24)
-            } else if let (nextBlock, minutes) = nextBlockInfo(), minutes <= 60 {
+            } else if let (nextBlock, seconds) = nextBlockInfo(), seconds <= 3600 {
                 VStack {
                     Text("Next: \(nextBlock.name)")
                         .font(.headline)
-                    Text("Starts in \(minutes) min")
+                    Text("Starts in \(formatTime(seconds))")
                         .font(.subheadline)
                         .foregroundColor(.blue)
                 }
@@ -113,8 +114,8 @@ struct ScheduleView: View {
         for block in loader.blocks {
             guard let start = timeToday(block.start), let end = timeToday(block.end) else { continue }
             if currentTime >= start && currentTime < end {
-                let minutesLeft = Int(end.timeIntervalSince(currentTime) / 60)
-                return (block, minutesLeft)
+                let secondsLeft = Int(end.timeIntervalSince(currentTime))
+                return (block, secondsLeft)
             }
         }
         return nil
@@ -126,7 +127,7 @@ struct ScheduleView: View {
         if loader.blocks.contains(where: isCurrent) { return nil }
         let futureBlocks = loader.blocks.compactMap { block -> (Block, Int)? in
             guard let start = timeToday(block.start) else { return nil }
-            let diff = Int(start.timeIntervalSince(currentTime) / 60)
+            let diff = Int(start.timeIntervalSince(currentTime))
             return diff > 0 ? (block, diff) : nil
         }
         return futureBlocks.min(by: { $0.1 < $1.1 })
@@ -159,18 +160,24 @@ struct ScheduleView: View {
         return currentTime >= start && currentTime < end
     }
 
-    func currentSubBlockInfo() -> (parent: Block, sub: SubBlock, minutesLeft: Int)? {
+    func currentSubBlockInfo() -> (parent: Block, sub: SubBlock, Int)? {
         for block in loader.blocks {
             guard let subBlocks = block.subBlocks else { continue }
             for sub in subBlocks {
                 guard let start = timeToday(sub.start), let end = timeToday(sub.end) else { continue }
                 if currentTime >= start && currentTime < end {
-                    let minutesLeft = Int(end.timeIntervalSince(currentTime) / 60)
-                    return (block, sub, minutesLeft)
+                    let secondsLeft = Int(end.timeIntervalSince(currentTime))
+                    return (block, sub, secondsLeft)
                 }
             }
         }
         return nil
+    }
+
+    func formatTime(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%d:%02d", m, s)
     }
 }
 
