@@ -104,15 +104,14 @@ struct DayTypeView: View {
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                // Refresh when app comes to foreground
+                print("DayTypeView scenePhase .active!")
+                self.htmlTitle = "Loading..."
+                self.dayType = "Loading..."
+                self.isDateToday = nil
+                fetchHTML(from: schoolURL)
+                startDayChangeTimer()
                 let today = Calendar.current.startOfDay(for: self.testDate ?? Date())
-                if today != lastRefreshDate {
-                    self.htmlTitle = "Loading..."
-                    self.dayType = "Loading..."
-                    self.isDateToday = nil
-                    fetchHTML(from: schoolURL)
-                    lastRefreshDate = today
-                }
+                lastRefreshDate = today
             }
         }
     }
