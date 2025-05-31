@@ -238,16 +238,28 @@ struct DayTypeView: View {
         guard let bulletinDate = formatter.date(from: dateText) else { return "" }
         let today = self.testDate ?? Date()
         let days = Calendar.current.dateComponents([.day], from: bulletinDate, to: today).day ?? 0
-        if days == 0 {
-            return "(Today)"
-        } else if days == 1 {
+        if days == 1 {
             return "(Yesterday)"
         } else if days > 1 {
-            return "(\(days) days ago)"
-        } else if days == -1 {
-            return "(1 day in the future)"
+            if days >= 7 && days < 14 {
+                let weekday = bulletinDate.weekdayName()
+                return "(last \(weekday))"
+            } else if days >= 14 {
+                let weekday = bulletinDate.weekdayName()
+                return "(\(days) days ago) ((\(weekday)))"
+            }
+            let weekday = bulletinDate.weekdayName()
+            return "(on \(weekday))"
         } else if days < -1 {
-            return "(\(-days) days in the future)"
+            if days <= -7 && days > -14 {
+                let weekday = bulletinDate.weekdayName()
+                return "(next \(weekday))"
+            } else if days <= -14 {
+                let weekday = bulletinDate.weekdayName()
+                return "(in \(-days) days) ((\(weekday)))"
+            }
+            let weekday = bulletinDate.weekdayName()
+            return "(on \(weekday))"
         } else {
             return ""
         }
@@ -265,6 +277,15 @@ struct DayTypeView: View {
                 lastRefreshDate = today
             }
         }
+    }
+}
+
+extension Date {
+    func weekdayName() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: self)
     }
 }
 
