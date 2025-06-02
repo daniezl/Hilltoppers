@@ -250,16 +250,6 @@ struct DayTypeView: View {
             }
             let weekday = bulletinDate.weekdayName()
             return "(on \(weekday))"
-        } else if days < -1 {
-            if days <= -7 && days > -14 {
-                let weekday = bulletinDate.weekdayName()
-                return "(next \(weekday))"
-            } else if days <= -14 {
-                let weekday = bulletinDate.weekdayName()
-                return "(in \(-days) days) ((\(weekday)))"
-            }
-            let weekday = bulletinDate.weekdayName()
-            return "(on \(weekday))"
         } else {
             return ""
         }
