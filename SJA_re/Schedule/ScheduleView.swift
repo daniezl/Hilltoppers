@@ -1,5 +1,7 @@
 import SwiftUI
 import Foundation
+// If you see 'Cannot find type ... in scope', ensure ScheduleModels.swift, ScheduleLoader.swift, and ScheduleTypeFetcher.swift are in the same target/module as this file.
+// import SJA_re // Uncomment if you have a module named SJA_re
 // ---
 // To test the schedule at a specific time, set testTime below to a Date value.
 // Example: let testTime = Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date())
@@ -94,16 +96,44 @@ struct ScheduleView: View {
             .onAppear {
                 Task {
                     do {
-                        if let blocks = try await ScheduleTypeFetcher.loadSpecialDaySchedule(for: currentTime) {
-                            // Use blocks as your schedule for the day
-                            loader.blocks = blocks
-                        } else {
-                            // Fallback to weekday/local file logic
-                            loadWeekdaySchedule()
+                        // 1. Check if in break
+                        if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
+                            noSchool = true
+                            loader.blocks = []
+                            print("In break")
+                            return
                         }
+                        // 2. Try to find special_day and get type
+                        if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
+                            if type == "no_school" {
+                                noSchool = true
+                                loader.blocks = []
+                                print("No school")
+                                return
+                            } else if type == "custom" {
+                                // 3. If type is custom, read the custom schedule
+                                if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
+                                    loader.blocks = blocks
+                                    noSchool = false
+                                    print("Custom schedule")
+                                    return
+                                }
+                            } else {
+                                // try to load (type).json
+                                loader.loadSchedule(from: type)
+                                if !loader.blocks.isEmpty {
+                                    noSchool = false
+                                    print("Schedule from \(type).json")
+                                    return
+                                }
+                            }
+                        }
+                        // 4. Fallback to weekday/local file logic
+                        loadWeekdaySchedule()
                     } catch {
                         // Handle error (show alert, etc.)
-                        print("Error loading special day schedule: \(error)")
+                        print("Error loading schedule: \(error)")
+                        loadWeekdaySchedule()
                     }
                 }
             }

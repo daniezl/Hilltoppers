@@ -32,7 +32,7 @@ struct ScheduleTypeFetcher {
         return false
     }
 
-    static func loadSpecialDaySchedule(for date: Date) async throws -> [Block]? {
+    static func loadCustomSchedule(for date: Date) async throws -> [Block]? {
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -41,15 +41,14 @@ struct ScheduleTypeFetcher {
         let snapshot = try await docRef.getDocument()
         guard let data = snapshot.data() else { return nil }
 
-        // Check for type "custom" and a "schedule" array
-        if let type = data["type"] as? String, type == "custom",
-           let scheduleArray = data["schedule"] as? [[String: Any]] {
+        // Always try to read and decode the 'schedule' array
+        if let scheduleArray = data["schedule"] as? [[String: Any]] {
             let jsonData = try JSONSerialization.data(withJSONObject: scheduleArray)
             let blocks = try JSONDecoder().decode([Block].self, from: jsonData)
             return blocks
         }
 
-        // If not custom, return nil (or handle other types as needed)
+        // If no schedule array, return nil
         return nil
     }
 } 
