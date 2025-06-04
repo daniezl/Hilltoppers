@@ -11,6 +11,7 @@ struct ScheduleView: View {
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
+    @State private var noSchool: Bool = false
     
     // Timer to update 'now' every minute
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -22,7 +23,12 @@ struct ScheduleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let (parent, sub, secondsLeft) = currentSubBlockInfo() {
+            if noSchool {
+                Text("No school")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+                    .padding()
+            } else if let (parent, sub, secondsLeft) = currentSubBlockInfo() {
                 VStack {
                     Text("Now: \(sub.name)")
                         .font(.headline)
@@ -86,20 +92,21 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                Task {
-                    do {
-                        if let type = try await ScheduleTypeFetcher.fetchTypeFor() {
-                            print("Schedule type: \(type)")
-                            loader.loadSchedule(from: type)
-                        } else {
-                            print("No schedule type found")
-                            loadWeekdaySchedule()
-                        }
-                    } catch {
-                        print("Error fetching schedule type: \(error)")
-                        loadWeekdaySchedule()
-                    }
-                }
+                // Task {
+                //     do {
+                //         if let type = try await ScheduleTypeFetcher.fetchTypeFor() {
+                //             print("Schedule type: \(type)")
+                //             loader.loadSchedule(from: type)
+                //         } else {
+                //             print("No schedule type found")
+                //             loadWeekdaySchedule()
+                //         }
+                //     } catch {
+                //         print("Error fetching schedule type: \(error)")
+                //         loadWeekdaySchedule()
+                //     }
+                // }
+                loadWeekdaySchedule()
             }
             .onReceive(timer) { input in
                 now = Date()
@@ -185,15 +192,29 @@ struct ScheduleView: View {
 
     func loadWeekdaySchedule() {
         let weekday = Calendar.current.component(.weekday, from: currentTime)
-        let scheduleFile: String
-        if weekday == 4 { // Wednesday
-            scheduleFile = "schedule_wed"
-        } else if weekday == 6 { // Friday
-            scheduleFile = "schedule_fri"
-        } else {
+        print("Weekday: \(weekday)")
+        let scheduleFile: String?
+        switch weekday {
+        case 2: // Monday
             scheduleFile = "schedule_mon_thu"
+        case 3: // Tuesday
+            scheduleFile = "schedule_mon_thu"
+        case 4: // Wednesday
+            scheduleFile = "schedule_wed"
+        case 5: // Thursday
+            scheduleFile = "schedule_mon_thu"
+        case 6: // Friday
+            scheduleFile = "schedule_fri"
+        default: // Saturday & Sunday
+            scheduleFile = nil
         }
-        loader.loadSchedule(from: scheduleFile)
+        if let file = scheduleFile {
+            loader.loadSchedule(from: file)
+            noSchool = false
+        } else {
+            loader.blocks = []
+            noSchool = true
+        }
     }
 }
 
