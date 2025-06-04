@@ -71,7 +71,7 @@ struct DayTypeView: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 8)
                 }
-                .padding()
+                .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
                     Alert(
                         title: Text("\(dayType)"),
@@ -81,7 +81,7 @@ struct DayTypeView: View {
                 }
             } else {
                 Spacer()
-                    .frame(height: 70)
+                    .frame(height: 24)
                 Text(displayDayType)
                     .font(.system(size: 36, weight: .bold))
                     .foregroundColor(isGreenDay ? .white : .black)
