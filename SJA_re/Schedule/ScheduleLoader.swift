@@ -5,7 +5,7 @@ class ScheduleLoader: ObservableObject {
 
     func loadSchedule(from filename: String) {
         guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
-            print("JSON file not found")
+            print("JSON file not found: \(filename)")
             return
         }
         do {

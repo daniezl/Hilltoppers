@@ -86,28 +86,20 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                
                 Task {
                     do {
                         if let type = try await ScheduleTypeFetcher.fetchTypeFor() {
-                             print("Special day type for today: \(type)")
+                            print("Schedule type: \(type)")
+                            loader.loadSchedule(from: type)
                         } else {
-                            print("No special schedule for today.")
+                            print("No schedule type found")
+                            loadWeekdaySchedule()
                         }
                     } catch {
                         print("Error fetching schedule type: \(error)")
+                        loadWeekdaySchedule()
                     }
                 }
-                let weekday = Calendar.current.component(.weekday, from: currentTime)
-                let scheduleFile: String
-                if weekday == 4 { // Wednesday
-                    scheduleFile = "schedule_wed"
-                } else if weekday == 6 { // Friday
-                    scheduleFile = "schedule_fri"
-                } else {
-                    scheduleFile = "schedule_mon_thu"
-                }
-                loader.loadSchedule(from: scheduleFile)
             }
             .onReceive(timer) { input in
                 now = Date()
@@ -189,6 +181,19 @@ struct ScheduleView: View {
         let m = seconds / 60
         let s = seconds % 60
         return String(format: "%d:%02d", m, s)
+    }
+
+    func loadWeekdaySchedule() {
+        let weekday = Calendar.current.component(.weekday, from: currentTime)
+        let scheduleFile: String
+        if weekday == 4 { // Wednesday
+            scheduleFile = "schedule_wed"
+        } else if weekday == 6 { // Friday
+            scheduleFile = "schedule_fri"
+        } else {
+            scheduleFile = "schedule_mon_thu"
+        }
+        loader.loadSchedule(from: scheduleFile)
     }
 }
 
