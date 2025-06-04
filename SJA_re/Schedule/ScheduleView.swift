@@ -8,10 +8,10 @@ import Foundation
 
 struct ScheduleView: View {
     let testDate: Date?
+    @Binding var noSchool: Bool
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
-    @State private var noSchool: Bool = false
     
     // Timer to update 'now' every minute
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -93,7 +93,12 @@ struct ScheduleView: View {
             }
             .onAppear {
                 Task {
-                    do {
+                    let isBreak = try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime)
+                    if isBreak {
+                        print("Today is a break!")
+                        // Show "No school" in your UI
+                        noSchool = true
+                    } else {
                         if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
                             print("Schedule type: \(type)")
                             loader.loadSchedule(from: type)
@@ -101,9 +106,6 @@ struct ScheduleView: View {
                             print("No schedule type found")
                             loadWeekdaySchedule()
                         }
-                    } catch {
-                        print("Error fetching schedule type: \(error)")
-                        loadWeekdaySchedule()
                     }
                 }
             }
@@ -257,5 +259,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil)
+    ScheduleView(testDate: nil, noSchool: .constant(false))
 }
