@@ -93,24 +93,17 @@ struct ScheduleView: View {
             }
             .onAppear {
                 Task {
-                    let isBreak = try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime)
-                    if isBreak {
-                        print("Today is a break!")
-                        noSchool = true
-                    } else {
-                        if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
-                            print("Schedule type: \(type)")
-                            if type == "no_school" {
-                                noSchool = true
-                            } else {
-                                noSchool = false
-                                loader.loadSchedule(from: type)
-                            }
+                    do {
+                        if let blocks = try await ScheduleTypeFetcher.loadSpecialDaySchedule(for: currentTime) {
+                            // Use blocks as your schedule for the day
+                            loader.blocks = blocks
                         } else {
-                            print("No schedule type found")
-                            noSchool = false
+                            // Fallback to weekday/local file logic
                             loadWeekdaySchedule()
                         }
+                    } catch {
+                        // Handle error (show alert, etc.)
+                        print("Error loading special day schedule: \(error)")
                     }
                 }
             }
