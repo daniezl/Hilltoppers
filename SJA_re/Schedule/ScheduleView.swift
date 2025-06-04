@@ -86,6 +86,18 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
+                
+                Task {
+                    do {
+                        if let type = try await ScheduleTypeFetcher.fetchTypeFor() {
+                             print("Special day type for today: \(type)")
+                        } else {
+                            print("No special schedule for today.")
+                        }
+                    } catch {
+                        print("Error fetching schedule type: \(error)")
+                    }
+                }
                 let weekday = Calendar.current.component(.weekday, from: currentTime)
                 let scheduleFile: String
                 if weekday == 4 { // Wednesday
