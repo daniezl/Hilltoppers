@@ -96,14 +96,19 @@ struct ScheduleView: View {
                     let isBreak = try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime)
                     if isBreak {
                         print("Today is a break!")
-                        // Show "No school" in your UI
                         noSchool = true
                     } else {
                         if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
                             print("Schedule type: \(type)")
-                            loader.loadSchedule(from: type)
+                            if type == "no_school" {
+                                noSchool = true
+                            } else {
+                                noSchool = false
+                                loader.loadSchedule(from: type)
+                            }
                         } else {
                             print("No schedule type found")
+                            noSchool = false
                             loadWeekdaySchedule()
                         }
                     }
