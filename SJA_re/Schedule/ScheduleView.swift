@@ -58,10 +58,28 @@ struct ScheduleView: View {
                 }
                 .padding(.vertical, 24)
             } else {
-                // Always reserve the same space even if no message
-                Color.clear
-                    .frame(height: 89) // Adjust to match your .padding(.vertical, 24)
-                    // 24 + 41(text) + 24
+                // Determine if before first block or after all blocks
+                if let lastBlock = loader.blocks.last, let lastEnd = timeToday(lastBlock.end), currentTime >= lastEnd {
+                    VStack(spacing: 0) {
+                        Text("School has ended, have a good day!")
+                            .font(.headline)
+                            // .foregroundColor(.black)
+                            // .padding()
+                        Button(action: {}) {
+                            Text("Schedule for tomorrow")
+                                .font(.body)
+                                .foregroundColor(.blue)
+                                // .padding()
+                        }
+                        .padding(.top, 2)
+                    }
+                    .padding(.vertical, 23)
+                } else {
+                    // Always reserve the same space even if no message
+                    Color.clear
+                        .frame(height: 89) // Adjust to match your .padding(.vertical, 24)
+                        // 24 + 41(text) + 24
+                }
             }
             List {
                 ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
