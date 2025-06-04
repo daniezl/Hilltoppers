@@ -92,21 +92,20 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                // Task {
-                //     do {
-                //         if let type = try await ScheduleTypeFetcher.fetchTypeFor() {
-                //             print("Schedule type: \(type)")
-                //             loader.loadSchedule(from: type)
-                //         } else {
-                //             print("No schedule type found")
-                //             loadWeekdaySchedule()
-                //         }
-                //     } catch {
-                //         print("Error fetching schedule type: \(error)")
-                //         loadWeekdaySchedule()
-                //     }
-                // }
-                loadWeekdaySchedule()
+                Task {
+                    do {
+                        if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
+                            print("Schedule type: \(type)")
+                            loader.loadSchedule(from: type)
+                        } else {
+                            print("No schedule type found")
+                            loadWeekdaySchedule()
+                        }
+                    } catch {
+                        print("Error fetching schedule type: \(error)")
+                        loadWeekdaySchedule()
+                    }
+                }
             }
             .onReceive(timer) { input in
                 now = Date()
