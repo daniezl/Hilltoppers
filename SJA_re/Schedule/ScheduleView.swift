@@ -17,6 +17,7 @@ struct ScheduleView: View {
     @State private var now = Date()
     @State private var lastSuccessfulRefresh: Date? = nil
     @State private var isRefreshing: Bool = false
+    @State private var scheduleTitle: String = "Loading..."
     
     // Timer to update 'now' every minute
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -86,6 +87,17 @@ struct ScheduleView: View {
                         // 24 + 41(text) + 24
                 }
             }
+            
+            // Schedule title - only show when there's actually a schedule
+            if !noSchool {
+                Text(scheduleTitle)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 40)
+                    .padding(.bottom, 8)
+            }
+            
             List {
                 ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
                     Section(header: BlockHeader(
@@ -265,6 +277,7 @@ struct ScheduleView: View {
                         loader.blocks = blocks
                         noSchool = false
                         print("Custom schedule")
+                        scheduleTitle = "Custom Schedule"
                         firebaseSucceeded = true
                     }
                 } else {
@@ -273,6 +286,7 @@ struct ScheduleView: View {
                     if !loader.blocks.isEmpty {
                         noSchool = false
                         print("Schedule from \(type).json")
+                        scheduleTitle = type.capitalized.replacingOccurrences(of: "_", with: " ")
                         firebaseSucceeded = true
                     }
                 }
@@ -286,6 +300,7 @@ struct ScheduleView: View {
                 // Firebase responded but no data found, fall back to local
                 print("No Firebase data found, using local schedule")
                 loadWeekdaySchedule()
+                scheduleTitle = getWeekdayTitle()
                 // Don't update lastSuccessfulRefresh since this is fallback
             }
             
@@ -293,6 +308,7 @@ struct ScheduleView: View {
             // Firebase calls failed (network issue, blocked, etc.)
             print("Error refreshing schedule (Firebase failed): \(error)")
             loadWeekdaySchedule() // Fallback to local data
+            scheduleTitle = getWeekdayTitle()
             // Keep isStale = true since Firebase failed
         }
     }
@@ -313,6 +329,18 @@ struct ScheduleView: View {
             print("No successful Firebase refresh yet - marking as stale")
             isStale = true
             await refreshSchedule()
+        }
+    }
+
+    func getWeekdayTitle() -> String {
+        let weekday = Calendar.current.component(.weekday, from: currentTime)
+        switch weekday {
+        case 2: return "Monday Schedule"
+        case 3: return "Tuesday Schedule" 
+        case 4: return "Wednesday Schedule"
+        case 5: return "Thursday Schedule"
+        case 6: return "Friday Schedule"
+        default: return "Weekday Schedule"
         }
     }
 }
