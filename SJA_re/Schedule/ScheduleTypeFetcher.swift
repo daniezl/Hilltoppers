@@ -51,4 +51,90 @@ struct ScheduleTypeFetcher {
         // If no schedule array, return nil
         return nil
     }
+
+    // Batch fetch all special days in a date range
+    static func fetchSpecialDaysDict(start: Date, end: Date) async throws -> [String: String] {
+        let db = Firestore.firestore()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let startString = formatter.string(from: start)
+        let endString = formatter.string(from: end)
+        let query = db.collection("special_days")
+            .whereField(FieldPath.documentID(), isGreaterThanOrEqualTo: startString)
+            .whereField(FieldPath.documentID(), isLessThanOrEqualTo: endString)
+        let snapshot = try await query.getDocuments()
+        var dict: [String: String] = [:]
+        for doc in snapshot.documents {
+            if let type = doc.data()["type"] as? String {
+                dict[doc.documentID] = type
+            }
+        }
+        return dict
+    }
+
+    // Batch fetch all special periods overlapping a date range
+    static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
+        let db = Firestore.firestore()
+        let snapshot = try await db.collection("special_periods").getDocuments()
+        var periods: [(Date, Date)] = []
+        for doc in snapshot.documents {
+            let data = doc.data()
+            if let startTS = data["start"] as? Timestamp,
+               let endTS = data["end"] as? Timestamp {
+                let s = startTS.dateValue()
+                let e = endTS.dateValue()
+                // Only include periods that overlap our range
+                if e >= start && s <= end {
+                    periods.append((s, e))
+                }
+            }
+        }
+        return periods
+    }
+
+    // Predict day type using batch-fetched data
+    static func predictDayType(
+        dbDayType: String,
+        dbDate: Date,
+        testDate: Date?
+    ) async throws -> String {
+        let today = testDate ?? Date()
+        print("Fetching special days from \(dbDate) to \(today)")
+        let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
+        print("Fetching special periods from \(dbDate) to \(today)")
+        let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
+        var predictIsGreen = dbDayType.lowercased().contains("green")
+        var date = Calendar.current.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        while date <= today {
+            let dateString = formatter.string(from: date)
+            let isSchoolDay: Bool = {
+                if let type = specialDays[dateString] {
+                    print("Checked \(dateString): special day type = \(type)")
+                    return type != "no_school"
+                }
+                for period in specialPeriods {
+                    if date >= period.0 && date <= period.1 {
+                        print("Checked \(dateString): in special period")
+                        return false
+                    }
+                }
+                let weekday = Calendar.current.component(.weekday, from: date)
+                if weekday == 1 || weekday == 7 {
+                    print("Checked \(dateString): weekend")
+                    return false
+                }
+                print("Checked \(dateString): regular school day")
+                return true
+            }()
+            if isSchoolDay {
+                print("Toggled isGreen for \(dateString)")
+                predictIsGreen.toggle()
+            }
+            date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
+        }
+        print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
+        return predictIsGreen ? "Green Day" : "White Day"
+    }
 } 

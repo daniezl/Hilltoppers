@@ -16,6 +16,8 @@ struct DayTypeView: View {
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
     @State private var showBulletinInfo = false
+    @State private var dbDate: Date? = nil
+    @State private var predicted: String = "Loading..."
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
@@ -46,7 +48,6 @@ struct DayTypeView: View {
         VStack(spacing: 0) {
             if isDateToday == false {
                 VStack(spacing: 0) {
-                    let predicted = inverseDayType(from: dayType)
                     Text(predicted)
                         .font(.system(size: 36, weight: .bold))
                         .foregroundColor(predicted == "Green Day" ? .white : .black)
@@ -78,6 +79,21 @@ struct DayTypeView: View {
                         message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
                         dismissButton: .default(Text("OK"))
                     )
+                }
+                .task {
+                    if let dbDate = dbDate {
+                        do {
+                            predicted = try await ScheduleTypeFetcher.predictDayType(
+                                dbDayType: dayType,
+                                dbDate: dbDate,
+                                testDate: testDate
+                            )
+                        } catch {
+                            predicted = "Error"
+                        }
+                    } else {
+                        predicted = "No DB date"
+                    }
                 }
             } else {
                 Spacer()
@@ -130,14 +146,21 @@ struct DayTypeView: View {
                     self.dailyBulletinHTML = trimmedHTML
                     self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
                     self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
-                    self.isDateToday = self.isBulletinDateToday(html: trimmedHTML ?? html)
+                    self.dbDate = self.extractDBDate(from: trimmedHTML ?? html)
+                    if let dbDate = self.dbDate {
+                        let calendar = Calendar.current
+                        let today = self.testDate ?? Date()
+                        self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
+                    } else {
+                        self.isDateToday = nil
+                    }
                 }
             } else {
                 DispatchQueue.main.async {
                     self.htmlTitle = "Failed to load HTML"
                     self.dayType = "Failed to load HTML"
                     self.dailyBulletinHTML = nil
-                    self.isDateToday = nil
+                    self.dbDate = nil
                 }
             }
         }.resume()
@@ -181,19 +204,14 @@ struct DayTypeView: View {
         return nil
     }
 
-    func isBulletinDateToday(html: String) -> Bool? {
+    func extractDBDate(from html: String) -> Date? {
         do {
             let doc: Document = try SwiftSoup.parse(html)
             if let dateDiv = try doc.select("div.date").first() {
                 let dateText = try dateDiv.text().trimmingCharacters(in: .whitespacesAndNewlines)
-                // Parse the date string (e.g., "May 13, 2025")
                 let formatter = DateFormatter()
                 formatter.dateFormat = "MMMM d, yyyy"
-                if let bulletinDate = formatter.date(from: dateText) {
-                    let calendar = Calendar.current
-                    let today = self.testDate ?? Date()
-                    return calendar.isDate(bulletinDate, inSameDayAs: today)
-                }
+                return formatter.date(from: dateText)
             }
         } catch {
             print("Error extracting or parsing date: \(error)")
