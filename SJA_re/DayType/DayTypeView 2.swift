@@ -10,6 +10,7 @@ import SwiftSoup
 
 struct DayTypeView: View {
     let testDate: Date?
+    @Binding var firebaseError: Bool
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -18,12 +19,12 @@ struct DayTypeView: View {
     @State private var showBulletinInfo = false
     @State private var dbDate: Date? = nil
     @State private var predicted: String = "Loading..."
+    @State private var lastRefreshDate = Calendar.current.startOfDay(for: Date())
+    @State private var timer: Timer? = nil
 
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     @Environment(\.scenePhase) private var scenePhase
-    @State private var lastRefreshDate = Calendar.current.startOfDay(for: Date())
-    @State private var timer: Timer? = nil
 
     var isWhiteDay: Bool {
         let lower = dayType.lowercased()
@@ -79,21 +80,6 @@ struct DayTypeView: View {
                         message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
                         dismissButton: .default(Text("OK"))
                     )
-                }
-                .task {
-                    if let dbDate = dbDate {
-                        do {
-                            predicted = try await ScheduleTypeFetcher.predictDayType(
-                                dbDayType: dayType,
-                                dbDate: dbDate,
-                                testDate: testDate
-                            )
-                        } catch {
-                            predicted = "Error"
-                        }
-                    } else {
-                        predicted = "No DB date"
-                    }
                 }
             } else {
                 Spacer()
@@ -151,8 +137,37 @@ struct DayTypeView: View {
                         let calendar = Calendar.current
                         let today = self.testDate ?? Date()
                         self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
+                        
+                        // Update prediction if not today
+                        if self.isDateToday == false {
+                            Task {
+                                do {
+                                    let predictedType = try await ScheduleTypeFetcher.predictDayType(
+                                        dbDayType: self.dayType,
+                                        dbDate: dbDate,
+                                        testDate: self.testDate
+                                    )
+                                    DispatchQueue.main.async {
+                                        self.predicted = predictedType
+                                        self.firebaseError = false
+                                    }
+                                } catch {
+                                    DispatchQueue.main.async {
+                                        self.predicted = "Error"
+                                        self.firebaseError = true
+                                    }
+                                }
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                self.firebaseError = false // Clear error for today's date
+                            }
+                        }
                     } else {
                         self.isDateToday = nil
+                        DispatchQueue.main.async {
+                            self.predicted = "No DB date"
+                        }
                     }
                 }
             } else {
@@ -161,6 +176,7 @@ struct DayTypeView: View {
                     self.dayType = "Failed to load HTML"
                     self.dailyBulletinHTML = nil
                     self.dbDate = nil
+                    self.predicted = "Failed to load"
                 }
             }
         }.resume()
@@ -299,7 +315,7 @@ extension Date {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil)
+        DayTypeView(testDate: nil, firebaseError: .constant(false))
         Text("Hello, World!") // This will be right below the banner
     }
 }

@@ -8,28 +8,40 @@ struct ScheduleTypeFetcher {
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
         print("Looking up Firestore for date: \(dateString)")
-        let docRef = db.collection("special_days").document(dateString)
-        let snapshot = try await docRef.getDocument()
-        if let data = snapshot.data(), let type = data["type"] as? String {
-            return type
+        
+        do {
+            let docRef = db.collection("special_days").document(dateString)
+            let snapshot = try await docRef.getDocument()
+            if let data = snapshot.data(), let type = data["type"] as? String {
+                return type
+            }
+            return nil
+        } catch {
+            print("Firebase error in fetchTypeFor: \(error)")
+            throw error
         }
-        return nil
     }
 
     static func isInSpecialPeriod(date: Date) async throws -> Bool {
         let db = Firestore.firestore()
-        let snapshot = try await db.collection("special_periods").getDocuments()
-        for doc in snapshot.documents {
-            let data = doc.data()
-            guard let start = data["start"] as? Timestamp,
-                  let end = data["end"] as? Timestamp else { continue }
-            let startDate = start.dateValue()
-            let endDate = end.dateValue()
-            if date >= startDate && date <= endDate {
-                return true
+        
+        do {
+            let snapshot = try await db.collection("special_periods").getDocuments()
+            for doc in snapshot.documents {
+                let data = doc.data()
+                guard let start = data["start"] as? Timestamp,
+                      let end = data["end"] as? Timestamp else { continue }
+                let startDate = start.dateValue()
+                let endDate = end.dateValue()
+                if date >= startDate && date <= endDate {
+                    return true
+                }
             }
+            return false
+        } catch {
+            print("Firebase error in isInSpecialPeriod: \(error)")
+            throw error
         }
-        return false
     }
 
     static func loadCustomSchedule(for date: Date) async throws -> [Block]? {
@@ -37,19 +49,25 @@ struct ScheduleTypeFetcher {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
-        let docRef = db.collection("special_days").document(dateString)
-        let snapshot = try await docRef.getDocument()
-        guard let data = snapshot.data() else { return nil }
+        
+        do {
+            let docRef = db.collection("special_days").document(dateString)
+            let snapshot = try await docRef.getDocument()
+            guard let data = snapshot.data() else { return nil }
 
-        // Always try to read and decode the 'schedule' array
-        if let scheduleArray = data["schedule"] as? [[String: Any]] {
-            let jsonData = try JSONSerialization.data(withJSONObject: scheduleArray)
-            let blocks = try JSONDecoder().decode([Block].self, from: jsonData)
-            return blocks
+            // Always try to read and decode the 'schedule' array
+            if let scheduleArray = data["schedule"] as? [[String: Any]] {
+                let jsonData = try JSONSerialization.data(withJSONObject: scheduleArray)
+                let blocks = try JSONDecoder().decode([Block].self, from: jsonData)
+                return blocks
+            }
+
+            // If no schedule array, return nil
+            return nil
+        } catch {
+            print("Firebase error in loadCustomSchedule: \(error)")
+            throw error
         }
-
-        // If no schedule array, return nil
-        return nil
     }
 
     // Batch fetch all special days in a date range
@@ -59,37 +77,49 @@ struct ScheduleTypeFetcher {
         formatter.dateFormat = "yyyy-MM-dd"
         let startString = formatter.string(from: start)
         let endString = formatter.string(from: end)
-        let query = db.collection("special_days")
-            .whereField(FieldPath.documentID(), isGreaterThanOrEqualTo: startString)
-            .whereField(FieldPath.documentID(), isLessThanOrEqualTo: endString)
-        let snapshot = try await query.getDocuments()
-        var dict: [String: String] = [:]
-        for doc in snapshot.documents {
-            if let type = doc.data()["type"] as? String {
-                dict[doc.documentID] = type
+        
+        do {
+            let query = db.collection("special_days")
+                .whereField(FieldPath.documentID(), isGreaterThanOrEqualTo: startString)
+                .whereField(FieldPath.documentID(), isLessThanOrEqualTo: endString)
+            let snapshot = try await query.getDocuments()
+            var dict: [String: String] = [:]
+            for doc in snapshot.documents {
+                if let type = doc.data()["type"] as? String {
+                    dict[doc.documentID] = type
+                }
             }
+            return dict
+        } catch {
+            print("Firebase error in fetchSpecialDaysDict: \(error)")
+            throw error
         }
-        return dict
     }
 
     // Batch fetch all special periods overlapping a date range
     static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
         let db = Firestore.firestore()
-        let snapshot = try await db.collection("special_periods").getDocuments()
-        var periods: [(Date, Date)] = []
-        for doc in snapshot.documents {
-            let data = doc.data()
-            if let startTS = data["start"] as? Timestamp,
-               let endTS = data["end"] as? Timestamp {
-                let s = startTS.dateValue()
-                let e = endTS.dateValue()
-                // Only include periods that overlap our range
-                if e >= start && s <= end {
-                    periods.append((s, e))
+        
+        do {
+            let snapshot = try await db.collection("special_periods").getDocuments()
+            var periods: [(Date, Date)] = []
+            for doc in snapshot.documents {
+                let data = doc.data()
+                if let startTS = data["start"] as? Timestamp,
+                   let endTS = data["end"] as? Timestamp {
+                    let s = startTS.dateValue()
+                    let e = endTS.dateValue()
+                    // Only include periods that overlap our range
+                    if e >= start && s <= end {
+                        periods.append((s, e))
+                    }
                 }
             }
+            return periods
+        } catch {
+            print("Firebase error in fetchSpecialPeriods: \(error)")
+            throw error
         }
-        return periods
     }
 
     // Predict day type using batch-fetched data
@@ -99,42 +129,52 @@ struct ScheduleTypeFetcher {
         testDate: Date?
     ) async throws -> String {
         let today = testDate ?? Date()
-        print("Fetching special days from \(dbDate) to \(today)")
-        let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
-        print("Fetching special periods from \(dbDate) to \(today)")
-        let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
-        var predictIsGreen = dbDayType.lowercased().contains("green")
-        var date = Calendar.current.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        while date <= today {
-            let dateString = formatter.string(from: date)
-            let isSchoolDay: Bool = {
-                if let type = specialDays[dateString] {
-                    print("Checked \(dateString): special day type = \(type)")
-                    return type != "no_school"
-                }
-                for period in specialPeriods {
-                    if date >= period.0 && date <= period.1 {
-                        print("Checked \(dateString): in special period")
+        
+        do {
+            print("Fetching special days from \(dbDate) to \(today)")
+            let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
+            print("Fetching special periods from \(dbDate) to \(today)")
+            let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
+            
+            var predictIsGreen = dbDayType.lowercased().contains("green")
+            var date = Calendar.current.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            
+            while date <= today {
+                let dateString = formatter.string(from: date)
+                let isSchoolDay: Bool = {
+                    if let type = specialDays[dateString] {
+                        print("Checked \(dateString): special day type = \(type)")
+                        return type != "no_school"
+                    }
+                    for period in specialPeriods {
+                        if date >= period.0 && date <= period.1 {
+                            print("Checked \(dateString): in special period")
+                            return false
+                        }
+                    }
+                    let weekday = Calendar.current.component(.weekday, from: date)
+                    if weekday == 1 || weekday == 7 {
+                        print("Checked \(dateString): weekend")
                         return false
                     }
+                    print("Checked \(dateString): regular school day")
+                    return true
+                }()
+                
+                if isSchoolDay {
+                    print("Toggled isGreen for \(dateString)")
+                    predictIsGreen.toggle()
                 }
-                let weekday = Calendar.current.component(.weekday, from: date)
-                if weekday == 1 || weekday == 7 {
-                    print("Checked \(dateString): weekend")
-                    return false
-                }
-                print("Checked \(dateString): regular school day")
-                return true
-            }()
-            if isSchoolDay {
-                print("Toggled isGreen for \(dateString)")
-                predictIsGreen.toggle()
+                date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
             }
-            date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
+            
+            print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
+            return predictIsGreen ? "Green Day" : "White Day"
+        } catch {
+            print("Firebase error in predictDayType: \(error)")
+            throw error
         }
-        print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
-        return predictIsGreen ? "Green Day" : "White Day"
     }
 } 
