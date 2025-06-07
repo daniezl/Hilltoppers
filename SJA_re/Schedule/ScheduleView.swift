@@ -12,8 +12,8 @@ struct ScheduleView: View {
     let testDate: Date?
     @Binding var noSchool: Bool
     @Binding var isStale: Bool
+    @ObservedObject var loader: ScheduleLoader
     let onLoadingComplete: () -> Void
-    @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
@@ -297,7 +297,6 @@ struct ScheduleView: View {
         }
         
         // Signal that loading is complete
-        print("Debug: ScheduleView calling onLoadingComplete")
         onLoadingComplete()
     }
     
@@ -356,5 +355,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), onLoadingComplete: {})
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {})
 }

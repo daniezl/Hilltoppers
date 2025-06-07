@@ -134,14 +134,12 @@ struct DayTypeView: View {
                                     DispatchQueue.main.async {
                                         self.predicted = predictedType
                                         self.firebaseError = false
-                                        print("Debug: DayTypeView calling onLoadingComplete (prediction success)")
                                         self.onLoadingComplete()
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
                                         self.predicted = "Error"
                                         self.firebaseError = true
-                                        print("Debug: DayTypeView calling onLoadingComplete (prediction error)")
                                         self.onLoadingComplete()
                                     }
                                 }
@@ -149,7 +147,6 @@ struct DayTypeView: View {
                         } else {
                             DispatchQueue.main.async {
                                 self.firebaseError = false // Clear error for today's date
-                                print("Debug: DayTypeView calling onLoadingComplete (today)")
                                 self.onLoadingComplete()
                             }
                         }

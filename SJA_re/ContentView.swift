@@ -17,22 +17,23 @@ struct ContentView: View {
     @State private var scheduleLoaded: Bool = false
     @State private var dayTypeLoaded: Bool = false
     @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var scheduleLoader = ScheduleLoader()
     
     // Visual centering offset
     private let centerOffset: CGFloat = -35
     
     // Set this to a specific Date to test, or nil to use real time
     
-   let testDate: Date? = nil
+//   let testDate: Date? = nil
     
-//     let testDate: Date? = DateComponents(
-//         calendar: .current,
-//         year: 2025,
-//         month: 5,
-//         day: 23,
-//         hour: 9,
-//         minute: 02
-//     ).date
+     let testDate: Date? = DateComponents(
+         calendar: .current,
+         year: 2025,
+         month: 5,
+         day: 23,
+         hour: 9,
+         minute: 02
+     ).date
 
     var body: some View {
         ZStack {
@@ -87,12 +88,10 @@ struct ContentView: View {
                     Spacer()
                 } else {
                     DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
-                        print("Debug: DayTypeView completed")
                         dayTypeLoaded = true 
                     })
                         .id(refreshID)
-                    ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, onLoadingComplete: { 
-                        print("Debug: ScheduleView completed")
+                    ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
                         scheduleLoaded = true 
                     })
                         .id(refreshID)
@@ -140,9 +139,7 @@ struct ContentView: View {
     
     // Update loading state when both views are loaded
     private func updateLoadingState() {
-        print("Debug: scheduleLoaded: \(scheduleLoaded), dayTypeLoaded: \(dayTypeLoaded)")
         if scheduleLoaded && dayTypeLoaded {
-            print("Debug: Setting isLoading to false")
             isLoading = false
         }
     }
