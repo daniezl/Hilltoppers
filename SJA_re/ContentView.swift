@@ -13,18 +13,19 @@ struct ContentView: View {
     @State private var firebaseError: Bool = false
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
+    @Environment(\.scenePhase) private var scenePhase
     // Set this to a specific Date to test, or nil to use real time
     
-//   let testDate: Date? = nil
+   let testDate: Date? = nil
     
-     let testDate: Date? = DateComponents(
-         calendar: .current,
-         year: 2025,
-         month: 5,
-         day: 23,
-         hour: 9,
-         minute: 02
-     ).date
+//     let testDate: Date? = DateComponents(
+//         calendar: .current,
+//         year: 2025,
+//         month: 5,
+//         day: 23,
+//         hour: 9,
+//         minute: 02
+//     ).date
 
     var body: some View {
         VStack(spacing: 0) {
@@ -82,6 +83,13 @@ struct ContentView: View {
         }
         .refreshable {
             await refreshAll()
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                Task {
+                    await refreshAll()
+                }
+            }
         }
         .preferredColorScheme(.light)
     }
