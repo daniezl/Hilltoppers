@@ -12,6 +12,7 @@ struct ScheduleView: View {
     let testDate: Date?
     @Binding var noSchool: Bool
     @Binding var isStale: Bool
+    let onLoadingComplete: () -> Void
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -294,6 +295,10 @@ struct ScheduleView: View {
             scheduleTitle = getWeekdayTitle()
             // Keep isStale = true since Firebase failed
         }
+        
+        // Signal that loading is complete
+        print("Debug: ScheduleView calling onLoadingComplete")
+        onLoadingComplete()
     }
     
 
@@ -351,5 +356,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true))
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), onLoadingComplete: {})
 }

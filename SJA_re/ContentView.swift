@@ -13,7 +13,14 @@ struct ContentView: View {
     @State private var firebaseError: Bool = false
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
+    @State private var isLoading: Bool = true
+    @State private var scheduleLoaded: Bool = false
+    @State private var dayTypeLoaded: Bool = false
     @Environment(\.scenePhase) private var scenePhase
+    
+    // Visual centering offset
+    private let centerOffset: CGFloat = -35
+    
     // Set this to a specific Date to test, or nil to use real time
     
    let testDate: Date? = nil
@@ -28,57 +35,88 @@ struct ContentView: View {
 //     ).date
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Staleness warning banner - at the very top
-//            if isStale {
-//                HStack {
-//                    Image(systemName: "clock.arrow.circlepath")
-//                        .foregroundColor(.orange)
-//                    Text("Schedule may be outdated")
-//                        .font(.caption)
-//                        .foregroundColor(.secondary)
-//                    Spacer()
-//                    Button("Refresh") {
-//                        // Trigger refresh in child views
+        ZStack {
+            // Main content - always present
+            VStack(spacing: 0) {
+                // Staleness warning banner - at the very top
+//                if isStale {
+//                    HStack {
+//                        Image(systemName: "clock.arrow.circlepath")
+//                            .foregroundColor(.orange)
+//                        Text("Schedule may be outdated")
+//                            .font(.caption)
+//                            .foregroundColor(.secondary)
+//                        Spacer()
+//                        Button("Refresh") {
+//                            // Trigger refresh in child views
+//                        }
+//                        .font(.caption2)
+//                        .foregroundColor(.blue)
 //                    }
-//                    .font(.caption2)
-//                    .foregroundColor(.blue)
+//                    .padding(.horizontal, 16)
+//                    .padding(.vertical, 8)
+//                    .background(Color.orange.opacity(0.1))
 //                }
-//                .padding(.horizontal, 16)
-//                .padding(.vertical, 8)
-//                .background(Color.orange.opacity(0.1))
-//            }
-            
-            // Firebase error warning banner
-//            if firebaseError {
-//                HStack {
-//                    Image(systemName: "exclamationmark.triangle.fill")
-//                        .foregroundColor(.orange)
-//                    Text("Unable to connect to schedule server")
-//                        .font(.caption)
-//                        .foregroundColor(.secondary)
-//                    Spacer()
-//                    Button("Dismiss") {
-//                        firebaseError = false
+                
+                // Firebase error warning banner
+//                if firebaseError {
+//                    HStack {
+//                        Image(systemName: "exclamationmark.triangle.fill")
+//                            .foregroundColor(.orange)
+//                        Text("Unable to connect to schedule server")
+//                            .font(.caption)
+//                            .foregroundColor(.secondary)
+//                        Spacer()
+//                        Button("Dismiss") {
+//                            firebaseError = false
+//                        }
+//                        .font(.caption2)
+//                        .foregroundColor(.blue)
 //                    }
-//                    .font(.caption2)
-//                    .foregroundColor(.blue)
+//                    .padding(.horizontal, 16)
+//                    .padding(.vertical, 8)
+//                    .background(Color.orange.opacity(0.1))
 //                }
-//                .padding(.horizontal, 16)
-//                .padding(.vertical, 8)
-//                .background(Color.orange.opacity(0.1))
-//            }
+                
+                if noSchool {
+                    Spacer()
+                    Text("No school")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                        .offset(y: centerOffset)
+                    Spacer()
+                } else {
+                    DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                        print("Debug: DayTypeView completed")
+                        dayTypeLoaded = true 
+                    })
+                        .id(refreshID)
+                    ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, onLoadingComplete: { 
+                        print("Debug: ScheduleView completed")
+                        scheduleLoaded = true 
+                    })
+                        .id(refreshID)
+                }
+            }
+            .opacity(isLoading ? 0.0 : 1.0)
             
-            if noSchool {
-                Text("No school")
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary)
-                    .padding()
-            } else {
-                DayTypeView(testDate: testDate, firebaseError: $firebaseError)
-                    .id(refreshID)
-                ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale)
-                    .id(refreshID)
+            // Loading overlay
+            if isLoading {
+                Color.white
+                    .ignoresSafeArea()
+                
+                VStack {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Loading...")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    }
+                    .offset(y: centerOffset)
+                    Spacer()
+                }
             }
         }
         .refreshable {
@@ -91,18 +129,33 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: scheduleLoaded) { _ in
+            updateLoadingState()
+        }
+        .onChange(of: dayTypeLoaded) { _ in
+            updateLoadingState()
+        }
         .preferredColorScheme(.light)
+    }
+    
+    // Update loading state when both views are loaded
+    private func updateLoadingState() {
+        print("Debug: scheduleLoaded: \(scheduleLoaded), dayTypeLoaded: \(dayTypeLoaded)")
+        if scheduleLoaded && dayTypeLoaded {
+            print("Debug: Setting isLoading to false")
+            isLoading = false
+        }
     }
     
     // Centralized refresh function
     @MainActor
     func refreshAll() async {
-        // Reset the noSchool state and regenerate child views
+        // Reset loading states
+        isLoading = true
+        scheduleLoaded = false
+        dayTypeLoaded = false
         noSchool = false
         refreshID = UUID()
-        
-        // Give the views time to load
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
     }
 }
 

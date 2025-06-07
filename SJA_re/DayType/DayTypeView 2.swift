@@ -11,6 +11,7 @@ import SwiftSoup
 struct DayTypeView: View {
     let testDate: Date?
     @Binding var firebaseError: Bool
+    let onLoadingComplete: () -> Void
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -104,6 +105,7 @@ struct DayTypeView: View {
         guard let url = URL(string: urlString) else {
             self.htmlTitle = "Invalid URL"
             self.dayType = "Invalid URL"
+            onLoadingComplete()
             return
         }
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -132,23 +134,30 @@ struct DayTypeView: View {
                                     DispatchQueue.main.async {
                                         self.predicted = predictedType
                                         self.firebaseError = false
+                                        print("Debug: DayTypeView calling onLoadingComplete (prediction success)")
+                                        self.onLoadingComplete()
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
                                         self.predicted = "Error"
                                         self.firebaseError = true
+                                        print("Debug: DayTypeView calling onLoadingComplete (prediction error)")
+                                        self.onLoadingComplete()
                                     }
                                 }
                             }
                         } else {
                             DispatchQueue.main.async {
                                 self.firebaseError = false // Clear error for today's date
+                                print("Debug: DayTypeView calling onLoadingComplete (today)")
+                                self.onLoadingComplete()
                             }
                         }
                     } else {
                         self.isDateToday = nil
                         DispatchQueue.main.async {
                             self.predicted = "No DB date"
+                            self.onLoadingComplete()
                         }
                     }
                 }
@@ -159,6 +168,7 @@ struct DayTypeView: View {
                     self.dailyBulletinHTML = nil
                     self.dbDate = nil
                     self.predicted = "Failed to load"
+                    self.onLoadingComplete()
                 }
             }
         }.resume()
@@ -285,7 +295,7 @@ extension Date {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, firebaseError: .constant(false))
+        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {})
         Text("Hello, World!") // This will be right below the banner
     }
 }
