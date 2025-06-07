@@ -15,14 +15,9 @@ struct ScheduleView: View {
     @ObservedObject var loader = ScheduleLoader()
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
-    @State private var lastSuccessfulRefresh: Date? = nil
-    @State private var isRefreshing: Bool = false
     @State private var scheduleTitle: String = "Loading..."
     
-    // Timer to update 'now' every minute
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    // Timer to check for staleness and auto-refresh every 30 seconds (for testing)
-    private let refreshTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+
 
     // Use this everywhere instead of 'now'
     var currentTime: Date {
@@ -131,14 +126,6 @@ struct ScheduleView: View {
             .onAppear {
                 Task {
                     await refreshSchedule()
-                }
-            }
-            .onReceive(timer) { input in
-                now = Date()
-            }
-            .onReceive(refreshTimer) { _ in
-                Task {
-                    await checkStalenessAndRefresh()
                 }
             }
         }
@@ -251,8 +238,6 @@ struct ScheduleView: View {
     
     @MainActor
     func refreshSchedule() async {
-        isRefreshing = true
-        defer { isRefreshing = false }
         
         var firebaseSucceeded = false
         
@@ -292,16 +277,14 @@ struct ScheduleView: View {
                 }
             }
             
-            // If Firebase calls succeeded, update refresh time and clear stale flag
+            // If Firebase calls succeeded, clear stale flag
             if firebaseSucceeded {
-                lastSuccessfulRefresh = Date()
                 isStale = false
             } else {
                 // Firebase responded but no data found, fall back to local
                 print("No Firebase data found, using local schedule")
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
-                // Don't update lastSuccessfulRefresh since this is fallback
             }
             
         } catch {
@@ -313,24 +296,7 @@ struct ScheduleView: View {
         }
     }
     
-    @MainActor
-    func checkStalenessAndRefresh() async {
-        // Consider data stale if it's been more than 5 minutes since last successful refresh (reduced for testing)
-        if let lastRefresh = lastSuccessfulRefresh {
-            let fiveMinutesAgo = Date().addingTimeInterval(-5 * 60)
-            if lastRefresh < fiveMinutesAgo {
-                print("Data is stale - last refresh was \(lastRefresh)")
-                isStale = true
-                // Try to refresh automatically
-                await refreshSchedule()
-            }
-        } else {
-            // No successful refresh yet, consider stale
-            print("No successful Firebase refresh yet - marking as stale")
-            isStale = true
-            await refreshSchedule()
-        }
-    }
+
 
     func getWeekdayTitle() -> String {
         let weekday = Calendar.current.component(.weekday, from: currentTime)

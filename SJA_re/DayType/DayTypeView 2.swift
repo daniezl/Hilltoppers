@@ -19,12 +19,7 @@ struct DayTypeView: View {
     @State private var showBulletinInfo = false
     @State private var dbDate: Date? = nil
     @State private var predicted: String = "Loading..."
-    @State private var lastRefreshDate = Calendar.current.startOfDay(for: Date())
-    @State private var timer: Timer? = nil
-
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
-
-    @Environment(\.scenePhase) private var scenePhase
 
     var isWhiteDay: Bool {
         let lower = dayType.lowercased()
@@ -102,19 +97,6 @@ struct DayTypeView: View {
             self.dayType = "Loading..."
             self.isDateToday = nil
             fetchHTML(from: schoolURL)
-            startDayChangeTimer()
-        }
-        .onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
-                print("DayTypeView scenePhase .active!")
-                self.htmlTitle = "Loading..."
-                self.dayType = "Loading..."
-                self.isDateToday = nil
-                fetchHTML(from: schoolURL)
-                startDayChangeTimer()
-                let today = Calendar.current.startOfDay(for: self.testDate ?? Date())
-                lastRefreshDate = today
-            }
         }
     }
 
@@ -289,19 +271,7 @@ struct DayTypeView: View {
         }
     }
 
-    func startDayChangeTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-            let today = Calendar.current.startOfDay(for: self.testDate ?? Date())
-            if today != lastRefreshDate {
-                self.htmlTitle = "Loading..."
-                self.dayType = "Loading..."
-                self.isDateToday = nil
-                fetchHTML(from: schoolURL)
-                lastRefreshDate = today
-            }
-        }
-    }
+
 }
 
 extension Date {

@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var noSchool: Bool = false
     @State private var firebaseError: Bool = false
     @State private var isStale: Bool = false
+    @State private var refreshID = UUID()
     // Set this to a specific Date to test, or nil to use real time
     
 //   let testDate: Date? = nil
@@ -74,10 +75,26 @@ struct ContentView: View {
                     .padding()
             } else {
                 DayTypeView(testDate: testDate, firebaseError: $firebaseError)
+                    .id(refreshID)
                 ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale)
+                    .id(refreshID)
             }
         }
+        .refreshable {
+            await refreshAll()
+        }
         .preferredColorScheme(.light)
+    }
+    
+    // Centralized refresh function
+    @MainActor
+    func refreshAll() async {
+        // Reset the noSchool state and regenerate child views
+        noSchool = false
+        refreshID = UUID()
+        
+        // Give the views time to load
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
     }
 }
 
