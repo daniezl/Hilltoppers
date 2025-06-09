@@ -8,6 +8,12 @@
 import SwiftUI
 import SwiftSoup
 
+struct PredictionStep {
+    let date: Date
+    let prediction: String
+    let isToday: Bool
+}
+
 struct DayTypeView: View {
     let testDate: Date?
     @Binding var firebaseError: Bool
@@ -21,6 +27,8 @@ struct DayTypeView: View {
     @State private var showPredictionDetail = false
     @State private var dbDate: Date? = nil
     @State private var predicted: String = "Loading..."
+    @State private var calculationSteps: [PredictionStep]? = nil
+    @State private var isLoadingSteps = false
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -80,6 +88,7 @@ struct DayTypeView: View {
                         dayType: dayType,
                         dbDate: dbDate,
                         testDate: testDate,
+                        calculationSteps: calculationSteps,
                         onDismiss: { showPredictionDetail = false }
                     )
                 }
@@ -132,13 +141,25 @@ struct DayTypeView: View {
                         if self.isDateToday == false {
                             Task {
                                 do {
-                                    let predictedType = try await ScheduleTypeFetcher.predictDayType(
+                                    // Load calculation steps and use them for prediction
+                                    let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
                                         dbDayType: self.dayType,
                                         dbDate: dbDate,
                                         testDate: self.testDate
                                     )
+                                    
                                     DispatchQueue.main.async {
-                                        self.predicted = predictedType
+                                        // Cache the steps
+                                        self.calculationSteps = steps.map { step in
+                                            PredictionStep(
+                                                date: step.date,
+                                                prediction: step.prediction,
+                                                isToday: step.isToday
+                                            )
+                                        }
+                                        
+                                        // Get today's prediction from the cached steps
+                                        self.predicted = self.getTodaysPrediction() ?? "Unknown"
                                         self.firebaseError = false
                                         self.onLoadingComplete()
                                     }
@@ -285,6 +306,19 @@ struct DayTypeView: View {
             return ""
         }
     }
+    
+    func getTodaysPrediction() -> String? {
+        guard let steps = calculationSteps else { return nil }
+        
+        // Find today's step
+        for step in steps {
+            if step.isToday {
+                return step.prediction
+            }
+        }
+        
+        return nil
+    }
 
 
 }
@@ -302,6 +336,7 @@ struct PredictionDetailView: View {
     let dayType: String
     let dbDate: Date?
     let testDate: Date?
+    let calculationSteps: [PredictionStep]?
     let onDismiss: () -> Void
     
     var body: some View {
@@ -311,17 +346,12 @@ struct PredictionDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if let dbDate = dbDate {
                         VStack(alignment: .leading, spacing: 8) {
-                            VStack(alignment: .leading, spacing: 4) {
                                 Text("Latest bulletin: \(formatLongDate(dbDate)) - \(dayType)")
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
-                                Text("Day type only changes on school days (weekends are skipped)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
                             .padding(.bottom, 8)
                             
-                            if let predictions = generateCalculationSteps() {
+                            if let predictions = calculationSteps {
                                 VStack(alignment: .leading, spacing: 4) {
                                     ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
                                         HStack {
@@ -405,118 +435,7 @@ struct PredictionDetailView: View {
         return formatter.string(from: date)
     }
     
-    struct PredictionStep {
-        let date: Date
-        let prediction: String
-        let isToday: Bool
-    }
-    
-    @State private var calculationSteps: [PredictionStep]? = nil
-    @State private var isLoadingSteps = false
-    
-    func generateCalculationSteps() -> [PredictionStep]? {
-        // Return cached steps if available
-        if let steps = calculationSteps {
-            return steps
-        }
-        
-        // Start loading if not already loading
-        if !isLoadingSteps {
-            loadCalculationSteps()
-        }
-        
-        return nil
-    }
-    
-    func loadCalculationSteps() {
-        guard let dbDate = dbDate else { return }
-        
-        isLoadingSteps = true
-        Task {
-            do {
-                let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
-                    dbDayType: dayType,
-                    dbDate: dbDate,
-                    testDate: testDate
-                )
-                
-                DispatchQueue.main.async {
-                    self.calculationSteps = steps.map { step in
-                        PredictionStep(
-                            date: step.date,
-                            prediction: step.prediction,
-                            isToday: step.isToday
-                        )
-                    }
-                    self.isLoadingSteps = false
-                }
-            } catch {
-                print("Error loading calculation steps: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoadingSteps = false
-                    // Fall back to simple calculation on error
-                    self.calculationSteps = self.generateFallbackSteps()
-                }
-            }
-        }
-    }
-    
-    func generateFallbackSteps() -> [PredictionStep]? {
-        guard let dbDate = dbDate else { return nil }
-        
-        let today = testDate ?? Date()
-        let calendar = Calendar.current
-        var steps: [PredictionStep] = []
-        
-        // Start from the day after the bulletin date
-        var currentDate = calendar.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
-        var isGreen = dayType.lowercased().contains("green")
-        
-        // Generate simple predictions (fallback when Firebase fails)
-        for _ in 0..<30 {
-            let weekday = calendar.component(.weekday, from: currentDate)
-            
-            let prediction: String
-            
-            // Check if it's a weekend
-            if weekday == 1 || weekday == 7 { // Sunday or Saturday
-                prediction = "No school (weekend)"
-            } else {
-                // For regular weekdays, toggle day type
-                isGreen.toggle()
-                prediction = isGreen ? "Green Day" : "White Day"
-            }
-            
-            let isToday = calendar.isDate(currentDate, inSameDayAs: today)
-            steps.append(PredictionStep(
-                date: currentDate,
-                prediction: prediction,
-                isToday: isToday
-            ))
-            
-            // Stop once we reach today
-            if isToday { break }
-            
-            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
-        }
-        
-        return steps
-    }
-    
-    func inverseDayType(from dayType: String) -> String {
-        let lower = dayType.lowercased()
-        let hasGreen = lower.contains("green")
-        let hasWhite = lower.contains("white")
-        if hasGreen && hasWhite {
-            return "Unknown"
-        } else if hasGreen {
-            return "White Day"
-        } else if hasWhite {
-            return "Green Day"
-        } else {
-            return "Unknown"
-        }
-    }
+
 }
 
 #Preview {
