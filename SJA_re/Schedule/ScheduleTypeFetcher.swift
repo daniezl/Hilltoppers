@@ -3,11 +3,12 @@ import FirebaseFirestore
 
 struct ScheduleTypeFetcher {
     static func fetchTypeFor(date: Date) async throws -> String? {
+        print("FIREBASE CALL: fetchTypeFor")
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
-        print("Looking up Firestore for date: \(dateString)")
+        // print("Looking up Firestore for date: \(dateString)")
         
         do {
             let docRef = db.collection("special_days").document(dateString)
@@ -23,6 +24,7 @@ struct ScheduleTypeFetcher {
     }
 
     static func isInSpecialPeriod(date: Date) async throws -> Bool {
+        // print("FIREBASE CALL: isInSpecialPeriod")
         let db = Firestore.firestore()
         
         do {
@@ -45,6 +47,7 @@ struct ScheduleTypeFetcher {
     }
 
     static func loadCustomSchedule(for date: Date) async throws -> [Block]? {
+        // print("FIREBASE CALL: loadCustomSchedule")
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -72,6 +75,7 @@ struct ScheduleTypeFetcher {
 
     // Batch fetch all special days in a date range
     static func fetchSpecialDaysDict(start: Date, end: Date) async throws -> [String: String] {
+        print("FIREBASE CALL: fetchSpecialDaysDict")
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -98,6 +102,7 @@ struct ScheduleTypeFetcher {
 
     // Batch fetch all special periods overlapping a date range
     static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
+        print("FIREBASE CALL: fetchSpecialPeriods")
         let db = Firestore.firestore()
         
         do {
@@ -128,12 +133,13 @@ struct ScheduleTypeFetcher {
         dbDate: Date,
         testDate: Date?
     ) async throws -> String {
+        print("FIREBASE CALL: predictDayType")
         let today = testDate ?? Date()
         
         do {
-            print("Fetching special days from \(dbDate) to \(today)")
+            // print("Fetching special days from \(dbDate) to \(today)")
             let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
-            print("Fetching special periods from \(dbDate) to \(today)")
+            // print("Fetching special periods from \(dbDate) to \(today)")
             let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
             
             var predictIsGreen = dbDayType.lowercased().contains("green")
@@ -145,32 +151,32 @@ struct ScheduleTypeFetcher {
                 let dateString = formatter.string(from: date)
                 let isSchoolDay: Bool = {
                     if let type = specialDays[dateString] {
-                        print("Checked \(dateString): special day type = \(type)")
+                        // print("Checked \(dateString): special day type = \(type)")
                         return type != "no_school"
                     }
                     for period in specialPeriods {
                         if date >= period.0 && date <= period.1 {
-                            print("Checked \(dateString): in special period")
+                            // print("Checked \(dateString): in special period")
                             return false
                         }
                     }
                     let weekday = Calendar.current.component(.weekday, from: date)
                     if weekday == 1 || weekday == 7 {
-                        print("Checked \(dateString): weekend")
+                        // print("Checked \(dateString): weekend")
                         return false
                     }
-                    print("Checked \(dateString): regular school day")
+                    // print("Checked \(dateString): regular school day")
                     return true
                 }()
                 
                 if isSchoolDay {
-                    print("Toggled isGreen for \(dateString)")
+                    // print("Toggled isGreen for \(dateString)")
                     predictIsGreen.toggle()
                 }
                 date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
             }
             
-            print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
+            // print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
             return predictIsGreen ? "Green Day" : "White Day"
         } catch {
             print("Firebase error in predictDayType: \(error)")
@@ -184,12 +190,13 @@ struct ScheduleTypeFetcher {
         dbDate: Date,
         testDate: Date?
     ) async throws -> [(date: Date, prediction: String, isToday: Bool)] {
+        print("FIREBASE CALL: generateCalculationSteps")
         let today = testDate ?? Date()
         
         do {
-            print("Fetching special days from \(dbDate) to \(today)")
+            // print("Fetching special days from \(dbDate) to \(today)")
             let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
-            print("Fetching special periods from \(dbDate) to \(today)")
+            // print("Fetching special periods from \(dbDate) to \(today)")
             let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
             
             var steps: [(date: Date, prediction: String, isToday: Bool)] = []
@@ -207,7 +214,7 @@ struct ScheduleTypeFetcher {
                 let (isSchoolDay, dayDescription): (Bool, String) = {
                     // Check special days first
                     if let type = specialDays[dateString] {
-                        print("Checked \(dateString): special day type = \(type)")
+                        // print("Checked \(dateString): special day type = \(type)")
                         if type == "no_school" {
                             return (false, "No school (special day)")
                         } else {
@@ -218,7 +225,7 @@ struct ScheduleTypeFetcher {
                     // Check special periods
                     for period in specialPeriods {
                         if date >= period.0 && date <= period.1 {
-                            print("Checked \(dateString): in special period")
+                            // print("Checked \(dateString): in special period")
                             return (false, "No school (break)")
                         }
                     }
@@ -226,18 +233,18 @@ struct ScheduleTypeFetcher {
                     // Check if weekend
                     let weekday = Calendar.current.component(.weekday, from: date)
                     if weekday == 1 || weekday == 7 {
-                        print("Checked \(dateString): weekend")
+                        // print("Checked \(dateString): weekend")
                         return (false, "No school (weekend)")
                     }
                     
                     // Regular school day
-                    print("Checked \(dateString): regular school day")
+                    // print("Checked \(dateString): regular school day")
                     return (true, "Regular school day")
                 }()
                 
                 let prediction: String
                 if isSchoolDay {
-                    print("Toggled isGreen for \(dateString)")
+                    // print("Toggled isGreen for \(dateString)")
                     predictIsGreen.toggle()
                     prediction = predictIsGreen ? "Green Day" : "White Day"
                 } else {
