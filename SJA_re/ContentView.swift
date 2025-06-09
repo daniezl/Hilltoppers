@@ -82,12 +82,12 @@ struct ContentView: View {
 //                }
                 
                 if noSchool {
-                    Spacer()
-                    Text("No school")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                        .offset(y: centerOffset)
-                    Spacer()
+                        Text("No school")
+                            .font(.largeTitle)
+                            .foregroundColor(.secondary)
+                    .offset(y: centerOffset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
                 } else {
                     DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                         dayTypeLoaded = true 
@@ -151,15 +151,17 @@ struct ContentView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    // Only respond to downward drags from near the top
-                    if value.startLocation.y < 150 && value.translation.height > 0 {
+                    // On no_school days, allow pulling from anywhere; otherwise only from top
+                    let canPull = noSchool || value.startLocation.y < 200
+                    if canPull && value.translation.height > 0 {
                         dragOffset = value.translation.height
                         isRefreshReady = value.translation.height > 80
                     }
                 }
                 .onEnded { value in
-                    // Trigger refresh if pulled far enough
-                    if value.startLocation.y < 150 && value.translation.height > 80 {
+                    // On no_school days, allow pulling from anywhere; otherwise only from top
+                    let canPull = noSchool || value.startLocation.y < 200
+                    if canPull && value.translation.height > 80 {
                         Task {
                             await refreshAll()
                         }
@@ -190,11 +192,16 @@ struct ContentView: View {
     
     // Update loading state when both views are loaded
     private func updateLoadingState() {
-        if scheduleLoaded && dayTypeLoaded {
+        // On no_school days, only dayTypeLoaded matters
+        let shouldFinishLoading = noSchool ? dayTypeLoaded : (scheduleLoaded && dayTypeLoaded)
+        
+        if shouldFinishLoading {
             isLoading = false
             
-            // Trigger schedule blocks animation immediately after loading completes
-            scheduleLoader.showBlocks = true
+            // Only trigger animation if there are blocks to show
+            if !noSchool {
+                scheduleLoader.showBlocks = true
+            }
         }
     }
     
