@@ -14,6 +14,7 @@ struct ScheduleView: View {
     @Binding var isStale: Bool
     @ObservedObject var loader: ScheduleLoader
     let onLoadingComplete: () -> Void
+    let onPullRefresh: () async -> Void
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
@@ -133,6 +134,9 @@ struct ScheduleView: View {
                     .offset(x: loader.showBlocks ? 0 : -400)
                     .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.1), value: loader.showBlocks)
                 }
+            }
+            .refreshable {
+                await onPullRefresh()
             }
             .onAppear {
                 loader.showBlocks = false
@@ -387,5 +391,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {})
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {})
 }
