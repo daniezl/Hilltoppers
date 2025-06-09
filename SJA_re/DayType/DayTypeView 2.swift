@@ -56,12 +56,10 @@ struct DayTypeView: View {
                         )
                     VStack(spacing: 0) {
                         HStack(spacing: 0) {
-                            Text("This is a ")
-                            Text("calculation")
+                            Text("This may not be accurate.")
                                 .foregroundColor(.blue)
                                 .underline()
                                 .onTapGesture { showPredictionDetail = true }
-                            Text(".")
                         }
                     }
                     .font(.caption)
@@ -309,54 +307,13 @@ struct PredictionDetailView: View {
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Day Type Prediction Algorithm")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.bottom, 10)
                 
                 VStack(alignment: .leading, spacing: 16) {
-                    // Last bulletin info
                     if let dbDate = dbDate {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Step 1: Last Posted Bulletin")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                            
-                            HStack {
-                                Text("Date:")
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Text(formatLongDate(dbDate))
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
-                            
-                            HStack {
-                                Text("Day Type:")
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Text(dayType)
-                                    .foregroundColor(dayType.contains("Green") ? .green : .primary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
-                        }
-                        
-                        Divider()
-                        
-                        // Prediction steps
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Step 2: Extrapolate Forward")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                            
-                            Text("School days alternate between Green Day ↔ White Day")
+                            Text("Latest bulletin: \(formatLongDate(dbDate)) - \(dayType)")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.primary)
                                 .padding(.bottom, 8)
                             
                             if let predictions = generatePredictionSteps() {
@@ -404,16 +361,14 @@ struct PredictionDetailView: View {
                                 .foregroundColor(.orange)
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("• Predictions are based on the last bulletin only")
-                                Text("• School may change the schedule without notice")
-                                Text("• Special events may override the normal pattern")
-                                Text("• Always check the official school website")
+                                Text("• Calculations are based on the latest bulletin")
+                                Text("• Please confirm that the days listed above are correct")
                             }
                             .font(.caption)
                             .foregroundColor(.secondary)
                         }
                     } else {
-                        Text("No bulletin date available for predictions")
+                        Text("No bulletin date available for calculations")
                             .foregroundColor(.secondary)
                     }
                 }
@@ -462,8 +417,8 @@ struct PredictionDetailView: View {
         var currentDate = calendar.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
         var currentDayType = dayType
         
-        // Generate up to 10 days of predictions
-        for _ in 0..<10 {
+        // Generate predictions until we reach today (or max 30 days for safety)
+        for _ in 0..<30 {
             let weekday = calendar.component(.weekday, from: currentDate)
             
             let prediction: String
@@ -481,6 +436,9 @@ struct PredictionDetailView: View {
                 prediction: prediction,
                 isToday: isToday
             ))
+            
+            // Stop once we reach today
+            if isToday { break }
             
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
         }
