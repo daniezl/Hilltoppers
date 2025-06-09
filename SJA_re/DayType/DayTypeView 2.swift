@@ -18,6 +18,7 @@ struct DayTypeView: View {
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
     @State private var showBulletinInfo = false
+    @State private var showPredictionDetail = false
     @State private var dbDate: Date? = nil
     @State private var predicted: String = "Loading..."
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
@@ -55,14 +56,13 @@ struct DayTypeView: View {
                         )
                     VStack(spacing: 0) {
                         HStack(spacing: 0) {
-                            Text("This is a prediction based on the ")
-                            Text("last posted day")
+                            Text("This is a ")
+                            Text("calculation")
                                 .foregroundColor(.blue)
                                 .underline()
-                                .onTapGesture { showBulletinInfo = true }
+                                .onTapGesture { showPredictionDetail = true }
                             Text(".")
                         }
-                        Text("It may not be accurate.")
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -75,6 +75,14 @@ struct DayTypeView: View {
                         title: Text("\(dayType)"),
                         message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
                         dismissButton: .default(Text("OK"))
+                    )
+                }
+                .sheet(isPresented: $showPredictionDetail) {
+                    PredictionDetailView(
+                        dayType: dayType,
+                        dbDate: dbDate,
+                        testDate: testDate,
+                        onDismiss: { showPredictionDetail = false }
                     )
                 }
             } else {
@@ -248,6 +256,8 @@ struct DayTypeView: View {
         }
         return "Unknown"
     }
+    
+
 
     func daysAwayFromBulletin() -> String {
         guard let html = fullHTML,
@@ -290,9 +300,212 @@ extension Date {
     }
 }
 
+struct PredictionDetailView: View {
+    let dayType: String
+    let dbDate: Date?
+    let testDate: Date?
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Day Type Prediction Algorithm")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 10)
+                
+                VStack(alignment: .leading, spacing: 16) {
+                    // Last bulletin info
+                    if let dbDate = dbDate {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Step 1: Last Posted Bulletin")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                            
+                            HStack {
+                                Text("Date:")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text(formatLongDate(dbDate))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                            
+                            HStack {
+                                Text("Day Type:")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text(dayType)
+                                    .foregroundColor(dayType.contains("Green") ? .green : .primary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        
+                        Divider()
+                        
+                        // Prediction steps
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Step 2: Extrapolate Forward")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                            
+                            Text("School days alternate between Green Day ↔ White Day")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 8)
+                            
+                            if let predictions = generatePredictionSteps() {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
+                                        HStack {
+                                            Text("\(formatShortDate(step.date))")
+                                                .font(.caption)
+                                                .fontWeight(.medium)
+                                                .frame(width: 40, alignment: .leading)
+                                            
+                                            Image(systemName: "arrow.right")
+                                                .font(.caption2)
+                                                .foregroundColor(.gray)
+                                            
+                                            Text(step.prediction)
+                                                .font(.caption)
+                                                .fontWeight(step.isToday ? .bold : .regular)
+                                                .foregroundColor(step.isToday ? .primary : .secondary)
+                                            
+                                            if step.isToday {
+                                                Text("(Today)")
+                                                    .font(.caption2)
+                                                    .foregroundColor(.blue)
+                                                    .fontWeight(.medium)
+                                            }
+                                            
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 4)
+                                        .background(step.isToday ? Color.blue.opacity(0.1) : Color.clear)
+                                        .cornerRadius(6)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        // Disclaimer
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Important Notes")
+                                .font(.headline)
+                                .foregroundColor(.orange)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("• Predictions are based on the last bulletin only")
+                                Text("• School may change the schedule without notice")
+                                Text("• Special events may override the normal pattern")
+                                Text("• Always check the official school website")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("No bulletin date available for predictions")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Calculation Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onDismiss()
+                    }
+                }
+            }
+        }
+    }
+    
+    func formatLongDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy"
+        return formatter.string(from: date)
+    }
+    
+    func formatShortDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d"
+        return formatter.string(from: date)
+    }
+    
+    struct PredictionStep {
+        let date: Date
+        let prediction: String
+        let isToday: Bool
+    }
+    
+    func generatePredictionSteps() -> [PredictionStep]? {
+        guard let dbDate = dbDate else { return nil }
+        
+        let today = testDate ?? Date()
+        let calendar = Calendar.current
+        var steps: [PredictionStep] = []
+        
+        // Start from the day after the bulletin date
+        var currentDate = calendar.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
+        var currentDayType = dayType
+        
+        // Generate up to 10 days of predictions
+        for _ in 0..<10 {
+            let weekday = calendar.component(.weekday, from: currentDate)
+            
+            let prediction: String
+            if weekday == 1 || weekday == 7 { // Sunday or Saturday
+                prediction = "No school (weekend)"
+            } else {
+                // Alternate day types for school days
+                currentDayType = inverseDayType(from: currentDayType)
+                prediction = currentDayType
+            }
+            
+            let isToday = calendar.isDate(currentDate, inSameDayAs: today)
+            steps.append(PredictionStep(
+                date: currentDate,
+                prediction: prediction,
+                isToday: isToday
+            ))
+            
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+        
+        return steps
+    }
+    
+    func inverseDayType(from dayType: String) -> String {
+        let lower = dayType.lowercased()
+        let hasGreen = lower.contains("green")
+        let hasWhite = lower.contains("white")
+        if hasGreen && hasWhite {
+            return "Unknown"
+        } else if hasGreen {
+            return "White Day"
+        } else if hasWhite {
+            return "Green Day"
+        } else {
+            return "Unknown"
+        }
+    }
+}
+
 #Preview {
     VStack(spacing: 0) {
         DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {})
-        Text("Hello, World!") // This will be right below the banner
     }
 }
