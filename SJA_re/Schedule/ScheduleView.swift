@@ -17,6 +17,7 @@ struct ScheduleView: View {
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
+    @State private var timeUpdateTimer: Timer?
 
     
 
@@ -135,9 +136,13 @@ struct ScheduleView: View {
             }
             .onAppear {
                 loader.showBlocks = false
+                startTimeUpdateTimer()
                 Task {
                     await refreshSchedule()
                 }
+            }
+            .onDisappear {
+                stopTimeUpdateTimer()
             }
         }
     }
@@ -322,6 +327,23 @@ struct ScheduleView: View {
         case 6: return "Friday Schedule"
         default: return "Weekday Schedule"
         }
+    }
+    
+    // MARK: - Time Update Timer Functions
+    
+    func startTimeUpdateTimer() {
+        // Stop any existing timer
+        stopTimeUpdateTimer()
+        
+        // Create a timer that updates every second
+        timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            now = Date()
+        }
+    }
+    
+    func stopTimeUpdateTimer() {
+        timeUpdateTimer?.invalidate()
+        timeUpdateTimer = nil
     }
 }
 
