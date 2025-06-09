@@ -177,4 +177,86 @@ struct ScheduleTypeFetcher {
             throw error
         }
     }
+    
+    // Generate detailed calculation steps showing day-by-day breakdown
+    static func generateCalculationSteps(
+        dbDayType: String,
+        dbDate: Date,
+        testDate: Date?
+    ) async throws -> [(date: Date, prediction: String, isToday: Bool)] {
+        let today = testDate ?? Date()
+        
+        do {
+            print("Fetching special days from \(dbDate) to \(today)")
+            let specialDays = try await fetchSpecialDaysDict(start: dbDate, end: today)
+            print("Fetching special periods from \(dbDate) to \(today)")
+            let specialPeriods = try await fetchSpecialPeriods(start: dbDate, end: today)
+            
+            var steps: [(date: Date, prediction: String, isToday: Bool)] = []
+            var predictIsGreen = dbDayType.lowercased().contains("green")
+            var date = Calendar.current.date(byAdding: .day, value: 1, to: dbDate) ?? dbDate
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            
+            // Limit to 30 days for safety
+            var dayCount = 0
+            while date <= today && dayCount < 30 {
+                let dateString = formatter.string(from: date)
+                let isToday = Calendar.current.isDate(date, inSameDayAs: today)
+                
+                let (isSchoolDay, dayDescription): (Bool, String) = {
+                    // Check special days first
+                    if let type = specialDays[dateString] {
+                        print("Checked \(dateString): special day type = \(type)")
+                        if type == "no_school" {
+                            return (false, "No school (special day)")
+                        } else {
+                            return (true, type.capitalized.replacingOccurrences(of: "_", with: " "))
+                        }
+                    }
+                    
+                    // Check special periods
+                    for period in specialPeriods {
+                        if date >= period.0 && date <= period.1 {
+                            print("Checked \(dateString): in special period")
+                            return (false, "No school (break)")
+                        }
+                    }
+                    
+                    // Check if weekend
+                    let weekday = Calendar.current.component(.weekday, from: date)
+                    if weekday == 1 || weekday == 7 {
+                        print("Checked \(dateString): weekend")
+                        return (false, "No school (weekend)")
+                    }
+                    
+                    // Regular school day
+                    print("Checked \(dateString): regular school day")
+                    return (true, "Regular school day")
+                }()
+                
+                let prediction: String
+                if isSchoolDay {
+                    print("Toggled isGreen for \(dateString)")
+                    predictIsGreen.toggle()
+                    prediction = predictIsGreen ? "Green Day" : "White Day"
+                } else {
+                    prediction = dayDescription
+                }
+                
+                steps.append((date: date, prediction: prediction, isToday: isToday))
+                
+                // Stop if we've reached today
+                if isToday { break }
+                
+                date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
+                dayCount += 1
+            }
+            
+            return steps
+        } catch {
+            print("Firebase error in generateCalculationSteps: \(error)")
+            throw error
+        }
+    }
 } 
