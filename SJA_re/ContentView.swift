@@ -95,6 +95,10 @@ struct ContentView: View {
                         scheduleLoaded = true 
                     })
                         .id(refreshID)
+                        .onAppear {
+                            // Reset animation state when view appears
+                            scheduleLoader.showBlocks = false
+                        }
                 }
             }
             .opacity(isLoading ? 0.0 : 1.0)
@@ -141,6 +145,9 @@ struct ContentView: View {
     private func updateLoadingState() {
         if scheduleLoaded && dayTypeLoaded {
             isLoading = false
+            
+            // Trigger schedule blocks animation immediately after loading completes
+            scheduleLoader.showBlocks = true
         }
     }
     
@@ -152,6 +159,7 @@ struct ContentView: View {
         scheduleLoaded = false
         dayTypeLoaded = false
         noSchool = false
+        scheduleLoader.showBlocks = false
         refreshID = UUID()
     }
 }

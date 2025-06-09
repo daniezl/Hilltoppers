@@ -17,12 +17,18 @@ struct ScheduleView: View {
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
+
     
 
 
     // Use this everywhere instead of 'now'
     var currentTime: Date {
         testDate ?? now
+    }
+    
+    // Always show all blocks, control visibility with opacity/transform
+    var displayBlocks: [Block] {
+        loader.blocks
     }
 
     var body: some View {
@@ -95,7 +101,7 @@ struct ScheduleView: View {
             }
             
             List {
-                ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
+                ForEach(Array(displayBlocks.enumerated()), id: \.element.id) { index, block in
                     Section(header: BlockHeader(
                         block: block,
                         isCurrent: isCurrent(block: block),
@@ -122,9 +128,13 @@ struct ScheduleView: View {
                             }
                         }
                     }
+                    .opacity(loader.showBlocks ? 1.0 : 0.0)
+                    .offset(x: loader.showBlocks ? 0 : -400)
+                    .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.1), value: loader.showBlocks)
                 }
             }
             .onAppear {
+                loader.showBlocks = false
                 Task {
                     await refreshSchedule()
                 }

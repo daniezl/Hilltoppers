@@ -2,6 +2,7 @@ import Foundation
 
 class ScheduleLoader: ObservableObject {
     @Published var blocks: [Block] = []
+    @Published var showBlocks: Bool = false
 
     func loadSchedule(from filename: String) {
         guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
