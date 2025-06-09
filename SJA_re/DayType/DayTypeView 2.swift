@@ -73,7 +73,7 @@ struct DayTypeView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 8)
+                    .padding(.top, -16)
                 }
                 .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
