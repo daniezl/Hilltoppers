@@ -64,9 +64,9 @@ struct DayTypeView: View {
                         )
                     VStack(spacing: 0) {
                         HStack(spacing: 0) {
-                            Text("This may not be accurate.")
+                            Spacer()
+                            Text("Learn more")
                                 .foregroundColor(.blue)
-                                .underline()
                                 .onTapGesture { showPredictionDetail = true }
                         }
                     }
