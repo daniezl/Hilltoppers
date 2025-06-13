@@ -92,62 +92,56 @@ struct ScheduleView: View {
                 }
             }
             
-            // Schedule title - only show when there's actually a schedule
             if !noSchool {
-                Text(scheduleTitle)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 40)
-                    .padding(.bottom, 8)
-            }
-            
-            List {
-                ForEach(Array(displayBlocks.enumerated()), id: \.element.id) { index, block in
-                    Section(header: BlockHeader(
-                        block: block,
-                        isCurrent: isCurrent(block: block),
-                        isNext: isNextBlock(index: index),
-                        expanded: expandedBlockID == block.id,
-                        onTap: {
-                            withAnimation {
-                                expandedBlockID = expandedBlockID == block.id ? nil : block.id
-                            }
-                        }
-                    )) {
-                        if let subBlocks = block.subBlocks, expandedBlockID == block.id {
-                            ForEach(subBlocks) { sub in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Schedule title
+                        Text(scheduleTitle)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        
+                        // Schedule card
+                        VStack(spacing: 0) {
+                            ForEach(loader.blocks) { block in
                                 HStack {
-                                    Text(sub.name)
+                                    Text(block.name)
+                                        .font(.body.weight(.medium))
                                     Spacer()
-                                    Text("\(sub.start) - \(sub.end)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                    Text("\(block.start)-\(block.end)")
+                                        .font(.body)
+//                                        .foregroundColor(.secondary)
+                                    
+                                    if block.subBlocks != nil {
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
-                                .padding(.vertical, 2)
-                                .background(isCurrent(subBlock: sub) ? Color.green.opacity(0.2) : Color.clear)
-                                .cornerRadius(8)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10) //between blocks
+                                .background(isCurrent(block: block) ? Color.green.opacity(0.15) : Color.clear)
                             }
                         }
+                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                        .cornerRadius(12)
                     }
-                    .opacity(loader.showBlocks ? 1.0 : 0.0)
-                    .offset(x: loader.showBlocks ? 0 : -400)
-                    .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.1), value: loader.showBlocks)
+                    .padding(.horizontal, 32) //sides
+                    .padding(.top, 8)
+                }
+                .refreshable {
+                    await onPullRefresh()
                 }
             }
-            .refreshable {
-                await onPullRefresh()
+        }
+        .onAppear {
+            loader.showBlocks = false
+            startTimeUpdateTimer()
+            Task {
+                await refreshSchedule()
             }
-            .onAppear {
-                loader.showBlocks = false
-                startTimeUpdateTimer()
-                Task {
-                    await refreshSchedule()
-                }
-            }
-            .onDisappear {
-                stopTimeUpdateTimer()
-            }
+        }
+        .onDisappear {
+            stopTimeUpdateTimer()
         }
     }
 
