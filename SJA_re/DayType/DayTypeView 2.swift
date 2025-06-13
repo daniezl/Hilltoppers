@@ -60,20 +60,17 @@ struct DayTypeView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.gray.opacity(0.2))
+                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(red: 245/255, green: 246/255, blue: 245/255))
                         )
-                    VStack(spacing: 0) {
-                        HStack(spacing: 0) {
-                            Spacer()
-                            Text("Learn more")
-                                .foregroundColor(.blue)
-                                .onTapGesture { showPredictionDetail = true }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
+                                .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.white)
+                                .padding(4) // inset the dashed border
+                        )
+                        .onTapGesture { 
+                            showPredictionDetail = true 
                         }
-                    }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, -16)
                 }
                 .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
@@ -103,7 +100,7 @@ struct DayTypeView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(isGreenDay
                                 ? Color(red: 20/255, green: 54/255, blue: 27/255) // Green Day
-                                : Color(red: 248/255, green: 244/255, blue: 244/255) // White Day: #f8f4f4
+                                : Color(red: 245/255, green: 246/255, blue: 245/255) // White Day: same as schedule card
                             )
                     )
             }
