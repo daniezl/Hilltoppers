@@ -114,6 +114,7 @@ struct ScheduleView: View {
                                     HStack {
                                         Text(block.name)
                                             .font(.callout.weight(.medium))
+                                            .italic(!isRegularClassBlock(block.name))
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
@@ -259,6 +260,14 @@ struct ScheduleView: View {
         }
         
         return false
+    }
+    
+    func isRegularClassBlock(_ blockName: String) -> Bool {
+        // Check if it's a regular class block (A Block, B Block, C Block, etc.)
+        let pattern = "^[A-Z] Block$"
+        let regex = try? NSRegularExpression(pattern: pattern)
+        let range = NSRange(location: 0, length: blockName.utf16.count)
+        return regex?.firstMatch(in: blockName, options: [], range: range) != nil
     }
 
     func isCurrent(subBlock: SubBlock) -> Bool {
