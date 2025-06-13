@@ -114,7 +114,7 @@ struct ScheduleView: View {
                                     HStack {
                                         Text(block.name)
                                             .font(.callout.weight(.medium))
-                                            .italic(!isRegularClassBlock(block.name))
+                                            .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
