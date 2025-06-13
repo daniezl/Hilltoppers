@@ -40,66 +40,14 @@ struct ScheduleView: View {
                     .font(.largeTitle)
                     .foregroundColor(.secondary)
                     .padding()
-            } else if let (parent, sub, secondsLeft) = currentSubBlockInfo() {
-                VStack {
-                    Text("Now: \(sub.name)")
-                        .font(.headline)
-                    Text("Ends in \(formatTime(secondsLeft))")
-                        .font(.subheadline)
-                        .foregroundColor(.red)
-                }
-                .padding(.vertical, 24)
-            } else if let (currentBlock, secondsLeft) = currentBlockInfo() {
-                VStack {
-                    Text("Now: \(currentBlock.name)")
-                        .font(.headline)
-                    Text("Ends in \(formatTime(secondsLeft))")
-                        .font(.subheadline)
-                        .foregroundColor(.red)
-                }
-                .padding(.vertical, 24)
-            } else if let (nextBlock, seconds) = nextBlockInfo(), seconds <= 3600 {
-                VStack {
-                    Text("Next: \(nextBlock.name)")
-                        .font(.headline)
-                    Text("Starts in \(formatTime(seconds))")
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                }
-                .padding(.vertical, 24)
             } else {
-                // Determine if before first block or after all blocks
-                if let lastBlock = loader.blocks.last, let lastEnd = timeToday(lastBlock.end), currentTime >= lastEnd {
-                    VStack(spacing: 0) {
-                        Text("School has ended, have a good day!")
-                            .font(.headline)
-                            // .foregroundColor(.black)
-                            // .padding()
-                        Button(action: {}) {
-                            Text("Schedule for tomorrow")
-                                .font(.body)
-                                .foregroundColor(.blue)
-                                // .padding()
-                        }
-                        .padding(.top, 2)
-                    }
-                    .padding(.vertical, 23)
-                } else {
-                    // Always reserve the same space even if no message
-                    Color.clear
-                        .frame(height: 89) // Adjust to match your .padding(.vertical, 24)
-                        // 24 + 41(text) + 24
-                }
-            }
-            
-            if !noSchool {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         // Schedule card
                         VStack(spacing: 0) {
                             // Schedule title inside card
                             HStack {
-                                Text(scheduleTitle)
+                                Text(scheduleTitle.lowercased() == "abdec" ? scheduleTitle.uppercased() : scheduleTitle)
                                     .font(.headline)
                                     .fontWeight(.bold)
                                 Spacer()
@@ -108,12 +56,43 @@ struct ScheduleView: View {
                             .padding(.top, 16)
                             .padding(.bottom, 8)
                             
+                            Divider()
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8) // between title and blocks
+                            
                                                         ForEach(loader.blocks) { block in
                                 VStack(spacing: 0) {
+                                    // Time info above highlighted block (only if dropdown is closed)
+                                    if expandedBlockID != block.id {
+                                        if isCurrent(block: block) {
+                                            if let (currentBlock, secondsLeft) = currentBlockInfo() {
+                                                HStack {
+                                                    Spacer()
+                                                    Text("Ends in \(formatTime(secondsLeft))")
+                                                        .font(.caption)
+                                                        .foregroundColor(.green)
+                                                }
+                                                .padding(.horizontal, 32) // align with highlight edge
+                                                .padding(.bottom, 4)
+                                            }
+                                        } else if isNextUpcomingBlock(block) {
+                                            if let (nextBlock, seconds) = nextBlockInfo() {
+                                                HStack {
+                                                    Spacer()
+                                                    Text("Starts in \(formatTime(seconds))")
+                                                        .font(.caption)
+                                                        .foregroundColor(.blue)
+                                                }
+                                                .padding(.horizontal, 32) // align with dashed line edge
+                                                .padding(.bottom, 4)
+                                            }
+                                        }
+                                    }
+                                    
                                     // Main block row
                                     HStack {
                                         Text(block.name)
-                                            .font(.callout.weight(.medium))
+                                            .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
                                             .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
@@ -121,9 +100,14 @@ struct ScheduleView: View {
                                             .monospacedDigit()
                                             .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
                                         
+                                        // Consistent chevron space for alignment
                                         if block.subBlocks != nil {
                                             Image(systemName: expandedBlockID == block.id ? "chevron.down" : "chevron.right")
                                                 .font(.system(size: 12, weight: .semibold))
+                                        } else {
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .opacity(0) // invisible but takes up space
                                         }
                                     }
                                     .padding(.horizontal, 16)
@@ -147,10 +131,34 @@ struct ScheduleView: View {
                                         }
                                     }
                                     
+                                    // Matching bottom padding for current blocks (to balance the timer above)
+                                    if isCurrent(block: block) && expandedBlockID != block.id {
+                                        Color.clear
+                                            .frame(height: 8) // matches timer text height + padding
+                                    }
+                                    
                                     // SubBlocks dropdown
                                     if expandedBlockID == block.id, let subBlocks = block.subBlocks {
                                         VStack(spacing: 0) {
                                             ForEach(subBlocks) { sub in
+                                                VStack(spacing: 0) {
+                                                    // Time info above current subblock
+                                                    if isCurrent(subBlock: sub) {
+                                                        if let end = timeToday(sub.end) {
+                                                            let secondsLeft = Int(end.timeIntervalSince(currentTime))
+                                                            HStack {
+                                                                Spacer()
+                                                                Text("Ends in \(formatTime(secondsLeft))")
+                                                                    .font(.caption)
+                                                                    .foregroundColor(.green)
+                                                            }
+                                                            .padding(.leading, 32) // align with subblock content
+                                                            .padding(.trailing, 34) // align with subblock times
+                                                            .padding(.bottom, 4)
+                                                        }
+                                                    }
+                                                    
+                                                    // Subblock row
                                                 HStack {
                                                     Text(sub.name)
                                                         .font(.caption)
@@ -160,6 +168,11 @@ struct ScheduleView: View {
                                                         .font(.caption)
                                                         .monospacedDigit()
                                                         .foregroundColor(.secondary)
+                                                    
+                                                    // Invisible chevron for alignment
+                                                    Image(systemName: "chevron.right")
+                                                        .font(.system(size: 12, weight: .semibold))
+                                                        .opacity(0)
                                                 }
                                                 .padding(.leading, 32) // indent from left
                                                 .padding(.trailing, 16) // same as main blocks
@@ -169,6 +182,7 @@ struct ScheduleView: View {
                                                         .fill(isCurrent(subBlock: sub) ? Color.green.opacity(0.1) : Color.clear)
                                                         .padding(.horizontal, 8)
                                                 )
+                                                }
                                             }
                                         }
                                         .background(Color.gray.opacity(0.05))
