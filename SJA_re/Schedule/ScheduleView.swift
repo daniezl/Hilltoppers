@@ -200,9 +200,6 @@ struct ScheduleView: View {
                     .padding(.trailing, 30) // less space on right
                     .padding(.top, 8)
                 }
-                .refreshable {
-                    await onPullRefresh()
-                }
             }
         }
         .onAppear {

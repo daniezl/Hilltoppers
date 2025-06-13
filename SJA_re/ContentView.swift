@@ -40,84 +40,55 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // Main content - always present
-            VStack(spacing: 0) {
-                // Staleness warning banner - at the very top
-//                if isStale {
-//                    HStack {
-//                        Image(systemName: "clock.arrow.circlepath")
-//                            .foregroundColor(.orange)
-//                        Text("Schedule may be outdated")
-//                            .font(.caption)
-//                            .foregroundColor(.secondary)
-//                        Spacer()
-//                        Button("Refresh") {
-//                            // Trigger refresh in child views
-//                        }
-//                        .font(.caption2)
-//                        .foregroundColor(.blue)
-//                    }
-//                    .padding(.horizontal, 16)
-//                    .padding(.vertical, 8)
-//                    .background(Color.orange.opacity(0.1))
-//                }
-                
-                // Firebase error warning banner
-//                if firebaseError {
-//                    HStack {
-//                        Image(systemName: "exclamationmark.triangle.fill")
-//                            .foregroundColor(.orange)
-//                        Text("Unable to connect to schedule server")
-//                            .font(.caption)
-//                            .foregroundColor(.secondary)
-//                        Spacer()
-//                        Button("Dismiss") {
-//                            firebaseError = false
-//                        }
-//                        .font(.caption2)
-//                        .foregroundColor(.blue)
-//                    }
-//                    .padding(.horizontal, 16)
-//                    .padding(.vertical, 8)
-//                    .background(Color.orange.opacity(0.1))
-//                }
-                
+            Group {
                 if noSchool {
-                        Text("No school")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondary)
-                    .offset(y: centerOffset)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
+                    Text("No school")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                        .offset(y: centerOffset)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
                 } else {
-                    DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
-                        dayTypeLoaded = true 
-                    })
-                        .id(refreshID)
-                    ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                        scheduleLoaded = true 
-                    }, onPullRefresh: {
-                        await refreshAll()
-                    })
-                        .id(refreshID)
-                        .onAppear {
-                            // Reset animation state when view appears
-                            scheduleLoader.showBlocks = false
+                    VStack {
+                        // Spacer()
+                        VStack(spacing: 20) {
+                            DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                                dayTypeLoaded = true 
+                            })
+                                .id(refreshID)
+                            ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
+                                scheduleLoaded = true 
+                            }, onPullRefresh: {
+                                Task {
+                                    await refreshAll()
+                                }
+                            })
+                                .id(refreshID)
+                                .onAppear {
+                                    // Reset animation state when view appears
+                                    scheduleLoader.showBlocks = false
+                                }
                         }
+                        // Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .opacity(isLoading ? 0.0 : 1.0)
-            
+                
             // Loading overlay
             if isLoading {
-                Color.white
-                    .ignoresSafeArea()
-                
-                VStack {
-                    Spacer()
+                ZStack {
+                    Color.white
+                        .ignoresSafeArea()
+                    
+                    VStack {
+                        Spacer()
                         ProgressView()
                             .scaleEffect(1.5)
-                    .offset(y: centerOffset)
-                    Spacer()
+                            .offset(y: centerOffset)
+                        Spacer()
+                    }
                 }
             }
             
@@ -148,20 +119,19 @@ struct ContentView: View {
         }
         .background(Color.clear)
         .contentShape(Rectangle())
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    // On no_school days, allow pulling from anywhere; otherwise only from top
-                    let canPull = noSchool || value.startLocation.y < 200
-                    if canPull && value.translation.height > 0 {
+                    // Allow pulling from anywhere on the screen
+                    if value.translation.height > 0 {
                         dragOffset = value.translation.height
                         isRefreshReady = value.translation.height > 80
                     }
                 }
                 .onEnded { value in
-                    // On no_school days, allow pulling from anywhere; otherwise only from top
-                    let canPull = noSchool || value.startLocation.y < 200
-                    if canPull && value.translation.height > 80 {
+                    // Allow pulling from anywhere on the screen
+                    if value.translation.height > 80 {
                         Task {
                             await refreshAll()
                         }
