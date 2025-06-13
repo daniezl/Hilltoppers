@@ -119,6 +119,7 @@ struct ScheduleView: View {
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
                                             .monospacedDigit()
+                                            .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
                                         
                                         if block.subBlocks != nil {
                                             Image(systemName: expandedBlockID == block.id ? "chevron.down" : "chevron.right")
@@ -148,26 +149,31 @@ struct ScheduleView: View {
                                     
                                     // SubBlocks dropdown
                                     if expandedBlockID == block.id, let subBlocks = block.subBlocks {
-                                        ForEach(subBlocks) { sub in
-                                            HStack {
-                                                Text(sub.name)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                                Spacer()
-                                                Text("\(sub.start)-\(sub.end)")
-                                                    .font(.caption)
-                                                    .monospacedDigit()
-                                                    .foregroundColor(.secondary)
+                                        VStack(spacing: 0) {
+                                            ForEach(subBlocks) { sub in
+                                                HStack {
+                                                    Text(sub.name)
+                                                        .font(.caption)
+                                                        .foregroundColor(.secondary)
+                                                    Spacer()
+                                                    Text("\(sub.start)-\(sub.end)")
+                                                        .font(.caption)
+                                                        .monospacedDigit()
+                                                        .foregroundColor(.secondary)
+                                                }
+                                                .padding(.leading, 32) // indent from left
+                                                .padding(.trailing, 16) // same as main blocks
+                                                .padding(.vertical, 6)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .fill(isCurrent(subBlock: sub) ? Color.green.opacity(0.1) : Color.clear)
+                                                        .padding(.horizontal, 8)
+                                                )
                                             }
-                                            .padding(.leading, 32) // indent from left
-                                            .padding(.trailing, 16) // same as main blocks
-                                            .padding(.vertical, 6)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 6)
-                                                    .fill(isCurrent(subBlock: sub) ? Color.green.opacity(0.1) : Color.clear)
-                                                    .padding(.horizontal, 8)
-                                            )
                                         }
+                                        .background(Color.gray.opacity(0.05))
+                                        .cornerRadius(8)
+                                        .padding(.horizontal, 8)
                                         .transition(.opacity.combined(with: .move(edge: .top)))
                                     }
                                 }
