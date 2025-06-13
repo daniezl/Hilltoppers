@@ -65,7 +65,7 @@ struct DayTypeView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
-                                .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color.white)
+                                .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
                                 .padding(4) // inset the dashed border
                         )
                         .onTapGesture { 
