@@ -95,37 +95,88 @@ struct ScheduleView: View {
             if !noSchool {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        // Schedule title
-                        Text(scheduleTitle)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        
                         // Schedule card
                         VStack(spacing: 0) {
-                            ForEach(loader.blocks) { block in
-                                HStack {
-                                    Text(block.name)
-                                        .font(.body.weight(.medium))
-                                    Spacer()
-                                    Text("\(block.start)-\(block.end)")
-                                        .font(.body)
-//                                        .foregroundColor(.secondary)
+                            // Schedule title inside card
+                            HStack {
+                                Text(scheduleTitle)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                            .padding(.bottom, 8)
+                            
+                                                        ForEach(loader.blocks) { block in
+                                VStack(spacing: 0) {
+                                    // Main block row
+                                    HStack {
+                                        Text(block.name)
+                                            .font(.callout.weight(.medium))
+                                        Spacer()
+                                        Text("\(block.start)-\(block.end)")
+                                            .font(.callout.weight(.regular))
+                                            .monospacedDigit()
+                                        
+                                        if block.subBlocks != nil {
+                                            Image(systemName: expandedBlockID == block.id ? "chevron.down" : "chevron.right")
+                                                .font(.system(size: 12, weight: .semibold))
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8) // between blocks
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(isCurrent(block: block) ? Color.green.opacity(0.15) : Color.clear)
+                                            .padding(.horizontal, 8) // gap from card edges
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                                            .foregroundColor(isNextUpcomingBlock(block) ? Color.green : Color.clear)
+                                            .padding(.horizontal, 8) // gap from card edges
+                                    )
+                                    .onTapGesture {
+                                        if block.subBlocks != nil {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                expandedBlockID = expandedBlockID == block.id ? nil : block.id
+                                            }
+                                        }
+                                    }
                                     
-                                    if block.subBlocks != nil {
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+                                    // SubBlocks dropdown
+                                    if expandedBlockID == block.id, let subBlocks = block.subBlocks {
+                                        ForEach(subBlocks) { sub in
+                                            HStack {
+                                                Text(sub.name)
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                                Spacer()
+                                                Text("\(sub.start)-\(sub.end)")
+                                                    .font(.caption)
+                                                    .monospacedDigit()
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            .padding(.leading, 32) // indent from left
+                                            .padding(.trailing, 16) // same as main blocks
+                                            .padding(.vertical, 6)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .fill(isCurrent(subBlock: sub) ? Color.green.opacity(0.1) : Color.clear)
+                                                    .padding(.horizontal, 8)
+                                            )
+                                        }
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
                                     }
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10) //between blocks
-                                .background(isCurrent(block: block) ? Color.green.opacity(0.15) : Color.clear)
                             }
                         }
                         .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                         .cornerRadius(12)
                     }
-                    .padding(.horizontal, 32) //sides
+                    .padding(.leading, 50) // more space on left
+                    .padding(.trailing, 30) // less space on right
                     .padding(.top, 8)
                 }
                 .refreshable {
@@ -194,6 +245,20 @@ struct ScheduleView: View {
             let prevEnd = timeToday(loader.blocks[index - 1].end) ?? Date.distantPast
             return currentTime >= prevEnd && currentTime < start
         }
+    }
+    
+    func isNextUpcomingBlock(_ block: Block) -> Bool {
+        // Don't show dashed border if currently in a block
+        if loader.blocks.contains(where: { isCurrent(block: $0) }) {
+            return false
+        }
+        
+        // Find if this block is the next upcoming one
+        if let nextInfo = nextBlockInfo() {
+            return block.id == nextInfo.0.id
+        }
+        
+        return false
     }
 
     func isCurrent(subBlock: SubBlock) -> Bool {

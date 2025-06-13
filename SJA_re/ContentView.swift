@@ -26,16 +26,16 @@ struct ContentView: View {
     
     // Set this to a specific Date to test, or nil to use real time
     
-   let testDate: Date? = nil
+//   let testDate: Date? = nil
     
-//     let testDate: Date? = DateComponents(
-//         calendar: .current,
-//         year: 2025,
-//         month: 5,
-//         day: 23,
-//         hour: 9,
-//         minute: 02
-//     ).date
+     let testDate: Date? = DateComponents(
+         calendar: .current,
+         year: 2025,
+         month: 5,
+         day: 23,
+         hour: 8,
+         minute: 12
+     ).date
 
     var body: some View {
         ZStack {
