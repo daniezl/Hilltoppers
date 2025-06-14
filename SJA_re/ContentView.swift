@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var dayTypeLoaded: Bool = false
     @State private var dragOffset: CGFloat = 0
     @State private var isRefreshReady: Bool = false
+    @State private var showSplashScreen: Bool = true
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -50,7 +51,7 @@ struct ContentView: View {
                         .contentShape(Rectangle())
                 } else {
                     VStack {
-                        // Spacer()
+//                         Spacer()
                         VStack(spacing: 20) {
                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                                 dayTypeLoaded = true 
@@ -75,21 +76,14 @@ struct ContentView: View {
                 }
             }
             .opacity(isLoading ? 0.0 : 1.0)
+            .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : 0.5), value: isLoading)
                 
-            // Loading overlay
-            if isLoading {
-                ZStack {
-                    Color.white
-                        .ignoresSafeArea()
-                    
-                    VStack {
-                        Spacer()
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .offset(y: centerOffset)
-                        Spacer()
-                    }
-                }
+            // Splash screen overlay
+            if showSplashScreen {
+                SplashScreenView(isLoading: $isLoading, onAnimationComplete: {
+                    showSplashScreen = false
+                })
+                .zIndex(1000)
             }
             
             // Pull-to-refresh indicator - on top of everything
