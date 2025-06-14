@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var isRefreshReady: Bool = false
     @State private var showSplashScreen: Bool = true
+    @State private var isRefreshing: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -78,7 +79,7 @@ struct ContentView: View {
                 }
             }
             .opacity(isLoading ? 0.0 : 1.0)
-            .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : 0.5), value: isLoading)
+            .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : (showSplashScreen ? 0.5 : 0)), value: isLoading)
                 
             // Splash screen overlay
             if showSplashScreen {
@@ -112,6 +113,17 @@ struct ContentView: View {
                 .allowsHitTesting(false)
                 .zIndex(1000)
             }
+            
+            // Full-screen loading overlay during refresh
+            if isRefreshing {
+                Color.white
+                    .ignoresSafeArea(.all)
+                    .overlay(
+                        ProgressView()
+                            .scaleEffect(1.5)
+                    )
+                    .zIndex(1000)
+            }
         }
         .background(Color.clear)
         .contentShape(Rectangle())
@@ -128,8 +140,11 @@ struct ContentView: View {
                 .onEnded { value in
                     // Allow pulling from anywhere on the screen
                     if value.translation.height > 80 {
+                        isRefreshing = true
                         Task {
                             await refreshAll()
+                            print("Pull-to-refresh completed")
+                            // Don't set isRefreshing = false here, let updateLoadingState handle it
                         }
                     }
                     
@@ -142,8 +157,11 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
+                isRefreshing = true
                 Task {
                     await refreshAll()
+                    print("App became active - refresh completed")
+                    // Don't set isRefreshing = false here, let updateLoadingState handle it
                 }
             }
         }
@@ -162,7 +180,9 @@ struct ContentView: View {
         let shouldFinishLoading = noSchool ? dayTypeLoaded : (scheduleLoaded && dayTypeLoaded)
         
         if shouldFinishLoading {
+            print("Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
             isLoading = false
+            isRefreshing = false // Also hide the refresh spinner when content is ready
             
             // Only trigger animation if there are blocks to show
             if !noSchool {
