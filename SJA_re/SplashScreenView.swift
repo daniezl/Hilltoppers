@@ -25,11 +25,13 @@ struct SplashScreenView: View {
                 darkGreen
                     .ignoresSafeArea()
                 
-                // White circle icon
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 80, height: 80)
-                    .offset(y: iconOffset)
+                // School logo icon
+                Image("school-icon")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 240, height: 240) // size of icon
+                    .colorMultiply(.white)
+                    .offset(y: iconOffset - 35)
                     .opacity(showIcon ? 1 : 0)
             }
             .offset(y: viewOffset)
