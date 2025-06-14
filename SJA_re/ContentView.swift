@@ -22,8 +22,9 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
-    // Visual centering offset
-    private let centerOffset: CGFloat = -30
+    // Visual centering offsets
+    private let scheduleOffset: CGFloat = 60
+    private let noSchoolOffset: CGFloat = -30
     
     // Set this to a specific Date to test, or nil to use real time
     
@@ -46,12 +47,12 @@ struct ContentView: View {
                     Text("No school")
                         .font(.largeTitle)
                         .foregroundColor(.secondary)
-                        .offset(y: centerOffset)
+                        .offset(y: noSchoolOffset)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .contentShape(Rectangle())
                 } else {
                     VStack {
-//                         Spacer()
+                        Spacer()
                         VStack(spacing: 20) {
                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                                 dayTypeLoaded = true 
@@ -70,7 +71,8 @@ struct ContentView: View {
                                     scheduleLoader.showBlocks = false
                                 }
                         }
-                        // Spacer()
+                        .offset(y: scheduleOffset)
+                        Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
