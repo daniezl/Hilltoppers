@@ -115,8 +115,8 @@ struct DayTypeView: View {
 
     func fetchHTML(from urlString: String) {
         guard let url = URL(string: urlString) else {
-            self.htmlTitle = "Invalid URL"
-            self.dayType = "Invalid URL"
+            self.htmlTitle = "Please Refresh"
+            self.dayType = "Please Refresh"
             onLoadingComplete()
             return
         }
@@ -162,7 +162,7 @@ struct DayTypeView: View {
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
-                                        self.predicted = "Error"
+                                        self.predicted = "Please Refresh"
                                         self.firebaseError = true
                                         self.onLoadingComplete()
                                     }
@@ -184,11 +184,11 @@ struct DayTypeView: View {
                 }
             } else {
                 DispatchQueue.main.async {
-                    self.htmlTitle = "Failed to load HTML"
-                    self.dayType = "Failed to load HTML"
+                    self.htmlTitle = "Please Refresh"
+                    self.dayType = "Please Refresh"
                     self.dailyBulletinHTML = nil
                     self.dbDate = nil
-                    self.predicted = "Failed to load"
+                    self.predicted = "Please Refresh"
                     self.onLoadingComplete()
                 }
             }
@@ -338,78 +338,98 @@ struct PredictionDetailView: View {
     
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack {
+                Spacer()
                 
-                VStack(alignment: .leading, spacing: 16) {
-                    if let dbDate = dbDate {
-                        VStack(alignment: .leading, spacing: 8) {
-                                Text("Latest bulletin: \(formatLongDate(dbDate)) - \(dayType)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                            .padding(.bottom, 8)
-                            
-                            if let predictions = calculationSteps {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
+                if let dbDate = dbDate {
+                    // Card with list
+                    VStack(spacing: 0) {
+                        if let predictions = calculationSteps {
+                            VStack(spacing: 0) {
+                                // Bulletin info as first row
+                                HStack {
+                                    Text(formatShortDate(dbDate))
+                                        .font(.system(.callout, design: .monospaced))
+                                        .fontWeight(.medium)
+                                        .frame(width: 50, alignment: .leading)
+                                    
+                                    Image(systemName: "arrow.right")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                    
+                                    Text(dayType)
+                                        .font(.callout)
+                                        .fontWeight(.medium)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(getBackgroundColor(for: dayType))
+                                
+                                // Divider
+                                Divider()
+                                    .padding(.horizontal, 16)
+                                
+                                // Prediction rows
+                                ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
+                                    VStack(spacing: 0) {
                                         HStack {
-                                            Text("\(formatShortDate(step.date))")
-                                                .font(.caption)
+                                            Text(formatShortDate(step.date))
+                                                .font(.system(.callout, design: .monospaced))
                                                 .fontWeight(.medium)
-                                                .frame(width: 40, alignment: .leading)
+                                                .frame(width: 50, alignment: .leading)
                                             
                                             Image(systemName: "arrow.right")
-                                                .font(.caption2)
+                                                .font(.caption)
                                                 .foregroundColor(.gray)
                                             
-                                            Text(step.prediction)
-                                                .font(.caption)
-                                                .fontWeight(step.isToday ? .bold : .regular)
-                                                .foregroundColor(step.isToday ? .primary : .secondary)
-                                            
-                                            if step.isToday {
-                                                Text("(Today)")
-                                                    .font(.caption2)
-                                                    .foregroundColor(.blue)
-                                                    .fontWeight(.medium)
+                                            HStack(spacing: 4) {
+                                                if let (mainText, parenthetical) = parseText(step.prediction) {
+                                                    Text(mainText)
+                                                        .font(.callout)
+                                                        .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
+                                                    if !parenthetical.isEmpty {
+                                                        Text("(\(parenthetical))")
+                                                            .font(.caption)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                } else {
+                                                    Text(step.prediction)
+                                                        .font(.callout)
+                                                        .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
+                                                }
                                             }
                                             
                                             Spacer()
                                         }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 4)
-                                        .background(step.isToday ? Color.blue.opacity(0.1) : Color.clear)
-                                        .cornerRadius(6)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        .background(getBackgroundColor(for: step.prediction))
+                                        
+                                        if index < predictions.count - 1 {
+                                            Divider()
+                                                .padding(.horizontal, 16)
+                                        }
                                     }
                                 }
                             }
                         }
-                        
-                        Divider()
-                        
-                        // Disclaimer
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Important Notes")
-                                .font(.headline)
-                                .foregroundColor(.orange)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("• Calculations are based on the latest bulletin")
-                                Text("• Please confirm that the days listed above are correct")
-                            }
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        }
-                    } else {
-                        Text("No bulletin date available for calculations")
-                            .foregroundColor(.secondary)
                     }
+                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 56) // space from the sides
+                    
+                } else {
+                    Text("No bulletin date available for calculations")
+                        .foregroundColor(.secondary)
+                        .padding()
                 }
                 
                 Spacer()
+                Spacer()
             }
-            .padding()
-            .navigationTitle("Calculation Details")
-            .navigationBarTitleDisplayMode(.inline)
+
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -417,6 +437,39 @@ struct PredictionDetailView: View {
                     }
                 }
             }
+        }
+    }
+    
+    func getBackgroundColor(for prediction: String) -> Color {
+        let lower = prediction.lowercased()
+        if lower.contains("green day") {
+            return Color.green.opacity(0.1)
+        } else if lower.contains("white day") {
+            return Color(.systemGray6)
+        } else {
+            return Color.white
+        }
+    }
+    
+    func parseText(_ text: String) -> (mainText: String, parenthetical: String)? {
+        // Look for text in parentheses at the end
+        if let range = text.range(of: "\\s*\\([^)]+\\)$", options: .regularExpression) {
+            let mainText = String(text[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
+            let parenthetical = String(text[range]).trimmingCharacters(in: .whitespaces)
+                .replacingOccurrences(of: "(", with: "")
+                .replacingOccurrences(of: ")", with: "")
+            return (mainText, parenthetical)
+        }
+        return nil
+    }
+    
+    func getFontWeight(for prediction: String, isToday: Bool) -> Font.Weight {
+        if isToday {
+            return .semibold
+        } else if prediction.lowercased().contains("no school") {
+            return .light
+        } else {
+            return .medium
         }
     }
     
