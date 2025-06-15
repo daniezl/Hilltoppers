@@ -15,6 +15,7 @@ struct ScheduleView: View {
     @ObservedObject var loader: ScheduleLoader
     let onLoadingComplete: () -> Void
     let onPullRefresh: () async -> Void
+    @Binding var showSplashScreen: Bool
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
@@ -209,7 +210,18 @@ struct ScheduleView: View {
             loader.showBlocks = false
             startTimeUpdateTimer()
             Task {
-                await refreshSchedule()
+                // Delay loading if splash screen is showing to let animation complete
+                if showSplashScreen {
+                    do {
+                        try await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
+                        await refreshSchedule()
+                    } catch {
+                        // If cancelled, proceed immediately
+                        await refreshSchedule()
+                    }
+                } else {
+                    await refreshSchedule()
+                }
             }
         }
         .onDisappear {
@@ -479,5 +491,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {})
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false))
 }

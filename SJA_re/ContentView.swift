@@ -66,7 +66,7 @@ struct ContentView: View {
                                 Task {
                                     await refreshAll()
                                 }
-                            })
+                            }, showSplashScreen: $showSplashScreen)
                                 .id(refreshID)
                                 .onAppear {
                                     // Reset animation state when view appears
@@ -141,10 +141,11 @@ struct ContentView: View {
                 .onEnded { value in
                     // Allow pulling from anywhere on the screen
                     if value.translation.height > 80 {
+                        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (pull-to-refresh)")
                         isRefreshing = true
                         Task {
                             await refreshAll()
-                            // print("Pull-to-refresh completed")
+                            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Pull-to-refresh completed")
                             // Don't set isRefreshing = false here, let updateLoadingState handle it
                         }
                     }
@@ -159,12 +160,23 @@ struct ContentView: View {
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 // Show splash screen instead of progress view for app activation
+                let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
+                print("[\(timestamp)] App became active")
+                print("[\(timestamp)] Loading started (app activation)")
                 showSplashScreen = true
                 isLoading = true
                 Task {
-                    await refreshAll()
-                    // print("App became active - refresh completed")
-                    // Don't set isRefreshing = false here, let updateLoadingState handle it
+                    do {
+                        // Delay loading to let splash animation complete smoothly
+                        try await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
+                        await refreshAll()
+                        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] App became active - refresh completed")
+                        // Don't set isRefreshing = false here, let updateLoadingState handle it
+                    } catch {
+                        // If sleep is cancelled, just proceed with loading
+                        await refreshAll()
+                        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] App became active - refresh completed (sleep cancelled)")
+                    }
                 }
             }
         }
@@ -183,7 +195,7 @@ struct ContentView: View {
         let shouldFinishLoading = noSchool ? dayTypeLoaded : (scheduleLoaded && dayTypeLoaded)
         
         if shouldFinishLoading {
-            // print("Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
+            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
             isLoading = false
             isRefreshing = false // Also hide the refresh spinner when content is ready
             
@@ -217,6 +229,7 @@ struct ContentView: View {
     @MainActor
     func refreshAll() async {
         // Reset loading states
+        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
         isLoading = true
         scheduleLoaded = false
         dayTypeLoaded = false

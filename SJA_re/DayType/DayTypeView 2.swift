@@ -136,7 +136,21 @@ struct DayTypeView: View {
             self.isDateToday = nil
             self.hasTriedAutoRefresh = false
             self.showColorRipple = false
-            fetchHTML(from: schoolURL)
+            
+            // Delay loading if splash screen is showing to let animation complete
+            if showSplashScreen {
+                Task {
+                    do {
+                        try await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
+                        fetchHTML(from: schoolURL)
+                    } catch {
+                        // If cancelled, proceed immediately
+                        fetchHTML(from: schoolURL)
+                    }
+                }
+            } else {
+                fetchHTML(from: schoolURL)
+            }
         }
         .onChange(of: dayType) { newDayType in
             // Auto-refresh if we get "Please Refresh" and haven't tried yet
