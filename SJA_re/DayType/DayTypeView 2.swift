@@ -8,6 +8,32 @@
 import SwiftUI
 import SwiftSoup
 
+struct RippleEffect: View {
+    let isGreenDay: Bool
+    let showRipple: Bool
+    @State private var rippleScale: CGFloat = 0.0
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(isGreenDay ? Color(red: 245/255, green: 246/255, blue: 245/255) : Color(red: 20/255, green: 54/255, blue: 27/255))
+            .overlay(
+                Circle()
+                    .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .scaleEffect(rippleScale)
+                    .animation(.easeOut(duration: 0.8), value: rippleScale)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .onAppear {
+                rippleScale = 0.0
+            }
+            .onChange(of: showRipple) { shouldShow in
+                if shouldShow {
+                    rippleScale = 5.0  // Large enough to fill the rectangle
+                }
+            }
+    }
+}
+
 struct PredictionStep {
     let date: Date
     let prediction: String
@@ -18,6 +44,7 @@ struct DayTypeView: View {
     let testDate: Date?
     @Binding var firebaseError: Bool
     let onLoadingComplete: () -> Void
+    @Binding var triggerRipple: Bool
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -30,6 +57,7 @@ struct DayTypeView: View {
     @State private var calculationSteps: [PredictionStep]? = nil
     @State private var isLoadingSteps = false
     @State private var hasTriedAutoRefresh = false
+    @State private var showColorRipple = false
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -60,8 +88,7 @@ struct DayTypeView: View {
                         .foregroundColor(predicted == "Green Day" ? .white : .black)
                         .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(predicted == "Green Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(red: 245/255, green: 246/255, blue: 245/255))
+                            RippleEffect(isGreenDay: predicted == "Green Day", showRipple: showColorRipple)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
@@ -98,11 +125,7 @@ struct DayTypeView: View {
                     .foregroundColor(isGreenDay ? .white : .black)
                     .padding()
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(isGreenDay
-                                ? Color(red: 20/255, green: 54/255, blue: 27/255) // Green Day
-                                : Color(red: 245/255, green: 246/255, blue: 245/255) // White Day: same as schedule card
-                            )
+                        RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
             }
         }
@@ -111,6 +134,7 @@ struct DayTypeView: View {
             self.dayType = "Loading..."
             self.isDateToday = nil
             self.hasTriedAutoRefresh = false
+            self.showColorRipple = false
             fetchHTML(from: schoolURL)
         }
         .onChange(of: dayType) { newDayType in
@@ -135,6 +159,37 @@ struct DayTypeView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     fetchHTML(from: schoolURL)
                 }
+            }
+        }
+        .onChange(of: triggerRipple) { shouldTrigger in
+            if shouldTrigger {
+                showColorRipple = true
+            }
+        }
+        .onChange(of: dayType) { newDayType in
+            // If we get "Please Refresh", reset everything completely
+            if newDayType == "Please Refresh" {
+                showColorRipple = false
+                // Reset the trigger in ContentView too
+                DispatchQueue.main.async {
+                    triggerRipple = false
+                }
+            } else {
+                // For normal day type changes, just reset ripple
+                showColorRipple = false
+            }
+        }
+        .onChange(of: predicted) { newPredicted in
+            // If prediction shows "Please Refresh", reset everything completely
+            if newPredicted == "Please Refresh" {
+                showColorRipple = false
+                // Reset the trigger in ContentView too
+                DispatchQueue.main.async {
+                    triggerRipple = false
+                }
+            } else {
+                // For normal prediction changes, just reset ripple
+                showColorRipple = false
             }
         }
     }
@@ -516,6 +571,6 @@ struct PredictionDetailView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {})
+        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false))
     }
 }

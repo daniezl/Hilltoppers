@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var isRefreshReady: Bool = false
     @State private var showSplashScreen: Bool = true
     @State private var isRefreshing: Bool = false
+    @State private var triggerDayTypeRipple: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -57,7 +58,7 @@ struct ContentView: View {
                         VStack(spacing: 20) {
                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                                 dayTypeLoaded = true 
-                            })
+                            }, triggerRipple: $triggerDayTypeRipple)
                                 .id(refreshID)
                             ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
                                 scheduleLoaded = true 
@@ -190,10 +191,21 @@ struct ContentView: View {
                     // Small delay after splash screen before blocks slide in
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         scheduleLoader.showBlocks = true
+                        triggerDayTypeRipple = true
                     }
                 } else {
                     // No delay for refresh - immediate animation
                     scheduleLoader.showBlocks = true
+                    triggerDayTypeRipple = true
+                }
+            } else {
+                // Trigger ripple for no-school days too
+                if showSplashScreen {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        triggerDayTypeRipple = true
+                    }
+                } else {
+                    triggerDayTypeRipple = true
                 }
             }
         }
@@ -208,6 +220,7 @@ struct ContentView: View {
         dayTypeLoaded = false
         noSchool = false
         scheduleLoader.showBlocks = false
+        triggerDayTypeRipple = false
         refreshID = UUID()
     }
 }
