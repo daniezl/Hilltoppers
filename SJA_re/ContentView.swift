@@ -58,7 +58,7 @@ struct ContentView: View {
                         VStack(spacing: 20) {
                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                                 dayTypeLoaded = true 
-                            }, triggerRipple: $triggerDayTypeRipple)
+                            }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
                                 .id(refreshID)
                             ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
                                 scheduleLoaded = true 
@@ -115,8 +115,8 @@ struct ContentView: View {
                 .zIndex(1000)
             }
             
-            // Full-screen loading overlay during refresh
-            if isRefreshing {
+            // Full-screen loading overlay during refresh (but not during splash)
+            if isRefreshing && !showSplashScreen {
                 Color.white
                     .ignoresSafeArea(.all)
                     .overlay(
@@ -158,7 +158,9 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                isRefreshing = true
+                // Show splash screen instead of progress view for app activation
+                showSplashScreen = true
+                isLoading = true
                 Task {
                     await refreshAll()
                     print("App became active - refresh completed")

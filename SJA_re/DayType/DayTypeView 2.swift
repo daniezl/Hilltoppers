@@ -45,6 +45,7 @@ struct DayTypeView: View {
     @Binding var firebaseError: Bool
     let onLoadingComplete: () -> Void
     @Binding var triggerRipple: Bool
+    @Binding var showSplashScreen: Bool
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -139,11 +140,12 @@ struct DayTypeView: View {
         }
         .onChange(of: dayType) { newDayType in
             // Auto-refresh if we get "Please Refresh" and haven't tried yet
+            // But don't trigger refresh loading state during initial splash
             if newDayType == "Please Refresh" && !hasTriedAutoRefresh {
                 hasTriedAutoRefresh = true
                 print("Auto-refreshing due to 'Please Refresh' state")
                 
-                // Wait a moment then try again
+                // Wait a moment then try again (without triggering isRefreshing)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     fetchHTML(from: schoolURL)
                 }
@@ -170,9 +172,14 @@ struct DayTypeView: View {
             // If we get "Please Refresh", reset everything completely
             if newDayType == "Please Refresh" {
                 showColorRipple = false
-                // Reset the trigger in ContentView too
+                // Reset the trigger in ContentView too, but don't trigger refresh loading during splash
                 DispatchQueue.main.async {
                     triggerRipple = false
+                    // Only trigger refresh loading if splash screen is not showing
+                    if !showSplashScreen {
+                        // This would be where we'd trigger isRefreshing, but we don't have access here
+                        // The auto-refresh will handle it without showing the loading overlay
+                    }
                 }
             } else {
                 // For normal day type changes, just reset ripple
@@ -571,6 +578,6 @@ struct PredictionDetailView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false))
+        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false))
     }
 }
