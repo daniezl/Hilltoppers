@@ -186,7 +186,15 @@ struct ContentView: View {
             
             // Only trigger animation if there are blocks to show
             if !noSchool {
-                scheduleLoader.showBlocks = true
+                if showSplashScreen {
+                    // Small delay after splash screen before blocks slide in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        scheduleLoader.showBlocks = true
+                    }
+                } else {
+                    // No delay for refresh - immediate animation
+                    scheduleLoader.showBlocks = true
+                }
             }
         }
     }

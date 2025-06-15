@@ -60,7 +60,7 @@ struct ScheduleView: View {
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8) // between title and blocks
                             
-                                                        ForEach(loader.blocks) { block in
+                            ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
                                 VStack(spacing: 0) {
                                     // Time info above highlighted block (only if dropdown is closed)
                                     if expandedBlockID != block.id {
@@ -191,6 +191,9 @@ struct ScheduleView: View {
                                         .transition(.opacity.combined(with: .move(edge: .top)))
                                     }
                                 }
+                                .opacity(loader.showBlocks ? 1 : 0)
+                                .offset(x: loader.showBlocks ? 0 : -50)
+                                .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: loader.showBlocks)
                             }
                         }
                         .background(Color(red: 245/255, green: 246/255, blue: 245/255))
