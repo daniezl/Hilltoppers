@@ -7,12 +7,41 @@
 
 import SwiftUI
 
+struct ConcaveBottomShape: Shape {
+    let curveOffset: CGFloat // How far below screen the curve starts
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        // Start from top-left
+        path.move(to: CGPoint(x: 0, y: 0))
+        
+        // Top edge
+        path.addLine(to: CGPoint(x: rect.width, y: 0))
+        
+        // Right edge - always extend to show the curve area
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height + 200))
+        
+        // Concave down curve at bottom (n-shaped) - always present, positioned by offset
+        path.addQuadCurve(
+            to: CGPoint(x: 0, y: rect.height + 200),
+            control: CGPoint(x: rect.width / 2, y: rect.height + 200 - 80 + curveOffset)
+        )
+        
+        // Left edge back to start
+        path.addLine(to: CGPoint(x: 0, y: 0))
+        
+        return path
+    }
+}
+
 struct SplashScreenView: View {
     @State private var iconOffset: CGFloat = 1000
     @State private var viewOffset: CGFloat = 0
     @State private var showIcon = false
     @State private var screenHeight: CGFloat = 0
     @State private var shouldSlideOut = false
+    @State private var curveOffset: CGFloat = 0 // Curve position relative to screen
     @Binding var isLoading: Bool
     let onAnimationComplete: () -> Void
     
@@ -21,8 +50,9 @@ struct SplashScreenView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Dark green background
-                darkGreen
+                // Dark green background with concave bottom curve
+                ConcaveBottomShape(curveOffset: curveOffset)
+                    .fill(darkGreen)
                     .ignoresSafeArea()
                 
                 // School logo icon
@@ -38,18 +68,22 @@ struct SplashScreenView: View {
             .onAppear {
                 screenHeight = geometry.size.height
                 iconOffset = screenHeight
+                curveOffset = 80 // Start with curve pushed down (flattened)
                 startAnimation()
             }
             .onChange(of: isLoading) { newValue in
                 if !newValue && !shouldSlideOut {
                     shouldSlideOut = true
-                    // Loading is complete, slide out from top with a more dramatic animation
+                    // Loading is complete, slide out with synchronized animation
+                    
+                    // Single animation for both movement and curve - perfectly synchronized
                     withAnimation(.easeIn(duration: 0.8)) {
-                        viewOffset = -(screenHeight + 100) // Go a bit further off-screen
+                        viewOffset = -(screenHeight + 300) // Go much further off-screen
+                        curveOffset = -80 // Curve becomes more pronounced
                     }
                     
-                    // Call completion after animation finishes
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    // Call completion after animation is completely done
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         onAnimationComplete()
                     }
                 }

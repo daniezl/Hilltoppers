@@ -17,7 +17,6 @@
 		A267CD022DF008BE00F904F1 /* abdec.json in Resources */ = {isa = PBXBuildFile; fileRef = A267CCFF2DF008BE00F904F1 /* abdec.json */; };
 		A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */; };
 		A271E7DF2DFD2C880063C9C0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */; };
-		A271E7E12DFD45C10063C9C0 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A271E7E02DFD45C10063C9C0 /* LoadingView.swift */; };
 		A280A0F02DDCE7E300F98F3F /* schedule_mon_thu.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */; };
 		A280A0F12DDCE7E300F98F3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */; };
 		A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */; };
@@ -72,7 +71,6 @@
 		A267CD002DF008BE00F904F1 /* late_start.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = late_start.json; sourceTree = "<group>"; };
 		A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A271E7E02DFD45C10063C9C0 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_mon_thu.json; sourceTree = "<group>"; };
 		A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleLoader.swift; sourceTree = "<group>"; };
 		A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleModels.swift; sourceTree = "<group>"; };
@@ -179,7 +177,6 @@
 		A280A0EF2DDCE7E300F98F3F /* SJA_re */ = {
 			isa = PBXGroup;
 			children = (
-				A271E7E02DFD45C10063C9C0 /* LoadingView.swift */,
 				A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */,
 				A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */,
 				A25EDD832DEFD9BE00F71034 /* GoogleService-Info.plist */,
@@ -379,7 +376,6 @@
 				A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */,
 				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,
 				A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */,
-				A271E7E12DFD45C10063C9C0 /* LoadingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
