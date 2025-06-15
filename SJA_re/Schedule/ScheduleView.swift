@@ -62,6 +62,7 @@ struct ScheduleView: View {
                                 .padding(.vertical, 8) // between title and blocks
                             
                             ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
+                                let _ = print("Animation order - Index \(index): \(block.name)")
                                 VStack(spacing: 0) {
                                     // Time info above highlighted block (only if dropdown is closed)
                                     if expandedBlockID != block.id {
@@ -94,12 +95,12 @@ struct ScheduleView: View {
                                     HStack {
                                         Text(block.name)
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
-                                            .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
+                                            .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
                                             .monospacedDigit()
-                                            .foregroundColor(isRegularClassBlock(block.name) ? .primary : .secondary)
+                                            .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
                                         
                                         // Consistent chevron space for alignment
                                         if block.subBlocks != nil {
@@ -193,8 +194,8 @@ struct ScheduleView: View {
                                     }
                                 }
                                 .opacity(loader.showBlocks ? 1 : 0)
-                                .offset(x: loader.showBlocks ? 0 : -50)
-                                .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: loader.showBlocks)
+                                .offset(x: loader.showBlocks ? 0 : -30)
+                                .animation(.easeOut(duration: 0.2).delay(Double(index) * 0.04), value: loader.showBlocks)
                             }
                         }
                         .background(Color(red: 245/255, green: 246/255, blue: 245/255))
