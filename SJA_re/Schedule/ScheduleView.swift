@@ -317,7 +317,7 @@ struct ScheduleView: View {
 
     func loadWeekdaySchedule() {
         let weekday = Calendar.current.component(.weekday, from: currentTime)
-        print("Weekday: \(weekday)")
+        // print("Weekday: \(weekday)")
         let scheduleFile: String?
         switch weekday {
         case 2: // Monday
@@ -354,7 +354,7 @@ struct ScheduleView: View {
             if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
                 noSchool = true
                 loader.blocks = []
-                print("In break")
+                // print("In break")
                 firebaseSucceeded = true
             }
             // 2. Try to find special_day and get type
@@ -362,14 +362,14 @@ struct ScheduleView: View {
                 if type == "no_school" {
                     noSchool = true
                     loader.blocks = []
-                    print("No school")
+                    // print("No school")
                     firebaseSucceeded = true
                 } else if type == "custom" {
                     // 3. If type is custom, read the custom schedule
                     if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
                         loader.blocks = blocks
                         noSchool = false
-                        print("Custom schedule")
+                        // print("Custom schedule")
                         scheduleTitle = "Custom Schedule"
                         firebaseSucceeded = true
                     }
@@ -378,7 +378,7 @@ struct ScheduleView: View {
                     loader.loadSchedule(from: type)
                     if !loader.blocks.isEmpty {
                         noSchool = false
-                        print("Schedule from \(type).json")
+                        // print("Schedule from \(type).json")
                         scheduleTitle = type.capitalized.replacingOccurrences(of: "_", with: " ")
                         firebaseSucceeded = true
                     }
@@ -390,14 +390,14 @@ struct ScheduleView: View {
                 isStale = false
             } else {
                 // Firebase responded but no data found, fall back to local
-                print("No Firebase data found, using local schedule")
+                // print("No Firebase data found, using local schedule")
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
             }
             
         } catch {
             // Firebase calls failed (network issue, blocked, etc.)
-            print("Error refreshing schedule (Firebase failed): \(error)")
+            // print("Error refreshing schedule (Firebase failed): \(error)")
             loadWeekdaySchedule() // Fallback to local data
             scheduleTitle = getWeekdayTitle()
             // Keep isStale = true since Firebase failed

@@ -144,7 +144,7 @@ struct ContentView: View {
                         isRefreshing = true
                         Task {
                             await refreshAll()
-                            print("Pull-to-refresh completed")
+                            // print("Pull-to-refresh completed")
                             // Don't set isRefreshing = false here, let updateLoadingState handle it
                         }
                     }
@@ -163,7 +163,7 @@ struct ContentView: View {
                 isLoading = true
                 Task {
                     await refreshAll()
-                    print("App became active - refresh completed")
+                    // print("App became active - refresh completed")
                     // Don't set isRefreshing = false here, let updateLoadingState handle it
                 }
             }
@@ -183,7 +183,7 @@ struct ContentView: View {
         let shouldFinishLoading = noSchool ? dayTypeLoaded : (scheduleLoaded && dayTypeLoaded)
         
         if shouldFinishLoading {
-            print("Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
+            // print("Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
             isLoading = false
             isRefreshing = false // Also hide the refresh spinner when content is ready
             

@@ -143,7 +143,7 @@ struct DayTypeView: View {
             // But don't trigger refresh loading state during initial splash
             if newDayType == "Please Refresh" && !hasTriedAutoRefresh {
                 hasTriedAutoRefresh = true
-                print("Auto-refreshing due to 'Please Refresh' state")
+                // print("Auto-refreshing due to 'Please Refresh' state")
                 
                 // Wait a moment then try again (without triggering isRefreshing)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -155,7 +155,7 @@ struct DayTypeView: View {
             // Auto-refresh if prediction shows "Please Refresh" and haven't tried yet
             if newPredicted == "Please Refresh" && !hasTriedAutoRefresh {
                 hasTriedAutoRefresh = true
-                print("Auto-refreshing due to prediction 'Please Refresh' state")
+                // print("Auto-refreshing due to prediction 'Please Refresh' state")
                 
                 // Wait a moment then try again
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {

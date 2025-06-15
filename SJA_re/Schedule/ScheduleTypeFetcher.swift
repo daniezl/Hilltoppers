@@ -3,7 +3,7 @@ import FirebaseFirestore
 
 struct ScheduleTypeFetcher {
     static func fetchTypeFor(date: Date) async throws -> String? {
-        print("FIREBASE CALL: fetchTypeFor")
+        // print("FIREBASE CALL: fetchTypeFor")
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -18,7 +18,7 @@ struct ScheduleTypeFetcher {
             }
             return nil
         } catch {
-            print("Firebase error in fetchTypeFor: \(error)")
+            // print("Firebase error in fetchTypeFor: \(error)")
             throw error
         }
     }
@@ -41,7 +41,7 @@ struct ScheduleTypeFetcher {
             }
             return false
         } catch {
-            print("Firebase error in isInSpecialPeriod: \(error)")
+            // print("Firebase error in isInSpecialPeriod: \(error)")
             throw error
         }
     }
@@ -68,14 +68,14 @@ struct ScheduleTypeFetcher {
             // If no schedule array, return nil
             return nil
         } catch {
-            print("Firebase error in loadCustomSchedule: \(error)")
+            // print("Firebase error in loadCustomSchedule: \(error)")
             throw error
         }
     }
 
     // Batch fetch all special days in a date range
     static func fetchSpecialDaysDict(start: Date, end: Date) async throws -> [String: String] {
-        print("FIREBASE CALL: fetchSpecialDaysDict")
+        // print("FIREBASE CALL: fetchSpecialDaysDict")
         let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -95,14 +95,14 @@ struct ScheduleTypeFetcher {
             }
             return dict
         } catch {
-            print("Firebase error in fetchSpecialDaysDict: \(error)")
+            // print("Firebase error in fetchSpecialDaysDict: \(error)")
             throw error
         }
     }
 
     // Batch fetch all special periods overlapping a date range
     static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
-        print("FIREBASE CALL: fetchSpecialPeriods")
+        // print("FIREBASE CALL: fetchSpecialPeriods")
         let db = Firestore.firestore()
         
         do {
@@ -122,7 +122,7 @@ struct ScheduleTypeFetcher {
             }
             return periods
         } catch {
-            print("Firebase error in fetchSpecialPeriods: \(error)")
+            // print("Firebase error in fetchSpecialPeriods: \(error)")
             throw error
         }
     }
@@ -133,7 +133,7 @@ struct ScheduleTypeFetcher {
         dbDate: Date,
         testDate: Date?
     ) async throws -> String {
-        print("FIREBASE CALL: predictDayType")
+        // print("FIREBASE CALL: predictDayType")
         let today = testDate ?? Date()
         
         do {
@@ -179,7 +179,7 @@ struct ScheduleTypeFetcher {
             // print("Final prediction: \(predictIsGreen ? "Green Day" : "White Day")")
             return predictIsGreen ? "Green Day" : "White Day"
         } catch {
-            print("Firebase error in predictDayType: \(error)")
+            // print("Firebase error in predictDayType: \(error)")
             throw error
         }
     }
@@ -190,7 +190,7 @@ struct ScheduleTypeFetcher {
         dbDate: Date,
         testDate: Date?
     ) async throws -> [(date: Date, prediction: String, isToday: Bool)] {
-        print("FIREBASE CALL: generateCalculationSteps")
+        ("FIREBASE CALL: generateCalculationSteps")
         let today = testDate ?? Date()
         
         do {
@@ -262,7 +262,7 @@ struct ScheduleTypeFetcher {
             
             return steps
         } catch {
-            print("Firebase error in generateCalculationSteps: \(error)")
+            // print("Firebase error in generateCalculationSteps: \(error)")
             throw error
         }
     }
