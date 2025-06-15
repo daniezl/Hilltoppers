@@ -13,23 +13,25 @@ struct ConcaveBottomShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        // Start from top-left
-        path.move(to: CGPoint(x: 0, y: 0))
+        // Start from top-left, slightly extended beyond left edge to avoid artifacts
+        path.move(to: CGPoint(x: -1, y: 0))
         
-        // Top edge
-        path.addLine(to: CGPoint(x: rect.width, y: 0))
+        // Top edge, slightly extended beyond right edge
+        path.addLine(to: CGPoint(x: rect.width + 1, y: 0))
         
         // Right edge - always extend to show the curve area
-        path.addLine(to: CGPoint(x: rect.width, y: rect.height + 200))
+        path.addLine(to: CGPoint(x: rect.width + 1, y: rect.height + 200))
         
         // Concave down curve at bottom (n-shaped) - always present, positioned by offset
         path.addQuadCurve(
-            to: CGPoint(x: 0, y: rect.height + 200),
+            to: CGPoint(x: -1, y: rect.height + 200),
             control: CGPoint(x: rect.width / 2, y: rect.height + 200 - 80 + curveOffset)
         )
         
-        // Left edge back to start
-        path.addLine(to: CGPoint(x: 0, y: 0))
+        // Left edge back to start, slightly extended beyond left edge
+        path.addLine(to: CGPoint(x: -1, y: 0))
+        
+        path.closeSubpath() // Explicitly close the path
         
         return path
     }
