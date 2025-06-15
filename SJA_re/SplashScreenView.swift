@@ -95,8 +95,8 @@ struct SplashScreenView: View {
         // Show the icon and start the fly-in animation
         showIcon = true
         
-        // Fly in from bottom with bounce
-        withAnimation(.interpolatingSpring(stiffness: 100, damping: 8)) {
+        // Fly in from bottom with subtle bounce
+        withAnimation(.interpolatingSpring(stiffness: 140, damping: 16)) {
             iconOffset = 0
         }
     }

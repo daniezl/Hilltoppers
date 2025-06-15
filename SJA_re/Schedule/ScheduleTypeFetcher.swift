@@ -190,7 +190,7 @@ struct ScheduleTypeFetcher {
         dbDate: Date,
         testDate: Date?
     ) async throws -> [(date: Date, prediction: String, isToday: Bool)] {
-        ("FIREBASE CALL: generateCalculationSteps")
+                 // print("FIREBASE CALL: generateCalculationSteps")
         let today = testDate ?? Date()
         
         do {
