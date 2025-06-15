@@ -29,6 +29,7 @@ struct DayTypeView: View {
     @State private var predicted: String = "Loading..."
     @State private var calculationSteps: [PredictionStep]? = nil
     @State private var isLoadingSteps = false
+    @State private var hasTriedAutoRefresh = false
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -109,7 +110,32 @@ struct DayTypeView: View {
             self.htmlTitle = "Loading..."
             self.dayType = "Loading..."
             self.isDateToday = nil
+            self.hasTriedAutoRefresh = false
             fetchHTML(from: schoolURL)
+        }
+        .onChange(of: dayType) { newDayType in
+            // Auto-refresh if we get "Please Refresh" and haven't tried yet
+            if newDayType == "Please Refresh" && !hasTriedAutoRefresh {
+                hasTriedAutoRefresh = true
+                print("Auto-refreshing due to 'Please Refresh' state")
+                
+                // Wait a moment then try again
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    fetchHTML(from: schoolURL)
+                }
+            }
+        }
+        .onChange(of: predicted) { newPredicted in
+            // Auto-refresh if prediction shows "Please Refresh" and haven't tried yet
+            if newPredicted == "Please Refresh" && !hasTriedAutoRefresh {
+                hasTriedAutoRefresh = true
+                print("Auto-refreshing due to prediction 'Please Refresh' state")
+                
+                // Wait a moment then try again
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    fetchHTML(from: schoolURL)
+                }
+            }
         }
     }
 
