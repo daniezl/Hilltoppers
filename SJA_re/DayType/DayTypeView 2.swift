@@ -219,7 +219,11 @@ struct DayTypeView: View {
         guard let url = URL(string: urlString) else {
             self.htmlTitle = "Please Refresh"
             self.dayType = "Please Refresh"
-            onLoadingComplete()
+            
+            // Small delay to ensure UI state is updated
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.onLoadingComplete()
+            }
             return
         }
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -260,27 +264,44 @@ struct DayTypeView: View {
                                         // Get today's prediction from the cached steps
                                         self.predicted = self.getTodaysPrediction() ?? "Unknown"
                                         self.firebaseError = false
-                                        self.onLoadingComplete()
+                                        
+                                        // Only call loading complete after everything is processed
+                                        // and we're sure the UI will show proper content
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            self.onLoadingComplete()
+                                        }
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
                                         self.predicted = "Please Refresh"
                                         self.firebaseError = true
-                                        self.onLoadingComplete()
+                                        
+                                        // Small delay to ensure UI state is updated
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            self.onLoadingComplete()
+                                        }
                                     }
                                 }
                             }
                         } else {
                             DispatchQueue.main.async {
                                 self.firebaseError = false // Clear error for today's date
-                                self.onLoadingComplete()
+                                
+                                // Small delay to ensure dayType UI is updated before splash screen hides
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    self.onLoadingComplete()
+                                }
                             }
                         }
                     } else {
                         self.isDateToday = nil
                         DispatchQueue.main.async {
                             self.predicted = "No DB date"
-                            self.onLoadingComplete()
+                            
+                            // Small delay to ensure UI state is updated
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                self.onLoadingComplete()
+                            }
                         }
                     }
                 }
@@ -291,7 +312,11 @@ struct DayTypeView: View {
                     self.dailyBulletinHTML = nil
                     self.dbDate = nil
                     self.predicted = "Please Refresh"
-                    self.onLoadingComplete()
+                    
+                    // Small delay to ensure UI state is updated
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.onLoadingComplete()
+                    }
                 }
             }
         }.resume()
