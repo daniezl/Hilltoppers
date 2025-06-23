@@ -40,6 +40,53 @@ struct PredictionStep {
     let isToday: Bool
 }
 
+enum NetworkErrorType {
+    case permissionDenied
+    case noInternet
+    case serverError
+    case timeout
+    case other(String)
+    
+    var alertTitle: String {
+        switch self {
+        case .permissionDenied:
+            return "Network Access Required"
+        case .noInternet:
+            return "No Internet Connection"
+        case .serverError:
+            return "Server Error"
+        case .timeout:
+            return "Connection Timeout"
+        case .other:
+            return "Network Error"
+        }
+    }
+    
+    var alertMessage: String {
+        switch self {
+        case .permissionDenied:
+            return "This app needs internet access to load the daily schedule. Please enable WiFi/Cellular access for this app in Settings."
+        case .noInternet:
+            return "Please check your internet connection and try again."
+        case .serverError:
+            return "The school server is currently unavailable. Please try again later."
+        case .timeout:
+            return "The connection is taking too long. Please try again."
+        case .other(let message):
+            return message
+        }
+    }
+    
+    var showSettingsButton: Bool {
+        switch self {
+        case .permissionDenied:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 struct DayTypeView: View {
     let testDate: Date?
     @Binding var firebaseError: Bool
@@ -59,6 +106,10 @@ struct DayTypeView: View {
     @State private var isLoadingSteps = false
     @State private var hasTriedAutoRefresh = false
     @State private var showColorRipple = false
+    @State private var showNetworkErrorAlert = false
+    @State private var currentNetworkError: NetworkErrorType?
+    @State private var networkRetryCount = 0
+    private let maxRetryCount = 2
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -130,12 +181,40 @@ struct DayTypeView: View {
                     )
             }
         }
+        .alert(isPresented: $showNetworkErrorAlert) {
+            if let error = currentNetworkError {
+                if error.showSettingsButton {
+                    return Alert(
+                        title: Text(error.alertTitle),
+                        message: Text(error.alertMessage),
+                        primaryButton: .default(Text("Open Settings")) {
+                            openAppSettings()
+                        },
+                        secondaryButton: .cancel(Text("Try Again")) {
+                            retryNetworkRequest()
+                        }
+                    )
+                } else {
+                    return Alert(
+                        title: Text(error.alertTitle),
+                        message: Text(error.alertMessage),
+                        primaryButton: .default(Text("Try Again")) {
+                            retryNetworkRequest()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+            } else {
+                return Alert(title: Text("Error"), message: Text("An unknown error occurred."), dismissButton: .default(Text("OK")))
+            }
+        }
         .onAppear {
             self.htmlTitle = "Loading..."
             self.dayType = "Loading..."
             self.isDateToday = nil
             self.hasTriedAutoRefresh = false
             self.showColorRipple = false
+            self.networkRetryCount = 0
             
             // Delay loading if splash screen is showing to let animation complete
             if showSplashScreen {
@@ -198,6 +277,10 @@ struct DayTypeView: View {
             } else {
                 // For normal day type changes, just reset ripple
                 showColorRipple = false
+                // Reset the trigger in ContentView too
+                DispatchQueue.main.async {
+                    triggerRipple = false
+                }
             }
         }
         .onChange(of: predicted) { newPredicted in
@@ -211,6 +294,53 @@ struct DayTypeView: View {
             } else {
                 // For normal prediction changes, just reset ripple
                 showColorRipple = false
+                // Reset the trigger in ContentView too
+                DispatchQueue.main.async {
+                    triggerRipple = false
+                }
+            }
+        }
+    }
+
+    private func openAppSettings() {
+        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+            if UIApplication.shared.canOpenURL(settingsUrl) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        }
+    }
+    
+    private func retryNetworkRequest() {
+        networkRetryCount = 0
+        fetchHTML(from: schoolURL)
+    }
+    
+    private func analyzeNetworkError(_ error: Error) -> NetworkErrorType {
+        let nsError = error as NSError
+        
+        // Check for specific network permission/access errors
+        switch nsError.code {
+        case NSURLErrorNotConnectedToInternet:
+            // This could be either no internet or permission denied
+            // We'll treat multiple rapid failures as permission issues
+            if networkRetryCount == 0 {
+                return .permissionDenied
+            } else {
+                return .noInternet
+            }
+        case NSURLErrorTimedOut:
+            return .timeout
+        case NSURLErrorCannotConnectToHost, NSURLErrorCannotFindHost:
+            return .serverError
+        case NSURLErrorUserCancelledAuthentication, NSURLErrorUserAuthenticationRequired:
+            return .permissionDenied
+        case NSURLErrorDataNotAllowed:
+            return .permissionDenied
+        default:
+            if nsError.domain == NSURLErrorDomain {
+                return .other("Network error: \(nsError.localizedDescription)")
+            } else {
+                return .other("Unknown error: \(nsError.localizedDescription)")
             }
         }
     }
@@ -226,9 +356,40 @@ struct DayTypeView: View {
             }
             return
         }
-        URLSession.shared.dataTask(with: url) { data, _, error in
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    // Analyze the error to determine if it's a permission issue
+                    let networkErrorType = self.analyzeNetworkError(error)
+                    
+                    // Only show alert if we haven't exceeded retry count
+                    if self.networkRetryCount < self.maxRetryCount {
+                        self.currentNetworkError = networkErrorType
+                        self.showNetworkErrorAlert = true
+                        self.networkRetryCount += 1
+                    } else {
+                        // Max retries reached, set to "Please Refresh"
+                        self.htmlTitle = "Please Refresh"
+                        self.dayType = "Please Refresh"
+                        self.dailyBulletinHTML = nil
+                        self.dbDate = nil
+                        self.predicted = "Please Refresh"
+                    }
+                    
+                    // Small delay to ensure UI state is updated
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.onLoadingComplete()
+                    }
+                }
+                return
+            }
+            
             if let data = data, let html = String(data: data, encoding: .utf8) {
                 DispatchQueue.main.async {
+                    // Reset retry count on successful request
+                    self.networkRetryCount = 0
+                    
                     self.fullHTML = html
                     let trimmedHTML = self.extractDailyBulletinSection(from: html)
                     self.dailyBulletinHTML = trimmedHTML
