@@ -8,6 +8,197 @@ import Foundation
 // If testTime is nil, the real current time is used.
 // ---
 
+struct InteractiveBalloons: View {
+    @State private var balloonOffset = CGSize.zero
+    @State private var balloonScale: CGFloat = 1.0
+    @State private var floatingOffset: CGFloat = 0
+    @State private var isDragging = false
+    @State private var entranceOffset: CGFloat = 500 // Start well below screen
+    @State private var isExiting = false
+    @State private var randomXOffset: CGFloat = 0
+    @State private var randomYOffset: CGFloat = 0
+    @State private var shouldShowBalloon = false
+    @Binding var disablePullToRefresh: Bool
+    @Binding var showSplashScreen: Bool
+    let onBalloonExited: () -> Void
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let screenWidth = geometry.size.width
+            let screenHeight = geometry.size.height
+            
+            ZStack {
+                if shouldShowBalloon {
+                    // Single Green Foil Balloon (centered, bigger)
+                    RealBalloon(imageName: "green-balloon")
+                        .offset(x: balloonOffset.width + floatingOffset + randomXOffset, 
+                               y: balloonOffset.height + floatingOffset * 0.5 + entranceOffset + randomYOffset)
+                        .position(x: screenWidth * 0.5, y: screenHeight * 0.55) // Centered, positioned to stop before text
+                        .scaleEffect(balloonScale)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                if !isDragging {
+                                    isDragging = true
+                                    disablePullToRefresh = true // Disable pull-to-refresh when dragging balloon
+                                    // Haptic feedback on start
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+                                    
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                        balloonScale = 0.85
+                                    }
+                                }
+                                balloonOffset = value.translation
+                            }
+                            .onEnded { value in
+                                isDragging = false
+                                disablePullToRefresh = false // Re-enable pull-to-refresh when balloon drag ends
+                                
+                                // Strong haptic feedback on release
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                                impactFeedback.impactOccurred()
+                                
+                                // Launch balloon off screen
+                                launchBalloonAway()
+                            }
+                    )
+                }
+            }
+        }
+        .onAppear {
+            checkForBalloonSpawn()
+        }
+        .onChange(of: showSplashScreen) { _ in
+            checkForBalloonSpawn()
+        }
+    }
+    
+    private func checkForBalloonSpawn() {
+        // Only spawn balloon if splash screen is gone and balloon hasn't been spawned yet
+        if !showSplashScreen && !shouldShowBalloon {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                shouldShowBalloon = true
+                startEntranceAnimation()
+            }
+        }
+    }
+    
+    private func startEntranceAnimation() {
+        // Randomize spawn position (±50px on both axes)
+        randomXOffset = CGFloat.random(in: -50...50)
+        randomYOffset = CGFloat.random(in: -50...50)
+        
+        // Entrance animation - balloon floats up from bottom
+        withAnimation(.spring(response: 1.2, dampingFraction: 0.7)) {
+            entranceOffset = 0
+        }
+        
+        // Start gentle floating animation after entrance
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) {
+                floatingOffset = 15
+            }
+        }
+    }
+    
+    private func launchBalloonAway() {
+        // Launch balloon completely off screen slower than entrance
+        withAnimation(.spring(response: 2.0, dampingFraction: 0.7)) {
+            entranceOffset = -800 // Go way off top of screen to completely disappear
+            balloonScale = 1.2 // Grow slightly as it flies away
+        }
+        
+        // Notify when balloon has exited after animation completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            onBalloonExited()
+        }
+        
+        // No respawn - balloon stays gone
+    }
+}
+
+struct Balloon3D: View {
+    let color: Color
+    let scale: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // Balloon shadow
+            Ellipse()
+                .fill(Color.black.opacity(0.2))
+                .frame(width: 60 * scale, height: 80 * scale)
+                .offset(x: 3, y: 5)
+                .blur(radius: 3)
+            
+            // Main balloon body
+            Ellipse()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            color.opacity(0.9),
+                            color,
+                            color.opacity(0.7)
+                        ],
+                        center: UnitPoint(x: 0.3, y: 0.3),
+                        startRadius: 5,
+                        endRadius: 35
+                    )
+                )
+                .frame(width: 60 * scale, height: 80 * scale)
+                .overlay(
+                    // Highlight shine
+                    Ellipse()
+                        .fill(
+                            RadialGradient(
+                                colors: [Color.white.opacity(0.6), Color.clear],
+                                center: UnitPoint(x: 0.3, y: 0.2),
+                                startRadius: 2,
+                                endRadius: 15
+                            )
+                        )
+                        .frame(width: 20 * scale, height: 25 * scale)
+                        .offset(x: -10, y: -15)
+                )
+            
+            // Balloon string
+            Rectangle()
+                .fill(Color.gray.opacity(0.8))
+                .frame(width: 1, height: 40 * scale)
+                .offset(y: 40 * scale + 20)
+            
+            // String knot
+            Circle()
+                .fill(Color.gray.opacity(0.9))
+                .frame(width: 3 * scale, height: 3 * scale)
+                .offset(y: 40 * scale + 15)
+        }
+    }
+}
+
+struct RealBalloon: View {
+    let imageName: String
+    
+    var body: some View {
+        ZStack {
+            // Balloon shadow
+            Image(imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 400, height: 400) // Made even bigger
+                .offset(x: 3, y: 5)
+                .opacity(0.3)
+                .blur(radius: 3)
+            
+            // Main balloon image
+            Image(imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 400, height: 400) // Made even bigger
+        }
+    }
+}
+
 struct ScheduleView: View {
     let testDate: Date?
     @Binding var noSchool: Bool
@@ -16,11 +207,17 @@ struct ScheduleView: View {
     let onLoadingComplete: () -> Void
     let onPullRefresh: () async -> Void
     @Binding var showSplashScreen: Bool
+    @Binding var disablePullToRefreshGesture: Bool
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
     @State private var timeUpdateTimer: Timer?
     @State private var noSchoolDetails: String? = nil
+    @State private var disablePullToRefresh = false
+    @State private var showNoSchoolText = false
+    @State private var showDetailsText = false
+    @State private var balloonHasExited = false
+    @State private var hasStartedTextAnimation = false
 
     
 
@@ -38,23 +235,58 @@ struct ScheduleView: View {
     var body: some View {
         VStack(spacing: 0) {
             if noSchool {
-                VStack {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("No School")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        if let details = noSchoolDetails {
-                            Text(details)
-                                .font(.title2)
-                                .foregroundColor(.secondary)
+                ZStack {
+                    VStack {
+                        VStack(alignment: balloonHasExited ? .center : .leading, spacing: 8) {
+                            Text("No School")
+                                .font(balloonHasExited ? .system(size: 48, weight: .bold) : .largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+                                .opacity(showNoSchoolText ? 1 : 0)
+                                .scaleEffect(showNoSchoolText ? 1 : 0.8)
+                                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: showNoSchoolText)
+                                .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
+                            
+                            if let details = noSchoolDetails, !details.isEmpty {
+                                Text(details)
+                                    .font(balloonHasExited ? .system(size: 32, weight: .medium) : .title2)
+                                    .foregroundColor(.secondary)
+                                    .opacity(showDetailsText ? 1 : 0)
+                                    .scaleEffect(showDetailsText ? 1 : 0.8)
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3), value: showDetailsText)
+                                    .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
+                                    .onAppear {
+                                        print("DEBUG: Displaying no school details: '\(details)'")
+                                    }
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: balloonHasExited ? .center : .leading)
+                        .padding(.horizontal, balloonHasExited ? 20 : 40)
+                        .padding(.top, balloonHasExited ? 200 : 160)
+                        .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 40)
-                    .padding(.top, 160) // Adjust this value to move it up/down
-                    Spacer()
+                    
+                    // Interactive Balloons
+                    InteractiveBalloons(disablePullToRefresh: $disablePullToRefresh, showSplashScreen: $showSplashScreen) {
+                        // Balloon has exited - make text bigger
+                        balloonHasExited = true
+                    }
+                    .onChange(of: disablePullToRefresh) { newValue in
+                        disablePullToRefreshGesture = newValue
+                    }
+                }
+                .onAppear {
+                    if noSchool && !hasStartedTextAnimation {
+                        hasStartedTextAnimation = true
+                        startTextAnimation()
+                    }
+                }
+                .onChange(of: noSchool) { _ in
+                    if noSchool && !hasStartedTextAnimation {
+                        hasStartedTextAnimation = true
+                        startTextAnimation()
+                    }
                 }
             } else {
                 ScrollView {
@@ -393,7 +625,7 @@ struct ScheduleView: View {
                     noSchool = true
                     noSchoolDetails = specialDayInfo.details
                     loader.blocks = []
-                    // print("No school: \(specialDayInfo.details ?? "No details")")
+                    print("DEBUG: Setting no school with details: '\(specialDayInfo.details ?? "nil")'")
                     firebaseSucceeded = true
                 } else if specialDayInfo.type == "custom" {
                     // 3. If type is custom, read the custom schedule
@@ -471,6 +703,18 @@ struct ScheduleView: View {
         timeUpdateTimer?.invalidate()
         timeUpdateTimer = nil
     }
+    
+    // MARK: - Text Animation Functions
+    
+    func startTextAnimation() {
+        // Show "No School" text immediately with smooth animation
+        showNoSchoolText = true
+        
+        // Show details text after a short delay if available
+        if noSchoolDetails != nil {
+            showDetailsText = true
+        }
+    }
 }
 
 struct BlockHeader: View {
@@ -513,5 +757,6 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false))
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false))
 }
+

@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftSoup
 
 struct ContentView: View {
-    @State private var noSchool: Bool = false
+    @State private var noSchool: Bool? = nil // nil = loading, true/false = determined
     @State private var firebaseError: Bool = false
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
@@ -19,7 +19,7 @@ struct ContentView: View {
     // Background refresh state
     @State private var previousDayType: String = ""
     @State private var previousScheduleBlocks: [Block] = []
-    @State private var previousNoSchool: Bool = false
+    @State private var previousNoSchool: Bool? = false
     @State private var scheduleLoaded: Bool = false
     @State private var dayTypeLoaded: Bool = false
     @State private var dragOffset: CGFloat = 0
@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var showSplashScreen: Bool = true
     @State private var isRefreshing: Bool = false
     @State private var triggerDayTypeRipple: Bool = false
+    @State private var disablePullToRefreshGesture = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -53,26 +54,32 @@ struct ContentView: View {
             VStack {
                 Spacer()
                                  VStack(spacing: 20) {
-                     // Only show DayTypeView when there is school
-                     if !noSchool {
-                         DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
-                             dayTypeLoaded = true 
-                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
+                     // Only show content when noSchool state is determined
+                     if let isNoSchool = noSchool {
+                         // Only show DayTypeView when there is school
+                         if !isNoSchool {
+                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                                 dayTypeLoaded = true 
+                             }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
+                                 .id(refreshID)
+                         }
+                         
+                         ScheduleView(testDate: testDate, noSchool: Binding(
+                             get: { isNoSchool },
+                             set: { noSchool = $0 }
+                         ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
+                             scheduleLoaded = true 
+                         }, onPullRefresh: {
+                             Task {
+                                 await refreshAll()
+                             }
+                         }, showSplashScreen: $showSplashScreen, disablePullToRefreshGesture: $disablePullToRefreshGesture)
                              .id(refreshID)
+                             .onAppear {
+                                 // Reset animation state when view appears
+                                 scheduleLoader.showBlocks = false
+                             }
                      }
-                     
-                     ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                         scheduleLoaded = true 
-                     }, onPullRefresh: {
-                         Task {
-                             await refreshAll()
-                         }
-                     }, showSplashScreen: $showSplashScreen)
-                         .id(refreshID)
-                         .onAppear {
-                             // Reset animation state when view appears
-                             scheduleLoader.showBlocks = false
-                         }
                  }
                 .offset(y: scheduleOffset)
                 Spacer()
@@ -132,15 +139,15 @@ struct ContentView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    // Allow pulling from anywhere on the screen
-                    if value.translation.height > 0 {
+                    // Only allow pull-to-refresh if balloon is not being dragged
+                    if !disablePullToRefreshGesture && value.translation.height > 0 {
                         dragOffset = value.translation.height
                         isRefreshReady = value.translation.height > 80
                     }
                 }
                 .onEnded { value in
-                    // Allow pulling from anywhere on the screen
-                    if value.translation.height > 80 {
+                    // Only allow pull-to-refresh if balloon is not being dragged
+                    if !disablePullToRefreshGesture && value.translation.height > 80 {
                         print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (pull-to-refresh)")
                         isRefreshing = true
                         Task {
@@ -189,10 +196,10 @@ struct ContentView: View {
     // Update loading state when both views are loaded
     private func updateLoadingState() {
         // On no_school days, only scheduleLoaded matters since DayTypeView is hidden
-        let shouldFinishLoading = noSchool ? scheduleLoaded : (scheduleLoaded && dayTypeLoaded)
+        let shouldFinishLoading = (noSchool == true) ? scheduleLoaded : (scheduleLoaded && dayTypeLoaded)
         
         if shouldFinishLoading {
-            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
+            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false)")
             
             // Store current state for future background comparisons
             // Note: This is simplified - you'd need to get the actual dayType from DayTypeView
@@ -204,7 +211,7 @@ struct ContentView: View {
             isRefreshing = false // Also hide the refresh spinner when content is ready
             
             // Only trigger animation if there are blocks to show
-            if !noSchool {
+            if noSchool != true {
                 if showSplashScreen {
                     // Small delay after splash screen before blocks slide in
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
