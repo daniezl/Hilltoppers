@@ -20,6 +20,7 @@ struct ScheduleView: View {
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
     @State private var timeUpdateTimer: Timer?
+    @State private var noSchoolDetails: String? = nil
 
     
 
@@ -37,10 +38,24 @@ struct ScheduleView: View {
     var body: some View {
         VStack(spacing: 0) {
             if noSchool {
-                Text("No school")
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary)
-                    .padding()
+                VStack {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("No School")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        
+                        if let details = noSchoolDetails {
+                            Text(details)
+                                .font(.title2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 160) // Adjust this value to move it up/down
+                    Spacer()
+                }
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
@@ -349,9 +364,11 @@ struct ScheduleView: View {
         if let file = scheduleFile {
             loader.loadSchedule(from: file)
             noSchool = false
+            noSchoolDetails = nil
         } else {
             loader.blocks = []
             noSchool = true
+            noSchoolDetails = nil // Weekend has no special details
         }
     }
 
@@ -370,14 +387,15 @@ struct ScheduleView: View {
                 // print("In break")
                 firebaseSucceeded = true
             }
-            // 2. Try to find special_day and get type
-            else if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
-                if type == "no_school" {
+            // 2. Try to find special_day and get type with details
+            else if let specialDayInfo = try await ScheduleTypeFetcher.fetchSpecialDayInfo(date: currentTime) {
+                if specialDayInfo.type == "no_school" {
                     noSchool = true
+                    noSchoolDetails = specialDayInfo.details
                     loader.blocks = []
-                    // print("No school")
+                    // print("No school: \(specialDayInfo.details ?? "No details")")
                     firebaseSucceeded = true
-                } else if type == "custom" {
+                } else if specialDayInfo.type == "custom" {
                     // 3. If type is custom, read the custom schedule
                     if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
                         loader.blocks = blocks
@@ -388,11 +406,12 @@ struct ScheduleView: View {
                     }
                 } else {
                     // try to load (type).json
-                    loader.loadSchedule(from: type)
+                    loader.loadSchedule(from: specialDayInfo.type)
                     if !loader.blocks.isEmpty {
                         noSchool = false
-                        // print("Schedule from \(type).json")
-                        scheduleTitle = type.capitalized.replacingOccurrences(of: "_", with: " ")
+                        noSchoolDetails = nil // Clear details for non-no-school days
+                        // print("Schedule from \(specialDayInfo.type).json")
+                        scheduleTitle = specialDayInfo.type.capitalized.replacingOccurrences(of: "_", with: " ")
                         firebaseSucceeded = true
                     }
                 }
@@ -406,6 +425,7 @@ struct ScheduleView: View {
                 // print("No Firebase data found, using local schedule")
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
+                noSchoolDetails = nil // Clear details for weekday schedules
             }
             
         } catch {
@@ -413,6 +433,7 @@ struct ScheduleView: View {
             // print("Error refreshing schedule (Firebase failed): \(error)")
             loadWeekdaySchedule() // Fallback to local data
             scheduleTitle = getWeekdayTitle()
+            noSchoolDetails = nil // Clear details for weekday schedules
             // Keep isStale = true since Firebase failed
         }
         

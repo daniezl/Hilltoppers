@@ -1,6 +1,11 @@
 import Foundation
 import FirebaseFirestore
 
+struct SpecialDayInfo {
+    let type: String
+    let details: String?
+}
+
 struct ScheduleTypeFetcher {
     static func fetchTypeFor(date: Date) async throws -> String? {
         // print("FIREBASE CALL: fetchTypeFor")
@@ -19,6 +24,28 @@ struct ScheduleTypeFetcher {
             return nil
         } catch {
             // print("Firebase error in fetchTypeFor: \(error)")
+            throw error
+        }
+    }
+    
+    static func fetchSpecialDayInfo(date: Date) async throws -> SpecialDayInfo? {
+        // print("FIREBASE CALL: fetchSpecialDayInfo")
+        let db = Firestore.firestore()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: date)
+        // print("Looking up Firestore for date: \(dateString)")
+        
+        do {
+            let docRef = db.collection("special_days").document(dateString)
+            let snapshot = try await docRef.getDocument()
+            if let data = snapshot.data(), let type = data["type"] as? String {
+                let details = data["details"] as? String
+                return SpecialDayInfo(type: type, details: details)
+            }
+            return nil
+        } catch {
+            // print("Firebase error in fetchSpecialDayInfo: \(error)")
             throw error
         }
     }

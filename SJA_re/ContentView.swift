@@ -42,7 +42,7 @@ struct ContentView: View {
          calendar: .current,
          year: 2025,
          month: 5,
-         day: 26,
+         day: 22,
          hour: 11,
          minute: 28
      ).date
@@ -50,41 +50,34 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // Main content - always present
-            Group {
-                if noSchool {
-                    Text("No school")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                        .offset(y: noSchoolOffset)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .contentShape(Rectangle())
-                } else {
-                    VStack {
-                        Spacer()
-                        VStack(spacing: 20) {
-                            DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
-                                dayTypeLoaded = true 
-                            }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
-                                .id(refreshID)
-                            ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                                scheduleLoaded = true 
-                            }, onPullRefresh: {
-                                Task {
-                                    await refreshAll()
-                                }
-                            }, showSplashScreen: $showSplashScreen)
-                                .id(refreshID)
-                                .onAppear {
-                                    // Reset animation state when view appears
-                                    scheduleLoader.showBlocks = false
-                                }
-                        }
-                        .offset(y: scheduleOffset)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+            VStack {
+                Spacer()
+                                 VStack(spacing: 20) {
+                     // Only show DayTypeView when there is school
+                     if !noSchool {
+                         DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                             dayTypeLoaded = true 
+                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
+                             .id(refreshID)
+                     }
+                     
+                     ScheduleView(testDate: testDate, noSchool: $noSchool, isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
+                         scheduleLoaded = true 
+                     }, onPullRefresh: {
+                         Task {
+                             await refreshAll()
+                         }
+                     }, showSplashScreen: $showSplashScreen)
+                         .id(refreshID)
+                         .onAppear {
+                             // Reset animation state when view appears
+                             scheduleLoader.showBlocks = false
+                         }
+                 }
+                .offset(y: scheduleOffset)
+                Spacer()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .opacity(isLoading ? 0.0 : 1.0)
             .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : (showSplashScreen ? 0.5 : 0)), value: isLoading)
                 
@@ -195,8 +188,8 @@ struct ContentView: View {
     
     // Update loading state when both views are loaded
     private func updateLoadingState() {
-        // On no_school days, only dayTypeLoaded matters
-        let shouldFinishLoading = noSchool ? dayTypeLoaded : (scheduleLoaded && dayTypeLoaded)
+        // On no_school days, only scheduleLoaded matters since DayTypeView is hidden
+        let shouldFinishLoading = noSchool ? scheduleLoaded : (scheduleLoaded && dayTypeLoaded)
         
         if shouldFinishLoading {
             print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool)")
