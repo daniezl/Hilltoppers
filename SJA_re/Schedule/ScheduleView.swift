@@ -26,23 +26,8 @@ struct LottieView: UIViewRepresentable {
         let view = UIView(frame: .zero)
         
         let animationView = LottieAnimationView()
-        print("Loading Lottie animation: \(animationName)")
-        animationView.animation = LottieAnimation.named(animationName)
-        
-        if animationView.animation == nil {
-            print("ERROR: Could not load Lottie animation named '\(animationName)'")
-        } else {
-            print("Lottie animation loaded successfully")
-        }
-        
         animationView.contentMode = .scaleAspectFit
         animationView.loopMode = loopMode
-        
-        print("Starting Lottie animation playback")
-        animationView.play { finished in
-            print("Lottie animation playback completed: \(finished)")
-            completion?()
-        }
         
         view.addSubview(animationView)
         animationView.translatesAutoresizingMaskIntoConstraints = false
@@ -50,6 +35,22 @@ struct LottieView: UIViewRepresentable {
             animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
             animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
         ])
+        
+        // Load animation and start playback immediately when ready
+        DispatchQueue.main.async {
+            print("Loading Lottie animation: \(animationName)")
+            animationView.animation = LottieAnimation.named(animationName)
+            
+            if animationView.animation == nil {
+                print("ERROR: Could not load Lottie animation named '\(animationName)'")
+            } else {
+                print("Lottie animation loaded successfully - starting playback immediately")
+                animationView.play { finished in
+                    print("Lottie animation playback completed: \(finished)")
+                    completion?()
+                }
+            }
+        }
         
         return view
     }
@@ -63,6 +64,7 @@ struct LottieView: UIViewRepresentable {
 struct ConfettiAnimationView: View {
     @Binding var showSplashScreen: Bool
     let onAnimationComplete: () -> Void
+    let onAnimationStart: () -> Void
     @State private var shouldStartAnimation = false
     @State private var animationFinished = false
     
@@ -82,15 +84,6 @@ struct ConfettiAnimationView: View {
             if !showSplashScreen {
                 print("Splash screen already ended, starting confetti animation")
                 startAnimation()
-            } else {
-                // Start animation early so it's visually playing by the time splash screen ends
-                print("Starting confetti early to compensate for Lottie visual delay")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.78) {
-                    if shouldStartAnimation == false { // Only start if not already started
-                        print("Early confetti start triggered")
-                        startAnimation()
-                    }
-                }
             }
         }
         .onChange(of: showSplashScreen) { newValue in
@@ -103,10 +96,12 @@ struct ConfettiAnimationView: View {
     }
     
     private func startAnimation() {
-        print("startAnimation() called - starting confetti immediately to compensate for Lottie delay")
-        // Start immediately - no DispatchQueue to compensate for Lottie loading time
-        shouldStartAnimation = true
-        print("Confetti animation starting now!")
+        print("startAnimation() called - starting confetti")
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
+            print("Confetti animation starting now!")
+            shouldStartAnimation = true
+            onAnimationStart() // Trigger text animation at the same time
+        }
     }
 }
 
@@ -488,34 +483,42 @@ struct ScheduleView: View {
                     
                     // Confetti Animation (only once per day)
                     if shouldShowConfetti {
-                        ConfettiAnimationView(showSplashScreen: $showSplashScreen) {
+                        ConfettiAnimationView(showSplashScreen: $showSplashScreen, onAnimationComplete: {
                             // Confetti has completed - make text bigger
                             balloonHasExited = true
-                        }
+                        }, onAnimationStart: {
+                            // Start text animation when confetti starts
+                            if !hasStartedTextAnimation {
+                                hasStartedTextAnimation = true
+                                startTextAnimation()
+                            }
+                        })
                     }
                 }
                 .onAppear {
-                    if noSchool && !hasStartedTextAnimation {
-                        hasStartedTextAnimation = true
-                        startTextAnimation()
-                    }
-                    
-                    // Check if we should show confetti today (independent of text animation)
+                    // Check if we should show confetti today
                     if noSchool && shouldShowConfettiToday() {
                         shouldShowConfetti = true
                         markConfettiShownToday()
+                    }
+                    
+                    // Start text animation immediately if no confetti will show
+                    if noSchool && !hasStartedTextAnimation && !shouldShowConfetti {
+                        hasStartedTextAnimation = true
+                        startTextAnimation()
                     }
                 }
                 .onChange(of: noSchool) { _ in
-                    if noSchool && !hasStartedTextAnimation {
-                        hasStartedTextAnimation = true
-                        startTextAnimation()
-                    }
-                    
-                    // Check if we should show confetti today (independent of text animation)
+                    // Check if we should show confetti today
                     if noSchool && shouldShowConfettiToday() {
                         shouldShowConfetti = true
                         markConfettiShownToday()
+                    }
+                    
+                    // Start text animation immediately if no confetti will show
+                    if noSchool && !hasStartedTextAnimation && !shouldShowConfetti {
+                        hasStartedTextAnimation = true
+                        startTextAnimation()
                     }
                 }
             } else {
