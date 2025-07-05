@@ -27,6 +27,8 @@
 		A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */; };
 		A280A0FC2DDE0C1600F98F3F /* schedule_wed.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0FB2DDE0C1600F98F3F /* schedule_wed.json */; };
 		A280A0FE2DDE0FEA00F98F3F /* schedule_fri.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */; };
+		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
+		A2F8BEA32E19106000EAD8F9 /* confetti.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEA22E19106000EAD8F9 /* confetti.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,6 +84,7 @@
 		A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DayTypeView 2.swift"; sourceTree = "<group>"; };
 		A280A0FB2DDE0C1600F98F3F /* schedule_wed.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_wed.json; sourceTree = "<group>"; };
 		A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_fri.json; sourceTree = "<group>"; };
+		A2F8BEA22E19106000EAD8F9 /* confetti.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -107,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */,
 				A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */,
 				A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */,
 				A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */,
@@ -177,6 +181,7 @@
 		A280A0EF2DDCE7E300F98F3F /* SJA_re */ = {
 			isa = PBXGroup;
 			children = (
+				A2F8BEA22E19106000EAD8F9 /* confetti.json */,
 				A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */,
 				A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */,
 				A25EDD832DEFD9BE00F71034 /* GoogleService-Info.plist */,
@@ -232,6 +237,7 @@
 				A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */,
 				A24509CE2DEEB14500BCDAB5 /* FirebaseCore */,
 				A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */,
+				A2F8BEA02E19100200EAD8F9 /* Lottie */,
 			);
 			productName = SJA_re;
 			productReference = A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */;
@@ -318,6 +324,7 @@
 			packageReferences = (
 				A25EA33F2DBA0B530037D8D9 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				A24509CB2DEEB14500BCDAB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				A2F8BE9F2E19100200EAD8F9 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A25EA2D02DB9E0770037D8D9 /* Products */;
@@ -337,6 +344,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A280A0F02DDCE7E300F98F3F /* schedule_mon_thu.json in Resources */,
+				A2F8BEA32E19106000EAD8F9 /* confetti.json in Resources */,
 				A271E7DF2DFD2C880063C9C0 /* LaunchScreen.storyboard in Resources */,
 				A280A0FC2DDE0C1600F98F3F /* schedule_wed.json in Resources */,
 				A25EDD842DEFD9BE00F71034 /* GoogleService-Info.plist in Resources */,
@@ -747,6 +755,14 @@
 				minimumVersion = 2.8.7;
 			};
 		};
+		A2F8BE9F2E19100200EAD8F9 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -769,6 +785,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A25EA33F2DBA0B530037D8D9 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
+		};
+		A2F8BEA02E19100200EAD8F9 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A2F8BE9F2E19100200EAD8F9 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import Lottie
 // If you see 'Cannot find type ... in scope', ensure ScheduleModels.swift, ScheduleLoader.swift, and ScheduleTypeFetcher.swift are in the same target/module as this file.
 // import SJA_re // Uncomment if you have a module named SJA_re
 // ---
@@ -8,6 +9,222 @@ import Foundation
 // If testTime is nil, the real current time is used.
 // ---
 
+// MARK: - Lottie Animation View
+struct LottieView: UIViewRepresentable {
+    let animationName: String
+    let loopMode: LottieLoopMode
+    let completion: (() -> Void)?
+    
+    init(animationName: String, loopMode: LottieLoopMode = .playOnce, completion: (() -> Void)? = nil) {
+        self.animationName = animationName
+        self.loopMode = loopMode
+        self.completion = completion
+    }
+    
+    func makeUIView(context: Context) -> UIView {
+        print("LottieView makeUIView called for: \(animationName)")
+        let view = UIView(frame: .zero)
+        
+        let animationView = LottieAnimationView()
+        print("Loading Lottie animation: \(animationName)")
+        animationView.animation = LottieAnimation.named(animationName)
+        
+        if animationView.animation == nil {
+            print("ERROR: Could not load Lottie animation named '\(animationName)'")
+        } else {
+            print("Lottie animation loaded successfully")
+        }
+        
+        animationView.contentMode = .scaleAspectFit
+        animationView.loopMode = loopMode
+        
+        print("Starting Lottie animation playback")
+        animationView.play { finished in
+            print("Lottie animation playback completed: \(finished)")
+            completion?()
+        }
+        
+        view.addSubview(animationView)
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
+            animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
+        ])
+        
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // Update logic if needed
+    }
+}
+
+// MARK: - Confetti Animation View
+struct ConfettiAnimationView: View {
+    @Binding var showSplashScreen: Bool
+    let onAnimationComplete: () -> Void
+    @State private var shouldStartAnimation = false
+    @State private var animationFinished = false
+    
+    var body: some View {
+        ZStack {
+            if shouldStartAnimation && !animationFinished {
+                LottieView(animationName: "confetti", loopMode: .playOnce) {
+                    print("Confetti animation completed!")
+                    animationFinished = true
+                    onAnimationComplete()
+                }
+                .offset(y: -200) // Move confetti up 
+            }
+        }
+        .onAppear {
+            print("ConfettiAnimationView appeared, showSplashScreen: \(showSplashScreen)")
+            if !showSplashScreen {
+                print("Splash screen already ended, starting confetti animation")
+                startAnimation()
+            } else {
+                // Start animation early so it's visually playing by the time splash screen ends
+                print("Starting confetti early to compensate for Lottie visual delay")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.78) {
+                    if shouldStartAnimation == false { // Only start if not already started
+                        print("Early confetti start triggered")
+                        startAnimation()
+                    }
+                }
+            }
+        }
+        .onChange(of: showSplashScreen) { newValue in
+            print("Splash screen state changed to: \(newValue)")
+            if !newValue && !shouldStartAnimation {
+                print("Splash screen ended, starting confetti animation")
+                startAnimation()
+            }
+        }
+    }
+    
+    private func startAnimation() {
+        print("startAnimation() called - starting confetti immediately to compensate for Lottie delay")
+        // Start immediately - no DispatchQueue to compensate for Lottie loading time
+        shouldStartAnimation = true
+        print("Confetti animation starting now!")
+    }
+}
+
+/*
+// MARK: - Old Custom Confetti Code (commented out)
+struct ConfettiView: View {
+    @State private var confettiPieces: [ConfettiPiece] = []
+    @State private var isAnimating = false
+    @Binding var showSplashScreen: Bool
+    let onConfettiComplete: () -> Void
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(confettiPieces) { piece in
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(piece.color)
+                        .frame(width: piece.size.width, height: piece.size.height)
+                        .position(x: piece.position.x, y: piece.position.y)
+                        .rotationEffect(.degrees(piece.rotation))
+                        .opacity(piece.opacity)
+                }
+            }
+        }
+        .onAppear {
+            if !showSplashScreen {
+                startConfettiAnimation()
+            }
+        }
+        .onChange(of: showSplashScreen) { _ in
+            if !showSplashScreen && !isAnimating {
+                startConfettiAnimation()
+            }
+        }
+    }
+    
+    private func startConfettiAnimation() {
+        guard !isAnimating else { return }
+        isAnimating = true
+        
+        // Wait a bit after splash screen disappears
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            createConfettiPieces()
+            animateConfetti()
+        }
+    }
+    
+    private func createConfettiPieces() {
+        let colors: [Color] = [.green, .white, Color.green.opacity(0.7), Color.white.opacity(0.9)]
+        
+        for i in 0..<50 {
+            let piece = ConfettiPiece(
+                id: UUID(),
+                color: colors.randomElement()!,
+                position: CGPoint(x: CGFloat.random(in: 0...UIScreen.main.bounds.width), y: -20),
+                size: CGSize(width: CGFloat.random(in: 8...16), height: CGFloat.random(in: 8...16)),
+                rotation: Double.random(in: 0...360),
+                opacity: Double.random(in: 0.7...1.0),
+                fallSpeed: Double.random(in: 2...5),
+                rotationSpeed: Double.random(in: 1...3)
+            )
+            confettiPieces.append(piece)
+        }
+    }
+    
+    private func animateConfetti() {
+        withAnimation(.easeIn(duration: 0.5)) {
+            // Initial burst effect
+            for i in 0..<confettiPieces.count {
+                confettiPieces[i].position.y += 100
+                confettiPieces[i].rotation += 180
+            }
+        }
+        
+        // Continuous falling animation
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+            var allPiecesOffScreen = true
+            
+            for i in 0..<confettiPieces.count {
+                confettiPieces[i].position.y += confettiPieces[i].fallSpeed
+                confettiPieces[i].rotation += confettiPieces[i].rotationSpeed
+                
+                // Add some horizontal drift
+                confettiPieces[i].position.x += Double.random(in: -1...1)
+                
+                // Fade out as they fall
+                if confettiPieces[i].position.y > UIScreen.main.bounds.height * 0.8 {
+                    confettiPieces[i].opacity = max(0, confettiPieces[i].opacity - 0.05)
+                }
+                
+                if confettiPieces[i].position.y < UIScreen.main.bounds.height + 50 {
+                    allPiecesOffScreen = false
+                }
+            }
+            
+            if allPiecesOffScreen {
+                timer.invalidate()
+                confettiPieces.removeAll()
+                onConfettiComplete()
+            }
+        }
+    }
+}
+
+struct ConfettiPiece: Identifiable {
+    let id: UUID
+    let color: Color
+    var position: CGPoint
+    let size: CGSize
+    var rotation: Double
+    var opacity: Double
+    var fallSpeed: Double
+    let rotationSpeed: Double
+}
+*/
+
+/*
+// MARK: - Commented Out Balloon Code
 struct InteractiveBalloons: View {
     @State private var balloonOffset = CGSize.zero
     @State private var balloonScale: CGFloat = 1.0
@@ -198,6 +415,7 @@ struct RealBalloon: View {
         }
     }
 }
+*/
 
 struct ScheduleView: View {
     let testDate: Date?
@@ -218,6 +436,7 @@ struct ScheduleView: View {
     @State private var showDetailsText = false
     @State private var balloonHasExited = false
     @State private var hasStartedTextAnimation = false
+    @State private var shouldShowConfetti = false
 
     
 
@@ -267,13 +486,12 @@ struct ScheduleView: View {
                         Spacer()
                     }
                     
-                    // Interactive Balloons
-                    InteractiveBalloons(disablePullToRefresh: $disablePullToRefresh, showSplashScreen: $showSplashScreen) {
-                        // Balloon has exited - make text bigger
-                        balloonHasExited = true
-                    }
-                    .onChange(of: disablePullToRefresh) { newValue in
-                        disablePullToRefreshGesture = newValue
+                    // Confetti Animation (only once per day)
+                    if shouldShowConfetti {
+                        ConfettiAnimationView(showSplashScreen: $showSplashScreen) {
+                            // Confetti has completed - make text bigger
+                            balloonHasExited = true
+                        }
                     }
                 }
                 .onAppear {
@@ -281,11 +499,23 @@ struct ScheduleView: View {
                         hasStartedTextAnimation = true
                         startTextAnimation()
                     }
+                    
+                    // Check if we should show confetti today (independent of text animation)
+                    if noSchool && shouldShowConfettiToday() {
+                        shouldShowConfetti = true
+                        markConfettiShownToday()
+                    }
                 }
                 .onChange(of: noSchool) { _ in
                     if noSchool && !hasStartedTextAnimation {
                         hasStartedTextAnimation = true
                         startTextAnimation()
+                    }
+                    
+                    // Check if we should show confetti today (independent of text animation)
+                    if noSchool && shouldShowConfettiToday() {
+                        shouldShowConfetti = true
+                        markConfettiShownToday()
                     }
                 }
             } else {
@@ -714,6 +944,31 @@ struct ScheduleView: View {
         if noSchoolDetails != nil {
             showDetailsText = true
         }
+    }
+    
+    // MARK: - Confetti Management Functions
+    
+    func shouldShowConfettiToday() -> Bool {
+        // TESTING: Always show confetti for testing purposes
+        return true
+        
+        // PRODUCTION: Uncomment below and comment out "return true" above
+        // let today = dateKey(for: currentTime)
+        // let lastShownKey = "confetti_last_shown"
+        // let lastShown = UserDefaults.standard.string(forKey: lastShownKey)
+        // return lastShown != today
+    }
+    
+    func markConfettiShownToday() {
+        let today = dateKey(for: currentTime)
+        let lastShownKey = "confetti_last_shown"
+        UserDefaults.standard.set(today, forKey: lastShownKey)
+    }
+    
+    func dateKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
     }
 }
 
