@@ -634,7 +634,6 @@ struct ScheduleView: View {
                                 .padding(.vertical, 8) // between title and blocks
                             
                             ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
-                                let _ = print("Animation order - Index \(index): \(block.name)")
                                 VStack(spacing: 0) {
                                     // Time info above highlighted block (only if dropdown is closed)
                                     if expandedBlockID != block.id {
@@ -902,7 +901,9 @@ struct ScheduleView: View {
 
     func loadWeekdaySchedule() {
         let weekday = Calendar.current.component(.weekday, from: currentTime)
-        // print("Weekday: \(weekday)")
+        let weekdayNames = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        print("📅 [WEEKDAY] Loading weekday schedule for \(weekdayNames[weekday]) (weekday=\(weekday))")
+        
         let scheduleFile: String?
         switch weekday {
         case 2: // Monday
@@ -918,11 +919,15 @@ struct ScheduleView: View {
         default: // Saturday & Sunday
             scheduleFile = nil
         }
+        
         if let file = scheduleFile {
+            print("📄 [WEEKDAY] Loading schedule from: \(file).json")
             loader.loadSchedule(from: file)
+            print("📋 [WEEKDAY] Loaded \(loader.blocks.count) blocks from \(file).json")
             noSchool = false
             noSchoolDetails = nil
         } else {
+            print("🚫 [WEEKDAY] Weekend - setting no school")
             loader.blocks = []
             noSchool = true
             noSchoolDetails = nil // Weekend has no special details
@@ -933,69 +938,95 @@ struct ScheduleView: View {
     
     @MainActor
     func refreshSchedule() async {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: currentTime)
+        
+        print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
         
         var firebaseSucceeded = false
         
         do {
+            print("🔍 [SCHEDULE] Step 1: Checking if in special period...")
             // 1. Check if in break
             if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
+                print("✅ [SCHEDULE] In special period (break) - setting no school")
                 noSchool = true
                 loader.blocks = []
-                // print("In break")
+                scheduleTitle = "No School (Break)"
                 firebaseSucceeded = true
             }
             // 2. Try to find special_day and get type with details
-            else if let specialDayInfo = try await ScheduleTypeFetcher.fetchSpecialDayInfo(date: currentTime) {
-                if specialDayInfo.type == "no_school" {
-                    noSchool = true
-                    noSchoolDetails = specialDayInfo.details
-                    loader.blocks = []
-                    print("DEBUG: Setting no school with details: '\(specialDayInfo.details ?? "nil")'")
-                    firebaseSucceeded = true
-                } else if specialDayInfo.type == "custom" {
-                    // 3. If type is custom, read the custom schedule
-                    if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
-                        loader.blocks = blocks
-                        noSchool = false
-                        // print("Custom schedule")
-                        scheduleTitle = "Custom Schedule"
+            else {
+                print("🔍 [SCHEDULE] Step 2: Checking for special day info...")
+                if let specialDayInfo = try await ScheduleTypeFetcher.fetchSpecialDayInfo(date: currentTime) {
+                    print("✅ [SCHEDULE] Found special day: type='\(specialDayInfo.type)', details='\(specialDayInfo.details ?? "nil")'")
+                    
+                    if specialDayInfo.type == "no_school" {
+                        print("📅 [SCHEDULE] Special day is no_school")
+                        noSchool = true
+                        noSchoolDetails = specialDayInfo.details
+                        loader.blocks = []
+                        scheduleTitle = "No School"
                         firebaseSucceeded = true
+                    } else if specialDayInfo.type == "custom" {
+                        print("🔍 [SCHEDULE] Special day is custom - loading custom schedule...")
+                        // 3. If type is custom, read the custom schedule
+                        if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
+                            print("✅ [SCHEDULE] Loaded custom schedule with \(blocks.count) blocks")
+                            loader.blocks = blocks
+                            noSchool = false
+                            scheduleTitle = "Custom Schedule"
+                            firebaseSucceeded = true
+                        } else {
+                            print("❌ [SCHEDULE] Custom schedule returned no blocks")
+                        }
+                    } else {
+                        print("📄 [SCHEDULE] Special day type '\(specialDayInfo.type)' - loading from JSON...")
+                        // try to load (type).json
+                        loader.loadSchedule(from: specialDayInfo.type)
+                        if !loader.blocks.isEmpty {
+                            print("✅ [SCHEDULE] Loaded \(loader.blocks.count) blocks from \(specialDayInfo.type).json")
+                            noSchool = false
+                            noSchoolDetails = nil // Clear details for non-no-school days
+                            scheduleTitle = specialDayInfo.type.capitalized.replacingOccurrences(of: "_", with: " ")
+                            firebaseSucceeded = true
+                        } else {
+                            print("❌ [SCHEDULE] No blocks found in \(specialDayInfo.type).json")
+                        }
                     }
                 } else {
-                    // try to load (type).json
-                    loader.loadSchedule(from: specialDayInfo.type)
-                    if !loader.blocks.isEmpty {
-                        noSchool = false
-                        noSchoolDetails = nil // Clear details for non-no-school days
-                        // print("Schedule from \(specialDayInfo.type).json")
-                        scheduleTitle = specialDayInfo.type.capitalized.replacingOccurrences(of: "_", with: " ")
-                        firebaseSucceeded = true
-                    }
+                    print("❌ [SCHEDULE] No special day info found in Firebase")
                 }
             }
             
             // If Firebase calls succeeded, clear stale flag
             if firebaseSucceeded {
+                print("✅ [SCHEDULE] Firebase succeeded - clearing stale flag")
                 isStale = false
             } else {
+                print("⚠️ [SCHEDULE] Firebase responded but no data found - falling back to weekday schedule")
                 // Firebase responded but no data found, fall back to local
-                // print("No Firebase data found, using local schedule")
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
                 noSchoolDetails = nil // Clear details for weekday schedules
             }
             
         } catch {
+            print("❌ [SCHEDULE] Firebase calls failed: \(error)")
+            print("⚠️ [SCHEDULE] Falling back to weekday schedule")
             // Firebase calls failed (network issue, blocked, etc.)
-            // print("Error refreshing schedule (Firebase failed): \(error)")
             loadWeekdaySchedule() // Fallback to local data
             scheduleTitle = getWeekdayTitle()
             noSchoolDetails = nil // Clear details for weekday schedules
             // Keep isStale = true since Firebase failed
         }
         
+        print("📋 [SCHEDULE] Final result: title='\(scheduleTitle)', noSchool=\(noSchool), blocks=\(loader.blocks.count), isStale=\(isStale)")
+        
         // Signal that loading is complete
         onLoadingComplete()
+        print("✅ [SCHEDULE] Loading complete!")
     }
     
 
@@ -1018,9 +1049,12 @@ struct ScheduleView: View {
         // Stop any existing timer
         stopTimeUpdateTimer()
         
-        // Create a timer that updates every second
+        // Create a timer that updates every second, but only update if there are active timers to show
         timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            now = Date()
+            // Only update time if we have blocks loaded and need to show countdowns
+            if !loader.blocks.isEmpty {
+                now = Date()
+            }
         }
     }
     

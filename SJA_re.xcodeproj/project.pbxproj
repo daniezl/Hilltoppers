@@ -543,7 +543,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
+				DEVELOPMENT_TEAM = YDRBRK389D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Hilltoppers;
@@ -563,7 +563,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers;
+				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-re";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -583,7 +583,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
+				DEVELOPMENT_TEAM = YDRBRK389D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Hilltoppers;
@@ -603,7 +603,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers;
+				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-re";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;

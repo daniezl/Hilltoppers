@@ -37,16 +37,16 @@ struct ContentView: View {
     
     // Set this to a specific Date to test, or nil to use real time
     
-//   let testDate: Date? = nil
+   let testDate: Date? = nil
     
-     let testDate: Date? = DateComponents(
-         calendar: .current,
-         year: 2025,
-         month: 5,
-         day: 22,
-         hour: 11,
-         minute: 28
-     ).date
+//     let testDate: Date? = DateComponents(
+//         calendar: .current,
+//         year: 2025,
+//         month: 5,
+//         day: 22,
+//         hour: 11,
+//         minute: 28
+//     ).date
 
     var body: some View {
         ZStack {
@@ -58,18 +58,20 @@ struct ContentView: View {
                      if let isNoSchool = noSchool {
                          // Only show DayTypeView when there is school
                          if !isNoSchool {
-                             DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
-                                 dayTypeLoaded = true 
-                             }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
-                                 .id(refreshID)
-                         }
-                         
-                         ScheduleView(testDate: testDate, noSchool: Binding(
-                             get: { isNoSchool },
-                             set: { noSchool = $0 }
-                         ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                             scheduleLoaded = true 
-                         }, onPullRefresh: {
+                                                      DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                             print("🎯 [CONTENT] DayTypeView loading completed")
+                             dayTypeLoaded = true 
+                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
+                             .id(refreshID)
+                     }
+                     
+                     ScheduleView(testDate: testDate, noSchool: Binding(
+                         get: { isNoSchool },
+                         set: { noSchool = $0 }
+                     ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
+                         print("📋 [CONTENT] ScheduleView loading completed")
+                         scheduleLoaded = true 
+                     }, onPullRefresh: {
                              Task {
                                  await refreshAll()
                              }
@@ -198,8 +200,10 @@ struct ContentView: View {
         // On no_school days, only scheduleLoaded matters since DayTypeView is hidden
         let shouldFinishLoading = (noSchool == true) ? scheduleLoaded : (scheduleLoaded && dayTypeLoaded)
         
+        print("🔄 [CONTENT] updateLoadingState - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false), shouldFinish: \(shouldFinishLoading)")
+        
         if shouldFinishLoading {
-            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading completed - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false)")
+            print("🎉 [CONTENT] *** ALL LOADING COMPLETED *** - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false)")
             
             // Store current state for future background comparisons
             // Note: This is simplified - you'd need to get the actual dayType from DayTypeView
@@ -209,6 +213,8 @@ struct ContentView: View {
             
             isLoading = false
             isRefreshing = false // Also hide the refresh spinner when content is ready
+            
+            print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
             
             // Only trigger animation if there are blocks to show
             if noSchool != true {

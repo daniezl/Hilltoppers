@@ -232,9 +232,7 @@ struct ScheduleTypeFetcher {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             
-            // Limit to 30 days for safety
-            var dayCount = 0
-            while date <= today && dayCount < 30 {
+            while date <= today {
                 let dateString = formatter.string(from: date)
                 let isToday = Calendar.current.isDate(date, inSameDayAs: today)
                 
@@ -284,7 +282,6 @@ struct ScheduleTypeFetcher {
                 if isToday { break }
                 
                 date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
-                dayCount += 1
             }
             
             return steps

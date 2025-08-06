@@ -209,6 +209,7 @@ struct DayTypeView: View {
             }
         }
         .onAppear {
+            print("🎯 [DAYTYPE] DayTypeView appeared - initializing...")
             self.htmlTitle = "Loading..."
             self.dayType = "Loading..."
             self.isDateToday = nil
@@ -218,16 +219,19 @@ struct DayTypeView: View {
             
             // Delay loading if splash screen is showing to let animation complete
             if showSplashScreen {
+                print("⏳ [DAYTYPE] Splash screen showing - delaying HTML fetch by 0.8s")
                 Task {
                     do {
                         try await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
                         fetchHTML(from: schoolURL)
                     } catch {
                         // If cancelled, proceed immediately
+                        print("⚠️ [DAYTYPE] Sleep cancelled - proceeding immediately")
                         fetchHTML(from: schoolURL)
                     }
                 }
             } else {
+                print("🚀 [DAYTYPE] No splash screen - fetching HTML immediately")
                 fetchHTML(from: schoolURL)
             }
         }
@@ -346,29 +350,37 @@ struct DayTypeView: View {
     }
 
     func fetchHTML(from urlString: String) {
+        print("🌐 [DAYTYPE] Starting fetchHTML from: \(urlString)")
         guard let url = URL(string: urlString) else {
+            print("❌ [DAYTYPE] Invalid URL: \(urlString)")
             self.htmlTitle = "Please Refresh"
             self.dayType = "Please Refresh"
             
             // Small delay to ensure UI state is updated
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                print("✅ [DAYTYPE] Calling onLoadingComplete() due to invalid URL")
                 self.onLoadingComplete()
             }
             return
         }
         
+        print("📡 [DAYTYPE] Starting URLSession request...")
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
+                print("❌ [DAYTYPE] URLSession error: \(error)")
                 DispatchQueue.main.async {
                     // Analyze the error to determine if it's a permission issue
                     let networkErrorType = self.analyzeNetworkError(error)
+                    print("🔍 [DAYTYPE] Network error type: \(networkErrorType)")
                     
                     // Only show alert if we haven't exceeded retry count
                     if self.networkRetryCount < self.maxRetryCount {
+                        print("⚠️ [DAYTYPE] Showing network error alert (retry \(self.networkRetryCount + 1)/\(self.maxRetryCount))")
                         self.currentNetworkError = networkErrorType
                         self.showNetworkErrorAlert = true
                         self.networkRetryCount += 1
                     } else {
+                        print("🚫 [DAYTYPE] Max retries reached - setting Please Refresh")
                         // Max retries reached, set to "Please Refresh"
                         self.htmlTitle = "Please Refresh"
                         self.dayType = "Please Refresh"
@@ -379,6 +391,7 @@ struct DayTypeView: View {
                     
                     // Small delay to ensure UI state is updated
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        print("✅ [DAYTYPE] Calling onLoadingComplete() due to network error")
                         self.onLoadingComplete()
                     }
                 }
@@ -386,6 +399,7 @@ struct DayTypeView: View {
             }
             
             if let data = data, let html = String(data: data, encoding: .utf8) {
+                print("✅ [DAYTYPE] Successfully received HTML data (\(data.count) bytes)")
                 DispatchQueue.main.async {
                     // Reset retry count on successful request
                     self.networkRetryCount = 0
@@ -395,17 +409,25 @@ struct DayTypeView: View {
                     self.dailyBulletinHTML = trimmedHTML
                     self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
                     self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
+                    print("📅 [DAYTYPE] Parsed day type: '\(self.dayType)'")
                     self.dbDate = self.extractDBDate(from: trimmedHTML ?? html)
+                    print("📆 [DAYTYPE] Extracted DB date: \(self.dbDate?.description ?? "nil")")
                     if let dbDate = self.dbDate {
                         let calendar = Calendar.current
                         let today = self.testDate ?? Date()
                         self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
                         
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd"
+                        print("🔍 [DAYTYPE] DB date: \(formatter.string(from: dbDate)), Today: \(formatter.string(from: today)), isToday: \(self.isDateToday ?? false)")
+                        
                         // Update prediction if not today
                         if self.isDateToday == false {
+                            print("🔮 [DAYTYPE] DB date is not today - generating prediction...")
                             Task {
                                 do {
                                     // Load calculation steps and use them for prediction
+                                    print("📊 [DAYTYPE] Calling Firebase generateCalculationSteps...")
                                     let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
                                         dbDayType: self.dayType,
                                         dbDate: dbDate,
@@ -413,6 +435,7 @@ struct DayTypeView: View {
                                     )
                                     
                                     DispatchQueue.main.async {
+                                        print("✅ [DAYTYPE] Received \(steps.count) calculation steps from Firebase")
                                         // Cache the steps
                                         self.calculationSteps = steps.map { step in
                                             PredictionStep(
@@ -424,49 +447,58 @@ struct DayTypeView: View {
                                         
                                         // Get today's prediction from the cached steps
                                         self.predicted = self.getTodaysPrediction() ?? "Unknown"
+                                        print("🎯 [DAYTYPE] Today's prediction: '\(self.predicted)'")
                                         self.firebaseError = false
                                         
                                         // Only call loading complete after everything is processed
                                         // and we're sure the UI will show proper content
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            print("✅ [DAYTYPE] Calling onLoadingComplete() after prediction success")
                                             self.onLoadingComplete()
                                         }
                                     }
                                 } catch {
+                                    print("❌ [DAYTYPE] Firebase generateCalculationSteps failed: \(error)")
                                     DispatchQueue.main.async {
                                         self.predicted = "Please Refresh"
                                         self.firebaseError = true
                                         
                                         // Small delay to ensure UI state is updated
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            print("✅ [DAYTYPE] Calling onLoadingComplete() after prediction error")
                                             self.onLoadingComplete()
                                         }
                                     }
                                 }
                             }
                         } else {
+                            print("📅 [DAYTYPE] DB date is today - no prediction needed")
                             DispatchQueue.main.async {
                                 self.firebaseError = false // Clear error for today's date
                                 
                                 // Small delay to ensure dayType UI is updated before splash screen hides
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    print("✅ [DAYTYPE] Calling onLoadingComplete() for today's date")
                                     self.onLoadingComplete()
                                 }
                             }
                         }
                     } else {
+                        print("⚠️ [DAYTYPE] No DB date found in HTML")
                         self.isDateToday = nil
                         DispatchQueue.main.async {
                             self.predicted = "No DB date"
                             
                             // Small delay to ensure UI state is updated
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                print("✅ [DAYTYPE] Calling onLoadingComplete() - no DB date")
                                 self.onLoadingComplete()
                             }
                         }
                     }
                 }
             } else {
+                print("❌ [DAYTYPE] Failed to parse HTML data or no data received")
                 DispatchQueue.main.async {
                     self.htmlTitle = "Please Refresh"
                     self.dayType = "Please Refresh"
@@ -476,6 +508,7 @@ struct DayTypeView: View {
                     
                     // Small delay to ensure UI state is updated
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        print("✅ [DAYTYPE] Calling onLoadingComplete() - HTML parse failed")
                         self.onLoadingComplete()
                     }
                 }
