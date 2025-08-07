@@ -396,91 +396,95 @@ struct SettingsView: View {
     @Binding var testDate: Date?
     let onDismiss: () -> Void
     
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Done button only
+                HStack {
+                    Spacer()
+                    
+                    Button("Done") {
+                        onDismiss()
+                    }
+                    .font(.body)
+                    .foregroundColor(.blue)
+                }
+                .padding(.horizontal, 40)
+                .padding(.top, 20)
+                
+                // Menu items centered
+                VStack(spacing: 20) {
+                    Spacer()
+                    
+                    VStack(spacing: 16) {
+                        NavigationLink("Developer Options") {
+                            DeveloperOptionsView(testDate: $testDate)
+                        }
+                        .font(.title2)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 40)
+                    
+                    Spacer()
+                    Spacer()
+                }
+            }
+            .navigationBarHidden(true)
+        }
+    }
+}
+
+struct DeveloperOptionsView: View {
+    @Binding var testDate: Date?
+    
     @State private var customDate = Date()
     @State private var isUsingCustomDate = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Spacer()
-                
-                // DEV OPTIONS section - easy to remove
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("🛠️ Developer Options")
-                        .font(.headline)
-                        .foregroundColor(.orange)
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Current Time")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                     
-                    Text("For testing different dates and scenarios")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    
-                    // Current time display
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Current Time:")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        Text(formatDateTime(testDate ?? Date()))
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.blue)
-                    }
-                    
-                    Divider()
-                    
-                    // Custom date picker
-                    VStack(alignment: .leading, spacing: 12) {
-                        Toggle("Use Custom Date", isOn: $isUsingCustomDate)
-                            .toggleStyle(SwitchToggleStyle())
-                        
-                        if isUsingCustomDate {
-                            DatePicker(
-                                "Test Date:",
-                                selection: $customDate,
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                            .datePickerStyle(WheelDatePickerStyle())
-                        }
-                    }
-                    
-                    Divider()
-                    
-                    // Action buttons
-                    HStack(spacing: 12) {
-                        Button("Set to Custom Time") {
-                            testDate = isUsingCustomDate ? customDate : nil
-                        }
-                        .disabled(!isUsingCustomDate)
-                        .buttonStyle(.borderedProminent)
-                        
-                        Button("Reset to Actual Time") {
-                            testDate = nil
-                            isUsingCustomDate = false
-                        }
-                        .buttonStyle(.bordered)
-                    }
+                    Text(formatDateTime(testDate ?? Date()))
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.blue)
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                Spacer()
-                
-                Text("App will restart to apply time changes")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .padding(.bottom)
+                .padding(.vertical, 4)
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        onDismiss()
-                    }
+            
+            Section {
+                Toggle("Use Custom Date", isOn: $isUsingCustomDate)
+                
+                if isUsingCustomDate {
+                    DatePicker(
+                        "Test Date",
+                        selection: $customDate,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .datePickerStyle(CompactDatePickerStyle())
+                }
+            }
+            
+            Section {
+                Button("Set to Custom Time") {
+                    testDate = isUsingCustomDate ? customDate : nil
+                }
+                .disabled(!isUsingCustomDate)
+                
+                Button("Reset to Actual Time") {
+                    testDate = nil
+                    isUsingCustomDate = false
                 }
             }
         }
+        .navigationTitle("Developer Options")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if let currentTestDate = testDate {
                 customDate = currentTestDate
