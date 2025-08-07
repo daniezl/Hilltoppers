@@ -930,7 +930,8 @@ struct ScheduleView: View {
             print("🚫 [WEEKDAY] Weekend - setting no school")
             loader.blocks = []
             noSchool = true
-            noSchoolDetails = nil // Weekend has no special details
+            noSchoolDetails = "Weekend" // Show "Weekend" as detail text
+            print("🔍 DEBUG: Set noSchoolDetails to '\(noSchoolDetails ?? "nil")'")
         }
     }
 
@@ -1009,7 +1010,7 @@ struct ScheduleView: View {
                 // Firebase responded but no data found, fall back to local
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
-                noSchoolDetails = nil // Clear details for weekday schedules
+                // Don't clear noSchoolDetails here - loadWeekdaySchedule() sets it correctly for weekends
             }
             
         } catch {
@@ -1018,7 +1019,7 @@ struct ScheduleView: View {
             // Firebase calls failed (network issue, blocked, etc.)
             loadWeekdaySchedule() // Fallback to local data
             scheduleTitle = getWeekdayTitle()
-            noSchoolDetails = nil // Clear details for weekday schedules
+            // Don't clear noSchoolDetails here - loadWeekdaySchedule() sets it correctly for weekends
             // Keep isStale = true since Firebase failed
         }
         
@@ -1067,11 +1068,16 @@ struct ScheduleView: View {
     
     func startTextAnimation() {
         // Show "No School" text immediately with smooth animation
+        print("🔍 DEBUG: startTextAnimation called")
+        print("🔍 DEBUG: noSchoolDetails = '\(noSchoolDetails ?? "nil")'")
         showNoSchoolText = true
         
         // Show details text after a short delay if available
         if noSchoolDetails != nil {
+            print("🔍 DEBUG: Setting showDetailsText = true")
             showDetailsText = true
+        } else {
+            print("🔍 DEBUG: noSchoolDetails is nil, not showing details")
         }
     }
     
