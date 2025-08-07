@@ -210,8 +210,15 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
-        .sheet(isPresented: $showSettings) {
-            SettingsView(testDate: $testDate, onDismiss: { showSettings = false })
+        .sheet(isPresented: $showSettings, onDismiss: {
+            // Refresh the main page when settings are closed (any way)
+            Task {
+                await refreshAll()
+            }
+        }) {
+            SettingsView(testDate: $testDate, onDismiss: { 
+                showSettings = false
+            })
         }
     }
     
