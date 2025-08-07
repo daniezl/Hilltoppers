@@ -109,7 +109,9 @@ struct DayTypeView: View {
     @State private var showNetworkErrorAlert = false
     @State private var currentNetworkError: NetworkErrorType?
     @State private var networkRetryCount = 0
-    private let maxRetryCount = 2
+    private let maxRetryCount = 3
+    @State private var lastRequestTime: Date? = nil
+    private let minimumRequestInterval: TimeInterval = 5.0 // 5 seconds between requests
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -186,22 +188,24 @@ struct DayTypeView: View {
                 if error.showSettingsButton {
                     return Alert(
                         title: Text(error.alertTitle),
-                        message: Text(error.alertMessage),
+                        message: Text(error.alertMessage + "\n\nDebug: Check console for detailed network logs."),
                         primaryButton: .default(Text("Open Settings")) {
                             openAppSettings()
                         },
-                        secondaryButton: .cancel(Text("Try Again")) {
-                            retryNetworkRequest()
+                        secondaryButton: .cancel(Text("Force Retry")) {
+                            forceRetryFetch()
                         }
                     )
                 } else {
                     return Alert(
                         title: Text(error.alertTitle),
-                        message: Text(error.alertMessage),
-                        primaryButton: .default(Text("Try Again")) {
-                            retryNetworkRequest()
+                        message: Text(error.alertMessage + "\n\nDebug: Check console for detailed network logs."),
+                        primaryButton: .default(Text("Force Retry")) {
+                            forceRetryFetch()
                         },
-                        secondaryButton: .cancel()
+                        secondaryButton: .cancel(Text("Use Offline")) {
+                            useFallbackData()
+                        }
                     )
                 }
             } else {
@@ -209,7 +213,12 @@ struct DayTypeView: View {
             }
         }
         .onAppear {
-            print("🎯 [DAYTYPE] DayTypeView appeared - initializing...")
+            print("🎯 [DAYTYPE] ========== DAYTYPE VIEW APPEARED ==========")
+            print("🎯 [DAYTYPE] Splash screen showing: \(showSplashScreen)")
+            print("🎯 [DAYTYPE] Test date: \(testDate?.description ?? "nil")")
+            
+            // Skip unnecessary network tests - just fetch what we need
+            
             self.htmlTitle = "Loading..."
             self.dayType = "Loading..."
             self.isDateToday = nil
@@ -217,21 +226,25 @@ struct DayTypeView: View {
             self.showColorRipple = false
             self.networkRetryCount = 0
             
-            // Delay loading if splash screen is showing to let animation complete
+            // Much shorter delay - just enough for UI setup
+            let delay: UInt64 = showSplashScreen ? 200_000_000 : 0 // 0.2s or immediate
+            
             if showSplashScreen {
-                print("⏳ [DAYTYPE] Splash screen showing - delaying HTML fetch by 0.8s")
-                Task {
+                print("⏳ [DAYTYPE] Splash screen showing - minimal delay of 0.2s")
+            } else {
+                print("🚀 [DAYTYPE] No splash screen - fetching immediately")
+            }
+            
+            Task {
+                if delay > 0 {
                     do {
-                        try await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
-                        fetchHTML(from: schoolURL)
+                        try await Task.sleep(nanoseconds: delay)
                     } catch {
-                        // If cancelled, proceed immediately
-                        print("⚠️ [DAYTYPE] Sleep cancelled - proceeding immediately")
-                        fetchHTML(from: schoolURL)
+                        print("⚠️ [DAYTYPE] Sleep cancelled - proceeding anyway")
                     }
                 }
-            } else {
-                print("🚀 [DAYTYPE] No splash screen - fetching HTML immediately")
+                
+                print("🚀 [DAYTYPE] Starting HTML fetch now...")
                 fetchHTML(from: schoolURL)
             }
         }
@@ -314,23 +327,20 @@ struct DayTypeView: View {
         }
     }
     
-    private func retryNetworkRequest() {
-        networkRetryCount = 0
-        fetchHTML(from: schoolURL)
-    }
     
     private func analyzeNetworkError(_ error: Error) -> NetworkErrorType {
         let nsError = error as NSError
+        print("🔍 [DAYTYPE] Network error details - Code: \(nsError.code), Domain: \(nsError.domain), Description: \(nsError.localizedDescription)")
         
         // Check for specific network permission/access errors
         switch nsError.code {
         case NSURLErrorNotConnectedToInternet:
             // This could be either no internet or permission denied
-            // We'll treat multiple rapid failures as permission issues
-            if networkRetryCount == 0 {
-                return .permissionDenied
-            } else {
+            // Check retry count to differentiate
+            if networkRetryCount < 2 {
                 return .noInternet
+            } else {
+                return .permissionDenied
             }
         case NSURLErrorTimedOut:
             return .timeout
@@ -340,6 +350,13 @@ struct DayTypeView: View {
             return .permissionDenied
         case NSURLErrorDataNotAllowed:
             return .permissionDenied
+        case NSURLErrorNetworkConnectionLost:
+            // This is error -1005: connection established but then dropped
+            // Often caused by server-side rejection or firewall
+            print("🔍 [DAYTYPE] Connection lost error - server may be rejecting requests")
+            return .serverError
+        case NSURLErrorSecureConnectionFailed:
+            return .serverError
         default:
             if nsError.domain == NSURLErrorDomain {
                 return .other("Network error: \(nsError.localizedDescription)")
@@ -349,171 +366,293 @@ struct DayTypeView: View {
         }
     }
 
-    func fetchHTML(from urlString: String) {
-        print("🌐 [DAYTYPE] Starting fetchHTML from: \(urlString)")
-        guard let url = URL(string: urlString) else {
-            print("❌ [DAYTYPE] Invalid URL: \(urlString)")
-            self.htmlTitle = "Please Refresh"
-            self.dayType = "Please Refresh"
+    func testConnectivity() {
+        print("🌐 [CONNECTIVITY] ========== TESTING CONNECTIVITY ==========")
+        
+        // Test multiple endpoints to check connectivity
+        let testURLs = [
+            "https://www.google.com",
+            "https://www.apple.com", 
+            "https://httpbin.org/get"
+        ]
+        
+        for (index, testURL) in testURLs.enumerated() {
+            guard let url = URL(string: testURL) else { continue }
             
-            // Small delay to ensure UI state is updated
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                print("✅ [DAYTYPE] Calling onLoadingComplete() due to invalid URL")
-                self.onLoadingComplete()
+            print("🌐 [CONNECTIVITY] Testing endpoint \(index + 1): \(testURL)")
+            
+            Task {
+                do {
+                    let startTime = Date()
+                    let (data, response) = try await URLSession.shared.data(from: url)
+                    let endTime = Date()
+                    let duration = endTime.timeIntervalSince(startTime)
+                    
+                    if let httpResponse = response as? HTTPURLResponse {
+                        print("✅ [CONNECTIVITY] Test \(index + 1) SUCCESS - Status: \(httpResponse.statusCode), Duration: \(String(format: "%.2f", duration))s, Data: \(data.count) bytes")
+                    } else {
+                        print("❌ [CONNECTIVITY] Test \(index + 1) FAILED - No HTTP response")
+                    }
+                } catch {
+                    print("❌ [CONNECTIVITY] Test \(index + 1) FAILED: \(error)")
+                    print("❌ [CONNECTIVITY] Error details - Domain: \((error as NSError).domain), Code: \((error as NSError).code)")
+                }
             }
+        }
+    }
+    
+    func testSimpleDomain() {
+        print("🧪 [TEST] Testing main school domain...")
+        
+        Task {
+            do {
+                let testURL = URL(string: "https://stjacademy.org")!
+                var request = URLRequest(url: testURL)
+                request.timeoutInterval = 5.0
+                
+                // Same Chrome headers for domain test
+                request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+                
+                let (_, response) = try await URLSession.shared.data(for: request)
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("✅ [TEST] Main domain works! Status: \(httpResponse.statusCode)")
+                }
+            } catch {
+                print("❌ [TEST] Main domain failed: \(error)")
+            }
+        }
+    }
+    
+    func fetchHTML(from urlString: String) {
+        print("🌐 [SIMPLE] Fetching: \(urlString)")
+        
+        // First test just the main domain
+        testSimpleDomain()
+        
+        guard let url = URL(string: urlString) else {
+            print("❌ [SIMPLE] Bad URL")
             return
         }
         
-        print("📡 [DAYTYPE] Starting URLSession request...")
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("❌ [DAYTYPE] URLSession error: \(error)")
-                DispatchQueue.main.async {
-                    // Analyze the error to determine if it's a permission issue
-                    let networkErrorType = self.analyzeNetworkError(error)
-                    print("🔍 [DAYTYPE] Network error type: \(networkErrorType)")
-                    
-                    // Only show alert if we haven't exceeded retry count
-                    if self.networkRetryCount < self.maxRetryCount {
-                        print("⚠️ [DAYTYPE] Showing network error alert (retry \(self.networkRetryCount + 1)/\(self.maxRetryCount))")
-                        self.currentNetworkError = networkErrorType
-                        self.showNetworkErrorAlert = true
-                        self.networkRetryCount += 1
-                    } else {
-                        print("🚫 [DAYTYPE] Max retries reached - setting Please Refresh")
-                        // Max retries reached, set to "Please Refresh"
-                        self.htmlTitle = "Please Refresh"
-                        self.dayType = "Please Refresh"
-                        self.dailyBulletinHTML = nil
-                        self.dbDate = nil
-                        self.predicted = "Please Refresh"
-                    }
-                    
-                    // Small delay to ensure UI state is updated
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        print("✅ [DAYTYPE] Calling onLoadingComplete() due to network error")
-                        self.onLoadingComplete()
-                    }
+        Task {
+            do {
+                // Create request that looks exactly like Chrome
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 5.0  // Back to reasonable timeout
+                
+                // Chrome headers to bypass app blocking
+                request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+                request.setValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8", forHTTPHeaderField: "Accept")
+                request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+                request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+                request.setValue("1", forHTTPHeaderField: "Upgrade-Insecure-Requests")
+                request.setValue("navigate", forHTTPHeaderField: "Sec-Fetch-Mode")
+                request.setValue("document", forHTTPHeaderField: "Sec-Fetch-Dest")
+                request.setValue("none", forHTTPHeaderField: "Sec-Fetch-Site")
+                request.setValue("?1", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
+                
+                print("🌐 [SIMPLE] Using Chrome headers to bypass blocking")
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                // Check response
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("📡 [SIMPLE] Status: \(httpResponse.statusCode)")
                 }
-                return
+                guard let html = String(data: data, encoding: .utf8) else {
+                    print("❌ [SIMPLE] Can't convert data to string")
+                    return
+                }
+                
+                print("✅ [SIMPLE] Got HTML data: \(data.count) bytes")
+                
+                // Just parse and print what we find
+                await MainActor.run {
+                    self.parseAndPrintDayType(html)
+                }
+                
+            } catch {
+                print("❌ [SIMPLE] Error: \(error)")
+                let nsError = error as NSError
+                print("❌ [SIMPLE] Error code: \(nsError.code)")
+                print("❌ [SIMPLE] Error domain: \(nsError.domain)")
+                
+                if nsError.code == -1001 {
+                    print("💡 [SIMPLE] This is a timeout - school server is likely blocking mobile apps")
+                } else if nsError.code == -1005 {
+                    print("💡 [SIMPLE] Connection lost - server rejected the request")
+                }
+                await MainActor.run {
+                    self.useFallbackData()
+                }
+            }
+        }
+    }
+    
+    func parseAndPrintDayType(_ html: String) {
+        print("🔍 [SIMPLE] Parsing HTML for day type...")
+        
+        do {
+            let doc = try SwiftSoup.parse(html)
+            
+            // Check all h4 elements
+            let h4s = try doc.select("h4")
+            print("📋 [SIMPLE] Found \(h4s.count) h4 elements")
+            
+            for (index, h4) in h4s.enumerated() {
+                let text = try h4.text()
+                print("📝 [SIMPLE] H4 #\(index + 1): '\(text)'")
+                
+                if text.lowercased().contains("green day") {
+                    print("✅ [SIMPLE] FOUND GREEN DAY!")
+                    self.dayType = "Green Day"
+                    self.isDateToday = true
+                    self.finishLoading()
+                    return
+                } else if text.lowercased().contains("white day") {
+                    print("✅ [SIMPLE] FOUND WHITE DAY!")
+                    self.dayType = "White Day"
+                    self.isDateToday = true
+                    self.finishLoading()
+                    return
+                }
             }
             
-            if let data = data, let html = String(data: data, encoding: .utf8) {
-                print("✅ [DAYTYPE] Successfully received HTML data (\(data.count) bytes)")
-                DispatchQueue.main.async {
-                    // Reset retry count on successful request
-                    self.networkRetryCount = 0
-                    
-                    self.fullHTML = html
-                    let trimmedHTML = self.extractDailyBulletinSection(from: html)
-                    self.dailyBulletinHTML = trimmedHTML
-                    self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
-                    self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
-                    print("📅 [DAYTYPE] Parsed day type: '\(self.dayType)'")
-                    self.dbDate = self.extractDBDate(from: trimmedHTML ?? html)
-                    print("📆 [DAYTYPE] Extracted DB date: \(self.dbDate?.description ?? "nil")")
-                    if let dbDate = self.dbDate {
-                        let calendar = Calendar.current
-                        let today = self.testDate ?? Date()
-                        self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
-                        
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = "yyyy-MM-dd"
-                        print("🔍 [DAYTYPE] DB date: \(formatter.string(from: dbDate)), Today: \(formatter.string(from: today)), isToday: \(self.isDateToday ?? false)")
-                        
-                        // Update prediction if not today
-                        if self.isDateToday == false {
-                            print("🔮 [DAYTYPE] DB date is not today - generating prediction...")
-                            Task {
-                                do {
-                                    // Load calculation steps and use them for prediction
-                                    print("📊 [DAYTYPE] Calling Firebase generateCalculationSteps...")
-                                    let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
-                                        dbDayType: self.dayType,
-                                        dbDate: dbDate,
-                                        testDate: self.testDate
-                                    )
-                                    
-                                    DispatchQueue.main.async {
-                                        print("✅ [DAYTYPE] Received \(steps.count) calculation steps from Firebase")
-                                        // Cache the steps
-                                        self.calculationSteps = steps.map { step in
-                                            PredictionStep(
-                                                date: step.date,
-                                                prediction: step.prediction,
-                                                isToday: step.isToday
-                                            )
-                                        }
-                                        
-                                        // Get today's prediction from the cached steps
-                                        self.predicted = self.getTodaysPrediction() ?? "Unknown"
-                                        print("🎯 [DAYTYPE] Today's prediction: '\(self.predicted)'")
-                                        self.firebaseError = false
-                                        
-                                        // Only call loading complete after everything is processed
-                                        // and we're sure the UI will show proper content
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                            print("✅ [DAYTYPE] Calling onLoadingComplete() after prediction success")
-                                            self.onLoadingComplete()
-                                        }
-                                    }
-                                } catch {
-                                    print("❌ [DAYTYPE] Firebase generateCalculationSteps failed: \(error)")
-                                    DispatchQueue.main.async {
-                                        self.predicted = "Please Refresh"
-                                        self.firebaseError = true
-                                        
-                                        // Small delay to ensure UI state is updated
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                            print("✅ [DAYTYPE] Calling onLoadingComplete() after prediction error")
-                                            self.onLoadingComplete()
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            print("📅 [DAYTYPE] DB date is today - no prediction needed")
-                            DispatchQueue.main.async {
-                                self.firebaseError = false // Clear error for today's date
-                                
-                                // Small delay to ensure dayType UI is updated before splash screen hides
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    print("✅ [DAYTYPE] Calling onLoadingComplete() for today's date")
-                                    self.onLoadingComplete()
-                                }
-                            }
-                        }
-                    } else {
-                        print("⚠️ [DAYTYPE] No DB date found in HTML")
-                        self.isDateToday = nil
-                        DispatchQueue.main.async {
-                            self.predicted = "No DB date"
-                            
-                            // Small delay to ensure UI state is updated
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                print("✅ [DAYTYPE] Calling onLoadingComplete() - no DB date")
-                                self.onLoadingComplete()
-                            }
-                        }
-                    }
-                }
+            print("❌ [SIMPLE] No day type found in h4 elements")
+            self.useFallbackData()
+            
+        } catch {
+            print("❌ [SIMPLE] Parse error: \(error)")
+            self.useFallbackData()
+        }
+    }
+    
+    
+    func processSuccessfulHTML(_ html: String) {
+        print("🔄 [DAYTYPE] ========== PROCESSING HTML ===========")
+        
+        // Reset retry count on successful request
+        self.networkRetryCount = 0
+        
+        self.fullHTML = html
+        let trimmedHTML = self.extractDailyBulletinSection(from: html)
+        self.dailyBulletinHTML = trimmedHTML
+        
+        print("🔍 [DAYTYPE] Trimmed HTML found: \(trimmedHTML != nil)")
+        if let trimmed = trimmedHTML {
+            print("🔍 [DAYTYPE] Trimmed HTML preview (first 200 chars): \(String(trimmed.prefix(200)))")
+        }
+        
+        self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
+        self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
+        print("📅 [DAYTYPE] Parsed day type: '\(self.dayType)'")
+        
+        self.dbDate = self.extractDBDate(from: trimmedHTML ?? html)
+        print("📆 [DAYTYPE] Extracted DB date: \(self.dbDate?.description ?? "nil")")
+        
+        if let dbDate = self.dbDate {
+            let calendar = Calendar.current
+            let today = self.testDate ?? Date()
+            self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            print("🔍 [DAYTYPE] DB date: \(formatter.string(from: dbDate)), Today: \(formatter.string(from: today)), isToday: \(self.isDateToday ?? false)")
+            
+            if self.isDateToday == false {
+                print("🔮 [DAYTYPE] Generating prediction for future date...")
+                self.generatePrediction(for: dbDate)
             } else {
-                print("❌ [DAYTYPE] Failed to parse HTML data or no data received")
-                DispatchQueue.main.async {
-                    self.htmlTitle = "Please Refresh"
-                    self.dayType = "Please Refresh"
-                    self.dailyBulletinHTML = nil
-                    self.dbDate = nil
-                    self.predicted = "Please Refresh"
-                    
-                    // Small delay to ensure UI state is updated
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        print("✅ [DAYTYPE] Calling onLoadingComplete() - HTML parse failed")
-                        self.onLoadingComplete()
+                print("📅 [DAYTYPE] DB date is today - no prediction needed")
+                self.firebaseError = false
+                self.finishLoading()
+            }
+        } else {
+            print("⚠️ [DAYTYPE] No DB date found - using fallback")
+            self.useFallbackData()
+        }
+    }
+    
+    func generatePrediction(for dbDate: Date) {
+        print("📊 [DAYTYPE] ========== GENERATING PREDICTION ===========")
+        
+        Task {
+            do {
+                print("📊 [DAYTYPE] Calling Firebase generateCalculationSteps...")
+                let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
+                    dbDayType: self.dayType,
+                    dbDate: dbDate,
+                    testDate: self.testDate
+                )
+                
+                await MainActor.run {
+                    print("✅ [DAYTYPE] Received \(steps.count) calculation steps from Firebase")
+                    // Cache the steps
+                    self.calculationSteps = steps.map { step in
+                        PredictionStep(
+                            date: step.date,
+                            prediction: step.prediction,
+                            isToday: step.isToday
+                        )
                     }
+                    
+                    // Get today's prediction from the cached steps
+                    self.predicted = self.getTodaysPrediction() ?? "Unknown"
+                    print("🎯 [DAYTYPE] Today's prediction: '\(self.predicted)'")
+                    self.firebaseError = false
+                    
+                    self.finishLoading()
+                }
+            } catch {
+                print("❌ [DAYTYPE] Firebase prediction failed: \(error)")
+                await MainActor.run {
+                    self.predicted = "Please Refresh"
+                    self.firebaseError = true
+                    self.finishLoading()
                 }
             }
-        }.resume()
+        }
+    }
+    
+    func useFallbackData() {
+        print("🔄 [SIMPLE] Network failed - showing Unknown")
+        
+        // Since we can't fetch real data, show Unknown
+        self.dayType = "Unknown"
+        self.dbDate = nil
+        self.isDateToday = nil  // This will show fallback without misleading dashed border
+        self.predicted = "Unknown"
+        self.firebaseError = false
+        
+        print("📅 [SIMPLE] Set day type to: Unknown (network failure)")
+        
+        self.finishLoading()
+    }
+    
+    func forceRetryFetch() {
+        print("🔄 [DAYTYPE] ========== FORCE RETRY REQUESTED ===========")
+        self.networkRetryCount = 0 // Reset retry count
+        self.currentNetworkError = nil
+        self.showNetworkErrorAlert = false
+        
+        // Add a small delay to ensure UI updates
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            print("🔄 [DAYTYPE] Executing force retry...")
+            self.fetchHTML(from: self.schoolURL)
+        }
+    }
+    
+    func finishLoading() {
+        print("✅ [DAYTYPE] ========== FINISHING LOAD ===========")
+        print("✅ [DAYTYPE] Final day type: '\(self.dayType)'")
+        print("✅ [DAYTYPE] Final prediction: '\(self.predicted)'")
+        print("✅ [DAYTYPE] Is today: \(self.isDateToday ?? false)")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            print("✅ [DAYTYPE] Calling onLoadingComplete()")
+            self.onLoadingComplete()
+        }
     }
 
     func getTitleFromHTML(html: String) -> String {
@@ -524,20 +663,53 @@ struct DayTypeView: View {
     func getDayTypeFromHTML(html: String) -> String {
         do {
             let doc: Document = try SwiftSoup.parse(html)
+            
+            // Method 1: Check h4 > span (original method)
             let h4s = try doc.select("h4")
             for h4 in h4s {
+                let h4Text = try h4.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                print("🔍 [DAYTYPE] Checking h4 text: '\(h4Text)'")
+                
+                if h4Text.localizedCaseInsensitiveContains("white day") {
+                    print("✅ [DAYTYPE] Found White Day in h4 text")
+                    return "White Day"
+                } else if h4Text.localizedCaseInsensitiveContains("green day") {
+                    print("✅ [DAYTYPE] Found Green Day in h4 text")
+                    return "Green Day"
+                }
+                
+                // Also check spans within h4
                 let spans = try h4.select("span")
                 for span in spans {
-                    let text = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
-                    if text.localizedCaseInsensitiveContains("white day") {
+                    let spanText = try span.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                    print("🔍 [DAYTYPE] Checking h4 > span text: '\(spanText)'")
+                    if spanText.localizedCaseInsensitiveContains("white day") {
+                        print("✅ [DAYTYPE] Found White Day in h4 > span")
                         return "White Day"
-                    } else if text.localizedCaseInsensitiveContains("green day") {
+                    } else if spanText.localizedCaseInsensitiveContains("green day") {
+                        print("✅ [DAYTYPE] Found Green Day in h4 > span")
                         return "Green Day"
                     }
                 }
             }
+            
+            // Method 2: Check all elements containing "day" text
+            let allElements = try doc.select("*")
+            for element in allElements {
+                let text = try element.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                if text.localizedCaseInsensitiveContains("white day") {
+                    print("✅ [DAYTYPE] Found White Day in \(element.tagName()) element")
+                    return "White Day"
+                } else if text.localizedCaseInsensitiveContains("green day") {
+                    print("✅ [DAYTYPE] Found Green Day in \(element.tagName()) element")
+                    return "Green Day"
+                }
+            }
+            
+            print("⚠️ [DAYTYPE] No day type found in HTML")
             return "Day type not found"
         } catch {
+            print("❌ [DAYTYPE] Parse error: \(error)")
             return "Parse error: \(error)"
         }
     }
