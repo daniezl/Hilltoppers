@@ -491,14 +491,20 @@ struct DayTypeView: View {
     }
     
     func parseAndPrintDayType(_ html: String) {
-        print("🔍 [SIMPLE] Parsing HTML for day type...")
+        print("🔍 [SIMPLE] Parsing HTML for day type and date...")
         
         do {
             let doc = try SwiftSoup.parse(html)
             
-            // Check all h4 elements
+            // First, find the bulletin date
+            let bulletinDate = self.extractDBDate(from: html)
+            print("📅 [SIMPLE] Bulletin date: \(bulletinDate?.description ?? "not found")")
+            
+            // Check all h4 elements for day type
             let h4s = try doc.select("h4")
             print("📋 [SIMPLE] Found \(h4s.count) h4 elements")
+            
+            var foundDayType: String? = nil
             
             for (index, h4) in h4s.enumerated() {
                 let text = try h4.text()
@@ -506,25 +512,92 @@ struct DayTypeView: View {
                 
                 if text.lowercased().contains("green day") {
                     print("✅ [SIMPLE] FOUND GREEN DAY!")
-                    self.dayType = "Green Day"
-                    self.isDateToday = true
-                    self.finishLoading()
-                    return
+                    foundDayType = "Green Day"
+                    break
                 } else if text.lowercased().contains("white day") {
                     print("✅ [SIMPLE] FOUND WHITE DAY!")
-                    self.dayType = "White Day"
-                    self.isDateToday = true
-                    self.finishLoading()
-                    return
+                    foundDayType = "White Day"
+                    break
                 }
             }
             
-            print("❌ [SIMPLE] No day type found in h4 elements")
-            self.useFallbackData()
+            guard let dayType = foundDayType else {
+                print("❌ [SIMPLE] No day type found in h4 elements")
+                self.useFallbackData()
+                return
+            }
+            
+            // Set the day type we found
+            self.dayType = dayType
+            
+            // Now check if we need to predict (bulletin date != today)
+            if let dbDate = bulletinDate {
+                self.dbDate = dbDate
+                let today = self.testDate ?? Date()
+                let isToday = Calendar.current.isDate(dbDate, inSameDayAs: today)
+                self.isDateToday = isToday
+                
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                print("📊 [SIMPLE] Bulletin: \(formatter.string(from: dbDate)), Today: \(formatter.string(from: today)), Same? \(isToday)")
+                
+                if !isToday {
+                    print("🔮 [SIMPLE] Need to predict - bulletin is from different day")
+                    self.generateSimplePrediction(bulletinDayType: dayType, bulletinDate: dbDate)
+                } else {
+                    print("✅ [SIMPLE] Bulletin is from today - no prediction needed")
+                    self.finishLoading()
+                }
+            } else {
+                print("⚠️ [SIMPLE] No bulletin date found - assuming today")
+                self.isDateToday = true
+                self.finishLoading()
+            }
             
         } catch {
             print("❌ [SIMPLE] Parse error: \(error)")
             self.useFallbackData()
+        }
+    }
+    
+    func generateSimplePrediction(bulletinDayType: String, bulletinDate: Date) {
+        print("🎯 [SIMPLE] Generating prediction...")
+        
+        Task {
+            do {
+                let steps = try await ScheduleTypeFetcher.generateCalculationSteps(
+                    dbDayType: bulletinDayType,
+                    dbDate: bulletinDate,
+                    testDate: self.testDate
+                )
+                
+                await MainActor.run {
+                    print("✅ [SIMPLE] Got \(steps.count) prediction steps")
+                    
+                    // Cache the steps
+                    self.calculationSteps = steps.map { step in
+                        PredictionStep(
+                            date: step.date,
+                            prediction: step.prediction,
+                            isToday: step.isToday
+                        )
+                    }
+                    
+                    // Find today's prediction
+                    self.predicted = self.getTodaysPrediction() ?? "Unknown"
+                    print("🎯 [SIMPLE] Today's prediction: '\(self.predicted)'")
+                    self.firebaseError = false
+                    
+                    self.finishLoading()
+                }
+            } catch {
+                print("❌ [SIMPLE] Prediction failed: \(error)")
+                await MainActor.run {
+                    self.predicted = "Please Refresh"
+                    self.firebaseError = true
+                    self.finishLoading()
+                }
+            }
         }
     }
     
