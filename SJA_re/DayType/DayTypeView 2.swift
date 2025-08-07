@@ -904,12 +904,13 @@ struct PredictionDetailView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Spacer()
-                
-                if let dbDate = dbDate {
-                    // Card with list
-                    VStack(spacing: 0) {
+            ScrollView {
+                VStack {
+                    Spacer()
+                    
+                    if let dbDate = dbDate {
+                        // Card with list
+                        VStack(spacing: 0) {
                         if let predictions = calculationSteps {
                             VStack(spacing: 0) {
                                 // Bulletin info as first row
@@ -994,8 +995,8 @@ struct PredictionDetailView: View {
                 
                 Spacer()
                 Spacer()
+                }
             }
-
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
