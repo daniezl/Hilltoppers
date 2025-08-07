@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var isRefreshing: Bool = false
     @State private var triggerDayTypeRipple: Bool = false
     @State private var disablePullToRefreshGesture = false
+    @State private var showSettings = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -35,9 +36,8 @@ struct ContentView: View {
     private let scheduleOffset: CGFloat = 60
     private let noSchoolOffset: CGFloat = -30
     
-    // Set this to a specific Date to test, or nil to use real time
-    
-   let testDate: Date? = nil
+    // Dev option: Set this to a specific Date to test, or nil to use real time
+    @State private var testDate: Date? = nil
     
 //     let testDate: Date? = DateComponents(
 //         calendar: .current,
@@ -134,6 +134,23 @@ struct ContentView: View {
                     )
                     .zIndex(1000)
             }
+            
+            // Settings button - top right
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundColor(.gray.opacity(0.7))
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
+            .zIndex(500)
         }
         .background(Color.clear)
         .contentShape(Rectangle())
@@ -193,6 +210,9 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
+        .sheet(isPresented: $showSettings) {
+            SettingsView(testDate: $testDate, onDismiss: { showSettings = false })
+        }
     }
     
     // Update loading state when both views are loaded
@@ -369,6 +389,111 @@ struct ContentView: View {
         scheduleLoader.showBlocks = false
         triggerDayTypeRipple = false
         refreshID = UUID()
+    }
+}
+
+struct SettingsView: View {
+    @Binding var testDate: Date?
+    let onDismiss: () -> Void
+    
+    @State private var customDate = Date()
+    @State private var isUsingCustomDate = false
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Spacer()
+                
+                // DEV OPTIONS section - easy to remove
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("🛠️ Developer Options")
+                        .font(.headline)
+                        .foregroundColor(.orange)
+                    
+                    Text("For testing different dates and scenarios")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    // Current time display
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Current Time:")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text(formatDateTime(testDate ?? Date()))
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Divider()
+                    
+                    // Custom date picker
+                    VStack(alignment: .leading, spacing: 12) {
+                        Toggle("Use Custom Date", isOn: $isUsingCustomDate)
+                            .toggleStyle(SwitchToggleStyle())
+                        
+                        if isUsingCustomDate {
+                            DatePicker(
+                                "Test Date:",
+                                selection: $customDate,
+                                displayedComponents: [.date, .hourAndMinute]
+                            )
+                            .datePickerStyle(WheelDatePickerStyle())
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    // Action buttons
+                    HStack(spacing: 12) {
+                        Button("Set to Custom Time") {
+                            testDate = isUsingCustomDate ? customDate : nil
+                        }
+                        .disabled(!isUsingCustomDate)
+                        .buttonStyle(.borderedProminent)
+                        
+                        Button("Reset to Actual Time") {
+                            testDate = nil
+                            isUsingCustomDate = false
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                Text("App will restart to apply time changes")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.bottom)
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onDismiss()
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if let currentTestDate = testDate {
+                customDate = currentTestDate
+                isUsingCustomDate = true
+            }
+        }
+    }
+    
+    private func formatDateTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 
