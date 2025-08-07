@@ -29,6 +29,7 @@ struct ContentView: View {
     @State private var triggerDayTypeRipple: Bool = false
     @State private var disablePullToRefreshGesture = false
     @State private var showSettings = false
+    @State private var originalTestDate: Date? = nil // Track original value
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     
@@ -140,6 +141,7 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Button(action: {
+                        originalTestDate = testDate // Store current value before opening settings
                         showSettings = true
                     }) {
                         Image(systemName: "gearshape.fill")
@@ -211,9 +213,14 @@ struct ContentView: View {
         }
         .preferredColorScheme(.light)
         .sheet(isPresented: $showSettings, onDismiss: {
-            // Refresh the main page when settings are closed (any way)
-            Task {
-                await refreshAll()
+            // Only refresh if testDate actually changed
+            if originalTestDate != testDate {
+                print("🔄 [SETTINGS] Test date changed from \(originalTestDate?.description ?? "nil") to \(testDate?.description ?? "nil") - refreshing")
+                Task {
+                    await refreshAll()
+                }
+            } else {
+                print("✅ [SETTINGS] No changes - skipping refresh")
             }
         }) {
             SettingsView(testDate: $testDate, onDismiss: { 
