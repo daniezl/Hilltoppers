@@ -28,7 +28,7 @@ class NotificationManager: ObservableObject {
         let center = UNUserNotificationCenter.current()
         
         // Remove existing notifications
-        center.removeAllPendingNotifications()
+        center.removeAllPendingNotificationRequests()
         
         let currentDate = testDate ?? Date()
         
@@ -363,7 +363,7 @@ struct ContentView: View {
             if originalTestDate != testDate {
                 print("🔄 [SETTINGS] Test date changed from \(originalTestDate?.description ?? "nil") to \(testDate?.description ?? "nil") - refreshing")
                 // Clear old notifications since date changed
-                UNUserNotificationCenter.current().removeAllPendingNotifications()
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
                 Task {
                     await refreshAll()
                 }
