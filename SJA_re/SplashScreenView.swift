@@ -52,10 +52,15 @@ struct SplashScreenView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Dark green background with concave bottom curve
+                // Full screen dark green background
+                Rectangle()
+                    .fill(darkGreen)
+                    .ignoresSafeArea(.all)
+                
+                // Dark green background with concave bottom curve on top
                 ConcaveBottomShape(curveOffset: curveOffset)
                     .fill(darkGreen)
-                    .ignoresSafeArea()
+                    .ignoresSafeArea(.all)
                     .drawingGroup() // Optimize complex shape rendering
                 
                 // School logo icon
