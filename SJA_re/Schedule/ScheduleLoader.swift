@@ -2,7 +2,7 @@ import Foundation
 
 class ScheduleLoader: ObservableObject {
     @Published var blocks: [Block] = []
-    @Published var showBlocks: Bool = false
+    @Published var showBlocks: Bool = false // Start hidden for smooth animations
 
     func loadSchedule(from filename: String) {
         print("📂 [LOADER] Attempting to load: \(filename).json")

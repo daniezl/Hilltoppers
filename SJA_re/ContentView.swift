@@ -225,14 +225,23 @@ struct ContentView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .opacity(isLoading ? 0.0 : 1.0)
-            .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : (showSplashScreen ? 0.5 : 0)), value: isLoading)
+            .opacity((isLoading || showSplashScreen) ? 0.0 : 1.0)
+            .animation(.easeOut(duration: 0.3).delay((isLoading || showSplashScreen) ? 0 : 0.2), value: isLoading)
+            .animation(.easeOut(duration: 0.3).delay(showSplashScreen ? 0 : 0.2), value: showSplashScreen)
                 
             // Splash screen overlay - only on first launch
             if showSplashScreen && isFirstLaunch {
                 SplashScreenView(isLoading: $isLoading, onAnimationComplete: {
                     showSplashScreen = false
                     isFirstLaunch = false
+                    
+                    // Trigger slide-in animations after splash completes
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if noSchool != true && !scheduleLoader.blocks.isEmpty {
+                            scheduleLoader.showBlocks = true
+                        }
+                        triggerDayTypeRipple = true
+                    }
                 })
                 .zIndex(1000)
             }
@@ -407,11 +416,8 @@ struct ContentView: View {
             // Only trigger animation if there are blocks to show
             if noSchool != true {
                 if showSplashScreen {
-                    // Small delay after splash screen before blocks slide in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        scheduleLoader.showBlocks = true
-                        triggerDayTypeRipple = true
-                    }
+                    // Animations will be triggered by splash screen completion callback - do nothing here
+                    print("🎬 [ANIMATIONS] Waiting for splash screen to finish before triggering animations")
                 } else {
                     // No delay for refresh - immediate animation
                     scheduleLoader.showBlocks = true
@@ -420,9 +426,8 @@ struct ContentView: View {
             } else {
                 // Trigger ripple for no-school days too
                 if showSplashScreen {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        triggerDayTypeRipple = true
-                    }
+                    // Animations will be triggered by splash screen completion callback - do nothing here
+                    print("🎬 [ANIMATIONS] Waiting for splash screen to finish before triggering ripple")
                 } else {
                     triggerDayTypeRipple = true
                 }

@@ -19,13 +19,13 @@ struct ConcaveBottomShape: Shape {
         // Top edge, slightly extended beyond right edge
         path.addLine(to: CGPoint(x: rect.width + 1, y: 0))
         
-        // Right edge - always extend to show the curve area
-        path.addLine(to: CGPoint(x: rect.width + 1, y: rect.height + 200))
+        // Right edge - extend further down to make rectangle taller
+        path.addLine(to: CGPoint(x: rect.width + 1, y: rect.height + 400))
         
-        // Concave down curve at bottom (n-shaped) - always present, positioned by offset
+        // Concave down curve at bottom (n-shaped) - positioned lower for taller rectangle
         path.addQuadCurve(
-            to: CGPoint(x: -1, y: rect.height + 200),
-            control: CGPoint(x: rect.width / 2, y: rect.height + 200 - 80 + curveOffset)
+            to: CGPoint(x: -1, y: rect.height + 400),
+            control: CGPoint(x: rect.width / 2, y: rect.height + 400 - 80 + curveOffset)
         )
         
         // Left edge back to start, slightly extended beyond left edge
@@ -56,41 +56,47 @@ struct SplashScreenView: View {
                 ConcaveBottomShape(curveOffset: curveOffset)
                     .fill(darkGreen)
                     .ignoresSafeArea()
+                    .drawingGroup() // Optimize complex shape rendering
                 
                 // School logo icon
                 Image("school-icon")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 240, height: 240) // size of icon
+                    .frame(width: 240, height: 240)
                     .colorMultiply(.white)
                     .offset(y: iconOffset - 35)
                     .opacity(showIcon ? 1 : 0)
+                    .drawingGroup() // Optimize icon rendering
             }
             .offset(y: viewOffset)
             .onAppear {
                 screenHeight = geometry.size.height
                 iconOffset = screenHeight
-                curveOffset = 80 // Start with curve pushed down (flattened)
-                startAnimation()
+                curveOffset = 80
+                
+                // Delay start slightly to avoid frame drop on launch
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    startAnimation()
+                }
             }
             .onChange(of: isLoading) { newValue in
                 if !newValue && !shouldSlideOut {
                     shouldSlideOut = true
-                    // Loading is complete, slide out with synchronized animation
                     
-                    // Single animation for both movement and curve - perfectly synchronized
-                    withAnimation(.easeIn(duration: 0.8)) {
-                        viewOffset = -(screenHeight + 300) // Go much further off-screen
-                        curveOffset = -80 // Curve becomes more pronounced
+                    // Smooth exit animation with better timing
+                    withAnimation(.easeInOut(duration: 0.6)) {
+                        viewOffset = -(screenHeight + 400)
+                        curveOffset = -60
                     }
                     
-                    // Call completion after animation is completely done
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    // Shorter delay for completion
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                         onAnimationComplete()
                     }
                 }
             }
         }
+        .compositingGroup() // Optimize entire splash as single layer
     }
     
     private func startAnimation() {
