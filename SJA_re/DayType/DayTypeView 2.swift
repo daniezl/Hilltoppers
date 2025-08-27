@@ -151,7 +151,11 @@ struct DayTypeView: View {
                                 .padding(4) // inset the dashed border
                         )
                         .onTapGesture { 
-                            showPredictionDetail = true 
+                            if calculationSteps != nil {
+                                showPredictionDetail = true 
+                            } else {
+                                openDailyBulletin()
+                            }
                         }
                 }
                 .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
@@ -181,6 +185,9 @@ struct DayTypeView: View {
                     .background(
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
+                    .onTapGesture {
+                        openDailyBulletin()
+                    }
             }
         }
         .alert(isPresented: $showNetworkErrorAlert) {
@@ -323,6 +330,14 @@ struct DayTypeView: View {
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             if UIApplication.shared.canOpenURL(settingsUrl) {
                 UIApplication.shared.open(settingsUrl)
+            }
+        }
+    }
+    
+    private func openDailyBulletin() {
+        if let bulletinUrl = URL(string: schoolURL) {
+            if UIApplication.shared.canOpenURL(bulletinUrl) {
+                UIApplication.shared.open(bulletinUrl)
             }
         }
     }
@@ -694,7 +709,7 @@ struct DayTypeView: View {
         // Since we can't fetch real data, show Unknown
         self.dayType = "Unknown"
         self.dbDate = nil
-        self.isDateToday = nil  // This will show fallback without misleading dashed border
+        self.isDateToday = true  // Show as solid box (not dashed) since we can't predict
         self.predicted = "Unknown"
         self.firebaseError = false
         
