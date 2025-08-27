@@ -7,6 +7,142 @@
 
 import SwiftUI
 import SwiftSoup
+import UserNotifications
+
+class NotificationManager: ObservableObject {
+    static let shared = NotificationManager()
+    
+    private init() {}
+    
+    func requestPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("✅ Notification permission granted")
+            } else {
+                print("❌ Notification permission denied")
+            }
+        }
+    }
+    
+    func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?) {
+        let center = UNUserNotificationCenter.current()
+        
+        // Remove existing notifications
+        center.removeAllPendingNotifications()
+        
+        let currentDate = testDate ?? Date()
+        
+        for block in blocks {
+            if let endTime = parseTime(block.end, for: currentDate) {
+                // Calculate 2 minutes before end time
+                let warningTime = endTime.addingTimeInterval(-120) // 2 minutes before
+                
+                // Only schedule if warning time is in the future
+                if warningTime > Date() {
+                    let content = UNMutableNotificationContent()
+                    content.title = "Block Ending Soon"
+                    content.body = "\(block.name) ends in 2 minutes"
+                    content.sound = .default
+                    
+                    let trigger = UNTimeIntervalNotificationTrigger(
+                        timeInterval: warningTime.timeIntervalSinceNow,
+                        repeats: false
+                    )
+                    
+                    let request = UNNotificationRequest(
+                        identifier: "block-\(block.id)",
+                        content: content,
+                        trigger: trigger
+                    )
+                    
+                    center.add(request) { error in
+                        if let error = error {
+                            print("❌ Failed to schedule notification: \(error)")
+                        } else {
+                            print("✅ Scheduled notification for \(block.name) at \(warningTime)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func scheduleNotificationsForToday(testDate: Date? = nil) {
+        Task {
+            do {
+                let currentTime = testDate ?? Date()
+                var blocks: [Block] = []
+                
+                // Check Firebase for schedule type first (same logic as ContentView)
+                if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
+                    // No school - no notifications needed
+                    return
+                } else if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
+                    if type == "no_school" {
+                        // No school - no notifications needed
+                        return
+                    } else if type == "custom" {
+                        if let customBlocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
+                            blocks = customBlocks
+                        }
+                    } else {
+                        // Load from JSON file
+                        let tempLoader = ScheduleLoader()
+                        tempLoader.loadSchedule(from: type)
+                        blocks = tempLoader.blocks
+                    }
+                } else {
+                    // Load weekday schedule (same logic as ContentView)
+                    let weekday = Calendar.current.component(.weekday, from: currentTime)
+                    let scheduleFile: String?
+                    switch weekday {
+                    case 2, 3, 5: scheduleFile = "schedule_mon_thu"
+                    case 4: scheduleFile = "schedule_wed" 
+                    case 6: scheduleFile = "schedule_fri"
+                    default: scheduleFile = nil
+                    }
+                    
+                    if let file = scheduleFile {
+                        let tempLoader = ScheduleLoader()
+                        tempLoader.loadSchedule(from: file)
+                        blocks = tempLoader.blocks
+                    }
+                }
+                
+                // Schedule notifications for the determined blocks
+                await MainActor.run {
+                    self.scheduleBlockEndingNotifications(for: blocks, testDate: testDate)
+                }
+                
+            } catch {
+                print("❌ Failed to determine schedule for notifications: \(error)")
+            }
+        }
+    }
+    
+    
+    private func parseTime(_ timeString: String, for date: Date) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm" // 24-hour format like "08:15" or "13:30"
+        
+        if let time = formatter.date(from: timeString) {
+            let calendar = Calendar.current
+            let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+            
+            var combinedComponents = DateComponents()
+            combinedComponents.year = dateComponents.year
+            combinedComponents.month = dateComponents.month
+            combinedComponents.day = dateComponents.day
+            combinedComponents.hour = timeComponents.hour
+            combinedComponents.minute = timeComponents.minute
+            
+            return calendar.date(from: combinedComponents)
+        }
+        
+        return nil
+    }
+}
 
 struct ContentView: View {
     @State private var noSchool: Bool? = nil // nil = loading, true/false = determined
@@ -32,6 +168,7 @@ struct ContentView: View {
     @State private var originalTestDate: Date? = nil // Track original value
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
+    @StateObject private var notificationManager = NotificationManager.shared
     
     // Visual centering offsets
     private let scheduleOffset: CGFloat = 60
@@ -191,6 +328,9 @@ struct ContentView: View {
                 print("[\(timestamp)] App became active")
                 print("[\(timestamp)] Background refresh started")
                 
+                // Reschedule notifications for today with fresh Firebase data
+                notificationManager.scheduleNotificationsForToday(testDate: testDate)
+                
                 // Refresh in background without showing splash or loading indicators
                 Task {
                     await backgroundRefresh()
@@ -204,6 +344,12 @@ struct ContentView: View {
             updateLoadingState()
         }
         .onAppear {
+            // Request notification permission
+            notificationManager.requestPermission()
+            
+            // Only schedule notifications for today to avoid stale Firebase data
+            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            
             // Initialize previous state on first load
             if isFirstLaunch {
                 Task {
@@ -216,6 +362,8 @@ struct ContentView: View {
             // Only refresh if testDate actually changed
             if originalTestDate != testDate {
                 print("🔄 [SETTINGS] Test date changed from \(originalTestDate?.description ?? "nil") to \(testDate?.description ?? "nil") - refreshing")
+                // Clear old notifications since date changed
+                UNUserNotificationCenter.current().removeAllPendingNotifications()
                 Task {
                     await refreshAll()
                 }
@@ -249,6 +397,12 @@ struct ContentView: View {
             isRefreshing = false // Also hide the refresh spinner when content is ready
             
             print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
+            
+            // Schedule notifications for blocks if there's school
+            if noSchool != true && !scheduleLoader.blocks.isEmpty {
+                print("📱 [NOTIFICATIONS] Scheduling notifications for \(scheduleLoader.blocks.count) blocks")
+                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate)
+            }
             
             // Only trigger animation if there are blocks to show
             if noSchool != true {
