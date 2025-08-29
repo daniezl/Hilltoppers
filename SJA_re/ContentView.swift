@@ -282,22 +282,22 @@ struct ContentView: View {
             }
             
             // Settings button - top right
-//            VStack {
-//                HStack {
-//                    Spacer()
-//                    Button(action: {
-//                        originalTestDate = testDate // Store current value before opening settings
-//                        showSettings = true
-//                    }) {
-//                        Image(systemName: "gearshape.fill")
-//                            .font(.title2)
-//                            .foregroundColor(.gray.opacity(0.7))
-//                            .padding()
-//                    }
-//                }
-//                Spacer()
-//            }
-//            .zIndex(500)
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        originalTestDate = testDate // Store current value before opening settings
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundColor(.gray.opacity(0.7))
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
+            .zIndex(500)
         }
         .background(Color.clear)
         .contentShape(Rectangle())
