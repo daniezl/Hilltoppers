@@ -164,6 +164,7 @@ struct ContentView: View {
     @State private var disablePullToRefreshGesture = false
     @State private var showSettings = false
     @State private var originalTestDate: Date? = nil // Track original value
+    @State private var lastOpenedDate: Date? = nil // Track when app was last opened
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
@@ -329,14 +330,30 @@ struct ContentView: View {
             if newPhase == .active {
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
                 print("[\(timestamp)] App became active")
-                print("[\(timestamp)] Background refresh started")
                 
-                // Reschedule notifications for today with fresh Firebase data
-                notificationManager.scheduleNotificationsForToday(testDate: testDate)
+                // Check if this is first active of the day
+                let today = Calendar.current.startOfDay(for: Date())
+                let isFirstActiveOfDay = lastOpenedDate == nil || !Calendar.current.isDate(lastOpenedDate!, inSameDayAs: today)
                 
-                // Refresh in background without showing splash or loading indicators
-                Task {
-                    await backgroundRefresh()
+                if isFirstActiveOfDay {
+                    print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
+                    isLoading = true
+                    lastOpenedDate = Date()
+                    
+                    // Full refresh with loading screen
+                    Task {
+                        await refreshAll()
+                    }
+                } else {
+                    print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
+                    
+                    // Reschedule notifications for today with fresh Firebase data
+                    notificationManager.scheduleNotificationsForToday(testDate: testDate)
+                    
+                    // Background refresh without loading screen
+                    Task {
+                        await backgroundRefresh()
+                    }
                 }
             }
         }
@@ -353,7 +370,20 @@ struct ContentView: View {
             // Only schedule notifications for today to avoid stale Firebase data
             notificationManager.scheduleNotificationsForToday(testDate: testDate)
             
-            // Initialize on first load
+            // Check if this is first open of the day
+            let today = Calendar.current.startOfDay(for: Date())
+            let isFirstOpenOfDay = lastOpenedDate == nil || !Calendar.current.isDate(lastOpenedDate!, inSameDayAs: today)
+            
+            if isFirstOpenOfDay {
+                print("🌅 [FIRST OPEN] First open of the day - showing loading screen")
+                isLoading = true
+                lastOpenedDate = Date()
+            } else {
+                print("📱 [SUBSEQUENT OPEN] Not first open of day - no loading screen needed")
+                isLoading = false
+            }
+            
+            // Initialize/refresh data
             Task {
                 await refreshAll()
             }
@@ -496,6 +526,9 @@ struct ContentView: View {
         if scheduleChanged || dayTypeChanged {
             print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Data changed - updating UI")
             print("Schedule changed: \(scheduleChanged), DayType changed: \(dayTypeChanged)")
+            
+            // Show loading screen for data refresh
+            isLoading = true
             
             // Update stored state
             previousDayType = tempDayType
