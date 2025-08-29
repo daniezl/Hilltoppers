@@ -546,14 +546,9 @@ struct ScheduleView: View {
         testDate ?? now
     }
     
-    // Filter and display blocks based on user settings
+    // Always show all blocks, but modify display based on user settings
     var displayBlocks: [Block] {
-        let currentDayType = getCurrentDayType()
-        let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
-        
-        return loader.blocks.filter { block in
-            blockManager.shouldShow(block: block.name, onGreenDay: isGreenDay)
-        }
+        return loader.blocks
     }
 
     var body: some View {
@@ -670,7 +665,7 @@ struct ScheduleView: View {
                                     
                                     // Main block row
                                     HStack {
-                                        Text(blockManager.getDisplayName(for: block.name))
+                                        Text(getBlockDisplayName(for: block))
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
                                             .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
                                         Spacer()
@@ -1094,6 +1089,22 @@ struct ScheduleView: View {
         print("🎊 Always showing confetti on no school days!")
         shouldShowConfetti = true
           }
+    
+    // MARK: - Block Display Logic
+    
+    private func getBlockDisplayName(for block: Block) -> String {
+        let currentDayType = getCurrentDayType()
+        let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
+        
+        // Check if this block should be shown on the current day type
+        if blockManager.shouldShow(block: block.name, onGreenDay: isGreenDay) {
+            // Show custom name or original name
+            return blockManager.getDisplayName(for: block.name)
+        } else {
+            // Show as "Free Block" when not scheduled for this day type
+            return "Free Block"
+        }
+    }
     
     // MARK: - Day Type Detection
     
