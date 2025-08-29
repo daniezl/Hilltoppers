@@ -112,6 +112,7 @@ struct DayTypeView: View {
     private let maxRetryCount = 3
     @State private var lastRequestTime: Date? = nil
     private let minimumRequestInterval: TimeInterval = 5.0 // 5 seconds between requests
+    @State private var showDailyBulletinConfirm = false
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -154,7 +155,7 @@ struct DayTypeView: View {
                             if calculationSteps != nil {
                                 showPredictionDetail = true 
                             } else {
-                                openDailyBulletin()
+                                showDailyBulletinConfirm = true
                             }
                         }
                 }
@@ -186,7 +187,7 @@ struct DayTypeView: View {
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
                     .onTapGesture {
-                        openDailyBulletin()
+                        showDailyBulletinConfirm = true
                     }
             }
         }
@@ -323,6 +324,12 @@ struct DayTypeView: View {
                     triggerRipple = false
                 }
             }
+        }
+        .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
+            Button("Yes") {
+                openDailyBulletin()
+            }
+            Button("No", role: .cancel) { }
         }
     }
 
