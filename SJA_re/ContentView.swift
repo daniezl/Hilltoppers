@@ -241,23 +241,23 @@ struct ContentView: View {
                 .zIndex(1000)
             }
             
-            // Pull-to-refresh indicator - on top of everything
+            // Pull-to-refresh indicator - circular design
             if dragOffset > 0 {
                 VStack {
-                    HStack {
+                    ZStack {
+                        // Circular background
+                        Circle()
+                            .fill(Color.white.opacity(0.9))
+                            .frame(width: 50, height: 50)
+                            .shadow(radius: 4)
+                        
+                        // Arrow icon
                         Image(systemName: isRefreshReady ? "arrow.clockwise" : "arrow.down")
+                            .font(.title2)
                             .foregroundColor(isRefreshReady ? .green : .gray)
                             .rotationEffect(.degrees(isRefreshReady ? 360 : 0))
                             .animation(.easeInOut(duration: 0.3), value: isRefreshReady)
-                        Text(isRefreshReady ? "Release to refresh" : "Pull to refresh")
-                            .font(.caption)
-                            .foregroundColor(isRefreshReady ? .green : .gray)
                     }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                    .background(Color.white.opacity(0.9))
-                    .cornerRadius(12)
-                    .shadow(radius: 4)
                     .opacity(min(dragOffset / 60, 1.0))
                     .offset(y: min(dragOffset - 60, 0))
                     Spacer()
