@@ -32,16 +32,20 @@ class NotificationManager: ObservableObject {
         
         let currentDate = testDate ?? Date()
         
-        for block in blocks {
+        for (index, block) in blocks.enumerated() {
             if let endTime = parseTime(block.end, for: currentDate) {
                 // Calculate 2 minutes before end time
                 let warningTime = endTime.addingTimeInterval(-120) // 2 minutes before
                 
                 // Only schedule if warning time is in the future
                 if warningTime > Date() {
+                    // Find the next block
+                    let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
+                    let nextBlockText = nextBlock?.name ?? "End of schedule"
+                    
                     let content = UNMutableNotificationContent()
-                    content.title = "Block Ending Soon"
-                    content.body = "\(block.name) ends in 2 minutes"
+                    content.title = "\(block.name) ending in 2 minutes"
+                    content.body = "Up next: \(nextBlockText)"
                     content.sound = .default
                     
                     let trigger = UNTimeIntervalNotificationTrigger(
