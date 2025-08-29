@@ -150,7 +150,6 @@ struct ContentView: View {
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
     @State private var isLoading: Bool = true
-    @State private var isFirstLaunch: Bool = true
     
     // Background refresh state
     @State private var previousDayType: String = ""
@@ -160,7 +159,6 @@ struct ContentView: View {
     @State private var dayTypeLoaded: Bool = false
     @State private var dragOffset: CGFloat = 0
     @State private var isRefreshReady: Bool = false
-    @State private var showSplashScreen: Bool = true
     @State private var isRefreshing: Bool = false
     @State private var triggerDayTypeRipple: Bool = false
     @State private var disablePullToRefreshGesture = false
@@ -199,7 +197,7 @@ struct ContentView: View {
                                                       DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                              print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
-                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: $showSplashScreen)
+                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false))
                              .id(refreshID)
                      }
                      
@@ -213,7 +211,7 @@ struct ContentView: View {
                              Task {
                                  await refreshAll()
                              }
-                         }, showSplashScreen: $showSplashScreen, disablePullToRefreshGesture: $disablePullToRefreshGesture)
+                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture)
                              .id(refreshID)
                              .onAppear {
                                  // Reset animation state when view appears
@@ -225,24 +223,20 @@ struct ContentView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .opacity((isLoading || showSplashScreen) ? 0.0 : 1.0)
-            .animation(.easeOut(duration: 0.3).delay((isLoading || showSplashScreen) ? 0 : 0.2), value: isLoading)
-            .animation(.easeOut(duration: 0.3).delay(showSplashScreen ? 0 : 0.2), value: showSplashScreen)
+            .opacity(isLoading ? 0.0 : 1.0)
+            .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : 0.1), value: isLoading)
                 
-            // Splash screen overlay - only on first launch
-            if showSplashScreen && isFirstLaunch {
-                SplashScreenView(isLoading: $isLoading, onAnimationComplete: {
-                    showSplashScreen = false
-                    isFirstLaunch = false
-                    
-                    // Trigger slide-in animations after splash completes
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        if noSchool != true && !scheduleLoader.blocks.isEmpty {
-                            scheduleLoader.showBlocks = true
-                        }
-                        triggerDayTypeRipple = true
-                    }
-                })
+            // Simple loading screen
+            if isLoading {
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Loading...")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.white)
                 .zIndex(1000)
             }
             
@@ -271,8 +265,8 @@ struct ContentView: View {
                 .zIndex(1000)
             }
             
-            // Full-screen loading overlay during refresh (but not during splash)
-            if isRefreshing && !showSplashScreen {
+            // Full-screen loading overlay during refresh
+            if isRefreshing {
                 Color.white
                     .ignoresSafeArea(.all)
                     .overlay(
@@ -359,11 +353,9 @@ struct ContentView: View {
             // Only schedule notifications for today to avoid stale Firebase data
             notificationManager.scheduleNotificationsForToday(testDate: testDate)
             
-            // Initialize previous state on first load
-            if isFirstLaunch {
-                Task {
-                    await refreshAll()
-                }
+            // Initialize on first load
+            Task {
+                await refreshAll()
             }
         }
         .preferredColorScheme(.light)
@@ -413,24 +405,13 @@ struct ContentView: View {
                 notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate)
             }
             
-            // Only trigger animation if there are blocks to show
+            // Trigger animations immediately when loading completes
             if noSchool != true {
-                if showSplashScreen {
-                    // Animations will be triggered by splash screen completion callback - do nothing here
-                    print("🎬 [ANIMATIONS] Waiting for splash screen to finish before triggering animations")
-                } else {
-                    // No delay for refresh - immediate animation
-                    scheduleLoader.showBlocks = true
-                    triggerDayTypeRipple = true
-                }
+                scheduleLoader.showBlocks = true
+                triggerDayTypeRipple = true
             } else {
                 // Trigger ripple for no-school days too
-                if showSplashScreen {
-                    // Animations will be triggered by splash screen completion callback - do nothing here
-                    print("🎬 [ANIMATIONS] Waiting for splash screen to finish before triggering ripple")
-                } else {
-                    triggerDayTypeRipple = true
-                }
+                triggerDayTypeRipple = true
             }
         }
     }
