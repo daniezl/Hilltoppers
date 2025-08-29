@@ -172,6 +172,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var blockManager = BlockSettingsManager.shared
     
     // Visual centering offsets
     private let scheduleOffset: CGFloat = 60
@@ -583,9 +584,89 @@ struct ContentView: View {
     }
 }
 
+struct BlockSettings: Codable {
+    var name: String = ""
+    var showOnGreenDay: Bool = true
+    var showOnWhiteDay: Bool = true
+}
+
+class BlockSettingsManager: ObservableObject {
+    static let shared = BlockSettingsManager()
+    
+    @Published var blockA = BlockSettings()
+    @Published var blockB = BlockSettings()
+    @Published var blockC = BlockSettings()
+    @Published var blockD = BlockSettings()
+    @Published var blockE = BlockSettings()
+    
+    private init() {
+        loadSettings()
+    }
+    
+    func saveSettings() {
+        let settings = [
+            "A": blockA,
+            "B": blockB,
+            "C": blockC,
+            "D": blockD,
+            "E": blockE
+        ]
+        
+        if let encoded = try? JSONEncoder().encode(settings) {
+            UserDefaults.standard.set(encoded, forKey: "BlockSettings")
+            print("✅ Block settings saved")
+        }
+    }
+    
+    private func loadSettings() {
+        guard let data = UserDefaults.standard.data(forKey: "BlockSettings"),
+              let settings = try? JSONDecoder().decode([String: BlockSettings].self, from: data) else {
+            print("📱 Using default block settings")
+            return
+        }
+        
+        blockA = settings["A"] ?? BlockSettings()
+        blockB = settings["B"] ?? BlockSettings()
+        blockC = settings["C"] ?? BlockSettings()
+        blockD = settings["D"] ?? BlockSettings()
+        blockE = settings["E"] ?? BlockSettings()
+        print("✅ Block settings loaded")
+    }
+    
+    func getDisplayName(for blockName: String) -> String {
+        let settings: BlockSettings
+        switch blockName {
+        case "A Block": settings = blockA
+        case "B Block": settings = blockB
+        case "C Block": settings = blockC
+        case "D Block": settings = blockD
+        case "E Block": settings = blockE
+        default: return blockName
+        }
+        
+        return settings.name.isEmpty ? blockName : settings.name
+    }
+    
+    func shouldShow(block blockName: String, onGreenDay: Bool) -> Bool {
+        let settings: BlockSettings
+        switch blockName {
+        case "A Block": settings = blockA
+        case "B Block": settings = blockB
+        case "C Block": settings = blockC
+        case "D Block": settings = blockD
+        case "E Block": settings = blockE
+        default: return true // Show other blocks by default
+        }
+        
+        return onGreenDay ? settings.showOnGreenDay : settings.showOnWhiteDay
+    }
+}
+
 struct SettingsView: View {
     @Binding var testDate: Date?
     let onDismiss: () -> Void
+    
+    @ObservedObject private var blockManager = BlockSettingsManager.shared
     
     var body: some View {
         NavigationView {
@@ -608,6 +689,15 @@ struct SettingsView: View {
                     Spacer()
                     
                     VStack(spacing: 16) {
+                        NavigationLink("Block Configuration") {
+                            BlockConfigurationView(blockManager: blockManager)
+                        }
+                        .font(.title2)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
                         NavigationLink("Developer Options") {
                             DeveloperOptionsView(testDate: $testDate)
                         }
@@ -689,6 +779,136 @@ struct DeveloperOptionsView: View {
         formatter.dateStyle = .full
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+struct BlockConfigurationView: View {
+    @ObservedObject var blockManager: BlockSettingsManager
+    @State private var showValidationAlert = false
+    @State private var alertMessage = ""
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Table Header
+            HStack(spacing: 0) {
+                Text("Block")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+                
+                Text("Course")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+                
+                Text("Green")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+                
+                Text("White")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.vertical, 12)
+            .background(Color.gray.opacity(0.2))
+            
+            Divider()
+            
+            // Table Rows
+            ScrollView {
+                VStack(spacing: 0) {
+                    BlockTableRow(blockName: "A", settings: $blockManager.blockA, onValidationError: showError, onSave: blockManager.saveSettings)
+                    Divider()
+                    BlockTableRow(blockName: "B", settings: $blockManager.blockB, onValidationError: showError, onSave: blockManager.saveSettings)
+                    Divider()
+                    BlockTableRow(blockName: "C", settings: $blockManager.blockC, onValidationError: showError, onSave: blockManager.saveSettings)
+                    Divider()
+                    BlockTableRow(blockName: "D", settings: $blockManager.blockD, onValidationError: showError, onSave: blockManager.saveSettings)
+                    Divider()
+                    BlockTableRow(blockName: "E", settings: $blockManager.blockE, onValidationError: showError, onSave: blockManager.saveSettings)
+                }
+            }
+            
+            Spacer()
+        }
+        .navigationBarHidden(true)
+        .alert("Invalid Configuration", isPresented: $showValidationAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
+    }
+    
+    private func showError(message: String) {
+        alertMessage = message
+        showValidationAlert = true
+    }
+}
+
+struct BlockTableRow: View {
+    let blockName: String
+    @Binding var settings: BlockSettings
+    let onValidationError: (String) -> Void
+    let onSave: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Block column
+            Text(blockName)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .frame(maxWidth: .infinity)
+            
+            // Course column
+            TextField("Enter course name", text: $settings.name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 8)
+                .onChange(of: settings.name) { _ in
+                    onSave()
+                }
+            
+            // Green Day column
+            Button(action: {
+                toggleGreenDay()
+            }) {
+                Image(systemName: settings.showOnGreenDay ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundColor(settings.showOnGreenDay ? .green : .gray)
+            }
+            .frame(maxWidth: .infinity)
+            
+            // White Day column
+            Button(action: {
+                toggleWhiteDay()
+            }) {
+                Image(systemName: settings.showOnWhiteDay ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundColor(settings.showOnWhiteDay ? .blue : .gray)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.vertical, 16)
+    }
+    
+    private func toggleGreenDay() {
+        if settings.showOnGreenDay && !settings.showOnWhiteDay {
+            onValidationError("At least one day type must be selected for Block \(blockName)")
+        } else {
+            settings.showOnGreenDay.toggle()
+            onSave()
+        }
+    }
+    
+    private func toggleWhiteDay() {
+        if settings.showOnWhiteDay && !settings.showOnGreenDay {
+            onValidationError("At least one day type must be selected for Block \(blockName)")
+        } else {
+            settings.showOnWhiteDay.toggle()
+            onSave()
+        }
     }
 }
 

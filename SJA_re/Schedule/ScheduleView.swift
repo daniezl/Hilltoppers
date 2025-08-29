@@ -525,6 +525,7 @@ struct ScheduleView: View {
     let onPullRefresh: () async -> Void
     @Binding var showSplashScreen: Bool
     @Binding var disablePullToRefreshGesture: Bool
+    @ObservedObject private var blockManager = BlockSettingsManager.shared
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
     @State private var scheduleTitle: String = "Loading..."
@@ -545,9 +546,14 @@ struct ScheduleView: View {
         testDate ?? now
     }
     
-    // Always show all blocks, control visibility with opacity/transform
+    // Filter and display blocks based on user settings
     var displayBlocks: [Block] {
-        loader.blocks
+        let currentDayType = getCurrentDayType()
+        let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
+        
+        return loader.blocks.filter { block in
+            blockManager.shouldShow(block: block.name, onGreenDay: isGreenDay)
+        }
     }
 
     var body: some View {
@@ -633,7 +639,7 @@ struct ScheduleView: View {
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8) // between title and blocks
                             
-                            ForEach(Array(loader.blocks.enumerated()), id: \.element.id) { index, block in
+                            ForEach(Array(displayBlocks.enumerated()), id: \.element.id) { index, block in
                                 VStack(spacing: 0) {
                                     // Time info above highlighted block (only if dropdown is closed)
                                     if expandedBlockID != block.id {
@@ -664,7 +670,7 @@ struct ScheduleView: View {
                                     
                                     // Main block row
                                     HStack {
-                                        Text(block.name)
+                                        Text(blockManager.getDisplayName(for: block.name))
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
                                             .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
                                         Spacer()
@@ -1088,6 +1094,28 @@ struct ScheduleView: View {
         print("🎊 Always showing confetti on no school days!")
         shouldShowConfetti = true
           }
+    
+    // MARK: - Day Type Detection
+    
+    private func getCurrentDayType() -> String {
+        // For now, implement a simple day type detection
+        // This could be enhanced to sync with DayTypeView or fetch from a shared state
+        // Fallback to a simple logic based on the day of week for now
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: currentTime)
+        
+        // Simple pattern: odd weekdays are Green, even are White
+        // This is a placeholder - in a full implementation, this would fetch from the same
+        // HTML source as DayTypeView or be passed as a parameter
+        switch weekday {
+        case 2, 4: // Tuesday, Thursday
+            return "White Day"
+        case 3, 5: // Monday (2), Wednesday, Friday
+            return "Green Day"
+        default:
+            return "Green Day" // Default for weekends/other days
+        }
+    }
   }
 
 struct BlockHeader: View {
