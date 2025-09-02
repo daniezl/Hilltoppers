@@ -525,6 +525,7 @@ struct ScheduleView: View {
     let onPullRefresh: () async -> Void
     @Binding var showSplashScreen: Bool
     @Binding var disablePullToRefreshGesture: Bool
+    let currentDayType: String
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     @State private var expandedBlockID: UUID?
     @State private var now = Date()
@@ -1093,7 +1094,6 @@ struct ScheduleView: View {
     // MARK: - Block Display Logic
     
     private func getBlockDisplayName(for block: Block) -> String {
-        let currentDayType = getCurrentDayType()
         let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
         
         // Check if this block should be shown on the current day type
@@ -1101,30 +1101,8 @@ struct ScheduleView: View {
             // Show custom name or original name
             return blockManager.getDisplayName(for: block.name)
         } else {
-            // Show as "Free Block" when not scheduled for this day type
+            // Show as "Free Block" when the day type checkbox is NOT checked
             return "Free Block"
-        }
-    }
-    
-    // MARK: - Day Type Detection
-    
-    private func getCurrentDayType() -> String {
-        // For now, implement a simple day type detection
-        // This could be enhanced to sync with DayTypeView or fetch from a shared state
-        // Fallback to a simple logic based on the day of week for now
-        let calendar = Calendar.current
-        let weekday = calendar.component(.weekday, from: currentTime)
-        
-        // Simple pattern: odd weekdays are Green, even are White
-        // This is a placeholder - in a full implementation, this would fetch from the same
-        // HTML source as DayTypeView or be passed as a parameter
-        switch weekday {
-        case 2, 4: // Tuesday, Thursday
-            return "White Day"
-        case 3, 5: // Monday (2), Wednesday, Friday
-            return "Green Day"
-        default:
-            return "Green Day" // Default for weekends/other days
         }
     }
   }
@@ -1169,6 +1147,6 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false))
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false), currentDayType: "Green Day")
 }
 

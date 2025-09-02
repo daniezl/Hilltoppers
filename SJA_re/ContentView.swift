@@ -169,6 +169,7 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var originalTestDate: Date? = nil // Track original value
     @State private var lastOpenedDate: Date? = nil // Track when app was last opened
+    @State private var currentDayType: String = "Loading..." // Track current day type for block filtering
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
@@ -203,7 +204,7 @@ struct ContentView: View {
                                                       DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                              print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
-                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false))
+                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType)
                              .id(refreshID)
                      }
                      
@@ -217,7 +218,7 @@ struct ContentView: View {
                              Task {
                                  await refreshAll()
                              }
-                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture)
+                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture, currentDayType: currentDayType)
                              .id(refreshID)
                              .onAppear {
                                  // Reset animation state when view appears

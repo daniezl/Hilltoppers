@@ -93,6 +93,7 @@ struct DayTypeView: View {
     let onLoadingComplete: () -> Void
     @Binding var triggerRipple: Bool
     @Binding var showSplashScreen: Bool
+    @Binding var currentDayType: String
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -132,6 +133,11 @@ struct DayTypeView: View {
         } else {
             return dayType
         }
+    }
+    
+    // This returns the day type that's actually displayed to the user
+    var effectiveDayType: String {
+        return isDateToday == false ? predicted : displayDayType
     }
 
     var body: some View {
@@ -324,6 +330,14 @@ struct DayTypeView: View {
                     triggerRipple = false
                 }
             }
+        }
+        .onChange(of: effectiveDayType) { newEffectiveDayType in
+            // Update the shared day type state in ContentView with the actually displayed day type
+            currentDayType = newEffectiveDayType
+        }
+        .onAppear {
+            // Initialize the shared day type state with the effective day type
+            currentDayType = effectiveDayType
         }
         .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
             Button("Yes") {
@@ -1079,6 +1093,6 @@ struct PredictionDetailView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false))
+        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"))
     }
 }
