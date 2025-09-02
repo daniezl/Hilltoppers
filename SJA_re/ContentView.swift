@@ -9,6 +9,18 @@ import SwiftUI
 import SwiftSoup
 import UserNotifications
 
+// MARK: - EST Timezone Extension
+extension Date {
+    static var currentEST: Date {
+        // Always return the current time, but the app will format/interpret it as EST
+        return Date()
+    }
+    
+    static var estTimeZone: TimeZone {
+        return TimeZone(identifier: "America/New_York")!
+    }
+}
+
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -30,7 +42,7 @@ class NotificationManager: ObservableObject {
         // Remove existing notifications
         center.removeAllPendingNotificationRequests()
         
-        let currentDate = testDate ?? Date()
+        let currentDate = testDate ?? Date.currentEST
         
         for (index, block) in blocks.enumerated() {
             if let endTime = parseTime(block.end, for: currentDate) {
@@ -38,7 +50,7 @@ class NotificationManager: ObservableObject {
                 let warningTime = endTime.addingTimeInterval(-120) // 2 minutes before
                 
                 // Only schedule if warning time is in the future
-                if warningTime > Date() {
+                if warningTime > Date.currentEST {
                     // Find the next block
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
                     let nextBlockText = nextBlock?.name ?? "End of schedule"
@@ -74,7 +86,7 @@ class NotificationManager: ObservableObject {
     func scheduleNotificationsForToday(testDate: Date? = nil) {
         Task {
             do {
-                let currentTime = testDate ?? Date()
+                let currentTime = testDate ?? Date.currentEST
                 var blocks: [Block] = []
                 
                 // Check Firebase for schedule type first (same logic as ContentView)
@@ -97,7 +109,9 @@ class NotificationManager: ObservableObject {
                     }
                 } else {
                     // Load weekday schedule (same logic as ContentView)
-                    let weekday = Calendar.current.component(.weekday, from: currentTime)
+                    var calendar = Calendar.current
+                    calendar.timeZone = Date.estTimeZone
+                    let weekday = calendar.component(.weekday, from: currentTime)
                     let scheduleFile: String?
                     switch weekday {
                     case 2, 3, 5: scheduleFile = "schedule_mon_thu"
@@ -128,9 +142,11 @@ class NotificationManager: ObservableObject {
     private func parseTime(_ timeString: String, for date: Date) -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm" // 24-hour format like "08:15" or "13:30"
+        formatter.timeZone = Date.estTimeZone
         
         if let time = formatter.date(from: timeString) {
-            let calendar = Calendar.current
+            var calendar = Calendar.current
+            calendar.timeZone = Date.estTimeZone
             let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
             let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
             
@@ -338,13 +354,15 @@ struct ContentView: View {
                 print("[\(timestamp)] App became active")
                 
                 // Check if this is first active of the day
-                let today = Calendar.current.startOfDay(for: Date())
-                let isFirstActiveOfDay = lastOpenedDate == nil || !Calendar.current.isDate(lastOpenedDate!, inSameDayAs: today)
+                var calendar = Calendar.current
+                calendar.timeZone = Date.estTimeZone
+                let today = calendar.startOfDay(for: Date.currentEST)
+                let isFirstActiveOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
                 
                 if isFirstActiveOfDay {
                     print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
                     isLoading = true
-                    lastOpenedDate = Date()
+                    lastOpenedDate = Date.currentEST
                     
                     // Full refresh with loading screen
                     Task {
@@ -377,13 +395,15 @@ struct ContentView: View {
             notificationManager.scheduleNotificationsForToday(testDate: testDate)
             
             // Check if this is first open of the day
-            let today = Calendar.current.startOfDay(for: Date())
-            let isFirstOpenOfDay = lastOpenedDate == nil || !Calendar.current.isDate(lastOpenedDate!, inSameDayAs: today)
+            var calendar = Calendar.current
+            calendar.timeZone = Date.estTimeZone
+            let today = calendar.startOfDay(for: Date.currentEST)
+            let isFirstOpenOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
             
             if isFirstOpenOfDay {
                 print("🌅 [FIRST OPEN] First open of the day - showing loading screen")
                 isLoading = true
-                lastOpenedDate = Date()
+                lastOpenedDate = Date.currentEST
             } else {
                 print("📱 [SUBSEQUENT OPEN] Not first open of day - no loading screen needed")
                 isLoading = false
@@ -469,7 +489,7 @@ struct ContentView: View {
         
         // Fetch new schedule data (similar to ScheduleView's refreshSchedule)
         do {
-            let currentTime = testDate ?? Date()
+            let currentTime = testDate ?? Date.currentEST
             
             // Check Firebase for schedule changes
             if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
@@ -490,7 +510,9 @@ struct ContentView: View {
                 }
             } else {
                 // Load weekday schedule
-                let weekday = Calendar.current.component(.weekday, from: currentTime)
+                var calendar = Calendar.current
+                calendar.timeZone = Date.estTimeZone
+                let weekday = calendar.component(.weekday, from: currentTime)
                 let scheduleFile: String?
                 switch weekday {
                 case 2, 3, 5: scheduleFile = "schedule_mon_thu"
@@ -699,7 +721,7 @@ struct SettingsView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         
-                        NavigationLink("Developer Options") {
+                        NavigationLink("Dev: time config") {
                             DeveloperOptionsView(testDate: $testDate)
                         }
                         .font(.title2)
@@ -733,7 +755,7 @@ struct DeveloperOptionsView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
-                    Text(formatDateTime(testDate ?? Date()))
+                    Text(formatDateTime(testDate ?? Date.currentEST))
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.blue)
                 }
@@ -750,6 +772,7 @@ struct DeveloperOptionsView: View {
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .datePickerStyle(CompactDatePickerStyle())
+                    .environment(\.timeZone, Date.estTimeZone)
                 }
             }
             
@@ -765,7 +788,7 @@ struct DeveloperOptionsView: View {
                 }
             }
         }
-        .navigationTitle("Developer Options")
+        .navigationTitle("Dev: time config")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if let currentTestDate = testDate {
@@ -779,6 +802,7 @@ struct DeveloperOptionsView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
         formatter.timeStyle = .short
+        formatter.timeZone = Date.estTimeZone
         return formatter.string(from: date)
     }
 }

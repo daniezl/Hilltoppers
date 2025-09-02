@@ -528,7 +528,7 @@ struct ScheduleView: View {
     let currentDayType: String
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     @State private var expandedBlockID: UUID?
-    @State private var now = Date()
+    @State private var now = Date.currentEST
     @State private var scheduleTitle: String = "Loading..."
     @State private var timeUpdateTimer: Timer?
     @State private var noSchoolDetails: String? = nil
@@ -835,7 +835,9 @@ struct ScheduleView: View {
     func timeToday(_ time: String) -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-        let calendar = Calendar.current
+        formatter.timeZone = Date.estTimeZone
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
         guard let t = formatter.date(from: time) else { return nil }
         let comps = calendar.dateComponents([.year, .month, .day], from: currentTime)
         return calendar.date(bySettingHour: calendar.component(.hour, from: t), minute: calendar.component(.minute, from: t), second: 0, of: calendar.date(from: comps)!)
@@ -902,7 +904,9 @@ struct ScheduleView: View {
     }
 
     func loadWeekdaySchedule() {
-        let weekday = Calendar.current.component(.weekday, from: currentTime)
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+        let weekday = calendar.component(.weekday, from: currentTime)
         let weekdayNames = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         print("📅 [WEEKDAY] Loading weekday schedule for \(weekdayNames[weekday]) (weekday=\(weekday))")
         
@@ -943,6 +947,7 @@ struct ScheduleView: View {
     func refreshSchedule() async {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: currentTime)
         
         print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
@@ -1056,7 +1061,7 @@ struct ScheduleView: View {
         timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             // Only update time if we have blocks loaded and need to show countdowns
             if !loader.blocks.isEmpty {
-                now = Date()
+                now = Date.currentEST
             }
         }
     }
