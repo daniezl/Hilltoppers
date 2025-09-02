@@ -707,34 +707,29 @@ struct SettingsView: View {
                 .padding(.horizontal, 40)
                 .padding(.top, 20)
                 
-                // Menu items centered
-                VStack(spacing: 20) {
-                    Spacer()
-                    
-                    VStack(spacing: 16) {
-                        NavigationLink("Block Configuration") {
-                            BlockConfigurationView(blockManager: blockManager)
-                        }
-                        .font(.title2)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-                        
-                        NavigationLink("Dev: time config") {
-                            DeveloperOptionsView(testDate: $testDate)
-                        }
-                        .font(.title2)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                // Menu items near top
+                VStack(spacing: 16) {
+                    NavigationLink("Block") {
+                        BlockConfigurationView(blockManager: blockManager)
                     }
-                    .padding(.horizontal, 40)
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .padding()
+                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .cornerRadius(12)
                     
-                    Spacer()
-                    Spacer()
+                    NavigationLink("Time") {
+                        DeveloperOptionsView(testDate: $testDate)
+                    }
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .padding()
+                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .cornerRadius(12)
                 }
+                .padding(.top, 40)
+                
+                Spacer()
             }
             .navigationBarHidden(true)
         }
@@ -743,6 +738,7 @@ struct SettingsView: View {
 
 struct DeveloperOptionsView: View {
     @Binding var testDate: Date?
+    @Environment(\.dismiss) private var dismiss
     
     @State private var customDate = Date()
     @State private var isUsingCustomDate = false
@@ -788,8 +784,24 @@ struct DeveloperOptionsView: View {
                 }
             }
         }
-        .navigationTitle("Dev: time config")
+        .navigationTitle("Time")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Set white navigation bar background for iOS 16+ compatibility
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor.white
+            UINavigationBar.appearance().standardAppearance = appearance
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    dismiss()
+                }
+                .foregroundColor(.blue)
+            }
+        }
         .onAppear {
             if let currentTestDate = testDate {
                 customDate = currentTestDate
@@ -811,6 +823,7 @@ struct BlockConfigurationView: View {
     @ObservedObject var blockManager: BlockSettingsManager
     @State private var showValidationAlert = false
     @State private var alertMessage = ""
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(spacing: 0) {
@@ -837,7 +850,7 @@ struct BlockConfigurationView: View {
                     .frame(maxWidth: .infinity)
             }
             .padding(.vertical, 12)
-            .background(Color.gray.opacity(0.2))
+            .background(Color(red: 245/255, green: 246/255, blue: 245/255))
             
             Divider()
             
@@ -858,7 +871,24 @@ struct BlockConfigurationView: View {
             
             Spacer()
         }
-        .navigationBarHidden(true)
+        .navigationTitle("Block")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Set white navigation bar background for iOS 16+ compatibility
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor.white
+            UINavigationBar.appearance().standardAppearance = appearance
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    dismiss()
+                }
+                .foregroundColor(.blue)
+            }
+        }
         .alert("Invalid Configuration", isPresented: $showValidationAlert) {
             Button("OK") { }
         } message: {

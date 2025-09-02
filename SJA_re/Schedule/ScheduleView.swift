@@ -668,7 +668,7 @@ struct ScheduleView: View {
                                     HStack {
                                         Text(getBlockDisplayName(for: block))
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
-                                            .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
+                                            .foregroundColor(loader.showBlocks ? (shouldUseGrayColor(for: block) ? .secondary : .primary) : .primary)
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
@@ -1109,6 +1109,12 @@ struct ScheduleView: View {
             // Show as "Free Block" when the day type checkbox is NOT checked
             return "Free Block"
         }
+    }
+    
+    private func shouldUseGrayColor(for block: Block) -> Bool {
+        let displayName = getBlockDisplayName(for: block)
+        // Use gray color for "Free Block" or non-regular class blocks (like chapel, CP)
+        return displayName == "Free Block" || !isRegularClassBlock(block.name)
     }
   }
 
