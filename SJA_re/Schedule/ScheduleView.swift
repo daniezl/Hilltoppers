@@ -668,7 +668,7 @@ struct ScheduleView: View {
                                     HStack {
                                         Text(getBlockDisplayName(for: block))
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
-                                            .foregroundColor(loader.showBlocks ? (shouldUseGrayColor(for: block) ? .secondary : .primary) : .primary)
+                                            .foregroundColor(loader.showBlocks ? getBlockTextColor(for: block) : .primary)
                                         Spacer()
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
@@ -1100,6 +1100,12 @@ struct ScheduleView: View {
     
     private func getBlockDisplayName(for block: Block) -> String {
         let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
+        let isUnknownDay = currentDayType.lowercased().contains("unknown")
+        
+        // If day type is unknown and block has only one day enabled, show "Unknown"
+        if isUnknownDay && hasOnlyOneDay(for: block.name) {
+            return "Unknown"
+        }
         
         // Check if this block should be shown on the current day type
         if blockManager.shouldShow(block: block.name, onGreenDay: isGreenDay) {
@@ -1111,10 +1117,40 @@ struct ScheduleView: View {
         }
     }
     
+    private func hasOnlyOneDay(for blockName: String) -> Bool {
+        let settings: BlockSettings
+        switch blockName {
+        case "A Block": settings = blockManager.blockA
+        case "B Block": settings = blockManager.blockB
+        case "C Block": settings = blockManager.blockC
+        case "D Block": settings = blockManager.blockD
+        case "E Block": settings = blockManager.blockE
+        default: return false
+        }
+        
+        // Return true if exactly one day is enabled (not both, not neither)
+        return settings.showOnGreenDay != settings.showOnWhiteDay
+    }
+    
     private func shouldUseGrayColor(for block: Block) -> Bool {
         let displayName = getBlockDisplayName(for: block)
         // Use gray color for "Free Block" or non-regular class blocks (like chapel, CP)
         return displayName == "Free Block" || !isRegularClassBlock(block.name)
+    }
+    
+    private func shouldUseRedColor(for block: Block) -> Bool {
+        let displayName = getBlockDisplayName(for: block)
+        return displayName == "Unknown"
+    }
+    
+    private func getBlockTextColor(for block: Block) -> Color {
+        if shouldUseRedColor(for: block) {
+            return .red
+        } else if shouldUseGrayColor(for: block) {
+            return .secondary
+        } else {
+            return .primary
+        }
     }
   }
 
