@@ -745,7 +745,7 @@ struct SettingsView: View {
                     .cornerRadius(12)
                     
                     NavigationLink("Time") {
-                        DeveloperOptionsView(testDate: $testDate)
+                        DeveloperOptionsView(testDate: $testDate, onDismissSettings: onDismiss)
                     }
                     .font(.title2)
                     .foregroundColor(.black)
@@ -764,6 +764,7 @@ struct SettingsView: View {
 
 struct DeveloperOptionsView: View {
     @Binding var testDate: Date?
+    let onDismissSettings: () -> Void
     @Environment(\.dismiss) private var dismiss
     
     @State private var customDate = Date()
@@ -827,7 +828,7 @@ struct DeveloperOptionsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Done") {
-                    dismiss()
+                    onDismissSettings()
                 }
                 .foregroundColor(.blue)
             }
