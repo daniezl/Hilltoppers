@@ -736,7 +736,7 @@ struct SettingsView: View {
                 // Menu items near top
                 VStack(spacing: 16) {
                     NavigationLink("Block") {
-                        BlockConfigurationView(blockManager: blockManager)
+                        BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
                     }
                     .font(.title2)
                     .foregroundColor(.black)
@@ -852,6 +852,7 @@ struct DeveloperOptionsView: View {
 
 struct BlockConfigurationView: View {
     @ObservedObject var blockManager: BlockSettingsManager
+    let onDismissSettings: () -> Void
     @State private var showValidationAlert = false
     @State private var alertMessage = ""
     @Environment(\.dismiss) private var dismiss
@@ -915,7 +916,7 @@ struct BlockConfigurationView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Done") {
-                    dismiss()
+                    onDismissSettings()
                 }
                 .foregroundColor(.blue)
             }
