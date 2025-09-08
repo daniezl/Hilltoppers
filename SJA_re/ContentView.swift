@@ -350,6 +350,15 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
+                // Reset to actual time whenever app becomes active
+                let hadCustomTime = testDate != nil
+                if hadCustomTime {
+                    print("🔄 [APP-ACTIVE] Had custom time - resetting to actual time and forcing refresh")
+                } else {
+                    print("🔄 [APP-ACTIVE] Already using actual time")
+                }
+                testDate = nil
+                
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
                 print("[\(timestamp)] App became active")
                 
@@ -359,10 +368,18 @@ struct ContentView: View {
                 let today = calendar.startOfDay(for: Date.currentEST)
                 let isFirstActiveOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
                 
-                if isFirstActiveOfDay {
-                    print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
+                if isFirstActiveOfDay || hadCustomTime {
+                    if isFirstActiveOfDay {
+                        print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
+                    }
+                    if hadCustomTime {
+                        print("🔄 [CUSTOM TIME RESET] Had custom time - forcing full refresh")
+                    }
+                    
                     isLoading = true
-                    lastOpenedDate = Date.currentEST
+                    if isFirstActiveOfDay {
+                        lastOpenedDate = Date.currentEST
+                    }
                     
                     // Full refresh with loading screen
                     Task {
@@ -388,6 +405,10 @@ struct ContentView: View {
             updateLoadingState()
         }
         .onAppear {
+            // Reset to actual time on app startup
+            print("🔄 [APP-STARTUP] Resetting to actual time")
+            testDate = nil
+            
             // Request notification permission
             notificationManager.requestPermission()
             
