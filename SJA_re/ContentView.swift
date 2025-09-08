@@ -681,6 +681,11 @@ class BlockSettingsManager: ObservableObject {
         default: return true // Show other blocks by default
         }
         
+        // If both days are unchecked, never show the block (always "Free Block")
+        if !settings.showOnGreenDay && !settings.showOnWhiteDay {
+            return false
+        }
+        
         return onGreenDay ? settings.showOnGreenDay : settings.showOnWhiteDay
     }
 }
@@ -917,13 +922,22 @@ struct BlockTableRow: View {
                 .frame(maxWidth: .infinity)
             
             // Course column
-            TextField("Enter course name", text: $settings.name)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 8)
-                .onChange(of: settings.name) { _ in
-                    onSave()
-                }
+            let isFreeBlock = !settings.showOnGreenDay && !settings.showOnWhiteDay
+            
+            if isFreeBlock {
+                Text("Free Block")
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 8)
+            } else {
+                TextField("Enter course name", text: $settings.name)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 8)
+                    .onChange(of: settings.name) { _ in
+                        onSave()
+                    }
+            }
             
             // Green Day column
             Button(action: {
@@ -949,21 +963,13 @@ struct BlockTableRow: View {
     }
     
     private func toggleGreenDay() {
-        if settings.showOnGreenDay && !settings.showOnWhiteDay {
-            onValidationError("At least one day type must be selected for Block \(blockName)")
-        } else {
-            settings.showOnGreenDay.toggle()
-            onSave()
-        }
+        settings.showOnGreenDay.toggle()
+        onSave()
     }
     
     private func toggleWhiteDay() {
-        if settings.showOnWhiteDay && !settings.showOnGreenDay {
-            onValidationError("At least one day type must be selected for Block \(blockName)")
-        } else {
-            settings.showOnWhiteDay.toggle()
-            onSave()
-        }
+        settings.showOnWhiteDay.toggle()
+        onSave()
     }
 }
 
