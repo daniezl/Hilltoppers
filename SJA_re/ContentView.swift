@@ -765,6 +765,17 @@ struct DeveloperOptionsView: View {
             
             Section {
                 Toggle("Use Custom Date", isOn: $isUsingCustomDate)
+                    .onChange(of: isUsingCustomDate) { newValue in
+                        if !newValue {
+                            // Auto-reset to actual time when toggle is turned off
+                            print("🔄 [TOGGLE] Toggle OFF - resetting to actual time")
+                            testDate = nil
+                        } else {
+                            // Apply custom date immediately when toggle is turned on
+                            print("🔄 [TOGGLE] Toggle ON - applying custom date immediately: \(customDate)")
+                            testDate = customDate
+                        }
+                    }
                 
                 if isUsingCustomDate {
                     DatePicker(
@@ -774,18 +785,11 @@ struct DeveloperOptionsView: View {
                     )
                     .datePickerStyle(CompactDatePickerStyle())
                     .environment(\.timeZone, Date.estTimeZone)
-                }
-            }
-            
-            Section {
-                Button("Set to Custom Time") {
-                    testDate = isUsingCustomDate ? customDate : nil
-                }
-                .disabled(!isUsingCustomDate)
-                
-                Button("Reset to Actual Time") {
-                    testDate = nil
-                    isUsingCustomDate = false
+                    .onChange(of: customDate) { newDate in
+                        // Apply date immediately when picker changes
+                        print("🔄 [DATEPICKER] Date changed to: \(newDate) - applying immediately")
+                        testDate = newDate
+                    }
                 }
             }
         }
