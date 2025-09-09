@@ -784,6 +784,15 @@ struct SettingsView: View {
                     .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                     .cornerRadius(12)
                     
+                    NavigationLink("Notifications") {
+                        NotificationSettingsView(onDismissSettings: onDismiss)
+                    }
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .padding()
+                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .cornerRadius(12)
+                    
                     // NavigationLink("Time") {
                     //     DeveloperOptionsView(testDate: $testDate, onDismissSettings: onDismiss)
                     // }
@@ -1037,6 +1046,103 @@ struct BlockTableRow: View {
     private func toggleWhiteDay() {
         settings.showOnWhiteDay.toggle()
         onSave()
+    }
+}
+
+class NotificationSettingsManager: ObservableObject {
+    static let shared = NotificationSettingsManager()
+    
+    @Published var notificationMinutes: Int = 2 // Default 2 minutes before block ends
+    
+    private init() {
+        loadSettings()
+    }
+    
+    func saveSettings() {
+        UserDefaults.standard.set(notificationMinutes, forKey: "NotificationMinutes")
+        print("✅ Notification settings saved: \(notificationMinutes) minutes")
+    }
+    
+    private func loadSettings() {
+        notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
+        print("✅ Notification settings loaded: \(notificationMinutes) minutes")
+    }
+}
+
+struct NotificationSettingsView: View {
+    @ObservedObject private var notificationManager = NotificationSettingsManager.shared
+    let onDismissSettings: () -> Void
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header section
+            VStack(spacing: 8) {
+                Text("Block End Notification")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Text("Get notified before each block ends")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 40)
+            .padding(.bottom, 30)
+            
+            // Picker section
+            VStack(spacing: 20) {
+                Text("Alert me")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                // Scrolling picker like Apple's alarm
+                HStack(spacing: 4) {
+                    Picker("Minutes", selection: $notificationManager.notificationMinutes) {
+                        ForEach(1...30, id: \.self) { minutes in
+                            Text("\(minutes)").tag(minutes)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .frame(width: 80)
+                    .clipped()
+                    
+                    Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(UIColor.systemGroupedBackground))
+            )
+            .padding(.horizontal, 20)
+            
+            Spacer()
+        }
+        .background(Color(UIColor.systemBackground))
+        .navigationTitle("Notifications")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Set white navigation bar background for iOS 16+ compatibility
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor.white
+            UINavigationBar.appearance().standardAppearance = appearance
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    onDismissSettings()
+                }
+                .foregroundColor(.blue)
+            }
+        }
+        .onChange(of: notificationManager.notificationMinutes) { _ in
+            // Auto-save when picker value changes
+            notificationManager.saveSettings()
+        }
     }
 }
 
