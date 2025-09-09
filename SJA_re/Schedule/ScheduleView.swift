@@ -1102,9 +1102,9 @@ struct ScheduleView: View {
         let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
         let isUnknownDay = currentDayType.lowercased().contains("unknown")
         
-        // If day type is unknown and block has only one day enabled, show "Unknown"
+        // If day type is unknown and block has only one day enabled, show the original block name (will be styled in red)
         if isUnknownDay && hasOnlyOneDay(for: block.name) {
-            return "Unknown"
+            return block.name
         }
         
         // Check if this block should be shown on the current day type
@@ -1139,8 +1139,8 @@ struct ScheduleView: View {
     }
     
     private func shouldUseRedColor(for block: Block) -> Bool {
-        let displayName = getBlockDisplayName(for: block)
-        return displayName == "Unknown"
+        let isUnknownDay = currentDayType.lowercased().contains("unknown")
+        return isUnknownDay && hasOnlyOneDay(for: block.name)
     }
     
     private func getBlockTextColor(for block: Block) -> Color {
