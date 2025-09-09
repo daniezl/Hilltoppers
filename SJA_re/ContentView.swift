@@ -1090,27 +1090,28 @@ struct NotificationSettingsView: View {
             .padding(.bottom, 30)
             
             // Picker section
-            VStack(spacing: 20) {
-                Text("Alert me")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                
-                // Scrolling picker like Apple's alarm
+            VStack(spacing: 10) {
+                // Single line with embedded picker
                 HStack(spacing: 4) {
+                    Text("Alert me")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
                     Picker("Minutes", selection: $notificationManager.notificationMinutes) {
                         ForEach(1...30, id: \.self) { minutes in
                             Text("\(minutes)").tag(minutes)
                         }
                     }
                     .pickerStyle(WheelPickerStyle())
-                    .frame(width: 80)
+                    .frame(width: 60, height: 80)
                     .clipped()
                     
-                    Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before")
+                    Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
                         .font(.headline)
                         .foregroundColor(.primary)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
