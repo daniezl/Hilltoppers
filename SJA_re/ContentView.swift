@@ -316,6 +316,28 @@ struct ContentView: View {
                 Spacer()
             }
             .zIndex(500)
+            
+            // Tomorrow button - bottom right
+            // VStack {
+            //     Spacer()
+            //     HStack {
+            //         Spacer()
+            //         Button(action: {
+            //             // No function for now
+            //         }) {
+            //             Text("tomorrow >")
+            //                 .font(.system(size: 16, weight: .medium))
+            //                 .foregroundColor(.white)
+            //                 .padding(.horizontal, 16)
+            //                 .padding(.vertical, 10)
+            //                 .background(getDayTypeColor())
+            //                 .cornerRadius(20)
+            //         }
+            //         .padding(.trailing, 16)
+            //         .padding(.bottom, 30)
+            //     }
+            // }
+            // .zIndex(500)
         }
         .background(Color.clear)
         .contentShape(Rectangle())
@@ -626,6 +648,24 @@ struct ContentView: View {
         triggerDayTypeRipple = false
         refreshID = UUID()
     }
+    
+    // Helper function to get day type color for tomorrow button
+    private func getDayTypeColor() -> Color {
+        let lower = currentDayType.lowercased()
+        let isGreenDay = lower.contains("green day") && !lower.contains("white")
+        let isWhiteDay = lower.contains("white day") && !lower.contains("green")
+        
+        if isGreenDay {
+            // Green Day - Dark green background (same as DayTypeView)
+            return Color(red: 20/255, green: 54/255, blue: 27/255)
+        } else if isWhiteDay {
+            // White Day - Use a darker color for visibility on button
+            return Color(red: 100/255, green: 100/255, blue: 100/255)
+        } else {
+            // Unknown - Use gray
+            return Color.gray.opacity(0.7)
+        }
+    }
 }
 
 struct BlockSettings: Codable {
@@ -744,14 +784,14 @@ struct SettingsView: View {
                     .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                     .cornerRadius(12)
                     
-                    NavigationLink("Time") {
-                        DeveloperOptionsView(testDate: $testDate, onDismissSettings: onDismiss)
-                    }
-                    .font(.title2)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .cornerRadius(12)
+                    // NavigationLink("Time") {
+                    //     DeveloperOptionsView(testDate: $testDate, onDismissSettings: onDismiss)
+                    // }
+                    // .font(.title2)
+                    // .foregroundColor(.black)
+                    // .padding()
+                    // .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    // .cornerRadius(12)
                 }
                 .padding(.top, 40)
                 
