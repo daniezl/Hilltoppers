@@ -921,11 +921,15 @@ struct DeveloperOptionsView: View {
                                 timeOffset = 0
                                 print("🔄 [TOGGLE] Toggle ON with reset enabled - set to current real time")
                             } else {
-                                // Calculate offset: difference between custom date and real current time
-                                let dateWithSeconds = customDate.addingTimeInterval(TimeInterval(selectedSeconds))
-                                let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                                print("🔄 [TOGGLE] Toggle ON - applying time offset: \(offset) seconds")
-                                timeOffset = offset
+                                // Calculate offset using proper time combination
+                                let calendar = Calendar.current
+                                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
+                                if let dateWithoutSeconds = calendar.date(from: components) {
+                                    let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
+                                    let offset = dateWithSeconds.timeIntervalSince(currentTime)
+                                    print("🔄 [TOGGLE] Toggle ON - applying time offset: \(offset) seconds")
+                                    timeOffset = offset
+                                }
                             }
                         }
                     }
@@ -939,14 +943,18 @@ struct DeveloperOptionsView: View {
                     .datePickerStyle(.wheel)
                     .environment(\.timeZone, Date.estTimeZone)
                     .onChange(of: customDate) { newDate in
-                        // Add seconds to the date and calculate offset
-                        let dateWithSeconds = newDate.addingTimeInterval(TimeInterval(selectedSeconds))
-                        let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                        print("🔄 [DATEPICKER] Date changed to: \(dateWithSeconds) - applying offset: \(offset) seconds")
-                        timeOffset = offset
-                        
-                        // Save the exact time that was SET (not when toggle was turned off)
-                        UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
+                        // Strip seconds from DatePicker and add our selected seconds
+                        let calendar = Calendar.current
+                        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: newDate)
+                        if let dateWithoutSeconds = calendar.date(from: components) {
+                            let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
+                            let offset = dateWithSeconds.timeIntervalSince(currentTime)
+                            print("🔄 [DATEPICKER] Date changed to: \(dateWithSeconds) - applying offset: \(offset) seconds")
+                            timeOffset = offset
+                            
+                            // Save the exact time that was SET
+                            UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
+                        }
                     }
                     
                     // Seconds picker
@@ -966,14 +974,18 @@ struct DeveloperOptionsView: View {
                         Spacer()
                     }
                     .onChange(of: selectedSeconds) { newSeconds in
-                        // Update offset when seconds change
-                        let dateWithSeconds = customDate.addingTimeInterval(TimeInterval(newSeconds))
-                        let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                        print("🔄 [SECONDS] Seconds changed to: \(newSeconds) - applying offset: \(offset) seconds")
-                        timeOffset = offset
-                        
-                        // Save the exact time that was SET (not when toggle was turned off)
-                        UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
+                        // Strip seconds from DatePicker and add our selected seconds
+                        let calendar = Calendar.current
+                        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
+                        if let dateWithoutSeconds = calendar.date(from: components) {
+                            let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(newSeconds))
+                            let offset = dateWithSeconds.timeIntervalSince(currentTime)
+                            print("🔄 [SECONDS] Seconds changed to: \(newSeconds) - applying offset: \(offset) seconds")
+                            timeOffset = offset
+                            
+                            // Save the exact time that was SET
+                            UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
+                        }
                     }
                 }
             }
