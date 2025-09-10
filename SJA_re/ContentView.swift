@@ -1052,20 +1052,26 @@ struct BlockTableRow: View {
 class NotificationSettingsManager: ObservableObject {
     static let shared = NotificationSettingsManager()
     
+    @Published var notificationsEnabled: Bool = true // Default enabled
     @Published var notificationMinutes: Int = 2 // Default 2 minutes before block ends
+    @Published var selectedLunchPeriod: Int = 1 // Default 1st lunch (1-5)
     
     private init() {
         loadSettings()
     }
     
     func saveSettings() {
+        UserDefaults.standard.set(notificationsEnabled, forKey: "NotificationsEnabled")
         UserDefaults.standard.set(notificationMinutes, forKey: "NotificationMinutes")
-        print("✅ Notification settings saved: \(notificationMinutes) minutes")
+        UserDefaults.standard.set(selectedLunchPeriod, forKey: "SelectedLunchPeriod")
+        print("✅ Notification settings saved: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
     
     private func loadSettings() {
+        notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? true
         notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
-        print("✅ Notification settings loaded: \(notificationMinutes) minutes")
+        selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 1
+        print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
 }
 
@@ -1087,37 +1093,89 @@ struct NotificationSettingsView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.top, 40)
-            .padding(.bottom, 30)
+            .padding(.bottom, 20)
             
-            // Picker section
-            VStack(spacing: 10) {
-                // Single line with embedded picker
-                HStack(spacing: 4) {
-                    Text("Alert me")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Picker("Minutes", selection: $notificationManager.notificationMinutes) {
-                        ForEach(1...30, id: \.self) { minutes in
-                            Text("\(minutes)").tag(minutes)
+            // Toggle section
+            HStack {
+                Toggle("Enable Notifications", isOn: $notificationManager.notificationsEnabled)
+                    .font(.headline)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, notificationManager.notificationsEnabled ? 20 : 0)
+            
+            // Picker section - only show when notifications are enabled
+            if notificationManager.notificationsEnabled {
+                VStack(spacing: 10) {
+                    // Single line with embedded picker
+                    HStack(spacing: 4) {
+                        Text("Alert me")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .frame(width: 70, alignment: .trailing)
+                        
+                        Picker("Minutes", selection: $notificationManager.notificationMinutes) {
+                            ForEach(1...30, id: \.self) { minutes in
+                                Text("\(minutes)").tag(minutes)
+                            }
                         }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(width: 60, height: 80)
+                        .clipped()
+                        
+                        Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .frame(width: 180, alignment: .leading)
                     }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(width: 60, height: 80)
-                    .clipped()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGroupedBackground))
+                )
+                .padding(.horizontal, 20)
+                .transition(.opacity.combined(with: .scale))
+                
+                // Lunch period selection
+                VStack(spacing: 10) {
+                    HStack {
+                        Text("My Lunch Period")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
                     
-                    Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                    // Lunch period picker
+                    HStack(spacing: 8) {
+                        ForEach(1...5, id: \.self) { period in
+                            Button(action: {
+                                notificationManager.selectedLunchPeriod = period
+                            }) {
+                                Text("\(period)\(getOrdinalSuffix(period))")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(notificationManager.selectedLunchPeriod == period ? .white : .primary)
+                                    .frame(width: 50, height: 36)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(notificationManager.selectedLunchPeriod == period ? Color.green : Color(UIColor.systemGray5))
+                                    )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        Spacer()
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGroupedBackground))
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .transition(.opacity.combined(with: .scale))
             }
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(UIColor.systemGroupedBackground))
-            )
-            .padding(.horizontal, 20)
             
             Spacer()
         }
@@ -1140,9 +1198,28 @@ struct NotificationSettingsView: View {
                 .foregroundColor(.blue)
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: notificationManager.notificationsEnabled)
         .onChange(of: notificationManager.notificationMinutes) { _ in
             // Auto-save when picker value changes
             notificationManager.saveSettings()
+        }
+        .onChange(of: notificationManager.notificationsEnabled) { _ in
+            // Auto-save when toggle changes
+            notificationManager.saveSettings()
+        }
+        .onChange(of: notificationManager.selectedLunchPeriod) { _ in
+            // Auto-save when lunch period changes
+            notificationManager.saveSettings()
+        }
+    }
+    
+    // Helper function for ordinal suffixes
+    private func getOrdinalSuffix(_ number: Int) -> String {
+        switch number {
+        case 1: return "st"
+        case 2: return "nd"
+        case 3: return "rd"
+        default: return "th"
         }
     }
 }
