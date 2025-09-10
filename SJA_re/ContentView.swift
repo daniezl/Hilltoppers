@@ -42,41 +42,197 @@ class NotificationManager: ObservableObject {
         // Remove existing notifications
         center.removeAllPendingNotificationRequests()
         
+        // Check if notifications are enabled
+        let notificationSettings = NotificationSettingsManager.shared
+        guard notificationSettings.notificationsEnabled else {
+            print("🔔 [NOTIFICATIONS] Notifications are disabled - not scheduling any")
+            return
+        }
+        
         let currentDate = testDate ?? Date.currentEST
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .medium
+        timeFormatter.timeZone = Date.estTimeZone
+        
+        // Get user's preferred notification timing
+        let minutesBeforeEnd = notificationSettings.notificationMinutes
+        let secondsBeforeEnd = TimeInterval(minutesBeforeEnd * 60)
+        
+        print("🔔 [NOTIFICATIONS] Scheduling notifications for \(blocks.count) blocks:")
+        print("🔔 [NOTIFICATIONS] User setting: \(minutesBeforeEnd) minute(s) before block ends")
+        print("🔔 [NOTIFICATIONS] User's lunch period: \(notificationSettings.selectedLunchPeriod)")
+        
+        // Debug: Show all block names including sub-blocks
+        print("🔔 [DEBUG] All blocks in schedule:")
+        for (index, block) in blocks.enumerated() {
+            let isLunch = block.name.lowercased().contains("lunch")
+            let containsUserLunch = block.name.contains("\(notificationSettings.selectedLunchPeriod)")
+            print("🔔   Block \(index + 1): '\(block.name)' (\(block.start) - \(block.end)) - isLunch: \(isLunch), containsUserPeriod: \(containsUserLunch)")
+            
+            // Show sub-blocks (lunch periods)
+            if let subBlocks = block.subBlocks {
+                print("🔔     Has \(subBlocks.count) sub-blocks:")
+                for (subIndex, subBlock) in subBlocks.enumerated() {
+                    let isSubLunch = subBlock.name.lowercased().contains("lunch")
+                    let containsUserSubLunch = subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)")
+                    print("🔔     SubBlock \(subIndex + 1): '\(subBlock.name)' (\(subBlock.start) - \(subBlock.end)) - isLunch: \(isSubLunch), containsUserPeriod: \(containsUserSubLunch)")
+                }
+            } else {
+                print("🔔     No sub-blocks")
+            }
+        }
+        
+        // Create array to store all notifications for sorting
+        struct NotificationEvent {
+            let time: Date
+            let title: String
+            let body: String
+            let identifier: String
+            let type: String // "block_ending", "lunch_starting", "lunch_ending"
+        }
+        
+        var allNotifications: [NotificationEvent] = []
         
         for (index, block) in blocks.enumerated() {
-            if let endTime = parseTime(block.end, for: currentDate) {
-                // Calculate 2 minutes before end time
-                let warningTime = endTime.addingTimeInterval(-120) // 2 minutes before
+            if let startTime = parseTime(block.start, for: currentDate),
+               let endTime = parseTime(block.end, for: currentDate) {
                 
-                // Only schedule if warning time is in the future
-                if warningTime > Date.currentEST {
-                    // Find the next block
-                    let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
-                    let nextBlockText = nextBlock?.name ?? "End of schedule"
-                    
-                    let content = UNMutableNotificationContent()
-                    content.title = "\(block.name) ending in 2 minutes"
-                    content.body = "Up next: \(nextBlockText)"
-                    content.sound = .default
-                    
-                    let trigger = UNTimeIntervalNotificationTrigger(
-                        timeInterval: warningTime.timeIntervalSinceNow,
-                        repeats: false
-                    )
-                    
-                    let request = UNNotificationRequest(
-                        identifier: "block-\(block.id)",
-                        content: content,
-                        trigger: trigger
-                    )
-                    
-                    center.add(request) { error in
-                        if let error = error {
-                            print("❌ Failed to schedule notification: \(error)")
-                        } else {
-                            print("✅ Scheduled notification for \(block.name) at \(warningTime)")
+                // Handle regular blocks (not lunch)
+                if !block.name.lowercased().contains("lunch") {
+                    let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
+                    if blockEndWarning > Date.currentEST {
+                        let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
+                        let nextBlockText = nextBlock?.name ?? "End of schedule"
+                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                        
+                        allNotifications.append(NotificationEvent(
+                            time: blockEndWarning,
+                            title: "\(block.name) ending in \(minutesBeforeEnd) \(minuteText)",
+                            body: "Up next: \(nextBlockText)",
+                            identifier: "block-\(block.id)",
+                            type: "block_ending"
+                        ))
+                    }
+                }
+                
+                // Process sub-blocks (lunch periods)
+                if let subBlocks = block.subBlocks {
+                    for subBlock in subBlocks {
+                        if let subStartTime = parseTime(subBlock.start, for: currentDate),
+                           let subEndTime = parseTime(subBlock.end, for: currentDate) {
+                            
+                            // Handle lunch sub-blocks - ONLY for user's selected lunch period
+                            if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
+                                print("🔔 [LUNCH DEBUG] Processing user's lunch: \(subBlock.name)")
+                                
+                                // Add lunch starting notification (skip for 1st lunch)
+                                if notificationSettings.selectedLunchPeriod != 1 {
+                                    let lunchStartWarning = subStartTime.addingTimeInterval(-secondsBeforeEnd)
+                                    print("🔔 [LUNCH DEBUG] Start warning time: \(timeFormatter.string(from: lunchStartWarning))")
+                                    
+                                    if lunchStartWarning > Date.currentEST {
+                                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                                        allNotifications.append(NotificationEvent(
+                                            time: lunchStartWarning,
+                                            title: "\(subBlock.name) starting in \(minutesBeforeEnd) \(minuteText)",
+                                            body: "Time to head to lunch!",
+                                            identifier: "lunch-start-\(subBlock.id)",
+                                            type: "lunch_starting"
+                                        ))
+                                        print("🔔 [LUNCH DEBUG] ✅ Added lunch start notification")
+                                    } else {
+                                        print("🔔 [LUNCH DEBUG] ❌ Lunch start time is in the past")
+                                    }
+                                } else {
+                                    print("🔔 [LUNCH DEBUG] ❌ Skipping lunch start (user has 1st lunch)")
+                                }
+                                
+                                // Add lunch ending notification (skip for 5th lunch)
+                                if notificationSettings.selectedLunchPeriod != 5 {
+                                    let lunchEndWarning = subEndTime.addingTimeInterval(-secondsBeforeEnd)
+                                    print("🔔 [LUNCH DEBUG] End warning time: \(timeFormatter.string(from: lunchEndWarning))")
+                                    
+                                    if lunchEndWarning > Date.currentEST {
+                                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                                        allNotifications.append(NotificationEvent(
+                                            time: lunchEndWarning,
+                                            title: "\(subBlock.name) ending in \(minutesBeforeEnd) \(minuteText)",
+                                            body: "Time to head back to class!",
+                                            identifier: "lunch-end-\(subBlock.id)",
+                                            type: "lunch_ending"
+                                        ))
+                                        print("🔔 [LUNCH DEBUG] ✅ Added lunch end notification")
+                                    } else {
+                                        print("🔔 [LUNCH DEBUG] ❌ Lunch end time is in the past")
+                                    }
+                                } else {
+                                    print("🔔 [LUNCH DEBUG] ❌ Skipping lunch end (user has 5th lunch)")
+                                }
+                            }
                         }
+                    }
+                }
+            }
+        }
+        
+        // Sort notifications chronologically
+        allNotifications.sort { $0.time < $1.time }
+        
+        print("🔔 [NOTIFICATIONS] Found \(allNotifications.count) notifications to schedule in chronological order:")
+        
+        // Schedule all notifications
+        for notification in allNotifications {
+            let content = UNMutableNotificationContent()
+            content.title = notification.title
+            content.body = notification.body
+            content.sound = .default
+            
+            let trigger = UNTimeIntervalNotificationTrigger(
+                timeInterval: notification.time.timeIntervalSinceNow,
+                repeats: false
+            )
+            
+            let request = UNNotificationRequest(
+                identifier: notification.identifier,
+                content: content,
+                trigger: trigger
+            )
+            
+            print("🔔   ✅ \(notification.type.uppercased()): \(notification.title)")
+            print("🔔   ✅ BODY: \(notification.body)")
+            print("🔔   ✅ TIME: \(timeFormatter.string(from: notification.time))")
+            print("🔔   ✅ SECONDS FROM NOW: \(Int(notification.time.timeIntervalSinceNow))")
+            print("🔔   ---")
+            
+            center.add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule notification: \(error)")
+                } else {
+                    print("✅ Successfully scheduled \(notification.type)")
+                }
+            }
+        }
+        
+        // Also print skipped blocks for reference
+        for (index, block) in blocks.enumerated() {
+            print("🔔 Block \(index + 1): \(block.name) (\(block.start) - \(block.end))")
+            
+            if let endTime = parseTime(block.end, for: currentDate) {
+                let warningTime = endTime.addingTimeInterval(-secondsBeforeEnd)
+                if warningTime <= Date.currentEST {
+                    print("🔔   ❌ SKIPPING: Warning time \(timeFormatter.string(from: warningTime)) is in the past")
+                }
+            }
+            
+            if block.name.lowercased().contains("lunch") {
+                if !block.name.contains("\(notificationSettings.selectedLunchPeriod)") {
+                    print("🔔   ❌ SKIPPING LUNCH: Not user's lunch period (user has \(notificationSettings.selectedLunchPeriod))")
+                } else {
+                    if notificationSettings.selectedLunchPeriod == 1 {
+                        print("🔔   ❌ SKIPPING LUNCH START: User has 1st lunch (no start notification needed)")
+                    }
+                    if notificationSettings.selectedLunchPeriod == 5 {
+                        print("🔔   ❌ SKIPPING LUNCH END: User has 5th lunch (no end notification needed)")
                     }
                 }
             }
@@ -869,6 +1025,7 @@ struct DeveloperOptionsView: View {
     @State private var selectedSeconds = 0 // For seconds picker
     @State private var timer: Timer? = nil
     @State private var resetToRealTimeOnOpen = true
+    @State private var referenceTime = Date.currentEST // Fixed reference time for offset calculation
     
     // Computed properties for effective time
     var effectiveCurrentTime: Date {
@@ -916,19 +1073,19 @@ struct DeveloperOptionsView: View {
                             // When toggling on, check if we should reset to real time
                             if resetToRealTimeOnOpen {
                                 // Reset custom time to current real time
-                                customDate = currentTime
+                                customDate = referenceTime
                                 selectedSeconds = 0
                                 timeOffset = 0
                                 print("🔄 [TOGGLE] Toggle ON with reset enabled - set to current real time")
                             } else {
-                                // Calculate offset using proper time combination
+                                // Calculate offset from reference time
                                 let calendar = Calendar.current
                                 let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
                                 if let dateWithoutSeconds = calendar.date(from: components) {
                                     let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
-                                    let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                                    print("🔄 [TOGGLE] Toggle ON - applying time offset: \(offset) seconds")
+                                    let offset = dateWithSeconds.timeIntervalSince(referenceTime)
                                     timeOffset = offset
+                                    print("🔄 [TOGGLE] Toggle ON - calculated offset: \(offset) seconds")
                                 }
                             }
                         }
@@ -948,9 +1105,9 @@ struct DeveloperOptionsView: View {
                         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: newDate)
                         if let dateWithoutSeconds = calendar.date(from: components) {
                             let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
-                            let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                            print("🔄 [DATEPICKER] Date changed to: \(dateWithSeconds) - applying offset: \(offset) seconds")
+                            let offset = dateWithSeconds.timeIntervalSince(referenceTime)
                             timeOffset = offset
+                            print("🔄 [DATEPICKER] Date changed - calculated offset: \(offset) seconds")
                             
                             // Save the exact time that was SET
                             UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
@@ -979,9 +1136,9 @@ struct DeveloperOptionsView: View {
                         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
                         if let dateWithoutSeconds = calendar.date(from: components) {
                             let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(newSeconds))
-                            let offset = dateWithSeconds.timeIntervalSince(currentTime)
-                            print("🔄 [SECONDS] Seconds changed to: \(newSeconds) - applying offset: \(offset) seconds")
+                            let offset = dateWithSeconds.timeIntervalSince(referenceTime)
                             timeOffset = offset
+                            print("🔄 [SECONDS] Seconds changed to: \(newSeconds) - calculated offset: \(offset) seconds")
                             
                             // Save the exact time that was SET
                             UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
@@ -999,6 +1156,9 @@ struct DeveloperOptionsView: View {
             appearance.backgroundColor = UIColor.white
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
+            
+            // Set reference time for offset calculations
+            referenceTime = Date.currentEST
             
             // Start timer to update time display continuously
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
