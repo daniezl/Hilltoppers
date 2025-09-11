@@ -100,18 +100,28 @@ class NotificationManager: ObservableObject {
                 // Handle regular blocks (not lunch)
                 if !block.name.lowercased().contains("lunch") {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
+                    let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
+                    let nextBlockText = nextBlock?.name ?? "End of schedule"
+                    let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                    let blockTitle = "\(block.name) ending in \(minutesBeforeEnd) \(minuteText)"
+                    let blockBody = "Up next: \(nextBlockText)"
+                    
+                    print("🔔 [BLOCK DEBUG] Processing class block: \(block.name)")
+                    print("🔔 [BLOCK DEBUG] End warning time: \(timeFormatter.string(from: blockEndWarning))")
+                    print("🔔 [BLOCK DEBUG] Block title: '\(blockTitle)'")
+                    print("🔔 [BLOCK DEBUG] Block body: '\(blockBody)'")
+                    
                     if blockEndWarning > Date.currentEST {
-                        let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
-                        let nextBlockText = nextBlock?.name ?? "End of schedule"
-                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
-                        
                         allNotifications.append(NotificationEvent(
                             time: blockEndWarning,
-                            title: "\(block.name) ending in \(minutesBeforeEnd) \(minuteText)",
-                            body: "Up next: \(nextBlockText)",
+                            title: blockTitle,
+                            body: blockBody,
                             identifier: "block-\(block.id)",
                             type: "block_ending"
                         ))
+                        print("🔔 [BLOCK DEBUG] ✅ Added block end notification")
+                    } else {
+                        print("🔔 [BLOCK DEBUG] ❌ Block end time is in the past")
                     }
                 }
                 
@@ -128,14 +138,19 @@ class NotificationManager: ObservableObject {
                                 // Add lunch starting notification (skip for 1st lunch)
                                 if notificationSettings.selectedLunchPeriod != 1 {
                                     let lunchStartWarning = subStartTime.addingTimeInterval(-secondsBeforeEnd)
+                                    let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                                    let startTitle = "\(subBlock.name) starting in \(minutesBeforeEnd) \(minuteText)"
+                                    let startBody = "Time to head to lunch!"
+                                    
                                     print("🔔 [LUNCH DEBUG] Start warning time: \(timeFormatter.string(from: lunchStartWarning))")
+                                    print("🔔 [LUNCH DEBUG] Start title: '\(startTitle)'")
+                                    print("🔔 [LUNCH DEBUG] Start body: '\(startBody)'")
                                     
                                     if lunchStartWarning > Date.currentEST {
-                                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
                                         allNotifications.append(NotificationEvent(
                                             time: lunchStartWarning,
-                                            title: "\(subBlock.name) starting in \(minutesBeforeEnd) \(minuteText)",
-                                            body: "Time to head to lunch!",
+                                            title: startTitle,
+                                            body: startBody,
                                             identifier: "lunch-start-\(subBlock.id)",
                                             type: "lunch_starting"
                                         ))
@@ -150,14 +165,19 @@ class NotificationManager: ObservableObject {
                                 // Add lunch ending notification (skip for 5th lunch)
                                 if notificationSettings.selectedLunchPeriod != 5 {
                                     let lunchEndWarning = subEndTime.addingTimeInterval(-secondsBeforeEnd)
+                                    let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
+                                    let endTitle = "\(subBlock.name) ending in \(minutesBeforeEnd) \(minuteText)"
+                                    let endBody = "Time to head back to class!"
+                                    
                                     print("🔔 [LUNCH DEBUG] End warning time: \(timeFormatter.string(from: lunchEndWarning))")
+                                    print("🔔 [LUNCH DEBUG] End title: '\(endTitle)'")
+                                    print("🔔 [LUNCH DEBUG] End body: '\(endBody)'")
                                     
                                     if lunchEndWarning > Date.currentEST {
-                                        let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
                                         allNotifications.append(NotificationEvent(
                                             time: lunchEndWarning,
-                                            title: "\(subBlock.name) ending in \(minutesBeforeEnd) \(minuteText)",
-                                            body: "Time to head back to class!",
+                                            title: endTitle,
+                                            body: endBody,
                                             identifier: "lunch-end-\(subBlock.id)",
                                             type: "lunch_ending"
                                         ))
