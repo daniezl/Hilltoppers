@@ -147,6 +147,13 @@ struct DayTypeView: View {
                     Text(predicted)
                         .font(.system(size: 36, weight: .bold))
                         .foregroundColor(predicted == "Green Day" ? .white : .black)
+                        .onTapGesture { 
+                            if calculationSteps != nil {
+                                showPredictionDetail = true 
+                            } else {
+                                showDailyBulletinConfirm = true
+                            }
+                        }
                         .padding()
                         .background(
                             RippleEffect(isGreenDay: predicted == "Green Day", showRipple: showColorRipple)
@@ -157,13 +164,6 @@ struct DayTypeView: View {
                                 .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
                                 .padding(4) // inset the dashed border
                         )
-                        .onTapGesture { 
-                            if calculationSteps != nil {
-                                showPredictionDetail = true 
-                            } else {
-                                showDailyBulletinConfirm = true
-                            }
-                        }
                 }
                 .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
@@ -188,13 +188,13 @@ struct DayTypeView: View {
                 Text(displayDayType)
                     .font(.system(size: 36, weight: .bold))
                     .foregroundColor(isGreenDay ? .white : .black)
+                    .onTapGesture {
+                        showDailyBulletinConfirm = true
+                    }
                     .padding()
                     .background(
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
-                    .onTapGesture {
-                        showDailyBulletinConfirm = true
-                    }
             }
         }
         .alert(isPresented: $showNetworkErrorAlert) {
