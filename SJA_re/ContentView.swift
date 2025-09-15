@@ -681,15 +681,7 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
-        .sheet(isPresented: $showSettings, onDismiss: {
-            // Always refresh when settings are dismissed (time offset might have changed)
-            print("🔄 [SETTINGS] Settings dismissed - refreshing")
-            // Clear old notifications since time might have changed
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            Task {
-                await refreshAll()
-            }
-        }) {
+        .sheet(isPresented: $showSettings) {
             SettingsView(timeOffset: $timeOffset, onDismiss: { 
                 showSettings = false
             })
@@ -1030,7 +1022,7 @@ struct SettingsView: View {
                 
                 // Contact information at bottom
                 VStack(spacing: 8) {
-                    Text("If you have any questions / feedbacks, please contact:")
+                    Text("If you have any questions / feedback, please contact:")
                         .font(.footnote)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
