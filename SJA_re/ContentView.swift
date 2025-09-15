@@ -97,8 +97,8 @@ class NotificationManager: ObservableObject {
             if let startTime = parseTime(block.start, for: currentDate),
                let endTime = parseTime(block.end, for: currentDate) {
                 
-                // Handle regular blocks (not lunch)
-                if !block.name.lowercased().contains("lunch") {
+                // Handle regular blocks (not lunch) - skip CP if it's the last block
+                if !block.name.lowercased().contains("lunch") && !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
                     let nextBlockText: String
