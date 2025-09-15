@@ -97,8 +97,35 @@ class NotificationManager: ObservableObject {
             if let startTime = parseTime(block.start, for: currentDate),
                let endTime = parseTime(block.end, for: currentDate) {
                 
+                // Handle lunch blocks - add removal for 5th lunch notifications when 5th lunch ends
+                if block.name.lowercased().contains("lunch") {
+                    // For 5th lunch users, remove their lunch start notification when their lunch period ends
+                    if notificationSettings.selectedLunchPeriod == 5 {
+                        if let subBlocks = block.subBlocks {
+                            for subBlock in subBlocks {
+                                if let subEndTime = parseTime(subBlock.end, for: currentDate) {
+                                    if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
+                                        // Schedule removal at the 5th lunch end time (not the entire lunch block end)
+                                        let fifthLunchEndWarning = subEndTime.addingTimeInterval(-secondsBeforeEnd)
+                                        if fifthLunchEndWarning > Date.currentEST {
+                                            allNotifications.append(NotificationEvent(
+                                                time: fifthLunchEndWarning,
+                                                title: "",
+                                                body: "",
+                                                identifier: "remove-5th-lunch-\(subBlock.id)",
+                                                type: "remove_notification"
+                                            ))
+                                            print("🔔 [5TH LUNCH] ✅ Added removal for 5th lunch start notification when 5th lunch ends at: \(timeFormatter.string(from: fifthLunchEndWarning))")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 // Handle regular blocks (not lunch) - skip CP if it's the last block
-                if !block.name.lowercased().contains("lunch") && !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
+                else if !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
                     let nextBlockText: String
@@ -140,6 +167,18 @@ class NotificationManager: ObservableObject {
                             type: "block_ending"
                         ))
                         print("🔔 [BLOCK DEBUG] ✅ Added block end notification")
+                        
+                        // Schedule notification to remove this notification when next block starts
+                        if let nextBlock = nextBlock, let nextStartTime = parseTime(nextBlock.start, for: currentDate), nextStartTime > Date.currentEST {
+                            allNotifications.append(NotificationEvent(
+                                time: nextStartTime,
+                                title: "", // Empty title to make it invisible
+                                body: "",   // Empty body to make it invisible
+                                identifier: "remove-\(block.id)",
+                                type: "remove_notification"
+                            ))
+                            print("🔔 [BLOCK DEBUG] ✅ Added removal notification for when \(nextBlock.name) starts")
+                        }
                     } else {
                         print("🔔 [BLOCK DEBUG] ❌ Block end time is in the past")
                     }
@@ -202,6 +241,29 @@ class NotificationManager: ObservableObject {
                                             type: "lunch_ending"
                                         ))
                                         print("🔔 [LUNCH DEBUG] ✅ Added lunch end notification")
+                                        
+                                        // Remove lunch start notification when lunch end notification is sent
+                                        allNotifications.append(NotificationEvent(
+                                            time: lunchEndWarning,
+                                            title: "",
+                                            body: "",
+                                            identifier: "remove-lunch-start-\(subBlock.id)",
+                                            type: "remove_notification"
+                                        ))
+                                        print("🔔 [LUNCH DEBUG] ✅ Added removal for lunch start notification")
+                                        
+                                        // Remove lunch end notification 10 minutes after it's sent
+                                        let tenMinutesLater = lunchEndWarning.addingTimeInterval(10 * 60) // 10 minutes = 600 seconds
+                                        if tenMinutesLater > Date.currentEST {
+                                            allNotifications.append(NotificationEvent(
+                                                time: tenMinutesLater,
+                                                title: "",
+                                                body: "",
+                                                identifier: "remove-lunch-end-\(subBlock.id)",
+                                                type: "remove_notification"
+                                            ))
+                                            print("🔔 [LUNCH DEBUG] ✅ Added removal for lunch end notification 10 minutes later")
+                                        }
                                     } else {
                                         print("🔔 [LUNCH DEBUG] ❌ Lunch end time is in the past")
                                     }
@@ -222,33 +284,65 @@ class NotificationManager: ObservableObject {
         
         // Schedule all notifications
         for notification in allNotifications {
-            let content = UNMutableNotificationContent()
-            content.title = notification.title
-            content.body = notification.body
-            content.sound = .default
-            
-            let trigger = UNTimeIntervalNotificationTrigger(
-                timeInterval: notification.time.timeIntervalSinceNow,
-                repeats: false
-            )
-            
-            let request = UNNotificationRequest(
-                identifier: notification.identifier,
-                content: content,
-                trigger: trigger
-            )
-            
-            print("🔔   ✅ \(notification.type.uppercased()): \(notification.title)")
-            print("🔔   ✅ BODY: \(notification.body)")
-            print("🔔   ✅ TIME: \(timeFormatter.string(from: notification.time))")
-            print("🔔   ✅ SECONDS FROM NOW: \(Int(notification.time.timeIntervalSinceNow))")
-            print("🔔   ---")
-            
-            center.add(request) { error in
-                if let error = error {
-                    print("❌ Failed to schedule notification: \(error)")
-                } else {
-                    print("✅ Successfully scheduled \(notification.type)")
+            if notification.type == "remove_notification" {
+                // For removal notifications, schedule a silent notification that will trigger removal
+                let content = UNMutableNotificationContent()
+                content.title = "" // Empty to make it silent
+                content.body = ""   // Empty to make it silent  
+                content.sound = nil // No sound
+                // Add custom data to identify this as a removal notification
+                content.userInfo = ["type": "remove_notification", "target": notification.identifier.replacingOccurrences(of: "remove-", with: "block-")]
+                
+                let trigger = UNTimeIntervalNotificationTrigger(
+                    timeInterval: notification.time.timeIntervalSinceNow,
+                    repeats: false
+                )
+                
+                let request = UNNotificationRequest(
+                    identifier: notification.identifier,
+                    content: content,
+                    trigger: trigger
+                )
+                
+                print("🔔   ✅ REMOVAL: Scheduled to remove '\(notification.identifier.replacingOccurrences(of: "remove-", with: "block-"))' at \(timeFormatter.string(from: notification.time))")
+                
+                center.add(request) { error in
+                    if let error = error {
+                        print("❌ Failed to schedule removal notification: \(error)")
+                    } else {
+                        print("✅ Successfully scheduled removal notification")
+                    }
+                }
+            } else {
+                // Regular notification
+                let content = UNMutableNotificationContent()
+                content.title = notification.title
+                content.body = notification.body
+                content.sound = .default
+                
+                let trigger = UNTimeIntervalNotificationTrigger(
+                    timeInterval: notification.time.timeIntervalSinceNow,
+                    repeats: false
+                )
+                
+                let request = UNNotificationRequest(
+                    identifier: notification.identifier,
+                    content: content,
+                    trigger: trigger
+                )
+                
+                print("🔔   ✅ \(notification.type.uppercased()): \(notification.title)")
+                print("🔔   ✅ BODY: \(notification.body)")
+                print("🔔   ✅ TIME: \(timeFormatter.string(from: notification.time))")
+                print("🔔   ✅ SECONDS FROM NOW: \(Int(notification.time.timeIntervalSinceNow))")
+                print("🔔   ---")
+                
+                center.add(request) { error in
+                    if let error = error {
+                        print("❌ Failed to schedule notification: \(error)")
+                    } else {
+                        print("✅ Successfully scheduled \(notification.type)")
+                    }
                 }
             }
         }
