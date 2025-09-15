@@ -942,8 +942,6 @@ struct PredictionDetailView: View {
         NavigationView {
             ScrollView {
                 VStack {
-                    Spacer()
-                    
                     if let dbDate = dbDate {
                         // Card with list
                         VStack(spacing: 0) {
@@ -1028,9 +1026,6 @@ struct PredictionDetailView: View {
                         .foregroundColor(.secondary)
                         .padding()
                 }
-                
-                Spacer()
-                Spacer()
                 }
             }
             .toolbar {
@@ -1039,6 +1034,29 @@ struct PredictionDetailView: View {
                         onDismiss()
                     }
                 }
+            }
+            .overlay(alignment: .bottom) {
+                // Warning text at the bottom of the screen
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.system(size: 16))
+                        
+                        Text("The Daily Bulletin is outdated. This prediction is based on the latest information from the school website.")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                        
+                        Spacer()
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
     }
