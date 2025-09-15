@@ -1027,6 +1027,21 @@ struct SettingsView: View {
                 .padding(.top, 40)
                 
                 Spacer()
+                
+                // Contact information at bottom
+                VStack(spacing: 8) {
+                    Text("If you have any questions / feedbacks, please contact:")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("yaoyu.zhang@student.stjacademy.org")
+                        .font(.footnote)
+                        .foregroundColor(.blue)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 30)
             }
             .navigationBarHidden(true)
         }
