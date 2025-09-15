@@ -1615,7 +1615,6 @@ struct NotificationSettingsView: View {
                         Text("Alert me")
                             .font(.headline)
                             .foregroundColor(.primary)
-                            .frame(width: 70, alignment: .trailing)
                         
                         Picker("Minutes", selection: $notificationManager.notificationMinutes) {
                             ForEach(1...30, id: \.self) { minutes in
@@ -1629,7 +1628,8 @@ struct NotificationSettingsView: View {
                         Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
                             .font(.headline)
                             .foregroundColor(.primary)
-                            .frame(width: 180, alignment: .leading)
+                        
+                        Spacer()
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
@@ -1639,6 +1639,7 @@ struct NotificationSettingsView: View {
                         .fill(Color(UIColor.systemGroupedBackground))
                 )
                 .padding(.horizontal, 20)
+                .padding(.top, 16)
                 .transition(.opacity.combined(with: .scale))
                 
                 // Lunch period selection
