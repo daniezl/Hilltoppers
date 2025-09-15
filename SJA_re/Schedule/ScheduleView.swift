@@ -673,7 +673,7 @@ struct ScheduleView: View {
                                         Text("\(block.start)-\(block.end)")
                                             .font(.callout.weight(.regular))
                                             .monospacedDigit()
-                                            .foregroundColor(loader.showBlocks ? (isRegularClassBlock(block.name) ? .primary : .secondary) : .primary)
+                                            .foregroundColor(loader.showBlocks ? (shouldUseGrayColor(for: block) ? .secondary : .primary) : .primary)
                                         
                                         // Consistent chevron space for alignment
                                         if block.subBlocks != nil {
