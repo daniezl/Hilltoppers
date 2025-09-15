@@ -1023,7 +1023,7 @@ struct SettingsView: View {
                 
                 // Menu items near top
                 VStack(spacing: 16) {
-                    NavigationLink("Block") {
+                    NavigationLink("Courses") {
                         BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
                     }
                     .font(.title2)
@@ -1342,7 +1342,7 @@ struct BlockConfigurationView: View {
             
             Spacer()
         }
-        .navigationTitle("Block")
+        .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Set white navigation bar background for iOS 16+ compatibility
