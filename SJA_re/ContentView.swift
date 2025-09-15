@@ -97,36 +97,11 @@ class NotificationManager: ObservableObject {
             if let startTime = parseTime(block.start, for: currentDate),
                let endTime = parseTime(block.end, for: currentDate) {
                 
-                // Handle lunch blocks - add removal for 5th lunch notifications when 5th lunch ends
-                if block.name.lowercased().contains("lunch") {
-                    // For 5th lunch users, remove their lunch start notification when their lunch period ends
-                    if notificationSettings.selectedLunchPeriod == 5 {
-                        if let subBlocks = block.subBlocks {
-                            for subBlock in subBlocks {
-                                if let subEndTime = parseTime(subBlock.end, for: currentDate) {
-                                    if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
-                                        // Schedule removal at the 5th lunch end time (not the entire lunch block end)
-                                        let fifthLunchEndWarning = subEndTime.addingTimeInterval(-secondsBeforeEnd)
-                                        if fifthLunchEndWarning > Date.currentEST {
-                                            allNotifications.append(NotificationEvent(
-                                                time: fifthLunchEndWarning,
-                                                title: "",
-                                                body: "",
-                                                identifier: "remove-5th-lunch-\(subBlock.id)",
-                                                type: "remove_notification"
-                                            ))
-                                            print("🔔 [5TH LUNCH] ✅ Added removal for 5th lunch start notification when 5th lunch ends at: \(timeFormatter.string(from: fifthLunchEndWarning))")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Handle regular blocks (not lunch) - skip CP if it's the last block
-                else if !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
+                // Handle regular blocks (including lunch blocks) - skip CP if it's the last block
+                if !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
+                    
+                    print("🔔 [BLOCK DEBUG] Processing block: '\(block.name)' - contains lunch: \(block.name.lowercased().contains("lunch"))")
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
                     let nextBlockText: String
                     if let nextBlock = nextBlock {
@@ -167,6 +142,29 @@ class NotificationManager: ObservableObject {
                             type: "block_ending"
                         ))
                         print("🔔 [BLOCK DEBUG] ✅ Added block end notification")
+                        
+                        // For 5th lunch users, remove their lunch start notification when lunch block ends
+                        if notificationSettings.selectedLunchPeriod == 5 {
+                            print("🔔 [5TH LUNCH DEBUG] User has 5th lunch, checking block: '\(block.name)'")
+                            if let subBlocks = block.subBlocks {
+                                print("🔔 [5TH LUNCH DEBUG] Block has \(subBlocks.count) sub-blocks")
+                                for subBlock in subBlocks {
+                                    print("🔔 [5TH LUNCH DEBUG] Sub-block: '\(subBlock.name)' - contains lunch: \(subBlock.name.lowercased().contains("lunch")) - contains 5: \(subBlock.name.contains("5"))")
+                                    if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
+                                        allNotifications.append(NotificationEvent(
+                                            time: blockEndWarning,
+                                            title: "",
+                                            body: "",
+                                            identifier: "remove-5th-lunch-\(subBlock.id)",
+                                            type: "remove_notification"
+                                        ))
+                                        print("🔔 [5TH LUNCH] ✅ Added removal for 5th lunch start notification when lunch block ends")
+                                    }
+                                }
+                            } else {
+                                print("🔔 [5TH LUNCH DEBUG] Block has no sub-blocks")
+                            }
+                        }
                         
                         // Schedule notification to remove this notification when next block starts
                         if let nextBlock = nextBlock, let nextStartTime = parseTime(nextBlock.start, for: currentDate), nextStartTime > Date.currentEST {
@@ -780,8 +778,7 @@ struct ContentView: View {
                 currentTime = Date.currentEST
             }
             
-            // Request notification permission
-            notificationManager.requestPermission()
+            // Don't request notification permission on startup - only when user enables notifications
             
             // Don't schedule notifications here - wait for proper loading in updateLoadingState()
             
@@ -1536,7 +1533,7 @@ struct BlockTableRow: View {
 class NotificationSettingsManager: ObservableObject {
     static let shared = NotificationSettingsManager()
     
-    @Published var notificationsEnabled: Bool = true // Default enabled
+    @Published var notificationsEnabled: Bool = false // Default disabled
     @Published var notificationMinutes: Int = 2 // Default 2 minutes before block ends
     @Published var selectedLunchPeriod: Int = 1 // Default 1st lunch (1-5)
     
@@ -1552,7 +1549,7 @@ class NotificationSettingsManager: ObservableObject {
     }
     
     private func loadSettings() {
-        notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? true
+        notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? false
         notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
         selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 1
         print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
@@ -1563,6 +1560,7 @@ struct NotificationSettingsView: View {
     @ObservedObject private var notificationManager = NotificationSettingsManager.shared
     let onDismissSettings: () -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var showingPermissionDeniedAlert = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -1581,8 +1579,20 @@ struct NotificationSettingsView: View {
             
             // Toggle section
             HStack {
-                Toggle("Enable Notifications", isOn: $notificationManager.notificationsEnabled)
-                    .font(.headline)
+                Toggle("Enable Notifications", isOn: Binding(
+                    get: { notificationManager.notificationsEnabled },
+                    set: { newValue in
+                        if newValue {
+                            // User wants to enable notifications - request permission first
+                            requestNotificationPermission()
+                        } else {
+                            // User wants to disable notifications - no permission needed
+                            notificationManager.notificationsEnabled = false
+                            notificationManager.saveSettings()
+                        }
+                    }
+                ))
+                .font(.headline)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, notificationManager.notificationsEnabled ? 20 : 0)
@@ -1694,6 +1704,52 @@ struct NotificationSettingsView: View {
         .onChange(of: notificationManager.selectedLunchPeriod) { _ in
             // Auto-save when lunch period changes
             notificationManager.saveSettings()
+        }
+        .alert("Notification Permission Required", isPresented: $showingPermissionDeniedAlert) {
+            Button("Go to Settings") {
+                if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsUrl)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("To receive notifications, please enable notifications for this app in Settings.")
+        }
+        .onAppear {
+            checkNotificationPermissionStatus()
+        }
+    }
+    
+    // Check current notification permission status and sync with toggle
+    private func checkNotificationPermissionStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                let isAuthorized = settings.authorizationStatus == .authorized
+                print("🔔 [PERMISSION CHECK] Current status: \(settings.authorizationStatus.rawValue), authorized: \(isAuthorized)")
+                
+                // If system permission is denied but app toggle is on, turn off the app toggle
+                if !isAuthorized && notificationManager.notificationsEnabled {
+                    print("🔔 [PERMISSION CHECK] System permission denied - disabling app notifications")
+                    notificationManager.notificationsEnabled = false
+                    notificationManager.saveSettings()
+                }
+            }
+        }
+    }
+    
+    // Request notification permission when user tries to enable notifications
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                if granted {
+                    print("✅ Notification permission granted")
+                    notificationManager.notificationsEnabled = true
+                    notificationManager.saveSettings()
+                } else {
+                    print("❌ Notification permission denied")
+                    showingPermissionDeniedAlert = true
+                }
+            }
         }
     }
     
