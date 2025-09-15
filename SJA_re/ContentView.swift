@@ -1595,7 +1595,17 @@ struct NotificationSettingsView: View {
                 .font(.headline)
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, notificationManager.notificationsEnabled ? 20 : 0)
+            .padding(.bottom, notificationManager.notificationsEnabled ? 8 : 0)
+            
+            // Explanatory text - only show when notifications are enabled
+            if notificationManager.notificationsEnabled {
+                Text("You will only receive notifications if you open the app that day")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+            }
             
             // Picker section - only show when notifications are enabled
             if notificationManager.notificationsEnabled {
