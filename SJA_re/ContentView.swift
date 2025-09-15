@@ -1535,7 +1535,7 @@ class NotificationSettingsManager: ObservableObject {
     
     @Published var notificationsEnabled: Bool = false // Default disabled
     @Published var notificationMinutes: Int = 2 // Default 2 minutes before block ends
-    @Published var selectedLunchPeriod: Int = 1 // Default 1st lunch (1-5)
+    @Published var selectedLunchPeriod: Int = 0 // Default Off
     
     private init() {
         loadSettings()
@@ -1551,7 +1551,7 @@ class NotificationSettingsManager: ObservableObject {
     private func loadSettings() {
         notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? false
         notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
-        selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 1
+        selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 0
         print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
 }
@@ -1668,6 +1668,22 @@ struct NotificationSettingsView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
+                        
+                        // Off option
+                        Button(action: {
+                            notificationManager.selectedLunchPeriod = 0
+                        }) {
+                            Text("Off")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(notificationManager.selectedLunchPeriod == 0 ? .white : .primary)
+                                .frame(width: 50, height: 36)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(notificationManager.selectedLunchPeriod == 0 ? Color.green : Color(UIColor.systemGray5))
+                                )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
                         Spacer()
                     }
                 }
