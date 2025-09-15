@@ -36,7 +36,7 @@ class NotificationManager: ObservableObject {
         }
     }
     
-    func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?) {
+    func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?, dayType: String = "") {
         let center = UNUserNotificationCenter.current()
         
         // Remove existing notifications
@@ -101,7 +101,27 @@ class NotificationManager: ObservableObject {
                 if !block.name.lowercased().contains("lunch") {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
-                    let nextBlockText = nextBlock?.name ?? "End of schedule"
+                    let nextBlockText: String
+                    if let nextBlock = nextBlock {
+                        // Check if the next block should be shown based on day type and settings
+                        let lower = dayType.lowercased()
+                        let isGreenDay = dayType.isEmpty ? true : (lower.contains("green day") && !lower.contains("white"))
+                        let shouldShow = BlockSettingsManager.shared.shouldShow(block: nextBlock.name, onGreenDay: isGreenDay)
+                        
+                        print("🔔 [NEXT-BLOCK] Evaluating next block: \(nextBlock.name)")
+                        print("🔔 [NEXT-BLOCK] Day type: '\(dayType)' -> isGreenDay: \(isGreenDay)")
+                        print("🔔 [NEXT-BLOCK] Should show: \(shouldShow)")
+                        
+                        if shouldShow {
+                            nextBlockText = BlockSettingsManager.shared.getDisplayName(for: nextBlock.name)
+                            print("🔔 [NEXT-BLOCK] Using custom name: '\(nextBlockText)'")
+                        } else {
+                            nextBlockText = "Free Block"
+                            print("🔔 [NEXT-BLOCK] Using 'Free Block'")
+                        }
+                    } else {
+                        nextBlockText = "End of schedule"
+                    }
                     let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
                     let blockTitle = "\(block.name) ending in \(minutesBeforeEnd) \(minuteText)"
                     let blockBody = "Up next: \(nextBlockText)"
@@ -259,11 +279,15 @@ class NotificationManager: ObservableObject {
         }
     }
     
-    func scheduleNotificationsForToday(testDate: Date? = nil) {
+    func scheduleNotificationsForToday(testDate: Date? = nil, dayType: String = "") {
         Task {
             do {
                 let currentTime = testDate ?? Date.currentEST
                 var blocks: [Block] = []
+                let useDayType = dayType.isEmpty ? "Green Day" : dayType
+                print("🔔 [DAY-TYPE] Received day type parameter: '\(dayType)'")
+                print("🔔 [DAY-TYPE] Using day type for notifications: '\(useDayType)'")
+                
                 
                 // Check Firebase for schedule type first (same logic as ContentView)
                 if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
@@ -305,7 +329,7 @@ class NotificationManager: ObservableObject {
                 
                 // Schedule notifications for the determined blocks
                 await MainActor.run {
-                    self.scheduleBlockEndingNotifications(for: blocks, testDate: testDate)
+                    self.scheduleBlockEndingNotifications(for: blocks, testDate: testDate, dayType: useDayType)
                 }
                 
             } catch {
@@ -597,7 +621,7 @@ struct ContentView: View {
                     print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
                     
                     // Reschedule notifications for today with fresh Firebase data
-                    notificationManager.scheduleNotificationsForToday(testDate: testDate)
+                    notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
                     
                     // Background refresh without loading screen
                     Task {
@@ -616,33 +640,41 @@ struct ContentView: View {
             // Reschedule notifications when time offset changes
             print("🔔 [TIME-OFFSET] Time offset changed - rescheduling notifications")
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
             // Reschedule notifications when enabled/disabled changes
             print("🔔 [NOTIFICATION-ENABLED] Notification enabled changed - rescheduling notifications")
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
             if notificationSettings.notificationsEnabled {
-                notificationManager.scheduleNotificationsForToday(testDate: testDate)
+                notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
             }
         }
         .onChange(of: notificationSettings.notificationMinutes) { _ in
             // Reschedule notifications when timing changes
             print("🔔 [NOTIFICATION-MINUTES] Notification minutes changed - rescheduling notifications")
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
         }
         .onChange(of: notificationSettings.selectedLunchPeriod) { _ in
             // Reschedule notifications when lunch period changes
             print("🔔 [LUNCH-PERIOD] Lunch period changed - rescheduling notifications")
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
             // Reschedule notifications when block settings change
             print("🔔 [BLOCK-SETTINGS] Block settings changed - rescheduling notifications")
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+        }
+        .onChange(of: currentDayType) { newDayType in
+            // Schedule notifications when day type becomes available
+            if newDayType != "Loading..." && !scheduleLoader.blocks.isEmpty && noSchool != true {
+                print("🔔 [DAY-TYPE-CHANGE] Day type updated to: '\(newDayType)' - scheduling notifications")
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate, dayType: newDayType)
+            }
         }
         .onAppear {
             // Reset to actual time on app startup
@@ -657,8 +689,7 @@ struct ContentView: View {
             // Request notification permission
             notificationManager.requestPermission()
             
-            // Only schedule notifications for today to avoid stale Firebase data
-            notificationManager.scheduleNotificationsForToday(testDate: testDate)
+            // Don't schedule notifications here - wait for proper loading in updateLoadingState()
             
             // Check if this is first open of the day
             var calendar = Calendar.current
@@ -709,10 +740,13 @@ struct ContentView: View {
             
             print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
             
-            // Schedule notifications for blocks if there's school
-            if noSchool != true && !scheduleLoader.blocks.isEmpty {
+            // Schedule notifications for blocks if there's school and day type is ready
+            if noSchool != true && !scheduleLoader.blocks.isEmpty && currentDayType != "Loading..." {
                 print("📱 [NOTIFICATIONS] Scheduling notifications for \(scheduleLoader.blocks.count) blocks")
-                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate)
+                print("📱 [NOTIFICATIONS] Current day type: '\(currentDayType)'")
+                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate, dayType: currentDayType)
+            } else if currentDayType == "Loading..." {
+                print("📱 [NOTIFICATIONS] Skipping notification scheduling - day type still loading")
             }
             
             // Trigger animations immediately when loading completes
