@@ -938,6 +938,10 @@ struct PredictionDetailView: View {
     let calculationSteps: [PredictionStep]?
     let onDismiss: () -> Void
     
+    @State private var showDailyBulletinConfirm = false
+    
+    private let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -947,7 +951,7 @@ struct PredictionDetailView: View {
                         VStack(spacing: 0) {
                         if let predictions = calculationSteps {
                             VStack(spacing: 0) {
-                                // Bulletin info as first row
+                                // Bulletin info as first row - tappable to open Daily Bulletin
                                 HStack {
                                     Text(formatShortDate(dbDate))
                                         .font(.system(.callout, design: .monospaced))
@@ -961,12 +965,17 @@ struct PredictionDetailView: View {
                                     Text(dayType)
                                         .font(.callout)
                                         .fontWeight(.medium)
+                                        .foregroundColor(.blue)
+                                        .underline()
                                     
                                     Spacer()
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 12)
                                 .background(getBackgroundColor(for: dayType))
+                                .onTapGesture {
+                                    showDailyBulletinConfirm = true
+                                }
                                 
                                 // Divider
                                 Divider()
@@ -1057,6 +1066,20 @@ struct PredictionDetailView: View {
                 .cornerRadius(8)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
+            }
+            .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
+                Button("Yes") {
+                    openDailyBulletin()
+                }
+                Button("No", role: .cancel) { }
+            }
+        }
+    }
+    
+    private func openDailyBulletin() {
+        if let bulletinUrl = URL(string: schoolURL) {
+            if UIApplication.shared.canOpenURL(bulletinUrl) {
+                UIApplication.shared.open(bulletinUrl)
             }
         }
     }
