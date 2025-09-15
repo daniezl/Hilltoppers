@@ -399,7 +399,7 @@ struct ContentView: View {
             // Main content - always present
             VStack {
                 Spacer()
-                                 VStack(spacing: 34) { // padding between day type box and the schedule
+                                 VStack(spacing: 24) { // padding between day type box and the schedule
                      // Only show content when noSchool state is determined
                      if let isNoSchool = noSchool {
                          // Only show DayTypeView when there is school
