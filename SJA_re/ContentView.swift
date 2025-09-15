@@ -1617,7 +1617,7 @@ struct NotificationSettingsView: View {
                             .foregroundColor(.primary)
                         
                         Picker("Minutes", selection: $notificationManager.notificationMinutes) {
-                            ForEach(1...30, id: \.self) { minutes in
+                            ForEach(0...10, id: \.self) { minutes in
                                 Text("\(minutes)").tag(minutes)
                             }
                         }
@@ -1625,7 +1625,7 @@ struct NotificationSettingsView: View {
                         .frame(width: 60, height: 80)
                         .clipped()
                         
-                        Text("minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
+                        Text(notificationManager.notificationMinutes == 0 ? "when block ends" : "minute\(notificationManager.notificationMinutes == 1 ? "" : "s") before block ends")
                             .font(.headline)
                             .foregroundColor(.primary)
                         
