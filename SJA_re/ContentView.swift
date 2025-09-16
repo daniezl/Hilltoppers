@@ -1389,6 +1389,25 @@ struct BlockConfigurationView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Header section
+            VStack(spacing: 8) {
+                Text("Courses Configuration")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Text("Set the courses that appear on your schedule")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text("For Free Blocks, please uncheck both days")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+            }
+            .padding(.top, 40)
+            .padding(.bottom, 20)
+            
             // Table Header
             HStack(spacing: 0) {
                 Text("Block")
@@ -1433,7 +1452,7 @@ struct BlockConfigurationView: View {
             
             Spacer()
         }
-        .navigationTitle("Courses")
+        // .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Set white navigation bar background for iOS 16+ compatibility
@@ -1566,7 +1585,7 @@ struct NotificationSettingsView: View {
         VStack(spacing: 0) {
             // Header section
             VStack(spacing: 8) {
-                Text("Block End Notification")
+                Text("Block End Notifications")
                     .font(.title2)
                     .fontWeight(.semibold)
                 
@@ -1701,7 +1720,7 @@ struct NotificationSettingsView: View {
             Spacer()
         }
         .background(Color(UIColor.systemBackground))
-        .navigationTitle("Notifications")
+        // .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Set white navigation bar background for iOS 16+ compatibility
