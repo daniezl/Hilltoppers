@@ -29,7 +29,6 @@
 		A280A0FE2DDE0FEA00F98F3F /* schedule_fri.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */; };
 		A287C2E62E6CA9E3005129F0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */; };
 		A287C2E72E6CA9E3005129F0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3B12DC018000037D8D9 /* SwiftUI.framework */; };
-		A287C2F62E6CA9E4005129F0 /* ClassCountdownWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
@@ -50,28 +49,7 @@
 			remoteGlobalIDString = A25EA2CE2DB9E0770037D8D9;
 			remoteInfo = SJA_re;
 		};
-		A287C2F42E6CA9E4005129F0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A287C2E42E6CA9E3005129F0;
-			remoteInfo = ClassCountdownWidgetExtension;
-		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A25EA3C12DC018010037D8D9 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				A287C2F62E6CA9E4005129F0 /* ClassCountdownWidgetExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -269,12 +247,10 @@
 				A25EA2CB2DB9E0770037D8D9 /* Sources */,
 				A25EA2CC2DB9E0770037D8D9 /* Frameworks */,
 				A25EA2CD2DB9E0770037D8D9 /* Resources */,
-				A25EA3C12DC018010037D8D9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A287C2F52E6CA9E4005129F0 /* PBXTargetDependency */,
 			);
 			name = SJA_re;
 			packageProductDependencies = (
@@ -500,11 +476,6 @@
 			target = A25EA2CE2DB9E0770037D8D9 /* SJA_re */;
 			targetProxy = A25EA2E82DB9E0780037D8D9 /* PBXContainerItemProxy */;
 		};
-		A287C2F52E6CA9E4005129F0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A287C2E42E6CA9E3005129F0 /* ClassCountdownWidgetExtension */;
-			targetProxy = A287C2F42E6CA9E4005129F0 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -644,8 +615,8 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -685,8 +656,8 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
