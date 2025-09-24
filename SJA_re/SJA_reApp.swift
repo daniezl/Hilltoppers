@@ -13,6 +13,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
   func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
     FirebaseApp.configure()
+    BackgroundRefreshManager.shared.register()
+    BackgroundRefreshManager.shared.scheduleAppRefresh()
     
     // Set notification delegate
     UNUserNotificationCenter.current().delegate = self
@@ -75,6 +77,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         print("🗑️ Removed notification: \(targetId)")
       }
     }
+  }
+
+  func applicationDidEnterBackground(_ application: UIApplication) {
+    BackgroundRefreshManager.shared.scheduleAppRefresh()
   }
 }
 

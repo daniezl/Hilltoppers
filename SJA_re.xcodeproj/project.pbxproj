@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		921C56449A714013AB99266A /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82AF040DECD4BCE9F07528B /* ScheduleService.swift */; };
 		A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */; };
 		A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CE2DEEB14500BCDAB5 /* FirebaseCore */; };
 		A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */; };
@@ -32,6 +33,8 @@
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
+		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
+		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +55,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
+		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,8 +80,10 @@
 		A280A0FB2DDE0C1600F98F3F /* schedule_wed.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_wed.json; sourceTree = "<group>"; };
 		A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_fri.json; sourceTree = "<group>"; };
 		A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClassCountdownWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2ACF6042E8422F600C8E7D5 /* SJA-re-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SJA-re-Info.plist"; sourceTree = SOURCE_ROOT; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
+		D82AF040DECD4BCE9F07528B /* ScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -202,6 +209,7 @@
 		A280A0EF2DDCE7E300F98F3F /* SJA_re */ = {
 			isa = PBXGroup;
 			children = (
+				A2ACF6042E8422F600C8E7D5 /* SJA-re-Info.plist */,
 				A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */,
 				A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */,
 				A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */,
@@ -210,6 +218,9 @@
 				A280A0EA2DDCE7E300F98F3F /* Schedule */,
 				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
 				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
+				602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */,
+				845FCFE81465410FA49CF218 /* DayTypeCache.swift */,
+				D82AF040DECD4BCE9F07528B /* ScheduleService.swift */,
 				A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */,
 				A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */,
 				A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */,
@@ -436,6 +447,9 @@
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
 				A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */,
 				A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */,
+				EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */,
+				C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */,
+				921C56449A714013AB99266A /* ScheduleService.swift in Sources */,
 				A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */,
 				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,
 				A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */,
@@ -605,6 +619,7 @@
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SJA-re-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Hilltoppers;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -646,6 +661,7 @@
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SJA-re-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Hilltoppers;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

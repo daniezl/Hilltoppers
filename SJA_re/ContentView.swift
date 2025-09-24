@@ -21,6 +21,12 @@ extension Date {
     }
 }
 
+struct NotificationScheduleSummary {
+    let date: Date
+    let success: Bool
+    let scheduledCount: Int
+}
+
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -36,11 +42,13 @@ class NotificationManager: ObservableObject {
         }
     }
     
-    func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?, dayType: String = "") {
+    func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?, dayType: String = "", clearExisting: Bool = true) {
         let center = UNUserNotificationCenter.current()
         
-        // Remove existing notifications
-        center.removeAllPendingNotificationRequests()
+        if clearExisting {
+            // Remove existing notifications before scheduling new ones
+            center.removeAllPendingNotificationRequests()
+        }
         
         // Check if notifications are enabled
         let notificationSettings = NotificationSettingsManager.shared
@@ -50,9 +58,9 @@ class NotificationManager: ObservableObject {
         }
         
         let currentDate = testDate ?? Date.currentEST
-        let timeFormatter = DateFormatter()
-        timeFormatter.timeStyle = .medium
-        timeFormatter.timeZone = Date.estTimeZone
+        let scheduleFormatter = DateFormatter()
+        scheduleFormatter.dateFormat = "MM/dd, HH:mm"
+        scheduleFormatter.timeZone = Date.estTimeZone
         
         // Get user's preferred notification timing
         let minutesBeforeEnd = notificationSettings.notificationMinutes
@@ -61,26 +69,6 @@ class NotificationManager: ObservableObject {
         print("🔔 [NOTIFICATIONS] Scheduling notifications for \(blocks.count) blocks:")
         print("🔔 [NOTIFICATIONS] User setting: \(minutesBeforeEnd) minute(s) before block ends")
         print("🔔 [NOTIFICATIONS] User's lunch period: \(notificationSettings.selectedLunchPeriod)")
-        
-        // Debug: Show all block names including sub-blocks
-        print("🔔 [DEBUG] All blocks in schedule:")
-        for (index, block) in blocks.enumerated() {
-            let isLunch = block.name.lowercased().contains("lunch")
-            let containsUserLunch = block.name.contains("\(notificationSettings.selectedLunchPeriod)")
-            print("🔔   Block \(index + 1): '\(block.name)' (\(block.start) - \(block.end)) - isLunch: \(isLunch), containsUserPeriod: \(containsUserLunch)")
-            
-            // Show sub-blocks (lunch periods)
-            if let subBlocks = block.subBlocks {
-                print("🔔     Has \(subBlocks.count) sub-blocks:")
-                for (subIndex, subBlock) in subBlocks.enumerated() {
-                    let isSubLunch = subBlock.name.lowercased().contains("lunch")
-                    let containsUserSubLunch = subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)")
-                    print("🔔     SubBlock \(subIndex + 1): '\(subBlock.name)' (\(subBlock.start) - \(subBlock.end)) - isLunch: \(isSubLunch), containsUserPeriod: \(containsUserSubLunch)")
-                }
-            } else {
-                print("🔔     No sub-blocks")
-            }
-        }
         
         // Create array to store all notifications for sorting
         struct NotificationEvent {
@@ -101,7 +89,6 @@ class NotificationManager: ObservableObject {
                 if !(block.name.lowercased().contains("cp") && index == blocks.count - 1) {
                     let blockEndWarning = endTime.addingTimeInterval(-secondsBeforeEnd)
                     
-                    print("🔔 [BLOCK DEBUG] Processing block: '\(block.name)' - contains lunch: \(block.name.lowercased().contains("lunch"))")
                     let nextBlock = (index + 1 < blocks.count) ? blocks[index + 1] : nil
                     let nextBlockText: String
                     if let nextBlock = nextBlock {
@@ -110,16 +97,11 @@ class NotificationManager: ObservableObject {
                         let isGreenDay = dayType.isEmpty ? true : (lower.contains("green day") && !lower.contains("white"))
                         let shouldShow = BlockSettingsManager.shared.shouldShow(block: nextBlock.name, onGreenDay: isGreenDay)
                         
-                        print("🔔 [NEXT-BLOCK] Evaluating next block: \(nextBlock.name)")
-                        print("🔔 [NEXT-BLOCK] Day type: '\(dayType)' -> isGreenDay: \(isGreenDay)")
-                        print("🔔 [NEXT-BLOCK] Should show: \(shouldShow)")
                         
                         if shouldShow {
                             nextBlockText = BlockSettingsManager.shared.getDisplayName(for: nextBlock.name)
-                            print("🔔 [NEXT-BLOCK] Using custom name: '\(nextBlockText)'")
                         } else {
                             nextBlockText = "Free Block"
-                            print("🔔 [NEXT-BLOCK] Using 'Free Block'")
                         }
                     } else {
                         nextBlockText = "End of schedule"
@@ -128,10 +110,6 @@ class NotificationManager: ObservableObject {
                     let blockTitle = "\(block.name) ending in \(minutesBeforeEnd) \(minuteText)"
                     let blockBody = "Up next: \(nextBlockText)"
                     
-                    print("🔔 [BLOCK DEBUG] Processing class block: \(block.name)")
-                    print("🔔 [BLOCK DEBUG] End warning time: \(timeFormatter.string(from: blockEndWarning))")
-                    print("🔔 [BLOCK DEBUG] Block title: '\(blockTitle)'")
-                    print("🔔 [BLOCK DEBUG] Block body: '\(blockBody)'")
                     
                     if blockEndWarning > Date.currentEST {
                         allNotifications.append(NotificationEvent(
@@ -141,15 +119,11 @@ class NotificationManager: ObservableObject {
                             identifier: "block-\(block.id)",
                             type: "block_ending"
                         ))
-                        print("🔔 [BLOCK DEBUG] ✅ Added block end notification")
                         
                         // For 5th lunch users, remove their lunch start notification when lunch block ends
                         if notificationSettings.selectedLunchPeriod == 5 {
-                            print("🔔 [5TH LUNCH DEBUG] User has 5th lunch, checking block: '\(block.name)'")
                             if let subBlocks = block.subBlocks {
-                                print("🔔 [5TH LUNCH DEBUG] Block has \(subBlocks.count) sub-blocks")
                                 for subBlock in subBlocks {
-                                    print("🔔 [5TH LUNCH DEBUG] Sub-block: '\(subBlock.name)' - contains lunch: \(subBlock.name.lowercased().contains("lunch")) - contains 5: \(subBlock.name.contains("5"))")
                                     if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
                                         allNotifications.append(NotificationEvent(
                                             time: blockEndWarning,
@@ -158,11 +132,8 @@ class NotificationManager: ObservableObject {
                                             identifier: "remove-5th-lunch-\(subBlock.id)",
                                             type: "remove_notification"
                                         ))
-                                        print("🔔 [5TH LUNCH] ✅ Added removal for 5th lunch start notification when lunch block ends")
                                     }
                                 }
-                            } else {
-                                print("🔔 [5TH LUNCH DEBUG] Block has no sub-blocks")
                             }
                         }
                         
@@ -175,10 +146,7 @@ class NotificationManager: ObservableObject {
                                 identifier: "remove-\(block.id)",
                                 type: "remove_notification"
                             ))
-                            print("🔔 [BLOCK DEBUG] ✅ Added removal notification for when \(nextBlock.name) starts")
                         }
-                    } else {
-                        print("🔔 [BLOCK DEBUG] ❌ Block end time is in the past")
                     }
                 }
                 
@@ -190,7 +158,6 @@ class NotificationManager: ObservableObject {
                             
                             // Handle lunch sub-blocks - ONLY for user's selected lunch period
                             if subBlock.name.lowercased().contains("lunch") && subBlock.name.contains("\(notificationSettings.selectedLunchPeriod)") {
-                                print("🔔 [LUNCH DEBUG] Processing user's lunch: \(subBlock.name)")
                                 
                                 // Add lunch starting notification (skip for 1st lunch)
                                 if notificationSettings.selectedLunchPeriod != 1 {
@@ -198,11 +165,6 @@ class NotificationManager: ObservableObject {
                                     let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
                                     let startTitle = "\(subBlock.name) starting in \(minutesBeforeEnd) \(minuteText)"
                                     let startBody = "Time to head to lunch!"
-                                    
-                                    print("🔔 [LUNCH DEBUG] Start warning time: \(timeFormatter.string(from: lunchStartWarning))")
-                                    print("🔔 [LUNCH DEBUG] Start title: '\(startTitle)'")
-                                    print("🔔 [LUNCH DEBUG] Start body: '\(startBody)'")
-                                    
                                     if lunchStartWarning > Date.currentEST {
                                         allNotifications.append(NotificationEvent(
                                             time: lunchStartWarning,
@@ -211,12 +173,7 @@ class NotificationManager: ObservableObject {
                                             identifier: "lunch-start-\(subBlock.id)",
                                             type: "lunch_starting"
                                         ))
-                                        print("🔔 [LUNCH DEBUG] ✅ Added lunch start notification")
-                                    } else {
-                                        print("🔔 [LUNCH DEBUG] ❌ Lunch start time is in the past")
                                     }
-                                } else {
-                                    print("🔔 [LUNCH DEBUG] ❌ Skipping lunch start (user has 1st lunch)")
                                 }
                                 
                                 // Add lunch ending notification (skip for 5th lunch)
@@ -225,11 +182,6 @@ class NotificationManager: ObservableObject {
                                     let minuteText = minutesBeforeEnd == 1 ? "minute" : "minutes"
                                     let endTitle = "\(subBlock.name) ending in \(minutesBeforeEnd) \(minuteText)"
                                     let endBody = "Time to head back to class!"
-                                    
-                                    print("🔔 [LUNCH DEBUG] End warning time: \(timeFormatter.string(from: lunchEndWarning))")
-                                    print("🔔 [LUNCH DEBUG] End title: '\(endTitle)'")
-                                    print("🔔 [LUNCH DEBUG] End body: '\(endBody)'")
-                                    
                                     if lunchEndWarning > Date.currentEST {
                                         allNotifications.append(NotificationEvent(
                                             time: lunchEndWarning,
@@ -238,7 +190,6 @@ class NotificationManager: ObservableObject {
                                             identifier: "lunch-end-\(subBlock.id)",
                                             type: "lunch_ending"
                                         ))
-                                        print("🔔 [LUNCH DEBUG] ✅ Added lunch end notification")
                                         
                                         // Remove lunch start notification when lunch end notification is sent
                                         allNotifications.append(NotificationEvent(
@@ -248,7 +199,6 @@ class NotificationManager: ObservableObject {
                                             identifier: "remove-lunch-start-\(subBlock.id)",
                                             type: "remove_notification"
                                         ))
-                                        print("🔔 [LUNCH DEBUG] ✅ Added removal for lunch start notification")
                                         
                                         // Remove lunch end notification 10 minutes after it's sent
                                         let tenMinutesLater = lunchEndWarning.addingTimeInterval(10 * 60) // 10 minutes = 600 seconds
@@ -260,13 +210,8 @@ class NotificationManager: ObservableObject {
                                                 identifier: "remove-lunch-end-\(subBlock.id)",
                                                 type: "remove_notification"
                                             ))
-                                            print("🔔 [LUNCH DEBUG] ✅ Added removal for lunch end notification 10 minutes later")
                                         }
-                                    } else {
-                                        print("🔔 [LUNCH DEBUG] ❌ Lunch end time is in the past")
                                     }
-                                } else {
-                                    print("🔔 [LUNCH DEBUG] ❌ Skipping lunch end (user has 5th lunch)")
                                 }
                             }
                         }
@@ -282,154 +227,140 @@ class NotificationManager: ObservableObject {
         
         // Schedule all notifications
         for notification in allNotifications {
+            let scheduledTime = scheduleFormatter.string(from: notification.time)
+            let titleDescription = notification.title.isEmpty ? "—" : notification.title
+            let messageDescription = notification.body.isEmpty ? "—" : notification.body
+            let logIcon = notification.type == "remove_notification" ? "❌" : "✅"
+
+            let request: UNNotificationRequest
+
             if notification.type == "remove_notification" {
                 // For removal notifications, schedule a silent notification that will trigger removal
                 let content = UNMutableNotificationContent()
                 content.title = "" // Empty to make it silent
-                content.body = ""   // Empty to make it silent  
-                content.sound = nil // No sound
-                // Add custom data to identify this as a removal notification
+                content.body = ""   // Empty to make it silent
+                content.sound = nil
                 content.userInfo = ["type": "remove_notification", "target": notification.identifier.replacingOccurrences(of: "remove-", with: "block-")]
-                
+
                 let trigger = UNTimeIntervalNotificationTrigger(
                     timeInterval: notification.time.timeIntervalSinceNow,
                     repeats: false
                 )
-                
-                let request = UNNotificationRequest(
+
+                request = UNNotificationRequest(
                     identifier: notification.identifier,
                     content: content,
                     trigger: trigger
                 )
-                
-                print("🔔   ✅ REMOVAL: Scheduled to remove '\(notification.identifier.replacingOccurrences(of: "remove-", with: "block-"))' at \(timeFormatter.string(from: notification.time))")
-                
-                center.add(request) { error in
-                    if let error = error {
-                        print("❌ Failed to schedule removal notification: \(error)")
-                    } else {
-                        print("✅ Successfully scheduled removal notification")
-                    }
-                }
             } else {
                 // Regular notification
                 let content = UNMutableNotificationContent()
                 content.title = notification.title
                 content.body = notification.body
                 content.sound = .default
-                
+
                 let trigger = UNTimeIntervalNotificationTrigger(
                     timeInterval: notification.time.timeIntervalSinceNow,
                     repeats: false
                 )
-                
-                let request = UNNotificationRequest(
+
+                request = UNNotificationRequest(
                     identifier: notification.identifier,
                     content: content,
                     trigger: trigger
                 )
-                
-                print("🔔   ✅ \(notification.type.uppercased()): \(notification.title)")
-                print("🔔   ✅ BODY: \(notification.body)")
-                print("🔔   ✅ TIME: \(timeFormatter.string(from: notification.time))")
-                print("🔔   ✅ SECONDS FROM NOW: \(Int(notification.time.timeIntervalSinceNow))")
-                print("🔔   ---")
-                
-                center.add(request) { error in
-                    if let error = error {
-                        print("❌ Failed to schedule notification: \(error)")
-                    } else {
-                        print("✅ Successfully scheduled \(notification.type)")
-                    }
+            }
+
+            print("\(logIcon) time: \(scheduledTime)")
+            if notification.type != "remove_notification" {
+                print("title: \(titleDescription)")
+                print("message: \(messageDescription)")
+            }
+
+            center.add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule notification \(notification.identifier): \(error)")
                 }
             }
         }
         
-        // Also print skipped blocks for reference
-        for (index, block) in blocks.enumerated() {
-            print("🔔 Block \(index + 1): \(block.name) (\(block.start) - \(block.end))")
-            
-            if let endTime = parseTime(block.end, for: currentDate) {
-                let warningTime = endTime.addingTimeInterval(-secondsBeforeEnd)
-                if warningTime <= Date.currentEST {
-                    print("🔔   ❌ SKIPPING: Warning time \(timeFormatter.string(from: warningTime)) is in the past")
-                }
-            }
-            
-            if block.name.lowercased().contains("lunch") {
-                if !block.name.contains("\(notificationSettings.selectedLunchPeriod)") {
-                    print("🔔   ❌ SKIPPING LUNCH: Not user's lunch period (user has \(notificationSettings.selectedLunchPeriod))")
-                } else {
-                    if notificationSettings.selectedLunchPeriod == 1 {
-                        print("🔔   ❌ SKIPPING LUNCH START: User has 1st lunch (no start notification needed)")
-                    }
-                    if notificationSettings.selectedLunchPeriod == 5 {
-                        print("🔔   ❌ SKIPPING LUNCH END: User has 5th lunch (no end notification needed)")
-                    }
-                }
-            }
-        }
     }
     
-    func scheduleNotificationsForToday(testDate: Date? = nil, dayType: String = "") {
-        Task {
+    func scheduleNotifications(for date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
+        do {
+            let blocks = try await ScheduleService.loadBlocks(for: date)
+            return await scheduleNotifications(blocks: blocks, on: date, dayType: dayType, clearExisting: clearExisting)
+        } catch {
+            print("❌ Failed to determine schedule for notifications on \(date): \(error)")
+            return NotificationScheduleSummary(date: date, success: false, scheduledCount: 0)
+        }
+    }
+
+    func scheduleNotifications(blocks: [Block], on date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
+        let useDayType = dayType.isEmpty ? "Green Day" : dayType
+        print("🔔 [DAY-TYPE] Preparing notifications for \(date) with day type '\(useDayType)' and \(blocks.count) blocks")
+
+        guard !blocks.isEmpty else {
+            print("🔔 [DAY-TYPE] No blocks available for \(date) - nothing to schedule")
+            return NotificationScheduleSummary(date: date, success: true, scheduledCount: 0)
+        }
+
+        await MainActor.run {
+            self.scheduleBlockEndingNotifications(for: blocks, testDate: date, dayType: useDayType, clearExisting: clearExisting)
+        }
+        return NotificationScheduleSummary(date: date, success: true, scheduledCount: blocks.count)
+    }
+
+    func scheduleUpcomingSchoolDays(
+        startingFrom startDate: Date,
+        maxCount: Int = 2,
+        dayTypeProvider: @escaping (Date) async -> String?
+    ) async -> [NotificationScheduleSummary] {
+        var results: [NotificationScheduleSummary] = []
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+        var date = startDate
+        var attempts = 0
+        let maxAttempts = 7
+
+        while results.count < maxCount && attempts < maxAttempts {
+            attempts += 1
+
             do {
-                let currentTime = testDate ?? Date.currentEST
-                var blocks: [Block] = []
-                let useDayType = dayType.isEmpty ? "Green Day" : dayType
-                print("🔔 [DAY-TYPE] Received day type parameter: '\(dayType)'")
-                print("🔔 [DAY-TYPE] Using day type for notifications: '\(useDayType)'")
-                
-                
-                // Check Firebase for schedule type first (same logic as ContentView)
-                if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
-                    // No school - no notifications needed
-                    return
-                } else if let type = try await ScheduleTypeFetcher.fetchTypeFor(date: currentTime) {
-                    if type == "no_school" {
-                        // No school - no notifications needed
-                        return
-                    } else if type == "custom" {
-                        if let customBlocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
-                            blocks = customBlocks
-                        }
-                    } else {
-                        // Load from JSON file
-                        let tempLoader = ScheduleLoader()
-                        tempLoader.loadSchedule(from: type)
-                        blocks = tempLoader.blocks
-                    }
+                let blocks = try await ScheduleService.loadBlocks(for: date)
+                if blocks.isEmpty {
+                    print("🗓️ [NOTIFICATIONS] No blocks for \(date) - moving to next day")
                 } else {
-                    // Load weekday schedule (same logic as ContentView)
-                    var calendar = Calendar.current
-                    calendar.timeZone = Date.estTimeZone
-                    let weekday = calendar.component(.weekday, from: currentTime)
-                    let scheduleFile: String?
-                    switch weekday {
-                    case 2, 3, 5: scheduleFile = "schedule_mon_thu"
-                    case 4: scheduleFile = "schedule_wed" 
-                    case 6: scheduleFile = "schedule_fri"
-                    default: scheduleFile = nil
-                    }
-                    
-                    if let file = scheduleFile {
-                        let tempLoader = ScheduleLoader()
-                        tempLoader.loadSchedule(from: file)
-                        blocks = tempLoader.blocks
-                    }
+                    let dayType = await dayTypeProvider(date) ?? ""
+                    let summary = await scheduleNotifications(
+                        blocks: blocks,
+                        on: date,
+                        dayType: dayType,
+                        clearExisting: results.isEmpty
+                    )
+                    results.append(summary)
                 }
-                
-                // Schedule notifications for the determined blocks
-                await MainActor.run {
-                    self.scheduleBlockEndingNotifications(for: blocks, testDate: testDate, dayType: useDayType)
-                }
-                
             } catch {
-                print("❌ Failed to determine schedule for notifications: \(error)")
+                print("❌ [NOTIFICATIONS] Failed to load schedule for \(date): \(error)")
+                break
             }
+
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: date) else {
+                break
+            }
+            date = nextDate
         }
+
+        if results.isEmpty {
+            await MainActor.run {
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            }
+            print("🔕 [NOTIFICATIONS] Cleared pending notifications - no upcoming school days to schedule")
+        }
+
+        return results
     }
-    
+
     
     private func parseTime(_ timeString: String, for date: Date) -> Date? {
         let formatter = DateFormatter()
@@ -712,8 +643,8 @@ struct ContentView: View {
                 } else {
                     print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
                     
-                    // Reschedule notifications for today with fresh Firebase data
-                    notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+                    // Reschedule notifications for upcoming days with fresh data
+                    scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
                     
                     // Background refresh without loading screen
                     Task {
@@ -731,41 +662,37 @@ struct ContentView: View {
         .onChange(of: timeOffset) { _ in
             // Reschedule notifications when time offset changes
             print("🔔 [TIME-OFFSET] Time offset changed - rescheduling notifications")
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
             // Reschedule notifications when enabled/disabled changes
             print("🔔 [NOTIFICATION-ENABLED] Notification enabled changed - rescheduling notifications")
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
             if notificationSettings.notificationsEnabled {
-                notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+            } else {
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
             }
         }
         .onChange(of: notificationSettings.notificationMinutes) { _ in
             // Reschedule notifications when timing changes
             print("🔔 [NOTIFICATION-MINUTES] Notification minutes changed - rescheduling notifications")
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.selectedLunchPeriod) { _ in
             // Reschedule notifications when lunch period changes
             print("🔔 [LUNCH-PERIOD] Lunch period changed - rescheduling notifications")
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
             // Reschedule notifications when block settings change
             print("🔔 [BLOCK-SETTINGS] Block settings changed - rescheduling notifications")
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            notificationManager.scheduleNotificationsForToday(testDate: testDate, dayType: currentDayType)
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: currentDayType) { newDayType in
             // Schedule notifications when day type becomes available
             if newDayType != "Loading..." && !scheduleLoader.blocks.isEmpty && noSchool != true {
                 print("🔔 [DAY-TYPE-CHANGE] Day type updated to: '\(newDayType)' - scheduling notifications")
-                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate, dayType: newDayType)
+                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             }
         }
         .onAppear {
@@ -835,7 +762,7 @@ struct ContentView: View {
             if noSchool != true && !scheduleLoader.blocks.isEmpty && currentDayType != "Loading..." {
                 print("📱 [NOTIFICATIONS] Scheduling notifications for \(scheduleLoader.blocks.count) blocks")
                 print("📱 [NOTIFICATIONS] Current day type: '\(currentDayType)'")
-                notificationManager.scheduleBlockEndingNotifications(for: scheduleLoader.blocks, testDate: testDate, dayType: currentDayType)
+                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             } else if currentDayType == "Loading..." {
                 print("📱 [NOTIFICATIONS] Skipping notification scheduling - day type still loading")
             }
@@ -946,6 +873,33 @@ struct ContentView: View {
             await refreshAll()
         } else {
             print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] No changes detected - keeping current UI")
+        }
+    }
+
+    private func scheduleUpcomingNotifications(startingFrom startDate: Date? = nil) {
+        let referenceDate = startDate ?? Date.currentEST
+        let snapshotDayType = currentDayType
+        let snapshotTime = effectiveCurrentTime
+        let notificationsEnabled = NotificationSettingsManager.shared.notificationsEnabled
+
+        guard notificationsEnabled else {
+            print("🔕 [NOTIFICATIONS] Skipping scheduling - notifications disabled")
+            return
+        }
+
+        Task {
+            let _ = await notificationManager.scheduleUpcomingSchoolDays(
+                startingFrom: referenceDate,
+                dayTypeProvider: { targetDate in
+                    var calendar = Calendar.current
+                    calendar.timeZone = Date.estTimeZone
+                    if calendar.isDate(targetDate, inSameDayAs: snapshotTime),
+                       snapshotDayType != "Loading..." {
+                        return snapshotDayType
+                    }
+                    return await DayTypeCache.predictedDayType(for: targetDate)
+                }
+            )
         }
     }
     
@@ -1618,7 +1572,7 @@ struct NotificationSettingsView: View {
             
             // Explanatory text - only show when notifications are enabled
             if notificationManager.notificationsEnabled {
-                Text("You will only receive notifications if you open the app that day")
+                Text("The app refreshes the next two school days in the background, so you shouldn't need to open it daily.")
                     .font(.footnote)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
