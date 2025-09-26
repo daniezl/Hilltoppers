@@ -418,28 +418,35 @@ struct ContentView: View {
     private let scheduleOffset: CGFloat = 60
     private let noSchoolOffset: CGFloat = -30
     
-    // Dev option: Set this to a specific Date to test, or nil to use real time
-    @State private var timeOffset: TimeInterval = 0 // Offset in seconds from real time
+    private let defaultTestDate: Date = Date.currentEST
+    
+    // Dev option: choose whether to use the real clock or a fixed test date
+    @State private var useTestDate = true
+    @State private var testDateOverride: Date
     @State private var currentTime = Date.currentEST // Updated by timer to make UI flow
+    @State private var settingsUseTestDateSnapshot: Bool
+    @State private var settingsTestDateSnapshot: Date
     
-    // Computed property that returns the effective current time (real time + offset)
+    init() {
+        let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool
+        let storedTestDate = UserDefaults.standard.object(forKey: "TestDateOverride") as? Date
+        let initialUseTestDate = storedUseTestDate ?? false
+        let initialTestDate = storedTestDate ?? defaultTestDate
+        _useTestDate = State(initialValue: initialUseTestDate)
+        _testDateOverride = State(initialValue: initialTestDate)
+        _settingsUseTestDateSnapshot = State(initialValue: initialUseTestDate)
+        _settingsTestDateSnapshot = State(initialValue: initialTestDate)
+    }
+    
+    // Computed property that returns the effective current time (real time or test date)
     var effectiveCurrentTime: Date {
-        return currentTime.addingTimeInterval(timeOffset)
+        return useTestDate ? testDateOverride : currentTime
     }
     
-    // For compatibility, convert to optional Date like the old testDate
+    // Match the old optional testDate behaviour used throughout the views
     var testDate: Date? {
-        return timeOffset == 0 ? nil : effectiveCurrentTime
+        return useTestDate ? testDateOverride : nil
     }
-    
-//     let testDate: Date? = DateComponents(
-//         calendar: .current,
-//         year: 2025,
-//         month: 5,
-//         day: 22,
-//         hour: 11,
-//         minute: 28
-//     ).date
 
     var body: some View {
         ZStack {
@@ -605,47 +612,29 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                // Reset to actual time whenever app becomes active
-                let hadTimeOffset = timeOffset != 0
-                if hadTimeOffset {
-                    print("🔄 [APP-ACTIVE] Had time offset - resetting to actual time and forcing refresh")
-                } else {
-                    print("🔄 [APP-ACTIVE] Already using actual time")
-                }
-                timeOffset = 0
-                
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
                 print("[\(timestamp)] App became active")
-                
+
                 // Check if this is first active of the day
                 var calendar = Calendar.current
                 calendar.timeZone = Date.estTimeZone
                 let today = calendar.startOfDay(for: Date.currentEST)
                 let isFirstActiveOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
-                
-                if isFirstActiveOfDay || hadTimeOffset {
-                    if isFirstActiveOfDay {
-                        print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
-                    }
-                    if hadTimeOffset {
-                        print("🔄 [TIME OFFSET RESET] Had time offset - forcing full refresh")
-                    }
-                    
+
+                if isFirstActiveOfDay {
+                    print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
                     isLoading = true
-                    if isFirstActiveOfDay {
-                        lastOpenedDate = Date.currentEST
-                    }
-                    
-                    // Full refresh with loading screen
+                    lastOpenedDate = Date.currentEST
+
                     Task {
                         await refreshAll()
                     }
                 } else {
                     print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
-                    
+
                     // Reschedule notifications for upcoming days with fresh data
                     scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
-                    
+
                     // Background refresh without loading screen
                     Task {
                         await backgroundRefresh()
@@ -659,9 +648,17 @@ struct ContentView: View {
         .onChange(of: dayTypeLoaded) { _ in
             updateLoadingState()
         }
-        .onChange(of: timeOffset) { _ in
-            // Reschedule notifications when time offset changes
-            print("🔔 [TIME-OFFSET] Time offset changed - rescheduling notifications")
+        .onChange(of: useTestDate) { isUsingTestDate in
+            let modeDescription = isUsingTestDate ? "test date" : "real time"
+            print("🕒 [TIME-MODE] Switched to \(modeDescription) - rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+        }
+        .onChange(of: testDateOverride) { newDate in
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            formatter.timeZone = Date.estTimeZone
+            print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate)) - rescheduling notifications")
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
@@ -697,9 +694,8 @@ struct ContentView: View {
         }
         .onAppear {
             // Reset to actual time on app startup
-            print("🔄 [APP-STARTUP] Resetting to actual time")
-            timeOffset = 0
-            
+            print("🔄 [APP-STARTUP] Using \(useTestDate ? "test date" : "real time") mode")
+
             // Start timer to update time continuously
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 currentTime = Date.currentEST
@@ -731,9 +727,29 @@ struct ContentView: View {
         }
         .preferredColorScheme(.light)
         .sheet(isPresented: $showSettings) {
-            SettingsView(timeOffset: $timeOffset, onDismiss: { 
-                showSettings = false
-            })
+            SettingsView(
+                useTestDate: $useTestDate,
+                testDateOverride: $testDateOverride,
+                onDismiss: {
+                    showSettings = false
+                }
+            )
+        }
+        .onChange(of: showSettings) { isPresented in
+            if isPresented {
+                settingsUseTestDateSnapshot = useTestDate
+                settingsTestDateSnapshot = testDateOverride
+            } else {
+                let modeChanged = settingsUseTestDateSnapshot != useTestDate
+                let dateChanged = settingsTestDateSnapshot != testDateOverride
+                if modeChanged || dateChanged {
+                    print("🕒 [TIME-SETTINGS] Applied changes after closing settings - rescheduling notifications")
+                    Task {
+                        await refreshAll()
+                    }
+                    scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+                }
+            }
         }
     }
     
@@ -1045,9 +1061,10 @@ class BlockSettingsManager: ObservableObject {
 }
 
 struct SettingsView: View {
-    @Binding var timeOffset: TimeInterval
+    @Binding var useTestDate: Bool
+    @Binding var testDateOverride: Date
     let onDismiss: () -> Void
-    
+
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     
     var body: some View {
@@ -1086,14 +1103,18 @@ struct SettingsView: View {
                     .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                     .cornerRadius(12)
                     
-                    // NavigationLink("Time") {
-                    //     DeveloperOptionsView(timeOffset: $timeOffset, onDismissSettings: onDismiss)
-                    // }
-                    // .font(.title2)
-                    // .foregroundColor(.black)
-                    // .padding()
-                    // .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    // .cornerRadius(12)
+                    NavigationLink("Time") {
+                        TimeSettingsView(
+                            useTestDate: $useTestDate,
+                            testDateOverride: $testDateOverride,
+                            onDismissRoot: onDismiss
+                        )
+                    }
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .padding()
+                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    .cornerRadius(12)
                 }
                 .padding(.top, 40)
                 
@@ -1119,220 +1140,62 @@ struct SettingsView: View {
     }
 }
 
-struct DeveloperOptionsView: View {
-    @Binding var timeOffset: TimeInterval
-    let onDismissSettings: () -> Void
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var customDate = Date()
-    @State private var isUsingCustomTime = false
-    @State private var currentTime = Date.currentEST // Updated by timer
-    @State private var lastCustomDate = Date() // Remember last custom time setting
-    @State private var selectedSeconds = 0 // For seconds picker
-    @State private var timer: Timer? = nil
-    @State private var resetToRealTimeOnOpen = true
-    @State private var referenceTime = Date.currentEST // Fixed reference time for offset calculation
-    
-    // Computed properties for effective time
-    var effectiveCurrentTime: Date {
-        return currentTime.addingTimeInterval(timeOffset)
-    }
-    
+struct TimeSettingsView: View {
+    @Binding var useTestDate: Bool
+    @Binding var testDateOverride: Date
+    let onDismissRoot: () -> Void
+
     var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Current Time")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Text(formatDateTime(effectiveCurrentTime))
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.green)
-                    
-                    if timeOffset != 0 {
-                        Text("Offset: \(formatOffset(timeOffset))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-            
-            Section {
-                Toggle("Reset to real time on open", isOn: $resetToRealTimeOnOpen)
-                    .onChange(of: resetToRealTimeOnOpen) { newValue in
-                        UserDefaults.standard.set(newValue, forKey: "ResetToRealTimeOnOpen")
-                        print("🔄 [RESET SETTING] Reset to real time on open: \(newValue)")
-                    }
-                
-                Toggle("Use Custom Time", isOn: $isUsingCustomTime)
-                    .onChange(of: isUsingCustomTime) { newValue in
-                        // Save the toggle state
-                        UserDefaults.standard.set(newValue, forKey: "IsUsingCustomTime")
-                        
-                        if !newValue {
-                            // Reset to actual time when toggle is turned off
-                            print("🔄 [TOGGLE] Toggle OFF - resetting to actual time")
-                            timeOffset = 0
-                        } else {
-                            // When toggling on, check if we should reset to real time
-                            if resetToRealTimeOnOpen {
-                                // Reset custom time to current real time
-                                customDate = referenceTime
-                                selectedSeconds = 0
-                                timeOffset = 0
-                                print("🔄 [TOGGLE] Toggle ON with reset enabled - set to current real time")
-                            } else {
-                                // Calculate offset from reference time
-                                let calendar = Calendar.current
-                                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
-                                if let dateWithoutSeconds = calendar.date(from: components) {
-                                    let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
-                                    let offset = dateWithSeconds.timeIntervalSince(referenceTime)
-                                    timeOffset = offset
-                                    print("🔄 [TOGGLE] Toggle ON - calculated offset: \(offset) seconds")
-                                }
-                            }
+        Form {
+            Section(footer: Text("Switch to a fixed test date to preview schedules in the future or past.")) {
+                Toggle("Use Test Date", isOn: $useTestDate)
+                    .onChange(of: useTestDate) { newValue in
+                        if newValue {
+                            let now = Date.currentEST
+                            testDateOverride = now
+                            UserDefaults.standard.set(now, forKey: "TestDateOverride")
                         }
+                        UserDefaults.standard.set(newValue, forKey: "UseTestDateOverride")
                     }
-                
-                if isUsingCustomTime {
+            }
+
+            if useTestDate {
+                Section(header: Text("Test Date")) {
                     DatePicker(
-                        "Custom Time",
-                        selection: $customDate,
+                        "",
+                        selection: $testDateOverride,
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .datePickerStyle(.wheel)
                     .environment(\.timeZone, Date.estTimeZone)
-                    .onChange(of: customDate) { newDate in
-                        // Strip seconds from DatePicker and add our selected seconds
-                        let calendar = Calendar.current
-                        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: newDate)
-                        if let dateWithoutSeconds = calendar.date(from: components) {
-                            let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(selectedSeconds))
-                            let offset = dateWithSeconds.timeIntervalSince(referenceTime)
-                            timeOffset = offset
-                            print("🔄 [DATEPICKER] Date changed - calculated offset: \(offset) seconds")
-                            
-                            // Save the exact time that was SET
-                            UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
-                        }
-                    }
-                    
-                    // Seconds picker
-                    HStack {
-                        Text("Seconds:")
-                            .font(.headline)
-                        
-                        Picker("Seconds", selection: $selectedSeconds) {
-                            ForEach(0..<60, id: \.self) { second in
-                                Text("\(second)").tag(second)
-                            }
-                        }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(width: 80, height: 100)
-                        .clipped()
-                        
-                        Spacer()
-                    }
-                    .onChange(of: selectedSeconds) { newSeconds in
-                        // Strip seconds from DatePicker and add our selected seconds
-                        let calendar = Calendar.current
-                        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: customDate)
-                        if let dateWithoutSeconds = calendar.date(from: components) {
-                            let dateWithSeconds = dateWithoutSeconds.addingTimeInterval(TimeInterval(newSeconds))
-                            let offset = dateWithSeconds.timeIntervalSince(referenceTime)
-                            timeOffset = offset
-                            print("🔄 [SECONDS] Seconds changed to: \(newSeconds) - calculated offset: \(offset) seconds")
-                            
-                            // Save the exact time that was SET
-                            UserDefaults.standard.set(dateWithSeconds, forKey: "LastCustomTime")
-                        }
+                    .labelsHidden()
+                    .onChange(of: testDateOverride) { newValue in
+                        UserDefaults.standard.set(newValue, forKey: "TestDateOverride")
                     }
                 }
             }
         }
         .navigationTitle("Time")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // Set white navigation bar background for iOS 16+ compatibility
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor.white
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-            
-            // Set reference time for offset calculations
-            referenceTime = Date.currentEST
-            
-            // Start timer to update time display continuously
-            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                currentTime = Date.currentEST
-            }
-            
-            // Load reset setting (default to true if not set)
-            if UserDefaults.standard.object(forKey: "ResetToRealTimeOnOpen") == nil {
-                resetToRealTimeOnOpen = true
-                UserDefaults.standard.set(true, forKey: "ResetToRealTimeOnOpen")
-            } else {
-                resetToRealTimeOnOpen = UserDefaults.standard.bool(forKey: "ResetToRealTimeOnOpen")
-            }
-            
-            // Always load the last toggle state - don't auto-turn it off
-            isUsingCustomTime = UserDefaults.standard.bool(forKey: "IsUsingCustomTime")
-            
-            // Load last custom date from UserDefaults, or use current time as default
-            if let savedCustomTime = UserDefaults.standard.object(forKey: "LastCustomTime") as? Date {
-                lastCustomDate = savedCustomTime
-                customDate = savedCustomTime
-                // Extract seconds from saved time
-                let calendar = Calendar.current
-                selectedSeconds = calendar.component(.second, from: savedCustomTime)
-            } else {
-                lastCustomDate = Date.currentEST
-                customDate = Date.currentEST
-                selectedSeconds = 0
-            }
-        }
-        .onDisappear {
-            // Clean up timer when view disappears
-            timer?.invalidate()
-            timer = nil
-        }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .confirmationAction) {
                 Button("Done") {
-                    onDismissSettings()
+                    onDismissRoot()
                 }
-                .foregroundColor(.blue)
             }
         }
-    }
-    
-    private func formatDateTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        formatter.timeStyle = .medium // Changed to medium to include seconds
-        formatter.timeZone = Date.estTimeZone
-        return formatter.string(from: date)
-    }
-    
-    private func formatOffset(_ offset: TimeInterval) -> String {
-        let totalSeconds = Int(offset)
-        let hours = totalSeconds / 3600
-        let minutes = abs(totalSeconds % 3600) / 60
-        let seconds = abs(totalSeconds % 60)
-        
-        if abs(hours) > 0 {
-            return String(format: "%+dh %dm %ds", hours, minutes, seconds)
-        } else if abs(totalSeconds) >= 60 {
-            return String(format: "%+dm %ds", totalSeconds / 60, seconds)
-        } else {
-            return String(format: "%+ds", totalSeconds)
+        .onAppear {
+            if let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool {
+                useTestDate = storedUseTestDate
+            }
+
+            if let storedDate = UserDefaults.standard.object(forKey: "TestDateOverride") as? Date {
+                testDateOverride = storedDate
+            }
         }
     }
 }
+
 
 struct BlockConfigurationView: View {
     @ObservedObject var blockManager: BlockSettingsManager
