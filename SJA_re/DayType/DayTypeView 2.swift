@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftSoup
+import FirebaseFirestore
 
 struct RippleEffect: View {
     let isGreenDay: Bool
@@ -87,6 +88,27 @@ enum NetworkErrorType {
     }
 }
 
+
+enum DayTypeSource {
+    case manualOverride
+    case bulletin
+    case archiveFallback
+    case unknown
+
+    var label: String? {
+        switch self {
+        case .manualOverride:
+            return "Manual override"
+        case .archiveFallback:
+            return "Predicted from archive"
+        case .unknown:
+            return "Day type unavailable"
+        case .bulletin:
+            return nil
+        }
+    }
+}
+
 struct DayTypeView: View {
     let testDate: Date?
     @Binding var firebaseError: Bool
@@ -114,6 +136,7 @@ struct DayTypeView: View {
     @State private var lastRequestTime: Date? = nil
     private let minimumRequestInterval: TimeInterval = 5.0 // 5 seconds between requests
     @State private var showDailyBulletinConfirm = false
+    @State private var dayTypeSource: DayTypeSource = .bulletin
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -164,6 +187,13 @@ struct DayTypeView: View {
                                 .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
                                 .padding(4) // inset the dashed border
                         )
+             
+                    if let sourceLabel = dayTypeSource.label {
+                        Text(sourceLabel)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 6)
+                    }
                 }
                 .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
@@ -195,6 +225,12 @@ struct DayTypeView: View {
                     .background(
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
+                    if let sourceLabel = dayTypeSource.label {
+                        Text(sourceLabel)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 6)
+                    }
             }
         }
         .alert(isPresented: $showNetworkErrorAlert) {
@@ -249,18 +285,8 @@ struct DayTypeView: View {
                 print("🚀 [DAYTYPE] No splash screen - fetching immediately")
             }
             
-            Task {
-                if delay > 0 {
-                    do {
-                        try await Task.sleep(nanoseconds: delay)
-                    } catch {
-                        print("⚠️ [DAYTYPE] Sleep cancelled - proceeding anyway")
-                    }
-                }
-                
-                print("🚀 [DAYTYPE] Starting HTML fetch now...")
-                fetchHTML(from: schoolURL)
-            }
+            print("🚀 [DAYTYPE] Starting day type fetch...")
+            self.startDayTypeFetch(afterDelay: delay)
         }
         .onChange(of: dayType) { newDayType in
             // Auto-refresh if we get "Please Refresh" and haven't tried yet
@@ -271,7 +297,7 @@ struct DayTypeView: View {
                 
                 // Wait a moment then try again (without triggering isRefreshing)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    fetchHTML(from: schoolURL)
+                    self.startDayTypeFetch()
                 }
             }
         }
@@ -283,7 +309,7 @@ struct DayTypeView: View {
                 
                 // Wait a moment then try again
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    fetchHTML(from: schoolURL)
+                    self.startDayTypeFetch()
                 }
             }
         }
@@ -460,6 +486,65 @@ struct DayTypeView: View {
         }
     }
     
+
+    private func startDayTypeFetch(afterDelay delay: UInt64 = 0) {
+        Task {
+            if delay > 0 {
+                do {
+                    try await Task.sleep(nanoseconds: delay)
+                } catch {
+                    print("⚠️ [DAYTYPE] Delay sleep cancelled - proceeding")
+                }
+            }
+
+            let referenceDate = self.testDate ?? Date()
+            if await loadManualOverride(for: referenceDate) {
+                return
+            }
+
+            fetchHTML(from: schoolURL)
+        }
+    }
+
+    private func loadManualOverride(for referenceDate: Date) async -> Bool {
+        do {
+            let db = Firestore.firestore()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            formatter.timeZone = Date.estTimeZone
+            let documentId = formatter.string(from: referenceDate)
+
+            let snapshot = try await db.collection("special_days").document(documentId).getDocument()
+            guard let data = snapshot.data(), let colorValue = data["color"] as? String else {
+                return false
+            }
+
+            guard let normalized = normalizedStandardDayType(from: colorValue) else {
+                print("⚠️ [DAYTYPE] Manual override color '\(colorValue)' not recognized")
+                return false
+            }
+
+            await MainActor.run {
+                print("🧭 [DAYTYPE] Using manual override color '\(colorValue)' -> '\(normalized)'")
+                self.dayTypeSource = .manualOverride
+                self.dayType = normalized
+                self.predicted = normalized
+                self.dbDate = referenceDate
+                self.isDateToday = true
+                self.firebaseError = false
+                self.calculationSteps = nil
+                self.showNetworkErrorAlert = false
+                self.currentNetworkError = nil
+                self.finishLoading()
+            }
+            return true
+        } catch {
+            print("❌ [DAYTYPE] Failed to load manual override: \(error)")
+            return false
+        }
+    }
+
+
     func fetchHTML(from urlString: String) {
         print("🌐 [SIMPLE] Fetching: \(urlString)")
         
@@ -635,6 +720,7 @@ struct DayTypeView: View {
                 if let fallback = try await fetchLatestKnownDayType(before: referenceDate) {
                     await MainActor.run {
                         print("🧭 [SIMPLE] Using fallback day type '\(fallback.type)' from \(fallback.date)")
+                        self.dayTypeSource = .archiveFallback
                         self.dayType = fallback.type
                         self.dbDate = fallback.date
                         self.isDateToday = false
@@ -772,6 +858,7 @@ struct DayTypeView: View {
         self.htmlTitle = self.getTitleFromHTML(html: trimmedHTML ?? html)
         self.dayType = self.getDayTypeFromHTML(html: trimmedHTML ?? html)
         print("📅 [DAYTYPE] Parsed day type: '\(self.dayType)'")
+        self.dayTypeSource = .bulletin
         
         self.dbDate = self.extractDBDate(from: trimmedHTML ?? html)
         print("📆 [DAYTYPE] Extracted DB date: \(self.dbDate?.description ?? "nil")")
@@ -845,6 +932,7 @@ struct DayTypeView: View {
         
         // Since we can't fetch real data, show Unknown
         self.dayType = "Unknown"
+        self.dayTypeSource = .unknown
         self.dbDate = nil
         self.isDateToday = true  // Show as solid box (not dashed) since we can't predict
         self.predicted = "Unknown"
@@ -864,7 +952,7 @@ struct DayTypeView: View {
         // Add a small delay to ensure UI updates
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             print("🔄 [DAYTYPE] Executing force retry...")
-            self.fetchHTML(from: self.schoolURL)
+            self.startDayTypeFetch()
         }
     }
     
