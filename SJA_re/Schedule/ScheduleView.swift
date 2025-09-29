@@ -775,8 +775,8 @@ struct ScheduleView: View {
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     }
-                    .padding(.leading, 50) // more space on left
-                    .padding(.trailing, 30) // less space on right
+                    .padding(.leading, 44) // space on left
+                    .padding(.trailing, 40) // space on right
                     .padding(.top, 8)
                 }
             }

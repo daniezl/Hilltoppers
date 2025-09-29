@@ -607,7 +607,7 @@ struct ContentView: View {
                                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                             }
                             .buttonStyle(.plain)
-                            .padding(.leading, 48)
+                            .padding(.leading, 38)
                         }
 
                         Spacer()
