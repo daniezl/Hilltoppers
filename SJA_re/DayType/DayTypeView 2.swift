@@ -137,6 +137,7 @@ struct DayTypeView: View {
     private let minimumRequestInterval: TimeInterval = 5.0 // 5 seconds between requests
     @State private var showDailyBulletinConfirm = false
     @State private var dayTypeSource: DayTypeSource = .bulletin
+    @State private var announcementMessage: String? = nil
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -165,6 +166,24 @@ struct DayTypeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if let announcement = announcementMessage, !announcement.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .foregroundColor(.orange)
+                        .font(.system(size: 16))
+                    Text(announcement)
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+            }
             if isDateToday == false {
                 VStack(spacing: 0) {
                     Text(predicted)
@@ -497,6 +516,11 @@ struct DayTypeView: View {
                 }
             }
 
+            await MainActor.run {
+                self.announcementMessage = nil
+                self.dayTypeSource = .bulletin
+            }
+
             let referenceDate = self.testDate ?? Date()
             if await loadManualOverride(for: referenceDate) {
                 return
@@ -515,7 +539,21 @@ struct DayTypeView: View {
             let documentId = formatter.string(from: referenceDate)
 
             let snapshot = try await db.collection("special_days").document(documentId).getDocument()
-            guard let data = snapshot.data(), let colorValue = data["color"] as? String else {
+            guard let data = snapshot.data() else {
+                return false
+            }
+
+            let rawAnnouncementValue = data["banner"] as? String
+            let rawAnnouncement = rawAnnouncementValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+            await MainActor.run {
+                if let announcement = rawAnnouncement, !announcement.isEmpty {
+                    self.announcementMessage = announcement
+                } else {
+                    self.announcementMessage = nil
+                }
+            }
+
+            guard let colorValue = data["color"] as? String else {
                 return false
             }
 
