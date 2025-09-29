@@ -558,13 +558,19 @@ struct DayTypeView: View {
             }
             
             guard let dayType = foundDayType else {
-                print("❌ [SIMPLE] No day type found in h4 elements")
-                self.useFallbackData()
+                print("❌ [SIMPLE] No day type found in h4 elements - attempting archive fallback")
+                self.tryFallbackUsingArchive()
                 return
             }
             
             // Set the day type we found
             self.dayType = dayType
+            
+            if !isStandardDayType(dayType) {
+                print("⚠️ [SIMPLE] Day type '\(dayType)' is not a standard Green/White day - attempting archive fallback")
+                self.tryFallbackUsingArchive()
+                return
+            }
             
             // Now check if we need to predict (bulletin date != today)
             if let dbDate = bulletinDate {
@@ -596,6 +602,116 @@ struct DayTypeView: View {
         }
     }
     
+    private func isStandardDayType(_ text: String) -> Bool {
+        return normalizedStandardDayType(from: text) != nil
+    }
+
+    private func normalizedStandardDayType(from text: String) -> String? {
+        let lower = text.lowercased()
+        let containsGreenDay = lower.contains("green day")
+        let containsWhiteDay = lower.contains("white day")
+        if containsGreenDay && !containsWhiteDay {
+            return "Green Day"
+        }
+        if containsWhiteDay && !containsGreenDay {
+            return "White Day"
+        }
+        let containsGreen = lower.contains("green")
+        let containsWhite = lower.contains("white")
+        if containsGreen && !containsWhite {
+            return "Green Day"
+        }
+        if containsWhite && !containsGreen {
+            return "White Day"
+        }
+        return nil
+    }
+
+    private func tryFallbackUsingArchive() {
+        print("🧭 [SIMPLE] Attempting to recover day type from archive list")
+        Task {
+            let referenceDate = self.testDate ?? Date()
+            do {
+                if let fallback = try await fetchLatestKnownDayType(before: referenceDate) {
+                    await MainActor.run {
+                        print("🧭 [SIMPLE] Using fallback day type '\(fallback.type)' from \(fallback.date)")
+                        self.dayType = fallback.type
+                        self.dbDate = fallback.date
+                        self.isDateToday = false
+                        self.generateSimplePrediction(bulletinDayType: fallback.type, bulletinDate: fallback.date)
+                    }
+                } else {
+                    await MainActor.run {
+                        print("❌ [SIMPLE] Archive fallback did not find a usable day type")
+                        self.useFallbackData()
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    print("❌ [SIMPLE] Archive fallback failed: \(error)")
+                    self.useFallbackData()
+                }
+            }
+        }
+    }
+
+    private func fetchLatestKnownDayType(before referenceDate: Date) async throws -> (type: String, date: Date)? {
+        let html = try await fetchArchiveHTML()
+        let doc = try SwiftSoup.parse(html)
+        let cards = try doc.select("div.news-card")
+
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy"
+        formatter.timeZone = Date.estTimeZone
+
+        for card in cards.array() {
+            guard let dateText = try card.select("p.date").first()?.text().trimmingCharacters(in: .whitespacesAndNewlines),
+                  let date = formatter.date(from: dateText) else {
+                continue
+            }
+
+            if calendar.isDate(date, inSameDayAs: referenceDate) || date > referenceDate {
+                continue
+            }
+
+            guard let excerpt = try card.select("p.excerpt").first()?.text().trimmingCharacters(in: .whitespacesAndNewlines),
+                  let normalized = normalizedStandardDayType(from: excerpt) else {
+                continue
+            }
+
+            return (normalized, date)
+        }
+
+        return nil
+    }
+
+    private func fetchArchiveHTML() async throws -> String {
+        guard let url = URL(string: schoolURL) else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5.0
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        request.setValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8", forHTTPHeaderField: "Accept")
+        request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+        request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+        request.setValue("1", forHTTPHeaderField: "Upgrade-Insecure-Requests")
+        request.setValue("navigate", forHTTPHeaderField: "Sec-Fetch-Mode")
+        request.setValue("document", forHTTPHeaderField: "Sec-Fetch-Dest")
+        request.setValue("none", forHTTPHeaderField: "Sec-Fetch-Site")
+        request.setValue("?1", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        guard let html = String(data: data, encoding: .utf8) else {
+            throw URLError(.cannotDecodeRawData)
+        }
+        return html
+    }
+
     func generateSimplePrediction(bulletinDayType: String, bulletinDate: Date) {
         print("🎯 [SIMPLE] Generating prediction...")
         
