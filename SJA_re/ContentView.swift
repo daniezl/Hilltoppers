@@ -444,6 +444,36 @@ struct ContentView: View {
     }
     
     // Match the old optional testDate behaviour used throughout the views
+    private var tomorrowDate: Date {
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+        let base = Date.currentEST
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: base) ?? base
+        return calendar.startOfDay(for: tomorrow)
+    }
+
+    private var isViewingTomorrow: Bool {
+        guard useTestDate else { return false }
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+        return calendar.isDate(testDateOverride, inSameDayAs: tomorrowDate)
+    }
+
+    private var tomorrowButtonTitle: String {
+        isViewingTomorrow ? "Back to Today" : "View Tomorrow"
+    }
+
+    private var tomorrowButtonSubtitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE, MMM d"
+        formatter.timeZone = Date.estTimeZone
+        if isViewingTomorrow {
+            return formatter.string(from: Date.currentEST)
+        } else {
+            return formatter.string(from: tomorrowDate)
+        }
+    }
+
     var testDate: Date? {
         return useTestDate ? testDateOverride : nil
     }
@@ -557,27 +587,33 @@ struct ContentView: View {
             }
             .zIndex(500)
             
-            // Tomorrow button - bottom right
-            // VStack {
-            //     Spacer()
-            //     HStack {
-            //         Spacer()
-            //         Button(action: {
-            //             // No function for now
-            //         }) {
-            //             Text("tomorrow >")
-            //                 .font(.system(size: 16, weight: .medium))
-            //                 .foregroundColor(.white)
-            //                 .padding(.horizontal, 16)
-            //                 .padding(.vertical, 10)
-            //                 .background(getDayTypeColor())
-            //                 .cornerRadius(20)
-            //         }
-            //         .padding(.trailing, 16)
-            //         .padding(.bottom, 30)
-            //     }
-            // }
-            // .zIndex(500)
+            if !isLoading {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: toggleTomorrowView) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(tomorrowButtonTitle)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Text(tomorrowButtonSubtitle)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 18)
+                            .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                            .cornerRadius(18)
+                        }
+                        .buttonStyle(.plain)
+                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .padding(.trailing, 24)
+                        .padding(.bottom, 32)
+                    }
+                }
+                .zIndex(500)
+            }
         }
         .background(Color.clear)
         .contentShape(Rectangle())
@@ -943,6 +979,20 @@ struct ContentView: View {
     
     // Centralized refresh function
     @MainActor
+    private func toggleTomorrowView() {
+        if isViewingTomorrow {
+            useTestDate = false
+            testDateOverride = Date.currentEST
+        } else {
+            useTestDate = true
+            testDateOverride = tomorrowDate
+        }
+
+        Task {
+            await refreshAll()
+        }
+    }
+
     func refreshAll() async {
         // Reset loading states
         print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
@@ -955,23 +1005,6 @@ struct ContentView: View {
         refreshID = UUID()
     }
     
-    // Helper function to get day type color for tomorrow button
-    private func getDayTypeColor() -> Color {
-        let lower = currentDayType.lowercased()
-        let isGreenDay = lower.contains("green day") && !lower.contains("white")
-        let isWhiteDay = lower.contains("white day") && !lower.contains("green")
-        
-        if isGreenDay {
-            // Green Day - Dark green background (same as DayTypeView)
-            return Color(red: 20/255, green: 54/255, blue: 27/255)
-        } else if isWhiteDay {
-            // White Day - Use a darker color for visibility on button
-            return Color(red: 100/255, green: 100/255, blue: 100/255)
-        } else {
-            // Unknown - Use gray
-            return Color.gray.opacity(0.7)
-        }
-    }
 }
 
 struct BlockSettings: Codable {
