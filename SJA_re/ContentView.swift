@@ -992,6 +992,12 @@ struct ContentView: View {
             testDateOverride = tomorrowReferenceDate
         }
 
+        isLoading = true
+        scheduleLoaded = false
+        dayTypeLoaded = false
+        scheduleLoader.showBlocks = false
+        triggerDayTypeRipple = false
+
         Task {
             await refreshAll()
         }
