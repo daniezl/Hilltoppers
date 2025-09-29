@@ -444,19 +444,23 @@ struct ContentView: View {
     }
     
     // Match the old optional testDate behaviour used throughout the views
-    private var tomorrowDate: Date {
+    private var tomorrowReferenceDate: Date {
         var calendar = Calendar.current
         calendar.timeZone = Date.estTimeZone
         let base = Date.currentEST
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: base) ?? base
-        return calendar.startOfDay(for: tomorrow)
+        var components = calendar.dateComponents([.year, .month, .day], from: tomorrow)
+        components.hour = 23
+        components.minute = 59
+        components.second = 0
+        return calendar.date(from: components) ?? tomorrow
     }
 
     private var isViewingTomorrow: Bool {
         guard useTestDate else { return false }
         var calendar = Calendar.current
         calendar.timeZone = Date.estTimeZone
-        return calendar.isDate(testDateOverride, inSameDayAs: tomorrowDate)
+        return calendar.isDate(testDateOverride, inSameDayAs: tomorrowReferenceDate)
     }
 
     private var tomorrowButtonTitle: String {
@@ -470,7 +474,7 @@ struct ContentView: View {
         if isViewingTomorrow {
             return formatter.string(from: Date.currentEST)
         } else {
-            return formatter.string(from: tomorrowDate)
+            return formatter.string(from: tomorrowReferenceDate)
         }
     }
 
@@ -985,7 +989,7 @@ struct ContentView: View {
             testDateOverride = Date.currentEST
         } else {
             useTestDate = true
-            testDateOverride = tomorrowDate
+            testDateOverride = tomorrowReferenceDate
         }
 
         Task {
