@@ -594,27 +594,46 @@ struct ContentView: View {
             if !isLoading {
                 VStack {
                     Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: toggleTomorrowView) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(tomorrowButtonTitle)
-                                    .font(.headline)
+                    HStack(alignment: .bottom) {
+                        if isViewingTomorrow {
+                            Button(action: toggleTomorrowView) {
+                                Image(systemName: "chevron.backward")
+                                    .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.primary)
-                                Text(tomorrowButtonSubtitle)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 16)
+                                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                                    .cornerRadius(18)
+                                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                             }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 18)
-                            .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                            .cornerRadius(18)
+                            .buttonStyle(.plain)
+                            .padding(.leading, 24)
                         }
-                        .buttonStyle(.plain)
-                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-                        .padding(.trailing, 24)
-                        .padding(.bottom, 32)
+
+                        Spacer()
+
+                        if !isViewingTomorrow {
+                            Button(action: toggleTomorrowView) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(tomorrowButtonTitle)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Text(tomorrowButtonSubtitle)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 18)
+                                .frame(maxWidth: 360, alignment: .leading)
+                                .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                                .cornerRadius(18)
+                                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 24)
+                        }
                     }
+                    .padding(.bottom, 32)
                 }
                 .zIndex(500)
             }
