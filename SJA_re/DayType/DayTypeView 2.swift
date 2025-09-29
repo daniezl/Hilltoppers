@@ -183,6 +183,7 @@ struct DayTypeView: View {
                 .cornerRadius(12)
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
+                .padding(.bottom, 12)
             }
             if isDateToday == false {
                 VStack(spacing: 0) {
