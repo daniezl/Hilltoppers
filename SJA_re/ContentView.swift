@@ -607,7 +607,7 @@ struct ContentView: View {
                                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                             }
                             .buttonStyle(.plain)
-                            .padding(.leading, 24)
+                            .padding(.leading, 48)
                         }
 
                         Spacer()
@@ -624,13 +624,13 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 12)
                                 .padding(.horizontal, 18)
-                                .frame(maxWidth: 360, alignment: .leading)
+                                .frame(width: 160, alignment: .leading)
                                 .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                                 .cornerRadius(18)
                                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                             }
                             .buttonStyle(.plain)
-                            .padding(.trailing, 24)
+                            .padding(.trailing, 32)
                         }
                     }
                     .padding(.bottom, 32)
