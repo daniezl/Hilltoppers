@@ -491,11 +491,12 @@ struct ContentView: View {
                      // Only show content when noSchool state is determined
                      if let isNoSchool = noSchool {
                          // Only show DayTypeView when there is school
-                         if !isNoSchool {
-                                                      DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                        if !isNoSchool {
+                                                     DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
                              print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
                          }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType)
+                         .padding(.top, isViewingTomorrow ? 8 : 0)
                              .id(refreshID)
                      }
                      
@@ -575,7 +576,7 @@ struct ContentView: View {
             }
             
             // Settings button - top right
-            VStack {
+            VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Spacer()
                     Button(action: {
@@ -586,6 +587,18 @@ struct ContentView: View {
                             .foregroundColor(.gray.opacity(0.7))
                             .padding()
                     }
+                }
+
+                if isViewingTomorrow {
+                    HStack {
+                        Text("Tomorrow:")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.gray.opacity(1))
+                            .padding(.leading, 100)
+                        Spacer()
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
                 Spacer()
             }
