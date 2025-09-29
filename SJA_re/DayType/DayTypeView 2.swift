@@ -231,6 +231,7 @@ struct DayTypeView: View {
                         dbDate: dbDate,
                         testDate: testDate,
                         calculationSteps: calculationSteps,
+                        showOutdatedWarning: isDateToday != false,
                         onDismiss: { showPredictionDetail = false }
                     )
                 }
@@ -1201,6 +1202,7 @@ struct PredictionDetailView: View {
     let dbDate: Date?
     let testDate: Date?
     let calculationSteps: [PredictionStep]?
+    let showOutdatedWarning: Bool
     let onDismiss: () -> Void
     
     @State private var showDailyBulletinConfirm = false
@@ -1310,27 +1312,28 @@ struct PredictionDetailView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                // Warning text at the bottom of the screen
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                            .font(.system(size: 16))
-                        
-                        Text("The Daily Bulletin is outdated. This prediction is based on the latest information from the school website.")
-                            .font(.callout)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.leading)
-                        
-                        Spacer()
+                if showOutdatedWarning {
+                    VStack(spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 16))
+                            
+                            Text("The Daily Bulletin is outdated. This prediction is based on the latest information from the school website.")
+                                .font(.callout)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.leading)
+                            
+                            Spacer()
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(8)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             }
             .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
                 Button("Yes") {
