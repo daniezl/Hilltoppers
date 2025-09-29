@@ -1510,7 +1510,7 @@ struct NotificationSettingsView: View {
                 VStack(spacing: 10) {
                     // Single line with embedded picker
                     HStack(spacing: 4) {
-                        Text("Alert me")
+                        Text("Notify me")
                             .font(.headline)
                             .foregroundColor(.primary)
                         
