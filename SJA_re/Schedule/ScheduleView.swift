@@ -1043,11 +1043,11 @@ struct ScheduleView: View {
     func getWeekdayTitle() -> String {
         let weekday = Calendar.current.component(.weekday, from: currentTime)
         switch weekday {
-        case 2: return "Monday Schedule"
-        case 3: return "Tuesday Schedule" 
-        case 4: return "Wednesday Schedule"
-        case 5: return "Thursday Schedule"
-        case 6: return "Friday Schedule"
+        case 2: return "Monday"
+        case 3: return "Tuesday" 
+        case 4: return "Wednesday"
+        case 5: return "Thursday"
+        case 6: return "Friday"
         default: return "Weekday Schedule"
         }
     }
