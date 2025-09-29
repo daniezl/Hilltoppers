@@ -1211,97 +1211,98 @@ struct PredictionDetailView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack {
-                    if let dbDate = dbDate {
-                        // Card with list
-                        VStack(spacing: 0) {
-                        if let predictions = calculationSteps {
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack {
+                        if let dbDate = dbDate {
                             VStack(spacing: 0) {
-                                // Bulletin info as first row - tappable to open Daily Bulletin
-                                HStack {
-                                    Text(formatShortDate(dbDate))
-                                        .font(.system(.callout, design: .monospaced))
-                                        .fontWeight(.medium)
-                                        .frame(width: 50, alignment: .leading)
-                                    
-                                    Image(systemName: "arrow.right")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                    
-                                    Text(dayType)
-                                        .font(.callout)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.blue)
-                                        .underline()
-                                    
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(getBackgroundColor(for: dayType))
-                                .onTapGesture {
-                                    showDailyBulletinConfirm = true
-                                }
-                                
-                                // Divider
-                                Divider()
-                                    .padding(.horizontal, 16)
-                                
-                                // Prediction rows
-                                ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
-                                    VStack(spacing: 0) {
-                                        HStack {
-                                            Text(formatShortDate(step.date))
-                                                .font(.system(.callout, design: .monospaced))
-                                                .fontWeight(.medium)
-                                                .frame(width: 50, alignment: .leading)
-                                            
-                                            Image(systemName: "arrow.right")
-                                                .font(.caption)
-                                                .foregroundColor(.gray)
-                                            
-                                            HStack(spacing: 4) {
-                                                if let (mainText, parenthetical) = parseText(step.prediction) {
-                                                    Text(mainText)
-                                                        .font(.callout)
-                                                        .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
-                                                    if !parenthetical.isEmpty {
-                                                        Text("(\(parenthetical))")
-                                                            .font(.caption)
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                } else {
-                                                    Text(step.prediction)
-                                                        .font(.callout)
-                                                        .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
-                                                }
-                                            }
-                                            
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 12)
-                                        .background(getBackgroundColor(for: step.prediction))
+                            if let predictions = calculationSteps {
+                                VStack(spacing: 0) {
+                                    HStack {
+                                        Text(formatShortDate(dbDate))
+                                            .font(.system(.callout, design: .monospaced))
+                                            .fontWeight(.medium)
+                                            .frame(width: 50, alignment: .leading)
                                         
-                                        if index < predictions.count - 1 {
-                                            Divider()
-                                                .padding(.horizontal, 16)
+                                        Image(systemName: "arrow.right")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                        
+                                        Text(dayType)
+                                            .font(.callout)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.blue)
+                                            .underline()
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(getBackgroundColor(for: dayType))
+                                    .onTapGesture {
+                                        showDailyBulletinConfirm = true
+                                    }
+                                    
+                                    Divider()
+                                        .padding(.horizontal, 16)
+                                    
+                                    ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
+                                        VStack(spacing: 0) {
+                                            HStack {
+                                                Text(formatShortDate(step.date))
+                                                    .font(.system(.callout, design: .monospaced))
+                                                    .fontWeight(.medium)
+                                                    .frame(width: 50, alignment: .leading)
+                                                
+                                                Image(systemName: "arrow.right")
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                                
+                                                HStack(spacing: 4) {
+                                                    if let (mainText, parenthetical) = parseText(step.prediction) {
+                                                        Text(mainText)
+                                                            .font(.callout)
+                                                            .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
+                                                        if !parenthetical.isEmpty {
+                                                            Text("(\(parenthetical))")
+                                                                .font(.caption)
+                                                                .foregroundColor(.secondary)
+                                                        }
+                                                    } else {
+                                                        Text(step.prediction)
+                                                            .font(.callout)
+                                                            .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
+                                                    }
+                                                }
+                                                
+                                                Spacer()
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .background(getBackgroundColor(for: step.prediction))
+                                            
+                                            if index < predictions.count - 1 {
+                                                Divider()
+                                                    .padding(.horizontal, 16)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 56)
+                        
+                    } else {
+                        Text("No bulletin date available for calculations")
+                            .foregroundColor(.secondary)
+                            .padding()
                     }
-                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .cornerRadius(12)
-                    .padding(.horizontal, 56) // space from the sides
-                    
-                } else {
-                    Text("No bulletin date available for calculations")
-                        .foregroundColor(.secondary)
-                        .padding()
-                }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: proxy.size.height, alignment: .top)
+                    .padding(.vertical, max(0, (proxy.size.height - 400) / 4))
                 }
             }
             .toolbar {
