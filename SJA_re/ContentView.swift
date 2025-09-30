@@ -494,6 +494,14 @@ struct ContentView: View {
         }
     }
 
+    private func beginScheduleReset() {
+        isLoading = true
+        scheduleLoaded = false
+        dayTypeLoaded = false
+        scheduleLoader.showBlocks = false
+        triggerDayTypeRipple = false
+    }
+
     @discardableResult
     private func enforceTodayDefaultIfNeeded() -> Bool {
         let now = Date.currentEST
@@ -501,14 +509,24 @@ struct ContentView: View {
         calendar.timeZone = Date.estTimeZone
 
         var stateChanged = false
+        var resetPrepared = false
+
+        func prepareIfNeeded() {
+            if !resetPrepared {
+                beginScheduleReset()
+                resetPrepared = true
+            }
+        }
 
         if useTestDate {
+            prepareIfNeeded()
             useTestDate = false
             UserDefaults.standard.set(false, forKey: "UseTestDateOverride")
             stateChanged = true
         }
 
         if !calendar.isDate(testDateOverride, inSameDayAs: now) {
+            prepareIfNeeded()
             testDateOverride = now
             stateChanged = true
         }
@@ -811,6 +829,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            isLoading = true
             enforceTodayDefaultIfNeeded()
             // Reset to actual time on app startup
             print("🔄 [APP-STARTUP] Using \(useTestDate ? "test date" : "real time") mode")
