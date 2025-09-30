@@ -482,6 +482,44 @@ struct ContentView: View {
         return useTestDate ? testDateOverride : nil
     }
 
+    @ViewBuilder
+    private var backgroundView: some View {
+        if isViewingTomorrow {
+            RoundedRectangle(cornerRadius: 0)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.2), radius: 24)
+                .ignoresSafeArea()
+        } else {
+            Color.white.ignoresSafeArea()
+        }
+    }
+
+    @discardableResult
+    private func enforceTodayDefaultIfNeeded() -> Bool {
+        let now = Date.currentEST
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+
+        var stateChanged = false
+
+        if useTestDate {
+            useTestDate = false
+            UserDefaults.standard.set(false, forKey: "UseTestDateOverride")
+            stateChanged = true
+        }
+
+        if !calendar.isDate(testDateOverride, inSameDayAs: now) {
+            testDateOverride = now
+            stateChanged = true
+        }
+
+        if stateChanged {
+            UserDefaults.standard.set(now, forKey: "TestDateOverride")
+        }
+
+        return stateChanged
+    }
+
     var body: some View {
         ZStack {
             // Main content - always present
@@ -684,6 +722,7 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
+                let resetToToday = enforceTodayDefaultIfNeeded()
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
                 print("[\(timestamp)] App became active")
 
@@ -702,14 +741,21 @@ struct ContentView: View {
                         await refreshAll()
                     }
                 } else {
-                    print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
+                    if resetToToday {
+                        print("🕒 [RESET] Returning to today's schedule after background - refreshing")
+                        Task {
+                            await refreshAll()
+                        }
+                    } else {
+                        print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
 
-                    // Reschedule notifications for upcoming days with fresh data
-                    scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+                        // Reschedule notifications for upcoming days with fresh data
+                        scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
 
-                    // Background refresh without loading screen
-                    Task {
-                        await backgroundRefresh()
+                        // Background refresh without loading screen
+                        Task {
+                            await backgroundRefresh()
+                        }
                     }
                 }
             }
@@ -765,6 +811,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            enforceTodayDefaultIfNeeded()
             // Reset to actual time on app startup
             print("🔄 [APP-STARTUP] Using \(useTestDate ? "test date" : "real time") mode")
 
@@ -798,6 +845,7 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
+        .background(backgroundView)
         .sheet(isPresented: $showSettings) {
             SettingsView(
                 useTestDate: $useTestDate,
