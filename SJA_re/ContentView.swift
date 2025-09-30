@@ -595,7 +595,7 @@ struct ContentView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                             .foregroundColor(.gray.opacity(1))
-                            .padding(.leading, 100)
+                            .padding(.leading, UIScreen.main.bounds.width * 0.28)
                         Spacer()
                     }
                     .transition(.opacity.combined(with: .move(edge: .top)))
