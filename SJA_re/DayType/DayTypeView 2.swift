@@ -111,6 +111,7 @@ enum DayTypeSource {
 
 struct DayTypeView: View {
     let testDate: Date?
+    let isViewingTomorrow: Bool
     @Binding var firebaseError: Bool
     let onLoadingComplete: () -> Void
     @Binding var triggerRipple: Bool
@@ -162,6 +163,10 @@ struct DayTypeView: View {
     // This returns the day type that's actually displayed to the user
     var effectiveDayType: String {
         return isDateToday == false ? predicted : displayDayType
+    }
+
+    private var shouldShowOutdatedWarning: Bool {
+        return isDateToday == false && !isViewingTomorrow
     }
 
     var body: some View {
@@ -231,7 +236,7 @@ struct DayTypeView: View {
                         dbDate: dbDate,
                         testDate: testDate,
                         calculationSteps: calculationSteps,
-                        showOutdatedWarning: isDateToday != false,
+                        showOutdatedWarning: shouldShowOutdatedWarning,
                         onDismiss: { showPredictionDetail = false }
                     )
                 }
@@ -1403,6 +1408,6 @@ struct PredictionDetailView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"))
+        DayTypeView(testDate: nil, isViewingTomorrow: false, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"))
     }
 }

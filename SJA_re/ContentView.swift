@@ -548,7 +548,7 @@ struct ContentView: View {
                      if let isNoSchool = noSchool {
                          // Only show DayTypeView when there is school
                         if !isNoSchool {
-                                                     DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: { 
+                                                     DayTypeView(testDate: testDate, isViewingTomorrow: isViewingTomorrow, firebaseError: $firebaseError, onLoadingComplete: { 
                              print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
                          }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType)
