@@ -9,6 +9,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
+@available(iOS 16.2, *)
 struct ClassCountdownWidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         // Dynamic stateful properties about your activity go here!
@@ -19,6 +20,7 @@ struct ClassCountdownWidgetAttributes: ActivityAttributes {
     var name: String
 }
 
+@available(iOS 16.2, *)
 struct ClassCountdownWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: ClassCountdownWidgetAttributes.self) { context in
@@ -56,12 +58,14 @@ struct ClassCountdownWidgetLiveActivity: Widget {
     }
 }
 
+@available(iOS 16.2, *)
 extension ClassCountdownWidgetAttributes {
     fileprivate static var preview: ClassCountdownWidgetAttributes {
         ClassCountdownWidgetAttributes(name: "World")
     }
 }
 
+@available(iOS 16.2, *)
 extension ClassCountdownWidgetAttributes.ContentState {
     fileprivate static var smiley: ClassCountdownWidgetAttributes.ContentState {
         ClassCountdownWidgetAttributes.ContentState(emoji: "😀")
@@ -72,9 +76,11 @@ extension ClassCountdownWidgetAttributes.ContentState {
      }
 }
 
-#Preview("Notification", as: .content, using: ClassCountdownWidgetAttributes.preview) {
-   ClassCountdownWidgetLiveActivity()
-} contentStates: {
-    ClassCountdownWidgetAttributes.ContentState.smiley
-    ClassCountdownWidgetAttributes.ContentState.starEyes
+#if DEBUG
+@available(iOS 16.2, *)
+struct ClassCountdownWidgetLiveActivity_Previews: PreviewProvider {
+    static var previews: some View {
+        Text("Live Activity Preview")
+    }
 }
+#endif

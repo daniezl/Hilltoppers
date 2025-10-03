@@ -5,10 +5,12 @@
 //  Created by Daniel Zhang on 9/6/25.
 //
 
+#if canImport(WidgetKit)
 import AppIntents
 import SwiftUI
 import WidgetKit
 
+@available(iOS 18.0, *)
 struct ClassCountdownWidgetControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(
@@ -28,19 +30,19 @@ struct ClassCountdownWidgetControl: ControlWidget {
     }
 }
 
+@available(iOS 18.0, *)
 extension ClassCountdownWidgetControl {
     struct Provider: ControlValueProvider {
-        var previewValue: Bool {
-            false
-        }
+        var previewValue: Bool { false }
 
         func currentValue() async throws -> Bool {
-            let isRunning = true // Check if the timer is running
+            let isRunning = true
             return isRunning
         }
     }
 }
 
+@available(iOS 18.0, *)
 struct StartTimerIntent: SetValueIntent {
     static let title: LocalizedStringResource = "Start a timer"
 
@@ -48,7 +50,7 @@ struct StartTimerIntent: SetValueIntent {
     var value: Bool
 
     func perform() async throws -> some IntentResult {
-        // Start / stop the timer based on `value`.
         return .result()
     }
 }
+#endif

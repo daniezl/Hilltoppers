@@ -10,9 +10,14 @@ import SwiftUI
 
 @main
 struct ClassCountdownWidgetBundle: WidgetBundle {
+    @WidgetBundleBuilder
     var body: some Widget {
         ClassCountdownWidget()
-        ClassCountdownWidgetControl()
-        ClassCountdownWidgetLiveActivity()
+        if #available(iOS 18.0, *) {
+            ClassCountdownWidgetControl()
+        }
+        if #available(iOS 16.2, *) {
+            ClassCountdownWidgetLiveActivity()
+        }
     }
 }

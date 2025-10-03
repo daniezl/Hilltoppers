@@ -33,6 +33,10 @@
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
+		B99C9D6C2F00000100000003 /* WidgetSharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */; };
+		B99C9D6D2F00000100000004 /* WidgetSharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */; };
+		B99C9D702F00000100000007 /* WidgetSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */; };
+		B99C9D732F0002B20000000A /* ClassCountdownWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
 		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
 /* End PBXBuildFile section */
@@ -53,6 +57,20 @@
 			remoteInfo = SJA_re;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B99C9D742F0002B20000000B /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B99C9D732F0002B20000000A /* ClassCountdownWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
@@ -83,6 +101,8 @@
 		A2ACF6042E8422F600C8E7D5 /* SJA-re-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SJA-re-Info.plist"; sourceTree = SOURCE_ROOT; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
+		B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedTypes.swift; sourceTree = "<group>"; };
+		B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSyncManager.swift; sourceTree = "<group>"; };
 		D82AF040DECD4BCE9F07528B /* ScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -169,6 +189,7 @@
 				A25EA2EA2DB9E0780037D8D9 /* SJA_reUITests */,
 				A25EA3B32DC018000037D8D9 /* DayTypeWidget */,
 				A287C2E82E6CA9E3005129F0 /* ClassCountdownWidget */,
+				B99C9D6E2F00000100000005 /* Shared */,
 				A25EA3AE2DC018000037D8D9 /* Frameworks */,
 				A25EA2D02DB9E0770037D8D9 /* Products */,
 			);
@@ -224,6 +245,7 @@
 				A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */,
 				A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */,
 				A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */,
+				B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */,
 			);
 			path = SJA_re;
 			sourceTree = "<group>";
@@ -248,6 +270,14 @@
 			path = DayType;
 			sourceTree = "<group>";
 		};
+		B99C9D6E2F00000100000005 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -258,6 +288,7 @@
 				A25EA2CB2DB9E0770037D8D9 /* Sources */,
 				A25EA2CC2DB9E0770037D8D9 /* Frameworks */,
 				A25EA2CD2DB9E0770037D8D9 /* Resources */,
+				B99C9D742F0002B20000000B /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -442,6 +473,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B99C9D6C2F00000100000003 /* WidgetSharedTypes.swift in Sources */,
+				B99C9D702F00000100000007 /* WidgetSyncManager.swift in Sources */,
 				A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */,
 				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
@@ -474,6 +507,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B99C9D6D2F00000100000004 /* WidgetSharedTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -616,6 +650,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -632,11 +667,11 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -658,6 +693,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -674,11 +710,11 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -698,7 +734,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-reTests";
@@ -720,7 +756,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-reTests";
@@ -741,7 +777,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-reUITests";
@@ -762,7 +798,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.SJA-reUITests";
@@ -782,6 +818,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ClassCountdownWidget/ClassCountdownWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 997U33SWRW;
@@ -789,7 +826,7 @@
 				INFOPLIST_FILE = ClassCountdownWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ClassCountdownWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -803,6 +840,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Debug;
 		};
@@ -811,6 +849,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ClassCountdownWidget/ClassCountdownWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 997U33SWRW;
@@ -818,7 +857,7 @@
 				INFOPLIST_FILE = ClassCountdownWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ClassCountdownWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

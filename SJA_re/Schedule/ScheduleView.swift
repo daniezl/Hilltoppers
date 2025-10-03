@@ -614,6 +614,7 @@ struct ScheduleView: View {
                     if noSchool && !hasStartedTextAnimation {
                         checkConfettiAndStartText()
                     }
+                    updateCountdownWidget()
                 }
             } else {
                 ScrollView {
@@ -801,6 +802,9 @@ struct ScheduleView: View {
         }
         .onDisappear {
             stopTimeUpdateTimer()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
+            updateCountdownWidget()
         }
     }
 
@@ -1033,11 +1037,41 @@ struct ScheduleView: View {
         
         print("📋 [SCHEDULE] Final result: title='\(scheduleTitle)', noSchool=\(noSchool), blocks=\(loader.blocks.count), isStale=\(isStale)")
         
+        updateCountdownWidget()
+
         // Signal that loading is complete
         onLoadingComplete()
         print("✅ [SCHEDULE] Loading complete!")
     }
-    
+
+
+
+    private func updateCountdownWidget() {
+        guard testDate == nil else { return }
+
+        let scheduleDate = Calendar.sja.startOfDay(for: Date.currentEST)
+
+        if noSchool {
+            let reason = (noSchoolDetails?.isEmpty == false ? noSchoolDetails! : "No School")
+            WidgetSyncManager.shared.clearSchedule(reason: reason)
+            return
+        }
+
+        let events: [WidgetClassEvent] = displayBlocks.compactMap { block in
+            guard let start = timeToday(block.start), let end = timeToday(block.end) else { return nil }
+            let displayName = getBlockDisplayName(for: block)
+            return WidgetClassEvent(blockName: block.name, displayName: displayName, startDate: start, endDate: end)
+        }
+
+        if events.isEmpty {
+            if scheduleTitle == "Loading..." {
+                return
+            }
+            WidgetSyncManager.shared.clearSchedule(reason: "Schedule unavailable")
+        } else {
+            WidgetSyncManager.shared.updateSchedule(scheduleDate: scheduleDate, events: events, noSchoolReason: nil)
+        }
+    }
 
 
     func getWeekdayTitle() -> String {
@@ -1197,4 +1231,3 @@ struct BlockHeader: View {
 #Preview {
     ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false), currentDayType: "Green Day")
 }
-
