@@ -132,15 +132,15 @@ struct ClassCountdownWidgetEntryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        if #available(iOSApplicationExtension 17.0, *) {
-            if family == .systemSmall {
+        if family == .systemSmall {
+            if #available(iOSApplicationExtension 17.0, *) {
                 base.containerBackground(widgetBackgroundColor, for: .widget)
             } else {
-                base.containerBackground(.fill, for: .widget)
+                base.background(widgetBackgroundColor)
             }
         } else {
-            if family == .systemSmall {
-                base.background(widgetBackgroundColor)
+            if #available(iOSApplicationExtension 17.0, *) {
+                base.containerBackground(.fill, for: .widget)
             } else {
                 base
             }
@@ -217,7 +217,7 @@ struct ClassCountdownWidgetEntryView: View {
         let fontSize: CGFloat = family == .systemSmall ? 32 : 18
         return Text(timerInterval: range, countsDown: true)
             .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-            .foregroundColor(.primary)
+            .foregroundColor(family == .systemSmall ? primaryTextColor : .primary)
     }
 }
 
