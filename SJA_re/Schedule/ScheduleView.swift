@@ -1070,8 +1070,7 @@ struct ScheduleView: View {
             let reason = (noSchoolDetails?.isEmpty == false ? noSchoolDetails! : "Schedule unavailable")
             WidgetSyncManager.shared.clearSchedule(reason: reason)
         } else {
-            let trimmedDayType = currentDayType.trimmingCharacters(in: .whitespacesAndNewlines)
-            let displayDayType = trimmedDayType.isEmpty || trimmedDayType == "Loading..." ? nil : trimmedDayType
+            let displayDayType = resolveDayTypeDisplay(for: scheduleDate)
             WidgetSyncManager.shared.updateSchedule(
                 scheduleDate: scheduleDate,
                 events: events,
@@ -1079,6 +1078,26 @@ struct ScheduleView: View {
                 dayTypeDisplay: displayDayType
             )
         }
+    }
+
+    private func resolveDayTypeDisplay(for scheduleDate: Date) -> String? {
+        let trimmed = currentDayType.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty, trimmed != "Loading..." {
+            return trimmed
+        }
+
+        if let cached = DayTypeCache.cachedEffectiveDayType() {
+            var calendar = Calendar.sja
+            if calendar.isDate(cached.date, inSameDayAs: scheduleDate) {
+                return cached.type
+            }
+        }
+
+        if let bulletin = DayTypeCache.cachedBulletinDayType() {
+            return bulletin.type
+        }
+
+        return nil
     }
 
 

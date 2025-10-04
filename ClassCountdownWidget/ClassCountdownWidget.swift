@@ -205,7 +205,7 @@ struct ClassCountdownWidgetEntryView: View {
         let range = entry.date...clampedTarget
         let fontSize: CGFloat
         if #available(iOSApplicationExtension 17.0, *), family == .systemSmall {
-            fontSize = 24
+            fontSize = 32
         } else {
             fontSize = 18
         }
