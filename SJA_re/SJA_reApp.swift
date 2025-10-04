@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 import UserNotifications
+import BackgroundTasks
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   func application(_ application: UIApplication,

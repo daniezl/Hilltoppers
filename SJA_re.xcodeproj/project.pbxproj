@@ -36,7 +36,7 @@
 		B99C9D6C2F00000100000003 /* WidgetSharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */; };
 		B99C9D6D2F00000100000004 /* WidgetSharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */; };
 		B99C9D702F00000100000007 /* WidgetSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */; };
-		B99C9D732F0002B20000000A /* ClassCountdownWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B99C9D732F0002B20000000A /* ClassCountdownWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
 		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
 /* End PBXBuildFile section */

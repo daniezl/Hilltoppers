@@ -1067,7 +1067,8 @@ struct ScheduleView: View {
             if scheduleTitle == "Loading..." {
                 return
             }
-            WidgetSyncManager.shared.clearSchedule(reason: "Schedule unavailable")
+            let reason = (noSchoolDetails?.isEmpty == false ? noSchoolDetails! : "Schedule unavailable")
+            WidgetSyncManager.shared.clearSchedule(reason: reason)
         } else {
             WidgetSyncManager.shared.updateSchedule(scheduleDate: scheduleDate, events: events, noSchoolReason: nil)
         }

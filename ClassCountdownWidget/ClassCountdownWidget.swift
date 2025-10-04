@@ -116,8 +116,9 @@ struct ClassCountdownWidgetEntryView: View {
     var entry: ClassCountdownProvider.Entry
     @Environment(\.widgetFamily) private var family
 
+    @ViewBuilder
     var body: some View {
-        Group {
+        let base = Group {
             switch family {
             case .systemSmall:
                 smallWidgetBody
@@ -126,6 +127,12 @@ struct ClassCountdownWidgetEntryView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+
+        if #available(iOSApplicationExtension 17.0, *) {
+            base.containerBackground(.fill, for: .widget)
+        } else {
+            base
+        }
     }
 
     private var rectangularBody: some View {
@@ -186,8 +193,14 @@ struct ClassCountdownWidgetEntryView: View {
     private func timerText(to target: Date) -> some View {
         let clampedTarget = target > entry.date ? target : entry.date
         let range = entry.date...clampedTarget
+        let fontSize: CGFloat
+        if #available(iOSApplicationExtension 17.0, *), family == .systemSmall {
+            fontSize = 24
+        } else {
+            fontSize = 18
+        }
         return Text(timerInterval: range, countsDown: true)
-            .font(.system(size: 16, weight: .bold, design: .monospaced))
+            .font(.system(size: fontSize, weight: .bold, design: .monospaced))
             .foregroundColor(.primary)
     }
 }
@@ -204,3 +217,39 @@ struct ClassCountdownWidget: Widget {
         .supportedFamilies([.systemSmall, .accessoryRectangular])
     }
 }
+
+#if DEBUG
+struct ClassCountdownWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            ClassCountdownWidgetEntryView(entry: previewEntryEnding)
+                .previewContext(WidgetPreviewContext(family: .systemSmall))
+                .previewDisplayName("Small – Ending")
+
+            ClassCountdownWidgetEntryView(entry: previewEntryStarting)
+                .previewContext(WidgetPreviewContext(family: .accessoryRectangular))
+                .previewDisplayName("Accessory – Starting")
+        }
+    }
+
+    private static var previewEntryEnding: ClassCountdownEntry {
+        let event = WidgetClassEvent(
+            blockName: "A Block",
+            displayName: "A Block",
+            startDate: Date().addingTimeInterval(-20 * 60),
+            endDate: Date().addingTimeInterval(10 * 60)
+        )
+        return ClassCountdownEntry(date: Date(), phase: .blockEnds(event))
+    }
+
+    private static var previewEntryStarting: ClassCountdownEntry {
+        let event = WidgetClassEvent(
+            blockName: "B Block",
+            displayName: "B Block",
+            startDate: Date().addingTimeInterval(15 * 60),
+            endDate: Date().addingTimeInterval(75 * 60)
+        )
+        return ClassCountdownEntry(date: Date(), phase: .blockStarts(event))
+    }
+}
+#endif
