@@ -154,7 +154,7 @@ struct ClassCountdownWidgetEntryView: View {
     private var smallWidgetBody: some View {
         VStack(alignment: .leading, spacing: 4) {
             contentView()
-            if let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
+            if shouldShowDayType, let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
                 Text(dayType)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryTextColor)
@@ -164,6 +164,15 @@ struct ClassCountdownWidgetEntryView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var shouldShowDayType: Bool {
+        switch entry.phase {
+        case .blockStarts(_), .blockEnds(_):
+            return true
+        case .finished, .noSchool(_), .stale, .empty:
+            return false
+        }
     }
 
     @ViewBuilder
