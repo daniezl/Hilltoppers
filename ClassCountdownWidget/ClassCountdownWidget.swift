@@ -174,7 +174,7 @@ struct ClassCountdownWidgetEntryView: View {
         case .blockEnds(let event):
             countdownView(title: event.displayName, verb: "Ends in", target: event.endDate)
         case .finished:
-            summaryView(title: "All done", subtitle: "No more classes")
+            summaryView(title: "School Ended", subtitle: "Have a good day!")
         case .noSchool(let reason):
             summaryView(title: "No School", subtitle: reason)
         case .stale:
