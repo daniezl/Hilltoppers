@@ -12,6 +12,7 @@ struct ClassCountdownWidgetPayload: Codable, Equatable {
     let lastUpdated: Date
     let events: [WidgetClassEvent]
     let noSchoolReason: String?
+    let dayTypeDisplay: String?
 }
 
 enum ClassCountdownPhase: Equatable {

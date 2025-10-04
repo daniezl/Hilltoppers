@@ -11,6 +11,7 @@ import SwiftUI
 struct ClassCountdownEntry: TimelineEntry {
     let date: Date
     let phase: ClassCountdownPhase
+    let dayType: String?
 }
 
 struct ClassCountdownProvider: TimelineProvider {
@@ -27,14 +28,14 @@ struct ClassCountdownProvider: TimelineProvider {
             startDate: Date().addingTimeInterval(-600),
             endDate: Date().addingTimeInterval(1800)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockEnds(sampleEvent))
+        return ClassCountdownEntry(date: Date(), phase: .blockEnds(sampleEvent), dayType: "Green Day")
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ClassCountdownEntry) -> Void) {
         let now = Date()
         if let payload = loadPayload() {
             let entries = buildEntries(from: payload, referenceDate: now)
-            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty))
+            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay))
         } else {
             completion(placeholder(in: context))
         }
@@ -44,7 +45,7 @@ struct ClassCountdownProvider: TimelineProvider {
         let now = Date()
 
         guard let payload = loadPayload() else {
-            let entry = ClassCountdownEntry(date: now, phase: .empty)
+            let entry = ClassCountdownEntry(date: now, phase: .empty, dayType: nil)
             let timeline = Timeline(entries: [entry], policy: .after(now.addingTimeInterval(1800)))
             completion(timeline)
             return
@@ -52,7 +53,7 @@ struct ClassCountdownProvider: TimelineProvider {
 
         var entries = buildEntries(from: payload, referenceDate: now)
         if entries.isEmpty {
-            entries = [ClassCountdownEntry(date: now, phase: .empty)]
+            entries = [ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay)]
         }
 
         let policy: TimelineReloadPolicy
@@ -71,18 +72,20 @@ struct ClassCountdownProvider: TimelineProvider {
     }
 
     private func buildEntries(from payload: ClassCountdownWidgetPayload, referenceDate: Date) -> [ClassCountdownEntry] {
+        let dayType = payload.dayTypeDisplay
+
         if let reason = payload.noSchoolReason, !reason.isEmpty {
-            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason))]
+            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType)]
         }
 
         let calendar = Calendar.sja
         guard calendar.isDate(payload.scheduleDate, inSameDayAs: referenceDate) else {
-            return [ClassCountdownEntry(date: referenceDate, phase: .stale)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .stale, dayType: dayType)]
         }
 
         let events = payload.events.sorted { $0.startDate < $1.startDate }
         guard !events.isEmpty else {
-            return [ClassCountdownEntry(date: referenceDate, phase: .finished)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
         }
 
         var timelinePoints: Set<Date> = [referenceDate]
@@ -97,7 +100,7 @@ struct ClassCountdownProvider: TimelineProvider {
 
         let sortedPoints = timelinePoints.sorted()
         return sortedPoints.map { point in
-            ClassCountdownEntry(date: point, phase: phase(at: point, events: events))
+            ClassCountdownEntry(date: point, phase: phase(at: point, events: events), dayType: dayType)
         }
     }
 
@@ -142,6 +145,13 @@ struct ClassCountdownWidgetEntryView: View {
     private var smallWidgetBody: some View {
         VStack(alignment: .leading, spacing: 4) {
             contentView()
+            if let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
+                Text(dayType)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .padding(.top, 4)
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -239,7 +249,7 @@ struct ClassCountdownWidget_Previews: PreviewProvider {
             startDate: Date().addingTimeInterval(-20 * 60),
             endDate: Date().addingTimeInterval(10 * 60)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockEnds(event))
+        return ClassCountdownEntry(date: Date(), phase: .blockEnds(event), dayType: "Green Day")
     }
 
     private static var previewEntryStarting: ClassCountdownEntry {
@@ -249,7 +259,7 @@ struct ClassCountdownWidget_Previews: PreviewProvider {
             startDate: Date().addingTimeInterval(15 * 60),
             endDate: Date().addingTimeInterval(75 * 60)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockStarts(event))
+        return ClassCountdownEntry(date: Date(), phase: .blockStarts(event), dayType: "White Day")
     }
 }
 #endif

@@ -13,6 +13,7 @@ final class RefreshScheduleOperation: Operation {
                 let referenceDate = Date.currentESTNoon
                 let blocks = try await ScheduleService.loadBlocks(for: referenceDate)
                 let noSchoolReason = blocks.isEmpty ? "Schedule unavailable" : nil
+                let dayTypeDisplay = await DayTypeCache.predictedDayType(for: referenceDate)
 
                 let events: [WidgetClassEvent] = blocks.compactMap { block in
                     guard let start = ScheduleTimeParser.date(from: block.start, on: referenceDate),
@@ -32,7 +33,8 @@ final class RefreshScheduleOperation: Operation {
                     WidgetSyncManager.shared.updateSchedule(
                         scheduleDate: calendar.startOfDay(for: referenceDate),
                         events: events,
-                        noSchoolReason: noSchoolReason
+                        noSchoolReason: noSchoolReason,
+                        dayTypeDisplay: dayTypeDisplay
                     )
                 }
             } catch {
