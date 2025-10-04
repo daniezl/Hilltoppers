@@ -152,18 +152,24 @@ struct ClassCountdownWidgetEntryView: View {
     }
 
     private var smallWidgetBody: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            contentView()
-            if shouldShowDayType, let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
-                Text(dayType)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryTextColor)
-                    .lineLimit(1)
-                    .padding(.top, 4)
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 4) {
+                contentView()
+                if shouldShowDayType, let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
+                    Text(dayType)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(secondaryTextColor)
+                        .lineLimit(1)
+                        .padding(.top, 4)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 0)
         }
         .padding(12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var shouldShowDayType: Bool {
