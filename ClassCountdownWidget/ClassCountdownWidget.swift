@@ -154,7 +154,7 @@ struct ClassCountdownWidgetEntryView: View {
     private var smallWidgetBody: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: isCountdownPhase ? .leading : .center, spacing: 4) {
                 contentView()
                 if shouldShowDayType, let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
                     Text(dayType)
@@ -164,21 +164,16 @@ struct ClassCountdownWidgetEntryView: View {
                         .padding(.top, 4)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: isCountdownPhase ? .leading : .center)
             Spacer(minLength: 0)
         }
         .padding(12)
-        .padding(.bottom, 12)
+        .padding(.bottom, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var shouldShowDayType: Bool {
-        switch entry.phase {
-        case .blockStarts(_), .blockEnds(_):
-            return true
-        case .finished, .noSchool(_), .stale, .empty:
-            return false
-        }
+        isCountdownPhase
     }
 
     @ViewBuilder
@@ -189,13 +184,13 @@ struct ClassCountdownWidgetEntryView: View {
         case .blockEnds(let event):
             countdownView(title: event.displayName, verb: "Ends in", target: event.endDate)
         case .finished:
-            summaryView(title: "School Ended", subtitle: "Have a good day!")
+            summaryView(title: "School Ended", subtitle: "Have a good day", centered: shouldCenterSummaryContent)
         case .noSchool(let reason):
-            summaryView(title: "No School", subtitle: reason)
+            summaryView(title: "No School", subtitle: reason, centered: shouldCenterSummaryContent)
         case .stale:
-            summaryView(title: "Open App", subtitle: "Refresh schedule")
+            summaryView(title: "Open App", subtitle: "Refresh schedule", centered: shouldCenterSummaryContent)
         case .empty:
-            summaryView(title: "Schedule", subtitle: "Unavailable")
+            summaryView(title: "Schedule", subtitle: "Unavailable", centered: shouldCenterSummaryContent)
         }
     }
 
@@ -212,18 +207,27 @@ struct ClassCountdownWidgetEntryView: View {
         }
     }
 
-    private func summaryView(title: String, subtitle: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+    private func summaryView(title: String, subtitle: String, centered: Bool) -> some View {
+        let titleFontSize: CGFloat = centered ? 24 : 12
+        let subtitleFontSize: CGFloat = centered ? 12 : 10
+        let titleWeight: Font.Weight = centered ? .bold : .semibold
+        let subtitleWeight: Font.Weight = centered ? .semibold : .regular
+        return VStack(alignment: centered ? .center : .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 13, weight: .semibold))
-                .lineLimit(1)
+                .font(.system(size: titleFontSize, weight: titleWeight))
+                .lineLimit(centered ? 2 : 1)
+                .multilineTextAlignment(centered ? .center : .leading)
                 .foregroundColor(primaryTextColor)
+                .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
             Text(subtitle)
-                .font(.system(size: 10))
+                .font(.system(size: subtitleFontSize, weight: subtitleWeight))
                 .foregroundColor(secondaryTextColor)
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
+                .multilineTextAlignment(centered ? .center : .leading)
+                .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
         }
+        .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
     }
 
     private func timerText(to target: Date) -> some View {
@@ -250,6 +254,19 @@ struct ClassCountdownWidget: Widget {
 }
 
 private extension ClassCountdownWidgetEntryView {
+    var isCountdownPhase: Bool {
+        switch entry.phase {
+        case .blockStarts(_), .blockEnds(_):
+            return true
+        case .finished, .noSchool(_), .stale, .empty:
+            return false
+        }
+    }
+
+    var shouldCenterSummaryContent: Bool {
+        family == .systemSmall && !isCountdownPhase
+    }
+
     var usesCustomPalette: Bool { family == .systemSmall }
 
     var accentGreen: Color {
