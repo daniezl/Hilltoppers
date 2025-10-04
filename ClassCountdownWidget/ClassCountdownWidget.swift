@@ -118,6 +118,7 @@ struct ClassCountdownProvider: TimelineProvider {
 struct ClassCountdownWidgetEntryView: View {
     var entry: ClassCountdownProvider.Entry
     @Environment(\.widgetFamily) private var family
+    @Environment(\.colorScheme) private var colorScheme
 
     @ViewBuilder
     var body: some View {
@@ -132,9 +133,17 @@ struct ClassCountdownWidgetEntryView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
 
         if #available(iOSApplicationExtension 17.0, *) {
-            base.containerBackground(.fill, for: .widget)
+            if family == .systemSmall {
+                base.containerBackground(widgetBackgroundColor, for: .widget)
+            } else {
+                base.containerBackground(.fill, for: .widget)
+            }
         } else {
-            base
+            if family == .systemSmall {
+                base.background(widgetBackgroundColor)
+            } else {
+                base
+            }
         }
     }
 
@@ -148,7 +157,7 @@ struct ClassCountdownWidgetEntryView: View {
             if let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty {
                 Text(dayType)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryTextColor)
                     .lineLimit(1)
                     .padding(.top, 4)
             }
@@ -180,9 +189,10 @@ struct ClassCountdownWidgetEntryView: View {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
                 .lineLimit(1)
+                .foregroundColor(primaryTextColor)
             Text(verb)
                 .font(.system(size: 10))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
             timerText(to: target)
         }
     }
@@ -192,9 +202,10 @@ struct ClassCountdownWidgetEntryView: View {
             Text(title)
                 .font(.system(size: 13, weight: .semibold))
                 .lineLimit(1)
+                .foregroundColor(primaryTextColor)
             Text(subtitle)
                 .font(.system(size: 10))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
         }
@@ -203,12 +214,7 @@ struct ClassCountdownWidgetEntryView: View {
     private func timerText(to target: Date) -> some View {
         let clampedTarget = target > entry.date ? target : entry.date
         let range = entry.date...clampedTarget
-        let fontSize: CGFloat
-        if #available(iOSApplicationExtension 17.0, *), family == .systemSmall {
-            fontSize = 32
-        } else {
-            fontSize = 18
-        }
+        let fontSize: CGFloat = family == .systemSmall ? 32 : 18
         return Text(timerInterval: range, countsDown: true)
             .font(.system(size: fontSize, weight: .bold, design: .monospaced))
             .foregroundColor(.primary)
@@ -225,6 +231,31 @@ struct ClassCountdownWidget: Widget {
         .configurationDisplayName("Class Countdown")
         .description("Shows the remaining time for today's classes.")
         .supportedFamilies([.systemSmall, .accessoryRectangular])
+    }
+}
+
+private extension ClassCountdownWidgetEntryView {
+    var usesCustomPalette: Bool { family == .systemSmall }
+
+    var accentGreen: Color {
+        Color(red: 20/255, green: 54/255, blue: 27/255)
+    }
+
+    var widgetBackgroundColor: Color {
+        guard usesCustomPalette else { return Color(.systemBackground) }
+        return colorScheme == .dark ? accentGreen : .white
+    }
+
+    var primaryTextColor: Color {
+        guard usesCustomPalette else { return .primary }
+        return colorScheme == .dark ? .white : accentGreen
+    }
+
+    var secondaryTextColor: Color {
+        guard usesCustomPalette else { return .secondary }
+        let base = colorScheme == .dark ? Color.white : accentGreen
+        let opacity: Double = colorScheme == .dark ? 0.85 : 0.75
+        return base.opacity(opacity)
     }
 }
 
