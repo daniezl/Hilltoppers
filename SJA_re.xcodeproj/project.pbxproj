@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		921C56449A714013AB99266A /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82AF040DECD4BCE9F07528B /* ScheduleService.swift */; };
+		A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825B2E935CE500774386 /* FeatureShowcaseView.swift */; };
 		A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */; };
 		A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CE2DEEB14500BCDAB5 /* FirebaseCore */; };
 		A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */; };
@@ -78,6 +79,7 @@
 /* Begin PBXFileReference section */
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
+		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -245,6 +247,7 @@
 				A280A0EA2DDCE7E300F98F3F /* Schedule */,
 				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
 				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
+				A228825B2E935CE500774386 /* FeatureShowcaseView.swift */,
 				B99C9DA62F0056D00000001B /* Background */,
 				602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */,
 				845FCFE81465410FA49CF218 /* DayTypeCache.swift */,
@@ -269,16 +272,6 @@
 			path = scheduleConfig;
 			sourceTree = "<group>";
 		};
-		B99C9DA62F0056D00000001B /* Background */ = {
-			isa = PBXGroup;
-			children = (
-				B99C9DA02F0056D000000015 /* AppRefreshScheduler.swift */,
-				B99C9DA12F0056D000000016 /* RefreshScheduleOperation.swift */,
-				B99C9DA22F0056D000000017 /* BackgroundTaskManager.swift */,
-			);
-			path = Background;
-			sourceTree = "<group>";
-		};
 		A280A0F82DDD54E400F98F3F /* DayType */ = {
 			isa = PBXGroup;
 			children = (
@@ -293,6 +286,16 @@
 				B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		B99C9DA62F0056D00000001B /* Background */ = {
+			isa = PBXGroup;
+			children = (
+				B99C9DA02F0056D000000015 /* AppRefreshScheduler.swift */,
+				B99C9DA12F0056D000000016 /* RefreshScheduleOperation.swift */,
+				B99C9DA22F0056D000000017 /* BackgroundTaskManager.swift */,
+			);
+			path = Background;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -502,6 +505,7 @@
 				A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */,
 				EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */,
 				C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */,
+				A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */,
 				921C56449A714013AB99266A /* ScheduleService.swift in Sources */,
 				A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */,
 				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,

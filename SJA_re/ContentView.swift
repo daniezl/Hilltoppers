@@ -1208,6 +1208,7 @@ struct SettingsView: View {
     let onDismiss: () -> Void
 
     @ObservedObject private var blockManager = BlockSettingsManager.shared
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     
     var body: some View {
         NavigationView {
@@ -1227,6 +1228,45 @@ struct SettingsView: View {
                 
                 // Menu items near top
                 VStack(spacing: 16) {
+                    NavigationLink {
+                        FeatureShowcaseView()
+                    } label: {
+                        HStack(alignment: .center, spacing: 14) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 10) {
+                                    Text("Widget")
+                                        .font(.title2.bold())
+                                        .foregroundColor(.primary)
+
+                                    Text("BETA")
+                                        .font(.caption.bold())
+                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, 10)
+                                        .background(
+                                            Capsule()
+                                                .fill(accentGreen.opacity(0.15))
+                                        )
+                                        .foregroundColor(accentGreen)
+                                }
+
+                                Text("Try the new Class Countdown widget for your Home Screen.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 24)
+
                     NavigationLink("Courses") {
                         BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
                     }
