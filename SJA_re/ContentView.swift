@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftSoup
 import UserNotifications
+import UIKit
 
 // MARK: - EST Timezone Extension
 extension Date {
@@ -426,6 +427,7 @@ struct ContentView: View {
     @State private var currentTime = Date.currentEST // Updated by timer to make UI flow
     @State private var settingsUseTestDateSnapshot: Bool
     @State private var settingsTestDateSnapshot: Date
+    @State private var updatePrompt: AppUpdatePrompt? = nil
     
     init() {
         let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool
@@ -862,6 +864,10 @@ struct ContentView: View {
             Task {
                 await refreshAll()
             }
+
+            Task {
+                await performUpdateCheck()
+            }
         }
         .preferredColorScheme(.light)
         .background(backgroundView)
@@ -873,6 +879,33 @@ struct ContentView: View {
                     showSettings = false
                 }
             )
+        }
+        .alert(item: $updatePrompt) { prompt in
+            switch prompt.importance {
+            case .required:
+                return Alert(
+                    title: Text(prompt.title),
+                    message: nil,
+                    dismissButton: .default(Text("Update")) {
+                        openUpdateURL(prompt.updateURL)
+                    }
+                )
+            case .recommended:
+                return Alert(
+                    title: Text(prompt.title),
+                    message: Text(prompt.message),
+                    primaryButton: .default(Text("Update")) {
+                        openUpdateURL(prompt.updateURL)
+                    },
+                    secondaryButton: .cancel(Text("Later"))
+                )
+            }
+        }
+        .disabled(updatePrompt?.importance == .required)
+        .overlay {
+            if updatePrompt?.importance == .required {
+                Color.black.opacity(0.25).ignoresSafeArea()
+            }
         }
         .onChange(of: showSettings) { isPresented in
             if isPresented {
@@ -890,6 +923,28 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                Task {
+                    await performUpdateCheck()
+                }
+            }
+        }
+    }
+    
+    @MainActor
+    private func performUpdateCheck() async {
+        guard let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              !currentVersion.isEmpty else {
+            return
+        }
+
+        updatePrompt = await AppUpdateManager.shared.checkForUpdate(currentVersion: currentVersion)
+    }
+
+    private func openUpdateURL(_ url: URL?) {
+        guard let url else { return }
+        UIApplication.shared.open(url)
     }
     
     // Update loading state when both views are loaded
