@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftSoup
 import UserNotifications
 import UIKit
+import FirebaseAnalytics
 
 // MARK: - EST Timezone Extension
 extension Date {
@@ -428,6 +429,7 @@ struct ContentView: View {
     @State private var settingsUseTestDateSnapshot: Bool
     @State private var settingsTestDateSnapshot: Date
     @State private var updatePrompt: AppUpdatePrompt? = nil
+    @State private var hasLoggedAppOpenForCurrentActivation = false
     
     init() {
         let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool
@@ -742,6 +744,11 @@ struct ContentView: View {
         )
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
+                logAppOpenIfNeeded()
+                Task {
+                    await performUpdateCheck()
+                }
+
                 let resetToToday = enforceTodayDefaultIfNeeded()
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
                 print("[\(timestamp)] App became active")
@@ -778,6 +785,8 @@ struct ContentView: View {
                         }
                     }
                 }
+            } else if newPhase == .background || newPhase == .inactive {
+                hasLoggedAppOpenForCurrentActivation = false
             }
         }
         .onChange(of: scheduleLoaded) { _ in
@@ -868,6 +877,8 @@ struct ContentView: View {
             Task {
                 await performUpdateCheck()
             }
+
+            logAppOpenIfNeeded()
         }
         .preferredColorScheme(.light)
         .background(backgroundView)
@@ -923,13 +934,6 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: scenePhase) { phase in
-            if phase == .active {
-                Task {
-                    await performUpdateCheck()
-                }
-            }
-        }
     }
     
     @MainActor
@@ -945,6 +949,12 @@ struct ContentView: View {
     private func openUpdateURL(_ url: URL?) {
         guard let url else { return }
         UIApplication.shared.open(url)
+    }
+    
+    private func logAppOpenIfNeeded() {
+        guard !hasLoggedAppOpenForCurrentActivation else { return }
+        hasLoggedAppOpenForCurrentActivation = true
+        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
     }
     
     // Update loading state when both views are loaded
