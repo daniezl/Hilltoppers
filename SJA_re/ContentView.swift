@@ -1265,7 +1265,7 @@ struct SettingsView: View {
                         .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                         .cornerRadius(12)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 32)
 
                     NavigationLink("Courses") {
                         BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)

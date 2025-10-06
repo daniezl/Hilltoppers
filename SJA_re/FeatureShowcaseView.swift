@@ -42,7 +42,7 @@ struct FeatureShowcaseView: View {
                     .foregroundColor(accentGreen)
             }
 
-            Text("Keep an eye on your next class without opening the app. The new Class Countdown widget brings your schedule to the Home Screen and Lock Screen.")
+            Text("The new Class Countdown widget brings your schedule to the Home Screen and Lock Screen")
                 .font(.body)
                 .foregroundColor(.secondary)
         }
@@ -55,9 +55,8 @@ struct FeatureShowcaseView: View {
                 .foregroundColor(colorScheme == .dark ? .white : .primary)
 
             VStack(alignment: .leading, spacing: 16) {
-                FeatureHighlightRow(symbol: "timer", title: "Live countdown", description: "See how much time is left in the current block at a glance.")
-                FeatureHighlightRow(symbol: "rectangle.and.text.magnifyingglass", title: "Up next", description: "Know which block is coming next so you can plan ahead.")
-                FeatureHighlightRow(symbol: "bell.badge", title: "Stays in sync", description: "Updates automatically with schedule changes from the app.")
+                FeatureHighlightRow(symbol: "timer", title: "Live countdown", description: "See how much time is left in the current block at a glance")
+                FeatureHighlightRow(symbol: "calendar", title: "At a glance", description: "Check if it's a Green or White Day right on the widget")
             }
             .padding(20)
             .background(
@@ -76,9 +75,9 @@ struct FeatureShowcaseView: View {
             Text("How to try it")
                 .font(.title3.bold())
             VStack(alignment: .leading, spacing: 12) {
-                TipRow(step: "1", text: "Touch and hold an empty area on your Home Screen until your apps jiggle.")
-                TipRow(step: "2", text: "Tap the + button, search for \"Class Countdown\", then choose the small widget.")
-                TipRow(step: "3", text: "Place it where you like. The widget switches between light and dark looks automatically.")
+                TipRow(step: "1", text: "Touch and hold an empty area on your Home/Lock Screen until your apps jiggle.")
+                TipRow(step: "2", text: "Tap the + button, search for \"Hilltoppers\", then choose the widget.")
+                TipRow(step: "3", text: "Place it where you like.")
             }
         }
     }
