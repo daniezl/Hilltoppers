@@ -1274,7 +1274,7 @@ struct SettingsView: View {
 
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
-    private let horizontalInset: CGFloat = 10*8
+    private let horizontalInset: CGFloat = 8*8
     
     var body: some View {
         NavigationView {
@@ -1298,6 +1298,10 @@ struct SettingsView: View {
                         FeatureShowcaseView()
                     } label: {
                         HStack(alignment: .center, spacing: 14) {
+                            Image(systemName: "square.grid.2x2")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(accentGreen)
+
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 10) {
                                     Text("Widget")
@@ -1333,6 +1337,10 @@ struct SettingsView: View {
                         BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
                     } label: {
                         HStack(alignment: .center, spacing: 14) {
+                            Image(systemName: "book.closed")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(accentGreen)
+
                             Text("Courses")
                                 .font(.title2)
                                 .fontWeight(.semibold)
@@ -1354,6 +1362,10 @@ struct SettingsView: View {
                         NotificationSettingsView(onDismissSettings: onDismiss)
                     } label: {
                         HStack(alignment: .center, spacing: 14) {
+                            Image(systemName: "bell.badge")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(accentGreen)
+
                             Text("Notifications")
                                 .font(.title2)
                                 .fontWeight(.semibold)
