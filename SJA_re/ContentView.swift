@@ -1274,6 +1274,7 @@ struct SettingsView: View {
 
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
+    private let horizontalInset: CGFloat = 10*8
     
     var body: some View {
         NavigationView {
@@ -1300,7 +1301,8 @@ struct SettingsView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 10) {
                                     Text("Widget")
-                                        .font(.title2.bold())
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
                                         .foregroundColor(.primary)
 
                                     Text("BETA")
@@ -1313,11 +1315,6 @@ struct SettingsView: View {
                                         )
                                         .foregroundColor(accentGreen)
                                 }
-
-                                Text("Try the new Class Countdown widget for your Home Screen.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
                             }
 
                             Spacer()
@@ -1330,25 +1327,49 @@ struct SettingsView: View {
                         .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                         .cornerRadius(12)
                     }
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, horizontalInset)
 
-                    NavigationLink("Courses") {
+                    NavigationLink {
                         BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
+                    } label: {
+                        HStack(alignment: .center, spacing: 14) {
+                            Text("Courses")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                        .cornerRadius(12)
                     }
-                    .font(.title2)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .cornerRadius(12)
-                    
-                    NavigationLink("Notifications") {
+                    .padding(.horizontal, horizontalInset)
+
+                    NavigationLink {
                         NotificationSettingsView(onDismissSettings: onDismiss)
+                    } label: {
+                        HStack(alignment: .center, spacing: 14) {
+                            Text("Notifications")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                        .cornerRadius(12)
                     }
-                    .font(.title2)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .cornerRadius(12)
+                    .padding(.horizontal, horizontalInset)
                     
                     // NavigationLink("Time") {
                     //     TimeSettingsView(
