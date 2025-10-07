@@ -1350,18 +1350,18 @@ struct SettingsView: View {
                     .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                     .cornerRadius(12)
                     
-                    NavigationLink("Time") {
-                        TimeSettingsView(
-                            useTestDate: $useTestDate,
-                            testDateOverride: $testDateOverride,
-                            onDismissRoot: onDismiss
-                        )
-                    }
-                    .font(.title2)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .cornerRadius(12)
+                    // NavigationLink("Time") {
+                    //     TimeSettingsView(
+                    //         useTestDate: $useTestDate,
+                    //         testDateOverride: $testDateOverride,
+                    //         onDismissRoot: onDismiss
+                    //     )
+                    // }
+                    // .font(.title2)
+                    // .foregroundColor(.black)
+                    // .padding()
+                    // .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+                    // .cornerRadius(12)
                 }
                 .padding(.top, 40)
                 
