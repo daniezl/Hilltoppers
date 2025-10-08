@@ -473,7 +473,6 @@ struct ContentView: View {
         if isViewingTomorrow {
             RoundedRectangle(cornerRadius: 0)
                 .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.2), radius: 24)
                 .ignoresSafeArea()
         } else {
             Color.white.ignoresSafeArea()
@@ -524,9 +523,9 @@ struct ContentView: View {
             // Main content - always present
             VStack {
                 Spacer()
-                                 VStack(spacing: 24) { // padding between day type box and the schedule
-                     // Only show content when noSchool state is determined
-                     if let isNoSchool = noSchool {
+                VStack(spacing: 24) { // padding between day type box and the schedule
+                    // Only show content when noSchool state is determined
+                    if let isNoSchool = noSchool {
                          // Only show DayTypeView when there is school
                         if !isNoSchool {
                                                      DayTypeView(testDate: testDate, isViewingTomorrow: isViewingTomorrow, firebaseError: $firebaseError, onLoadingComplete: { 
@@ -553,8 +552,8 @@ struct ContentView: View {
                                  // Reset animation state when view appears
                                  scheduleLoader.showBlocks = false
                              }
-                     }
-                 }
+                    }
+                }
                 .offset(y: scheduleOffset)
                 Spacer()
             }
@@ -584,7 +583,6 @@ struct ContentView: View {
                         Circle()
                             .fill(Color.white.opacity(0.9))
                             .frame(width: 50, height: 50)
-                            .shadow(radius: 4)
                         
                         // Arrow icon
                         Image(systemName: isRefreshReady ? "arrow.clockwise" : "arrow.down")
@@ -655,7 +653,7 @@ struct ContentView: View {
                                     .padding(.horizontal, 16)
                                     .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                                     .cornerRadius(18)
-                                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .padding(.leading, 38)
@@ -678,7 +676,7 @@ struct ContentView: View {
                                 .frame(width: 160, alignment: .leading)
                                 .background(Color(red: 245/255, green: 246/255, blue: 245/255))
                                 .cornerRadius(18)
-                                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .padding(.trailing, 32)

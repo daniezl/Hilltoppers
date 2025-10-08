@@ -186,7 +186,6 @@ struct DayTypeView: View {
                 .padding(.vertical, 12)
                 .background(Color.orange.opacity(0.1))
                 .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
                 .padding(.bottom, 12)
@@ -213,7 +212,6 @@ struct DayTypeView: View {
                                 .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
                                 .padding(4) // inset the dashed border
                         )
-                        .shadow(color: tileShadowColor(isGreen: predicted == "Green Day"), radius: 8, x: 0, y: 4)
              
                     if let sourceLabel = dayTypeSource.label {
                         Text(sourceLabel)
@@ -253,7 +251,6 @@ struct DayTypeView: View {
                     .background(
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
-                    .shadow(color: tileShadowColor(isGreen: isGreenDay), radius: 8, x: 0, y: 4)
                     if let sourceLabel = dayTypeSource.label {
                         Text(sourceLabel)
                             .font(.footnote)
