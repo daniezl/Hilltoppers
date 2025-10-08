@@ -195,9 +195,9 @@ struct DayTypeView: View {
                     Text(predicted)
                         .font(.system(size: 36, weight: .bold))
                         .foregroundColor(predicted == "Green Day" ? .white : .black)
-                        .onTapGesture { 
+                        .onTapGesture {
                             if calculationSteps != nil {
-                                showPredictionDetail = true 
+                                showPredictionDetail = true
                             } else {
                                 showDailyBulletinConfirm = true
                             }
@@ -212,7 +212,7 @@ struct DayTypeView: View {
                                 .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
                                 .padding(4) // inset the dashed border
                         )
-             
+
                     if let sourceLabel = dayTypeSource.label {
                         Text(sourceLabel)
                             .font(.footnote)
@@ -220,7 +220,8 @@ struct DayTypeView: View {
                             .padding(.top, 6)
                     }
                 }
-                .padding([.top, .leading, .trailing], 16).padding(.bottom, 0)
+                .padding([.top, .leading, .trailing], 16)
+                .padding(.bottom, 0)
                 .alert(isPresented: $showBulletinInfo) {
                     Alert(
                         title: Text("\(dayType)"),
@@ -251,12 +252,12 @@ struct DayTypeView: View {
                     .background(
                         RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
                     )
-                    if let sourceLabel = dayTypeSource.label {
-                        Text(sourceLabel)
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 6)
-                    }
+                if let sourceLabel = dayTypeSource.label {
+                    Text(sourceLabel)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 6)
+                }
             }
         }
         .alert(isPresented: $showNetworkErrorAlert) {

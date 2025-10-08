@@ -1114,6 +1114,7 @@ struct ContentView: View {
             timeSettings.testDateOverride = tomorrowReferenceDate
         }
 
+        currentDayType = "Loading..."
         isLoading = true
         scheduleLoaded = false
         dayTypeLoaded = false
