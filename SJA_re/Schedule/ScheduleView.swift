@@ -1086,6 +1086,20 @@ struct ScheduleView: View {
             return trimmed
         }
 
+        if let predicted = DayTypeCache.cachedPredictedDayType() {
+            var calendar = Calendar.sja
+            if calendar.isDate(predicted.date, inSameDayAs: scheduleDate) {
+                let predictedTrimmed = predicted.type.trimmingCharacters(in: .whitespacesAndNewlines)
+                let lower = predictedTrimmed.lowercased()
+                if !predictedTrimmed.isEmpty,
+                   lower != "loading...",
+                   lower != "unknown",
+                   lower != "please refresh" {
+                    return predictedTrimmed
+                }
+            }
+        }
+
         if let cached = DayTypeCache.cachedEffectiveDayType() {
             var calendar = Calendar.sja
             if calendar.isDate(cached.date, inSameDayAs: scheduleDate) {

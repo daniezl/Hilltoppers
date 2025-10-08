@@ -1020,6 +1020,7 @@ struct DayTypeView: View {
         defaults.set(effectiveType, forKey: "LastEffectiveDayType")
         defaults.set(referenceDate, forKey: "LastEffectiveDayDate")
         defaults.set(self.predicted, forKey: "LastPredictedDayType")
+        defaults.set(referenceDate, forKey: "LastPredictedDayDate")
         if let dbDate = self.dbDate {
             defaults.set(dbDate, forKey: "LastBulletinDate")
             defaults.set(self.dayType, forKey: "LastBulletinDayType")

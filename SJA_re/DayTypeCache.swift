@@ -23,7 +23,25 @@ struct DayTypeCache {
         return (type, date)
     }
 
+    static func cachedPredictedDayType() -> (type: String, date: Date)? {
+        guard
+            let type = defaults.string(forKey: "LastPredictedDayType"),
+            let date = defaults.object(forKey: "LastPredictedDayDate") as? Date
+        else {
+            return nil
+        }
+        return (type, date)
+    }
+
     static func predictedDayType(for date: Date) async -> String? {
+        if let cached = cachedPredictedDayType() {
+            var calendar = Calendar.current
+            calendar.timeZone = Date.estTimeZone
+            if calendar.isDate(cached.date, inSameDayAs: date) {
+                return cached.type
+            }
+        }
+
         if let bulletin = cachedBulletinDayType() {
             do {
                 return try await ScheduleTypeFetcher.predictDayType(
