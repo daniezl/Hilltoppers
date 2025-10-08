@@ -10,6 +10,8 @@
 		921C56449A714013AB99266A /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82AF040DECD4BCE9F07528B /* ScheduleService.swift */; };
 		A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825B2E935CE500774386 /* FeatureShowcaseView.swift */; };
 		A228825E2E937DC800774386 /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825D2E937DC800774386 /* AppUpdateManager.swift */; };
+		B9A0F1012F10A1B000000002 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9A0F1002F10A1B000000001 /* NavigationRouter.swift */; };
+		B9A0F1032F10A1B000000004 /* TimeSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */; };
 		A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */; };
 		A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CE2DEEB14500BCDAB5 /* FirebaseCore */; };
 		A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */; };
@@ -82,6 +84,8 @@
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
 		A228825D2E937DC800774386 /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
+		B9A0F1002F10A1B000000001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
+		B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSettingsModel.swift; sourceTree = "<group>"; };
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -250,6 +254,8 @@
 				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
 				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
 				A228825D2E937DC800774386 /* AppUpdateManager.swift */,
+				B9A0F1002F10A1B000000001 /* NavigationRouter.swift */,
+				B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */,
 				A228825B2E935CE500774386 /* FeatureShowcaseView.swift */,
 				B99C9DA62F0056D00000001B /* Background */,
 				602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */,
@@ -499,6 +505,8 @@
 				B99C9D6C2F00000100000003 /* WidgetSharedTypes.swift in Sources */,
 				B99C9D702F00000100000007 /* WidgetSyncManager.swift in Sources */,
 				A228825E2E937DC800774386 /* AppUpdateManager.swift in Sources */,
+				B9A0F1012F10A1B000000002 /* NavigationRouter.swift in Sources */,
+				B9A0F1032F10A1B000000004 /* TimeSettingsModel.swift in Sources */,
 				B99C9DA32F0056D000000018 /* AppRefreshScheduler.swift in Sources */,
 				B99C9DA42F0056D000000019 /* RefreshScheduleOperation.swift in Sources */,
 				B99C9DA52F0056D00000001A /* BackgroundTaskManager.swift in Sources */,

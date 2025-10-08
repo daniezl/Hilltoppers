@@ -407,44 +407,26 @@ struct ContentView: View {
     @State private var isRefreshing: Bool = false
     @State private var triggerDayTypeRipple: Bool = false
     @State private var disablePullToRefreshGesture = false
-    @State private var showSettings = false
     @State private var lastOpenedDate: Date? = nil // Track when app was last opened
     @State private var currentDayType: String = "Loading..." // Track current day type for block filtering
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
     @ObservedObject private var notificationSettings = NotificationSettingsManager.shared
-    @StateObject private var blockManager = BlockSettingsManager.shared
+    @EnvironmentObject private var router: NavigationRouter
+    @EnvironmentObject private var timeSettings: TimeSettingsModel
     
     // Visual centering offsets
     private let scheduleOffset: CGFloat = 60
     private let noSchoolOffset: CGFloat = -30
     
-    private let defaultTestDate: Date = Date.currentEST
-    
-    // Dev option: choose whether to use the real clock or a fixed test date
-    @State private var useTestDate = true
-    @State private var testDateOverride: Date
     @State private var currentTime = Date.currentEST // Updated by timer to make UI flow
-    @State private var settingsUseTestDateSnapshot: Bool
-    @State private var settingsTestDateSnapshot: Date
     @State private var updatePrompt: AppUpdatePrompt? = nil
     @State private var hasLoggedAppOpenForCurrentActivation = false
     
-    init() {
-        let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool
-        let storedTestDate = UserDefaults.standard.object(forKey: "TestDateOverride") as? Date
-        let initialUseTestDate = storedUseTestDate ?? false
-        let initialTestDate = storedTestDate ?? defaultTestDate
-        _useTestDate = State(initialValue: initialUseTestDate)
-        _testDateOverride = State(initialValue: initialTestDate)
-        _settingsUseTestDateSnapshot = State(initialValue: initialUseTestDate)
-        _settingsTestDateSnapshot = State(initialValue: initialTestDate)
-    }
-    
     // Computed property that returns the effective current time (real time or test date)
     var effectiveCurrentTime: Date {
-        return useTestDate ? testDateOverride : currentTime
+        return timeSettings.useTestDate ? timeSettings.testDateOverride : currentTime
     }
     
     // Match the old optional testDate behaviour used throughout the views
@@ -461,10 +443,10 @@ struct ContentView: View {
     }
 
     private var isViewingTomorrow: Bool {
-        guard useTestDate else { return false }
+        guard timeSettings.useTestDate else { return false }
         var calendar = Calendar.current
         calendar.timeZone = Date.estTimeZone
-        return calendar.isDate(testDateOverride, inSameDayAs: tomorrowReferenceDate)
+        return calendar.isDate(timeSettings.testDateOverride, inSameDayAs: tomorrowReferenceDate)
     }
 
     private var tomorrowButtonTitle: String {
@@ -483,7 +465,7 @@ struct ContentView: View {
     }
 
     var testDate: Date? {
-        return useTestDate ? testDateOverride : nil
+        return timeSettings.useTestDate ? timeSettings.testDateOverride : nil
     }
 
     @ViewBuilder
@@ -522,21 +504,16 @@ struct ContentView: View {
             }
         }
 
-        if useTestDate {
+        if timeSettings.useTestDate {
             prepareIfNeeded()
-            useTestDate = false
-            UserDefaults.standard.set(false, forKey: "UseTestDateOverride")
+            timeSettings.useTestDate = false
             stateChanged = true
         }
 
-        if !calendar.isDate(testDateOverride, inSameDayAs: now) {
+        if !calendar.isDate(timeSettings.testDateOverride, inSameDayAs: now) {
             prepareIfNeeded()
-            testDateOverride = now
+            timeSettings.testDateOverride = now
             stateChanged = true
-        }
-
-        if stateChanged {
-            UserDefaults.standard.set(now, forKey: "TestDateOverride")
         }
 
         return stateChanged
@@ -639,14 +616,15 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Spacer()
-                    Button(action: {
-                        showSettings = true
-                    }) {
+                    Button {
+                        router.push(.settings)
+                    } label: {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
                             .foregroundColor(.gray.opacity(0.7))
                             .padding()
                     }
+                    .buttonStyle(.plain)
                 }
 
                 if isViewingTomorrow {
@@ -795,17 +773,23 @@ struct ContentView: View {
         .onChange(of: dayTypeLoaded) { _ in
             updateLoadingState()
         }
-        .onChange(of: useTestDate) { isUsingTestDate in
+        .onChange(of: timeSettings.useTestDate) { isUsingTestDate in
             let modeDescription = isUsingTestDate ? "test date" : "real time"
             print("🕒 [TIME-MODE] Switched to \(modeDescription) - rescheduling notifications")
+            Task {
+                await refreshAll()
+            }
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
-        .onChange(of: testDateOverride) { newDate in
+        .onChange(of: timeSettings.testDateOverride) { newDate in
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
             formatter.timeZone = Date.estTimeZone
             print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate)) - rescheduling notifications")
+            Task {
+                await refreshAll()
+            }
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
@@ -843,7 +827,7 @@ struct ContentView: View {
             isLoading = true
             enforceTodayDefaultIfNeeded()
             // Reset to actual time on app startup
-            print("🔄 [APP-STARTUP] Using \(useTestDate ? "test date" : "real time") mode")
+            print("🔄 [APP-STARTUP] Using \(timeSettings.useTestDate ? "test date" : "real time") mode")
 
             // Start timer to update time continuously
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -882,15 +866,6 @@ struct ContentView: View {
         }
         .preferredColorScheme(.light)
         .background(backgroundView)
-        .sheet(isPresented: $showSettings) {
-            SettingsView(
-                useTestDate: $useTestDate,
-                testDateOverride: $testDateOverride,
-                onDismiss: {
-                    showSettings = false
-                }
-            )
-        }
         .alert(item: $updatePrompt) { prompt in
             switch prompt.importance {
             case .required:
@@ -916,22 +891,6 @@ struct ContentView: View {
         .overlay {
             if updatePrompt?.importance == .required {
                 Color.black.opacity(0.25).ignoresSafeArea()
-            }
-        }
-        .onChange(of: showSettings) { isPresented in
-            if isPresented {
-                settingsUseTestDateSnapshot = useTestDate
-                settingsTestDateSnapshot = testDateOverride
-            } else {
-                let modeChanged = settingsUseTestDateSnapshot != useTestDate
-                let dateChanged = settingsTestDateSnapshot != testDateOverride
-                if modeChanged || dateChanged {
-                    print("🕒 [TIME-SETTINGS] Applied changes after closing settings - rescheduling notifications")
-                    Task {
-                        await refreshAll()
-                    }
-                    scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
-                }
             }
         }
     }
@@ -1149,11 +1108,11 @@ struct ContentView: View {
     @MainActor
     private func toggleTomorrowView() {
         if isViewingTomorrow {
-            useTestDate = false
-            testDateOverride = Date.currentEST
+            timeSettings.useTestDate = false
+            timeSettings.testDateOverride = Date.currentEST
         } else {
-            useTestDate = true
-            testDateOverride = tomorrowReferenceDate
+            timeSettings.useTestDate = true
+            timeSettings.testDateOverride = tomorrowReferenceDate
         }
 
         isLoading = true
@@ -1268,209 +1227,151 @@ class BlockSettingsManager: ObservableObject {
 }
 
 struct SettingsView: View {
-    @Binding var useTestDate: Bool
-    @Binding var testDateOverride: Date
-    let onDismiss: () -> Void
-
-    @ObservedObject private var blockManager = BlockSettingsManager.shared
+    @EnvironmentObject private var router: NavigationRouter
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
-    private let horizontalInset: CGFloat = 8*8
-    
+    private let horizontalInset: CGFloat = 32
+
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Done button only
-                HStack {
-                    Spacer()
-                    
-                    Button("Done") {
-                        onDismiss()
-                    }
-                    .font(.body)
-                    .foregroundColor(.blue)
+        VStack(spacing: 0) {
+            // Menu items near top
+            VStack(spacing: 16) {
+                settingsRow(icon: "square.grid.2x2", title: "Widget", accessory: { betaBadge }) {
+                    router.push(.settingsFeatureShowcase)
                 }
-                .padding(.horizontal, 40)
-                .padding(.top, 20)
-                
-                // Menu items near top
-                VStack(spacing: 16) {
-                    NavigationLink {
-                        FeatureShowcaseView()
-                    } label: {
-                        HStack(alignment: .center, spacing: 14) {
-                            Image(systemName: "square.grid.2x2")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(accentGreen)
 
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 10) {
-                                    Text("Widget")
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.primary)
-
-                                    Text("BETA")
-                                        .font(.caption.bold())
-                                        .padding(.vertical, 4)
-                                        .padding(.horizontal, 10)
-                                        .background(
-                                            Capsule()
-                                                .fill(accentGreen.opacity(0.15))
-                                        )
-                                        .foregroundColor(accentGreen)
-                                }
-                            }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                        .cornerRadius(12)
-                    }
-                    .padding(.horizontal, horizontalInset)
-
-                    NavigationLink {
-                        BlockConfigurationView(blockManager: blockManager, onDismissSettings: onDismiss)
-                    } label: {
-                        HStack(alignment: .center, spacing: 14) {
-                            Image(systemName: "book.closed")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(accentGreen)
-
-                            Text("Courses")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                        .cornerRadius(12)
-                    }
-                    .padding(.horizontal, horizontalInset)
-
-                    NavigationLink {
-                        NotificationSettingsView(onDismissSettings: onDismiss)
-                    } label: {
-                        HStack(alignment: .center, spacing: 14) {
-                            Image(systemName: "bell.badge")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(accentGreen)
-
-                            Text("Notifications")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                        .cornerRadius(12)
-                    }
-                    .padding(.horizontal, horizontalInset)
-                    
-                    // NavigationLink("Time") {
-                    //     TimeSettingsView(
-                    //         useTestDate: $useTestDate,
-                    //         testDateOverride: $testDateOverride,
-                    //         onDismissRoot: onDismiss
-                    //     )
-                    // }
-                    // .font(.title2)
-                    // .foregroundColor(.black)
-                    // .padding()
-                    // .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                    // .cornerRadius(12)
+                settingsRow(icon: "book.closed", title: "Courses") {
+                    router.push(.settingsCourses)
                 }
-                .padding(.top, 40)
-                
-                Spacer()
-                
-                // Contact information at bottom
-                VStack(spacing: 8) {
-                    Text("If you have any questions / feedback, please contact:")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("yaoyu.zhang@student.stjacademy.org")
-                        .font(.footnote)
-                        .foregroundColor(.blue)
-                        .multilineTextAlignment(.center)
+
+                settingsRow(icon: "bell.badge", title: "Notifications") {
+                    router.push(.settingsNotifications)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 30)
+
+                // settingsRow(icon: "clock", title: "Time") {
+                //     router.push(.settingsTime)
+                // }
             }
-            .navigationBarHidden(true)
+            .padding(.top, 40)
+            .padding(.horizontal, horizontalInset)
+
+            Spacer()
+
+            VStack(spacing: 8) {
+                Text("If you have any questions / feedback, please contact:")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Text("yaoyu.zhang@student.stjacademy.org")
+                    .font(.footnote)
+                    .foregroundColor(.blue)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 30)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color(.systemBackground).ignoresSafeArea())
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") {
+                    router.pop()
+                }
+                .foregroundColor(.blue)
+            }
+        }
+    }
+
+    private var betaBadge: some View {
+        Text("BETA")
+            .font(.caption.bold())
+            .padding(.vertical, 4)
+            .padding(.horizontal, 10)
+            .background(
+                Capsule()
+                    .fill(accentGreen.opacity(0.15))
+            )
+            .foregroundColor(accentGreen)
+    }
+
+    private func settingsRow(icon: String, title: String, action: @escaping () -> Void) -> some View {
+        settingsRow(icon: icon, title: title, accessory: { EmptyView() }, action: action)
+    }
+
+    private func settingsRow<Accessory: View>(icon: String, title: String, @ViewBuilder accessory: () -> Accessory, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(accentGreen)
+
+                HStack(spacing: 10) {
+                    Text(title)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    accessory()
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(Color(red: 245/255, green: 246/255, blue: 245/255))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
     }
 }
 
 struct TimeSettingsView: View {
-    @Binding var useTestDate: Bool
-    @Binding var testDateOverride: Date
+    @EnvironmentObject private var timeSettings: TimeSettingsModel
     let onDismissRoot: () -> Void
 
     var body: some View {
         Form {
             Section(footer: Text("Switch to a fixed test date to preview schedules in the future or past.")) {
-                Toggle("Use Test Date", isOn: $useTestDate)
-                    .onChange(of: useTestDate) { newValue in
+                Toggle("Use Test Date", isOn: $timeSettings.useTestDate)
+                    .onChange(of: timeSettings.useTestDate) { newValue in
                         if newValue {
                             let now = Date.currentEST
-                            testDateOverride = now
-                            UserDefaults.standard.set(now, forKey: "TestDateOverride")
+                            timeSettings.testDateOverride = now
                         }
-                        UserDefaults.standard.set(newValue, forKey: "UseTestDateOverride")
                     }
             }
 
-            if useTestDate {
+            if timeSettings.useTestDate {
                 Section(header: Text("Test Date")) {
                     DatePicker(
                         "",
-                        selection: $testDateOverride,
+                        selection: $timeSettings.testDateOverride,
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .datePickerStyle(.wheel)
                     .environment(\.timeZone, Date.estTimeZone)
                     .labelsHidden()
-                    .onChange(of: testDateOverride) { newValue in
-                        UserDefaults.standard.set(newValue, forKey: "TestDateOverride")
-                    }
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color(.systemBackground))
         .navigationTitle("Time")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
                     onDismissRoot()
                 }
-            }
-        }
-        .onAppear {
-            if let storedUseTestDate = UserDefaults.standard.object(forKey: "UseTestDateOverride") as? Bool {
-                useTestDate = storedUseTestDate
-            }
-
-            if let storedDate = UserDefaults.standard.object(forKey: "TestDateOverride") as? Date {
-                testDateOverride = storedDate
             }
         }
     }
@@ -1546,21 +1447,16 @@ struct BlockConfigurationView: View {
                     BlockTableRow(blockName: "E", settings: $blockManager.blockE, onValidationError: showError, onSave: blockManager.saveSettings)
                 }
             }
+            .background(Color(.systemBackground))
             
             Spacer()
         }
-        // .navigationTitle("Courses")
+        .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // Set white navigation bar background for iOS 16+ compatibility
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor.white
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        }
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
                     onDismissSettings()
                 }
@@ -1675,7 +1571,6 @@ class NotificationSettingsManager: ObservableObject {
 struct NotificationSettingsView: View {
     @ObservedObject private var notificationManager = NotificationSettingsManager.shared
     let onDismissSettings: () -> Void
-    @Environment(\.dismiss) private var dismiss
     @State private var showingPermissionDeniedAlert = false
     
     var body: some View {
@@ -1817,18 +1712,12 @@ struct NotificationSettingsView: View {
             Spacer()
         }
         .background(Color(UIColor.systemBackground))
-        // .navigationTitle("Notifications")
+        .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // Set white navigation bar background for iOS 16+ compatibility
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor.white
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        }
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
                     onDismissSettings()
                 }
@@ -1908,5 +1797,9 @@ struct NotificationSettingsView: View {
 }
 
 #Preview {
-    ContentView()
+    NavigationStack {
+        ContentView()
+            .environmentObject(NavigationRouter())
+            .environmentObject(TimeSettingsModel())
+    }
 }

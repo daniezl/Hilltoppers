@@ -90,10 +90,57 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 @main
 struct SJA_reApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var router = NavigationRouter()
+    @StateObject private var timeSettings = TimeSettingsModel()
+
+    init() {
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = UIColor.systemBackground
+        navAppearance.shadowColor = .clear
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
+
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithOpaqueBackground()
+        tabAppearance.backgroundColor = UIColor.systemBackground
+        tabAppearance.shadowColor = .clear
+        UITabBar.appearance().standardAppearance = tabAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+    }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack(path: $router.path) {
+                ContentView()
+                    .environmentObject(router)
+                    .environmentObject(timeSettings)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case .settings:
+                            SettingsView()
+                                .environmentObject(router)
+                                .environmentObject(timeSettings)
+                        case .settingsFeatureShowcase:
+                            FeatureShowcaseView()
+                        case .settingsCourses:
+                            BlockConfigurationView(
+                                blockManager: BlockSettingsManager.shared,
+                                onDismissSettings: { router.pop() }
+                            )
+                        case .settingsNotifications:
+                            NotificationSettingsView(onDismissSettings: { router.pop() })
+                        case .settingsTime:
+                            TimeSettingsView(onDismissRoot: { router.pop() })
+                                .environmentObject(timeSettings)
+                        }
+                    }
+                    .toolbarBackground(.visible, for: .navigationBar)
+                    .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+                    .toolbarBackground(.visible, for: .tabBar)
+                    .toolbarBackground(Color(.systemBackground), for: .tabBar)
+            }
         }
     }
 }
