@@ -893,6 +893,7 @@ struct ContentView: View {
                 Color.black.opacity(0.25).ignoresSafeArea()
             }
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     @MainActor
@@ -1274,6 +1275,7 @@ struct SettingsView: View {
         .background(Color(.systemBackground).ignoresSafeArea())
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
@@ -1365,6 +1367,7 @@ struct TimeSettingsView: View {
         .background(Color(.systemBackground))
         .navigationTitle("Time")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
@@ -1453,6 +1456,7 @@ struct BlockConfigurationView: View {
         }
         .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
@@ -1714,6 +1718,7 @@ struct NotificationSettingsView: View {
         .background(Color(UIColor.systemBackground))
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
         .toolbar {
