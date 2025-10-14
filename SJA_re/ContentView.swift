@@ -561,18 +561,11 @@ struct ContentView: View {
             .opacity(isLoading ? 0.0 : 1.0)
             .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : 0.1), value: isLoading)
                 
-            // Simple loading screen
+            // Skeleton loading overlay to mimic final layout
             if isLoading {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("Loading...")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
-                .zIndex(1000)
+                SkeletonLoadingView()
+                    .transition(.opacity)
+                    .zIndex(1000)
             }
             
             // Pull-to-refresh indicator - circular design
@@ -1796,6 +1789,262 @@ struct NotificationSettingsView: View {
         case 2: return "nd"
         case 3: return "rd"
         default: return "th"
+        }
+    }
+}
+
+private struct SkeletonLoadingView: View {
+    private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Color(UIColor.systemBackground)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+
+                VStack(spacing: 22) {
+                    SkeletonDayTypeCardPlaceholder(cardBackground: cardBackground)
+                        .padding(.horizontal, 44)
+
+                    SkeletonScheduleCardPlaceholder(cardBackground: cardBackground)
+                        .padding(.leading, 44)
+                        .padding(.trailing, 40)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            SkeletonTomorrowButtonsPlaceholder(cardBackground: cardBackground)
+                .padding(.bottom, 32)
+        }
+    }
+}
+
+private struct SkeletonDayTypeCardPlaceholder: View {
+    let cardBackground: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                SkeletonCircle(diameter: 28)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    SkeletonBar(cornerRadius: 8, height: 12)
+                        .frame(width: 48)
+
+                    SkeletonBar(cornerRadius: 10, height: 24)
+                        .frame(width: 120)
+
+                    SkeletonBar(cornerRadius: 8, height: 12)
+                        .frame(width: 84)
+                        .opacity(0.7)
+                }
+                Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 10) {
+                SkeletonBar(cornerRadius: 16, height: 24)
+                    .frame(width: 56)
+
+                SkeletonBar(cornerRadius: 16, height: 24)
+                    .frame(width: 78)
+
+                Spacer(minLength: 0)
+            }
+
+            SkeletonBar(cornerRadius: 8, height: 10)
+                .frame(width: 86)
+                .opacity(0.5)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(cardBackground)
+        )
+    }
+}
+
+private struct SkeletonScheduleCardPlaceholder: View {
+    let cardBackground: Color
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    SkeletonBar(cornerRadius: 8, height: 16)
+                        .frame(width: 120)
+
+                    SkeletonBar(cornerRadius: 8, height: 12)
+                        .frame(width: 80)
+                        .opacity(0.8)
+                }
+
+                Spacer()
+
+                SkeletonBar(cornerRadius: 6, height: 12)
+                    .frame(width: 90)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+
+            Rectangle()
+                .fill(Color(UIColor.systemGray3).opacity(0.35))
+                .frame(height: 1)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+
+            VStack(spacing: 12) {
+                ForEach(0..<5, id: \.self) { index in
+                    SkeletonScheduleBlockRowPlaceholder(showCountdown: index == 0 || index == 2)
+                }
+            }
+            .padding(.bottom, 18)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(cardBackground)
+        )
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct SkeletonScheduleBlockRowPlaceholder: View {
+    let showCountdown: Bool
+
+    var body: some View {
+        VStack(spacing: 6) {
+            if showCountdown {
+                HStack {
+                    Spacer()
+                    SkeletonBar(cornerRadius: 6, height: 12)
+                        .frame(width: 110)
+                        .opacity(0.7)
+                }
+                .padding(.horizontal, 32)
+            }
+
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    SkeletonBar(cornerRadius: 8, height: 18)
+                        .frame(width: 160)
+
+                    SkeletonBar(cornerRadius: 8, height: 12)
+                        .frame(width: 120)
+                        .opacity(0.8)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 8) {
+                    SkeletonBar(cornerRadius: 8, height: 16)
+                        .frame(width: 74)
+
+                    SkeletonBar(cornerRadius: 6, height: 10)
+                        .frame(width: 52)
+                        .opacity(0.7)
+                }
+
+                SkeletonBar(cornerRadius: 4, height: 12)
+                    .frame(width: 12)
+                    .opacity(0.6)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color(UIColor.systemGray5).opacity(0.35))
+            )
+            .padding(.horizontal, 8)
+        }
+    }
+}
+
+private struct SkeletonTomorrowButtonsPlaceholder: View {
+    let cardBackground: Color
+
+    var body: some View {
+        HStack(alignment: .bottom) {
+            Spacer(minLength: 0)
+
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(cardBackground)
+                .frame(width: 176, height: 64)
+                .overlay(
+                    VStack(alignment: .leading, spacing: 6) {
+                        SkeletonBar(cornerRadius: 6, height: 16)
+                            .frame(width: 120)
+
+                        SkeletonBar(cornerRadius: 6, height: 12)
+                            .frame(width: 100)
+                            .opacity(0.8)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                )
+                .padding(.trailing, 32)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct SkeletonCircle: View {
+    let diameter: CGFloat
+
+    var body: some View {
+        Circle()
+            .fill(Color(UIColor.systemGray5))
+            .frame(width: diameter, height: diameter)
+            .overlay(
+                SkeletonShimmer()
+                    .mask(Circle())
+            )
+    }
+}
+
+private struct SkeletonBar: View {
+    let cornerRadius: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color(UIColor.systemGray5))
+            .frame(height: height)
+            .overlay(
+                SkeletonShimmer()
+                    .mask(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    )
+            )
+    }
+}
+
+private struct SkeletonShimmer: View {
+    @State private var startPoint: UnitPoint = UnitPoint(x: -1, y: 0.5)
+    @State private var endPoint: UnitPoint = UnitPoint(x: 0, y: 0.5)
+
+    var body: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color.white.opacity(0.0),
+                Color.white.opacity(0.6),
+                Color.white.opacity(0.0)
+            ]),
+            startPoint: startPoint,
+            endPoint: endPoint
+        )
+        .onAppear {
+            startPoint = UnitPoint(x: -1, y: 0.5)
+            endPoint = UnitPoint(x: 0, y: 0.5)
+
+            let animation = Animation.linear(duration: 1.2).repeatForever(autoreverses: false)
+            withAnimation(animation) {
+                startPoint = UnitPoint(x: 1, y: 0.5)
+                endPoint = UnitPoint(x: 2, y: 0.5)
+            }
         }
     }
 }
