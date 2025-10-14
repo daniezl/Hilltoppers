@@ -1816,6 +1816,8 @@ private struct SkeletonLoadingView: View {
                         .padding(.leading, 44)
                         .padding(.trailing, 40)
                 }
+                .padding(.top, 32)
+                .padding(.bottom, 220)
 
                 Spacer(minLength: 0)
             }
@@ -1880,12 +1882,12 @@ private struct SkeletonScheduleCardPlaceholder: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
 
-            VStack(spacing: 12) {
-                ForEach(0..<5, id: \.self) { index in
+            VStack(spacing: 10) {
+                ForEach(0..<3, id: \.self) { index in
                     SkeletonScheduleBlockRowPlaceholder(showCountdown: index == 0 || index == 2)
                 }
             }
-            .padding(.bottom, 18)
+            .padding(.bottom, 12)
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -1899,49 +1901,49 @@ private struct SkeletonScheduleBlockRowPlaceholder: View {
     let showCountdown: Bool
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             if showCountdown {
                 HStack {
                     Spacer()
                     SkeletonBar(cornerRadius: 6, height: 12)
-                        .frame(width: 110)
-                        .opacity(0.7)
+                        .frame(width: 100)
+                        .opacity(0.6)
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 28)
             }
 
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
                     SkeletonBar(cornerRadius: 8, height: 18)
-                        .frame(width: 160)
+                        .frame(width: 150)
 
                     SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 120)
-                        .opacity(0.8)
+                        .frame(width: 108)
+                        .opacity(0.75)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
                     SkeletonBar(cornerRadius: 8, height: 16)
-                        .frame(width: 74)
+                        .frame(width: 68)
 
                     SkeletonBar(cornerRadius: 6, height: 10)
-                        .frame(width: 52)
-                        .opacity(0.7)
+                        .frame(width: 44)
+                        .opacity(0.65)
                 }
 
                 SkeletonBar(cornerRadius: 4, height: 12)
                     .frame(width: 12)
-                    .opacity(0.6)
+                    .opacity(0.5)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(UIColor.systemGray5).opacity(0.35))
+                    .fill(Color(UIColor.systemGray5).opacity(0.3))
             )
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 6)
         }
     }
 }
