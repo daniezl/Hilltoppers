@@ -1890,19 +1890,19 @@ private struct SkeletonDayTypeCardPlaceholder: View {
     let cardBackground: Color
 
     var body: some View {
-        VStack(spacing: 10) {
-            SkeletonBar(cornerRadius: 10, height: 30)
+        VStack(spacing: 8) {
+            SkeletonBar(cornerRadius: 10, height: 26)
                 .frame(width: 150)
 
-            SkeletonBar(cornerRadius: 8, height: 12)
+            SkeletonBar(cornerRadius: 8, height: 10)
                 .frame(width: 100)
                 .opacity(0.65)
 
-            SkeletonBar(cornerRadius: 6, height: 10)
+            SkeletonBar(cornerRadius: 6, height: 8)
                 .frame(width: 70)
                 .opacity(0.45)
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
         .padding(.horizontal, 24)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
