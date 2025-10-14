@@ -1805,8 +1805,12 @@ private struct SkeletonLoadingView: View {
                 Spacer(minLength: 0)
 
                 VStack(spacing: 22) {
-                    SkeletonDayTypeCardPlaceholder(cardBackground: cardBackground)
-                        .padding(.horizontal, 44)
+                    HStack(alignment: .top) {
+                        Spacer(minLength: 0)
+                        SkeletonDayTypeCardPlaceholder(cardBackground: cardBackground)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 16)
 
                     SkeletonScheduleCardPlaceholder(cardBackground: cardBackground)
                         .padding(.leading, 44)
@@ -1826,41 +1830,20 @@ private struct SkeletonDayTypeCardPlaceholder: View {
     let cardBackground: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                SkeletonCircle(diameter: 28)
+        VStack(spacing: 8) {
+            SkeletonBar(cornerRadius: 10, height: 26)
+                .frame(width: 140)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 48)
-
-                    SkeletonBar(cornerRadius: 10, height: 24)
-                        .frame(width: 120)
-
-                    SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 84)
-                        .opacity(0.7)
-                }
-                Spacer(minLength: 0)
-            }
-
-            HStack(spacing: 10) {
-                SkeletonBar(cornerRadius: 16, height: 24)
-                    .frame(width: 56)
-
-                SkeletonBar(cornerRadius: 16, height: 24)
-                    .frame(width: 78)
-
-                Spacer(minLength: 0)
-            }
+            SkeletonBar(cornerRadius: 8, height: 12)
+                .frame(width: 96)
+                .opacity(0.7)
 
             SkeletonBar(cornerRadius: 8, height: 10)
-                .frame(width: 86)
-                .opacity(0.5)
+                .frame(width: 72)
+                .opacity(0.45)
         }
         .padding(.vertical, 12)
-        .padding(.horizontal, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 22)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(cardBackground)
