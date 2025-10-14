@@ -564,7 +564,10 @@ struct ContentView: View {
                 
             // Skeleton loading overlay to mimic final layout
             if isLoading {
-                SkeletonLoadingView()
+                SkeletonLoadingView(
+                    scheduleOffset: scheduleOffset,
+                    blockCount: max(previousScheduleBlocks.count, 6)
+                )
                     .transition(.opacity)
                     .zIndex(1000)
             }
@@ -678,6 +681,13 @@ struct ContentView: View {
                     }
                     .padding(.bottom, 32)
                 }
+                .zIndex(500)
+            } else {
+                VStack {
+                    Spacer()
+                    SkeletonTomorrowButtonsOverlay(isViewingTomorrow: isViewingTomorrow)
+                }
+                .padding(.bottom, 32)
                 .zIndex(500)
             }
         }
@@ -1796,37 +1806,83 @@ struct NotificationSettingsView: View {
 }
 
 private struct SkeletonLoadingView: View {
+    let scheduleOffset: CGFloat
+    let blockCount: Int
     private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Color(UIColor.systemBackground)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
 
-                VStack(spacing: 22) {
-                    HStack(alignment: .top) {
+                VStack(spacing: 24) {
+                    HStack {
                         Spacer(minLength: 0)
                         SkeletonDayTypeCardPlaceholder(cardBackground: cardBackground)
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 16)
 
-                    SkeletonScheduleCardPlaceholder(cardBackground: cardBackground)
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            SkeletonScheduleCardPlaceholder(cardBackground: cardBackground, blockCount: blockCount)
+                        }
                         .padding(.leading, 44)
                         .padding(.trailing, 40)
+                        .padding(.top, 8)
+                    }
+                    .allowsHitTesting(false)
                 }
-                .padding(.top, 32)
-                .padding(.bottom, 220)
+                .offset(y: scheduleOffset)
 
                 Spacer(minLength: 0)
             }
-
-            SkeletonTomorrowButtonsPlaceholder(cardBackground: cardBackground)
-                .padding(.bottom, 32)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+}
+
+private struct SkeletonTomorrowButtonsOverlay: View {
+    let isViewingTomorrow: Bool
+    private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
+
+    var body: some View {
+        HStack(alignment: .bottom) {
+            if isViewingTomorrow {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(cardBackground)
+                    .frame(width: 52, height: 44)
+                    .overlay(
+                        SkeletonBar(cornerRadius: 8, height: 12)
+                            .frame(width: 20)
+                    )
+                    .padding(.leading, 38)
+            }
+
+            Spacer()
+
+            if !isViewingTomorrow {
+                VStack(alignment: .leading, spacing: 4) {
+                    SkeletonBar(cornerRadius: 8, height: 16)
+                        .frame(width: 120)
+                    SkeletonBar(cornerRadius: 8, height: 12)
+                        .frame(width: 96)
+                        .opacity(0.6)
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 18)
+                .frame(width: 160, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(cardBackground)
+                )
+                .padding(.trailing, 32)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -1857,8 +1913,11 @@ private struct SkeletonDayTypeCardPlaceholder: View {
 
 private struct SkeletonScheduleCardPlaceholder: View {
     let cardBackground: Color
+    let blockCount: Int
 
     var body: some View {
+        let placeholderCount = min(max(blockCount, 3), 4)
+
         VStack(spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -1885,11 +1944,11 @@ private struct SkeletonScheduleCardPlaceholder: View {
                 .padding(.vertical, 8)
 
             VStack(spacing: 10) {
-                ForEach(0..<3, id: \.self) { index in
+                ForEach(0..<placeholderCount, id: \.self) { index in
                     SkeletonScheduleBlockRowPlaceholder(showCountdown: index == 0 || index == 2)
                 }
             }
-            .padding(.bottom, 12)
+            .padding(.bottom, 10)
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -1903,78 +1962,51 @@ private struct SkeletonScheduleBlockRowPlaceholder: View {
     let showCountdown: Bool
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 0) {
             if showCountdown {
                 HStack {
                     Spacer()
                     SkeletonBar(cornerRadius: 6, height: 12)
-                        .frame(width: 100)
+                        .frame(width: 120)
                         .opacity(0.6)
                 }
-                .padding(.horizontal, 28)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 4)
             }
 
-            HStack(spacing: 12) {
+            HStack {
                 VStack(alignment: .leading, spacing: 8) {
                     SkeletonBar(cornerRadius: 8, height: 18)
-                        .frame(width: 150)
+                        .frame(width: 160)
 
                     SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 108)
-                        .opacity(0.75)
+                        .frame(width: 110)
+                        .opacity(0.7)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
                     SkeletonBar(cornerRadius: 8, height: 16)
-                        .frame(width: 68)
+                        .frame(width: 72)
 
                     SkeletonBar(cornerRadius: 6, height: 10)
-                        .frame(width: 44)
-                        .opacity(0.65)
+                        .frame(width: 46)
+                        .opacity(0.6)
                 }
 
                 SkeletonBar(cornerRadius: 4, height: 12)
                     .frame(width: 12)
-                    .opacity(0.5)
+                    .opacity(0.4)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 6)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(UIColor.systemGray5).opacity(0.3))
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(UIColor.systemGray5).opacity(0.25))
+                    .padding(.horizontal, 8)
             )
-            .padding(.horizontal, 6)
         }
-    }
-}
-
-private struct SkeletonTomorrowButtonsPlaceholder: View {
-    let cardBackground: Color
-
-    var body: some View {
-        HStack(alignment: .bottom) {
-            Spacer(minLength: 0)
-
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(cardBackground)
-                .frame(width: 176, height: 64)
-                .overlay(
-                    VStack(alignment: .leading, spacing: 6) {
-                        SkeletonBar(cornerRadius: 6, height: 16)
-                            .frame(width: 120)
-
-                        SkeletonBar(cornerRadius: 6, height: 12)
-                            .frame(width: 100)
-                            .opacity(0.8)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                )
-                .padding(.trailing, 32)
-        }
-        .frame(maxWidth: .infinity)
     }
 }
 
