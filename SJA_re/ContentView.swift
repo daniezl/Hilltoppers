@@ -566,7 +566,7 @@ struct ContentView: View {
             if isLoading {
                 SkeletonLoadingView(
                     scheduleOffset: scheduleOffset,
-                    blockCount: max(previousScheduleBlocks.count, 6)
+                    blockCount: previousScheduleBlocks.isEmpty ? 3 : min(previousScheduleBlocks.count, 4)
                 )
                     .transition(.opacity)
                     .zIndex(1000)
@@ -1890,22 +1890,22 @@ private struct SkeletonDayTypeCardPlaceholder: View {
     let cardBackground: Color
 
     var body: some View {
-        VStack(spacing: 8) {
-            SkeletonBar(cornerRadius: 10, height: 26)
-                .frame(width: 140)
+        VStack(spacing: 10) {
+            SkeletonBar(cornerRadius: 10, height: 30)
+                .frame(width: 150)
 
             SkeletonBar(cornerRadius: 8, height: 12)
-                .frame(width: 96)
-                .opacity(0.7)
+                .frame(width: 100)
+                .opacity(0.65)
 
-            SkeletonBar(cornerRadius: 8, height: 10)
-                .frame(width: 72)
+            SkeletonBar(cornerRadius: 6, height: 10)
+                .frame(width: 70)
                 .opacity(0.45)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 22)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 24)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(cardBackground)
         )
     }
@@ -1943,12 +1943,12 @@ private struct SkeletonScheduleCardPlaceholder: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
 
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 ForEach(0..<placeholderCount, id: \.self) { index in
                     SkeletonScheduleBlockRowPlaceholder(showCountdown: index == 0 || index == 2)
                 }
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 8)
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -1966,12 +1966,12 @@ private struct SkeletonScheduleBlockRowPlaceholder: View {
             if showCountdown {
                 HStack {
                     Spacer()
-                    SkeletonBar(cornerRadius: 6, height: 12)
-                        .frame(width: 120)
+                    SkeletonBar(cornerRadius: 6, height: 10)
+                        .frame(width: 110)
                         .opacity(0.6)
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 4)
+                .padding(.horizontal, 30)
+                .padding(.bottom, 2)
             }
 
             HStack {
@@ -1980,15 +1980,15 @@ private struct SkeletonScheduleBlockRowPlaceholder: View {
                         .frame(width: 160)
 
                     SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 110)
-                        .opacity(0.7)
+                        .frame(width: 108)
+                        .opacity(0.65)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    SkeletonBar(cornerRadius: 8, height: 16)
-                        .frame(width: 72)
+                    SkeletonBar(cornerRadius: 8, height: 14)
+                        .frame(width: 68)
 
                     SkeletonBar(cornerRadius: 6, height: 10)
                         .frame(width: 46)
