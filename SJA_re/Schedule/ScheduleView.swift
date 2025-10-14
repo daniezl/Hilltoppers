@@ -526,6 +526,7 @@ struct ScheduleView: View {
     @Binding var showSplashScreen: Bool
     @Binding var disablePullToRefreshGesture: Bool
     let currentDayType: String
+    let currentDayTypeDate: Date?
     @ObservedObject private var blockManager = BlockSettingsManager.shared
     @State private var expandedBlockID: UUID?
     @State private var now = Date.currentEST
@@ -1080,34 +1081,42 @@ struct ScheduleView: View {
     }
 
     private func resolveDayTypeDisplay(for scheduleDate: Date) -> String? {
-        let trimmed = currentDayType.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty, trimmed != "Loading..." {
+        let calendar = Calendar.sja
+
+        func sanitized(_ value: String) -> String? {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            let lower = trimmed.lowercased()
+            guard !trimmed.isEmpty,
+                  lower != "loading...",
+                  lower != "unknown",
+                  lower != "please refresh" else {
+                return nil
+            }
             return trimmed
         }
 
-        if let predicted = DayTypeCache.cachedPredictedDayType() {
-            var calendar = Calendar.sja
-            if calendar.isDate(predicted.date, inSameDayAs: scheduleDate) {
-                let predictedTrimmed = predicted.type.trimmingCharacters(in: .whitespacesAndNewlines)
-                let lower = predictedTrimmed.lowercased()
-                if !predictedTrimmed.isEmpty,
-                   lower != "loading...",
-                   lower != "unknown",
-                   lower != "please refresh" {
-                    return predictedTrimmed
-                }
-            }
+        if let typeDate = currentDayTypeDate,
+           calendar.isDate(typeDate, inSameDayAs: scheduleDate),
+           let sanitizedCurrent = sanitized(currentDayType) {
+            return sanitizedCurrent
         }
 
-        if let cached = DayTypeCache.cachedEffectiveDayType() {
-            var calendar = Calendar.sja
-            if calendar.isDate(cached.date, inSameDayAs: scheduleDate) {
-                return cached.type
-            }
+        if let cached = DayTypeCache.cachedEffectiveDayType(),
+           calendar.isDate(cached.date, inSameDayAs: scheduleDate),
+           let sanitizedCached = sanitized(cached.type) {
+            return sanitizedCached
         }
 
-        if let bulletin = DayTypeCache.cachedBulletinDayType() {
-            return bulletin.type
+        if let predicted = DayTypeCache.cachedPredictedDayType(),
+           calendar.isDate(predicted.date, inSameDayAs: scheduleDate),
+           let sanitizedPredicted = sanitized(predicted.type) {
+            return sanitizedPredicted
+        }
+
+        if let bulletin = DayTypeCache.cachedBulletinDayType(),
+           calendar.isDate(bulletin.date, inSameDayAs: scheduleDate),
+           let sanitizedBulletin = sanitized(bulletin.type) {
+            return sanitizedBulletin
         }
 
         return nil
@@ -1269,5 +1278,5 @@ struct BlockHeader: View {
 }
 
 #Preview {
-    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false), currentDayType: "Green Day")
+    ScheduleView(testDate: nil, noSchool: .constant(false), isStale: .constant(true), loader: ScheduleLoader(), onLoadingComplete: {}, onPullRefresh: {}, showSplashScreen: .constant(false), disablePullToRefreshGesture: .constant(false), currentDayType: "Green Day", currentDayTypeDate: nil)
 }

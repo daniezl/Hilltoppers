@@ -409,6 +409,7 @@ struct ContentView: View {
     @State private var disablePullToRefreshGesture = false
     @State private var lastOpenedDate: Date? = nil // Track when app was last opened
     @State private var currentDayType: String = "Loading..." // Track current day type for block filtering
+    @State private var currentDayTypeDate: Date? = nil
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
@@ -531,7 +532,7 @@ struct ContentView: View {
                                                      DayTypeView(testDate: testDate, isViewingTomorrow: isViewingTomorrow, firebaseError: $firebaseError, onLoadingComplete: { 
                              print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
-                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType)
+                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType, currentDayTypeDate: $currentDayTypeDate)
                          .padding(.top, isViewingTomorrow ? 8 : 0)
                              .id(refreshID)
                      }
@@ -546,7 +547,7 @@ struct ContentView: View {
                              Task {
                                  await refreshAll()
                              }
-                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture, currentDayType: currentDayType)
+                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture, currentDayType: currentDayType, currentDayTypeDate: currentDayTypeDate)
                              .id(refreshID)
                              .onAppear {
                                  // Reset animation state when view appears
@@ -1108,6 +1109,7 @@ struct ContentView: View {
         }
 
         currentDayType = "Loading..."
+        currentDayTypeDate = nil
         isLoading = true
         scheduleLoaded = false
         dayTypeLoaded = false

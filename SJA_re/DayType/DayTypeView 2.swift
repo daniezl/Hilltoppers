@@ -117,6 +117,7 @@ struct DayTypeView: View {
     @Binding var triggerRipple: Bool
     @Binding var showSplashScreen: Bool
     @Binding var currentDayType: String
+    @Binding var currentDayTypeDate: Date?
     @State private var htmlTitle = "Loading..."
     @State private var dayType = "Loading..."
     @State private var fullHTML: String? = nil
@@ -302,6 +303,7 @@ struct DayTypeView: View {
             self.hasTriedAutoRefresh = false
             self.showColorRipple = false
             self.networkRetryCount = 0
+            self.currentDayTypeDate = nil
             
             // Much shorter delay - just enough for UI setup
             let delay: UInt64 = showSplashScreen ? 200_000_000 : 0 // 0.2s or immediate
@@ -527,6 +529,7 @@ struct DayTypeView: View {
             await MainActor.run {
                 self.announcementMessage = nil
                 self.dayTypeSource = .bulletin
+                self.currentDayTypeDate = nil
             }
 
             let referenceDate = self.testDate ?? Date()
@@ -1015,6 +1018,7 @@ struct DayTypeView: View {
         let defaults = UserDefaults.standard
         let referenceDate = self.testDate ?? Date()
         let effectiveType = self.effectiveDayType
+        self.currentDayTypeDate = referenceDate
         defaults.set(effectiveType, forKey: "LastEffectiveDayType")
         defaults.set(referenceDate, forKey: "LastEffectiveDayDate")
         defaults.set(self.predicted, forKey: "LastPredictedDayType")
@@ -1407,6 +1411,6 @@ struct PredictionDetailView: View {
 
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, isViewingTomorrow: false, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"))
+        DayTypeView(testDate: nil, isViewingTomorrow: false, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"), currentDayTypeDate: .constant(nil))
     }
 }
