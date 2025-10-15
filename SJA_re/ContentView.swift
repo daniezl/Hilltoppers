@@ -398,7 +398,7 @@ struct ContentView: View {
     
     // Background refresh state
     @State private var previousDayType: String = ""
-    @State private var previousScheduleBlocks: [Block] = []
+    @State private var previousScheduleBlocks: [Block] = ContentView.loadCachedBlocks()
     @State private var previousNoSchool: Bool? = false
     @State private var scheduleLoaded: Bool = false
     @State private var dayTypeLoaded: Bool = false
@@ -420,7 +420,7 @@ struct ContentView: View {
     // Visual centering offsets
     private let scheduleOffset: CGFloat = 60
     private let noSchoolOffset: CGFloat = -30
-    
+
     @State private var currentTime = Date.currentEST // Updated by timer to make UI flow
     @State private var updatePrompt: AppUpdatePrompt? = nil
     @State private var hasLoggedAppOpenForCurrentActivation = false
@@ -566,7 +566,7 @@ struct ContentView: View {
             if isLoading {
                 SkeletonLoadingView(
                     scheduleOffset: scheduleOffset,
-                    blockCount: previousScheduleBlocks.isEmpty ? 3 : min(previousScheduleBlocks.count, 4)
+                    blockCount: previousScheduleBlocks.isEmpty ? 3 : min(previousScheduleBlocks.count, 5)
                 )
                     .transition(.opacity)
                     .zIndex(1000)
@@ -918,6 +918,18 @@ struct ContentView: View {
         hasLoggedAppOpenForCurrentActivation = true
         Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
     }
+
+    private static let cachedBlocksKey = "LastScheduleBlocks"
+
+    private static func loadCachedBlocks() -> [Block] {
+        guard let data = UserDefaults.standard.data(forKey: cachedBlocksKey) else { return [] }
+        return (try? JSONDecoder().decode([Block].self, from: data)) ?? []
+    }
+
+    private static func saveCachedBlocks(_ blocks: [Block]) {
+        guard let data = try? JSONEncoder().encode(blocks) else { return }
+        UserDefaults.standard.set(data, forKey: cachedBlocksKey)
+    }
     
     // Update loading state when both views are loaded
     private func updateLoadingState() {
@@ -932,6 +944,7 @@ struct ContentView: View {
             // Store current state for future background comparisons
             // Note: This is simplified - you'd need to get the actual dayType from DayTypeView
             previousScheduleBlocks = scheduleLoader.blocks
+            ContentView.saveCachedBlocks(scheduleLoader.blocks)
             previousNoSchool = noSchool
             // previousDayType would need to be set from the actual DayTypeView data
             
@@ -1049,6 +1062,7 @@ struct ContentView: View {
             // Update stored state
             previousDayType = tempDayType
             previousScheduleBlocks = tempScheduleLoader.blocks
+            ContentView.saveCachedBlocks(tempScheduleLoader.blocks)
             previousNoSchool = tempNoSchool
             
             // Trigger UI refresh
@@ -1917,7 +1931,7 @@ private struct SkeletonScheduleCardPlaceholder: View {
     let blockCount: Int
 
     var body: some View {
-        let placeholderCount = min(max(blockCount, 3), 4)
+        let placeholderCount = max(min(blockCount, 5), 2)
 
         VStack(spacing: 0) {
             HStack(alignment: .top) {
@@ -1945,8 +1959,8 @@ private struct SkeletonScheduleCardPlaceholder: View {
                 .padding(.vertical, 8)
 
             VStack(spacing: 8) {
-                ForEach(0..<placeholderCount, id: \.self) { index in
-                    SkeletonScheduleBlockRowPlaceholder(showCountdown: index == 0 || index == 2)
+                ForEach(0..<placeholderCount, id: \.self) { _ in
+                    SkeletonScheduleBlockRowPlaceholder()
                 }
             }
             .padding(.bottom, 8)
@@ -1960,54 +1974,16 @@ private struct SkeletonScheduleCardPlaceholder: View {
 }
 
 private struct SkeletonScheduleBlockRowPlaceholder: View {
-    let showCountdown: Bool
-
     var body: some View {
-        VStack(spacing: 0) {
-            if showCountdown {
-                HStack {
-                    Spacer()
-                    SkeletonBar(cornerRadius: 6, height: 10)
-                        .frame(width: 110)
-                        .opacity(0.6)
-                }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 2)
-            }
-
-            HStack {
-                VStack(alignment: .leading, spacing: 8) {
-                    SkeletonBar(cornerRadius: 8, height: 18)
-                        .frame(width: 160)
-
-                    SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 108)
-                        .opacity(0.65)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 8) {
-                    SkeletonBar(cornerRadius: 8, height: 14)
-                        .frame(width: 68)
-
-                    SkeletonBar(cornerRadius: 6, height: 10)
-                        .frame(width: 46)
-                        .opacity(0.6)
-                }
-
-                SkeletonBar(cornerRadius: 4, height: 12)
-                    .frame(width: 12)
-                    .opacity(0.4)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+        SkeletonBar(cornerRadius: 10, height: 18)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color(UIColor.systemGray5).opacity(0.25))
-                    .padding(.horizontal, 8)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(UIColor.systemGray5).opacity(0.2))
+                    .padding(.horizontal, 12)
             )
-        }
     }
 }
 
