@@ -1269,25 +1269,15 @@ struct SettingsView: View {
                 // settingsRow(icon: "clock", title: "Time") {
                 //     router.push(.settingsTime)
                 // }
+
+                settingsRow(icon: "ellipsis.circle", title: "More") {
+                    router.push(.settingsMore)
+                }
             }
             .padding(.top, 40)
             .padding(.horizontal, horizontalInset)
 
             Spacer()
-
-            VStack(spacing: 8) {
-                Text("If you have any questions / feedback, please contact:")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-
-                Text("yaoyu.zhang@student.stjacademy.org")
-                    .font(.footnote)
-                    .foregroundColor(.blue)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 30)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground).ignoresSafeArea())

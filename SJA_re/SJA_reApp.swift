@@ -134,6 +134,8 @@ struct SJA_reApp: App {
                         case .settingsTime:
                             TimeSettingsView(onDismissRoot: { router.pop() })
                                 .environmentObject(timeSettings)
+                        case .settingsMore:
+                            MoreInfoView(onDismiss: { router.pop() })
                         }
                     }
                     .toolbarBackground(.visible, for: .navigationBar)
