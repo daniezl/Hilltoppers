@@ -806,6 +806,12 @@ struct ScheduleView: View {
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
             updateCountdownWidget()
         }
+        .onChange(of: currentDayType) { _ in
+            updateCountdownWidget()
+        }
+        .onChange(of: currentDayTypeDate) { _ in
+            updateCountdownWidget()
+        }
     }
 
     // Helper functions
@@ -1183,22 +1189,43 @@ struct ScheduleView: View {
     // MARK: - Block Display Logic
     
     private func getBlockDisplayName(for block: Block) -> String {
-        let isGreenDay = currentDayType.lowercased().contains("green day") && !currentDayType.lowercased().contains("white")
-        let isUnknownDay = currentDayType.lowercased().contains("unknown")
-        
+        let scheduleDate = Calendar.sja.startOfDay(for: currentTime)
+        let normalizedDayType = dayTypeForBlockFiltering(on: scheduleDate)
+        let lowercasedCurrent = currentDayType.lowercased()
+        let isExplicitUnknown = lowercasedCurrent.contains("unknown")
+        let isGreenDay = normalizedDayType == "Green Day"
+        let isUnknownDay = normalizedDayType == nil || isExplicitUnknown
+
         // If day type is unknown and block has only one day enabled, show the original block name (will be styled in red)
         if isUnknownDay && hasOnlyOneDay(for: block.name) {
             return block.name
         }
-        
-        // Check if this block should be shown on the current day type
-        if blockManager.shouldShow(block: block.name, onGreenDay: isGreenDay) {
+
+        // Check if this block should be shown on the current day type (defaults to white-day settings when unknown)
+        let shouldTreatAsGreen = isGreenDay
+        if blockManager.shouldShow(block: block.name, onGreenDay: shouldTreatAsGreen) {
             // Show custom name or original name
             return blockManager.getDisplayName(for: block.name)
         } else {
             // Show as "Free Block" when the day type checkbox is NOT checked
             return "Free Block"
         }
+    }
+
+    private func dayTypeForBlockFiltering(on scheduleDate: Date) -> String? {
+        if let resolved = resolveDayTypeDisplay(for: scheduleDate) {
+            return resolved
+        }
+
+        let trimmed = currentDayType.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lower = trimmed.lowercased()
+        if lower.contains("green day") && !lower.contains("white") {
+            return "Green Day"
+        }
+        if lower.contains("white day") && !lower.contains("green") {
+            return "White Day"
+        }
+        return nil
     }
     
     private func hasOnlyOneDay(for blockName: String) -> Bool {
