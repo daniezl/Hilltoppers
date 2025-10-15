@@ -1809,6 +1809,7 @@ private struct SkeletonLoadingView: View {
     let scheduleOffset: CGFloat
     let blockCount: Int
     private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
+    private let topOverlayPadding: CGFloat = 32
 
     var body: some View {
         ZStack {
@@ -1816,7 +1817,7 @@ private struct SkeletonLoadingView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Spacer(minLength: 0)
+                Spacer(minLength: topOverlayPadding)
 
                 VStack(spacing: 24) {
                     HStack {
