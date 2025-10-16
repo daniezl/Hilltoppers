@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		921C56449A714013AB99266A /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82AF040DECD4BCE9F07528B /* ScheduleService.swift */; };
 		A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825B2E935CE500774386 /* FeatureShowcaseView.swift */; };
-		A2B4D9AA2FCBC8C400EEA00C /* MoreInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */; };
 		A228825E2E937DC800774386 /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825D2E937DC800774386 /* AppUpdateManager.swift */; };
 		A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */; };
 		A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CE2DEEB14500BCDAB5 /* FirebaseCore */; };
@@ -33,6 +32,7 @@
 		A280A0FE2DDE0FEA00F98F3F /* schedule_fri.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */; };
 		A287C2E62E6CA9E3005129F0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */; };
 		A287C2E72E6CA9E3005129F0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3B12DC018000037D8D9 /* SwiftUI.framework */; };
+		A2B4D9AA2FCBC8C400EEA00C /* MoreInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */; };
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
@@ -84,7 +84,6 @@
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
-		A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreInfoView.swift; sourceTree = "<group>"; };
 		A228825D2E937DC800774386 /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +109,7 @@
 		A280A0FD2DDE0FEA00F98F3F /* schedule_fri.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_fri.json; sourceTree = "<group>"; };
 		A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClassCountdownWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2ACF6042E8422F600C8E7D5 /* SJA-re-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SJA-re-Info.plist"; sourceTree = SOURCE_ROOT; };
+		A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreInfoView.swift; sourceTree = "<group>"; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
 		B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedTypes.swift; sourceTree = "<group>"; };
@@ -711,7 +711,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -754,7 +754,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
