@@ -88,20 +88,69 @@ struct ClassCountdownProvider: TimelineProvider {
             return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
         }
 
-        var timelinePoints: Set<Date> = [referenceDate]
-        for event in events {
-            if event.startDate >= referenceDate {
-                timelinePoints.insert(event.startDate)
+        var entries: [ClassCountdownEntry] = []
+        var visited: Set<Date> = []
+        var cursor = referenceDate
+
+        // Step through upcoming events, adding minute-level entries when the countdown spans an hour so
+        // the custom hour/minute display keeps updating smoothly.
+        while !visited.contains(cursor) {
+            visited.insert(cursor)
+
+            let phase = phase(at: cursor, events: events)
+            entries.append(ClassCountdownEntry(date: cursor, phase: phase, dayType: dayType))
+
+            guard let nextDate = nextTimelineDate(after: cursor, phase: phase, events: events) else {
+                break
             }
-            if event.endDate >= referenceDate {
-                timelinePoints.insert(event.endDate)
+
+            if nextDate <= cursor {
+                break
+            }
+
+            cursor = nextDate
+        }
+
+        return entries
+    }
+
+
+    private func nextTimelineDate(after date: Date, phase: ClassCountdownPhase, events: [WidgetClassEvent]) -> Date? {
+        switch phase {
+        case .blockStarts(let event):
+            return nextCountdownStep(from: date, to: event.startDate, events: events)
+        case .blockEnds(let event):
+            return nextCountdownStep(from: date, to: event.endDate, events: events)
+        case .finished, .noSchool(_), .stale, .empty:
+            return nextSignificantEventDate(after: date, events: events)
+        }
+    }
+
+    private func nextCountdownStep(from currentDate: Date, to target: Date, events: [WidgetClassEvent]) -> Date? {
+        guard target > currentDate else {
+            return nextSignificantEventDate(after: currentDate, events: events)
+        }
+
+        if target.timeIntervalSince(currentDate) >= 3600 {
+            return min(target, currentDate.addingTimeInterval(60))
+        }
+
+        return target
+    }
+
+    private func nextSignificantEventDate(after date: Date, events: [WidgetClassEvent]) -> Date? {
+        var candidate: Date?
+
+        for event in events {
+            if event.startDate > date {
+                candidate = min(candidate ?? event.startDate, event.startDate)
+            }
+            if event.endDate > date {
+                candidate = min(candidate ?? event.endDate, event.endDate)
             }
         }
 
-        let sortedPoints = timelinePoints.sorted()
-        return sortedPoints.map { point in
-            ClassCountdownEntry(date: point, phase: phase(at: point, events: events), dayType: dayType)
-        }
+        return candidate
     }
 
     private func phase(at date: Date, events: [WidgetClassEvent]) -> ClassCountdownPhase {
@@ -230,13 +279,38 @@ struct ClassCountdownWidgetEntryView: View {
         .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
     }
 
+    @ViewBuilder
     private func timerText(to target: Date) -> some View {
         let clampedTarget = target > entry.date ? target : entry.date
         let range = entry.date...clampedTarget
         let fontSize: CGFloat = family == .systemSmall ? 32 : 18
-        return Text(timerInterval: range, countsDown: true)
-            .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-            .foregroundColor(family == .systemSmall ? primaryTextColor : .primary)
+        let remaining = max(clampedTarget.timeIntervalSince(entry.date), 0)
+
+        if family == .systemSmall, remaining >= 3600 {
+            Text(hourMinuteString(for: remaining))
+                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                .foregroundColor(primaryTextColor)
+        } else {
+            Text(timerInterval: range, countsDown: true)
+                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                .foregroundColor(family == .systemSmall ? primaryTextColor : .primary)
+        }
+    }
+
+    private func hourMinuteString(for interval: TimeInterval) -> String {
+        let totalMinutes = max(Int(interval / 60), 0)
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+
+        if hours <= 0 {
+            return "\(minutes)m"
+        }
+
+        if minutes == 0 {
+            return "\(hours)h"
+        }
+
+        return "\(hours)h\(minutes)m"
     }
 }
 
