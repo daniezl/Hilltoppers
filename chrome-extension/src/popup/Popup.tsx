@@ -76,7 +76,7 @@ const Popup: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(DateTime.now().setZone(EST_ZONE).toJSDate());
-    }, 30000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -87,7 +87,7 @@ const Popup: React.FC = () => {
     return parseDateKey(schedule.dateKey);
   }, [schedule.dateKey]);
 
-  const { currentBlock, nextBlock, minutesRemaining } = useMemo(() => {
+  const { currentBlock, nextBlock, remainingMs } = useMemo(() => {
     let current: Block | undefined;
     let next: Block | undefined;
     let remaining = 0;
@@ -101,7 +101,7 @@ const Popup: React.FC = () => {
         if (nextIndex < schedule.blocks.length) {
           next = schedule.blocks[nextIndex];
         }
-        remaining = Math.max(0, Math.floor((times.end.getTime() - now.getTime()) / 60000));
+        remaining = Math.max(0, times.end.getTime() - now.getTime());
         break;
       }
       if (now < times.start) {
@@ -110,8 +110,19 @@ const Popup: React.FC = () => {
       }
     }
 
-    return { currentBlock: current, nextBlock: next, minutesRemaining: remaining };
+    return { currentBlock: current, nextBlock: next, remainingMs: remaining };
   }, [schedule.blocks, baseDate, now]);
+
+  const formattedRemaining = useMemo(() => {
+    if (!currentBlock) {
+      return '00:00:00';
+    }
+    const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  }, [currentBlock?.id, remainingMs]);
 
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;
@@ -125,11 +136,16 @@ const Popup: React.FC = () => {
       </header>
       <section className="status">
         {currentBlock ? (
-          <>
-            <h2>Current Block</h2>
-            <p className="current-name">{currentBlock.name}</p>
-            <p className="time-remaining">{minutesRemaining} min remaining</p>
-          </>
+          <div className="status-current">
+            <div className="current-details">
+              <h2>Current Block</h2>
+              <p className="current-name">{currentBlock.name}</p>
+            </div>
+            <span className="time-remaining">
+              <span className="time-value">{formattedRemaining}</span>
+              <span className="time-label">remaining</span>
+            </span>
+          </div>
         ) : (
           <>
             <h2>No Active Block</h2>
