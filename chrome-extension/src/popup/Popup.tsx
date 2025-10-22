@@ -168,8 +168,10 @@ const Popup: React.FC = () => {
             {schedule.blocks.map((block) => {
               const { start, end } = getBlockTimes(block, baseDate);
               const isCurrent = currentBlock?.id === block.id;
+              const isNext = !currentBlock && nextBlock?.id === block.id;
+              const className = isCurrent ? 'current-block' : isNext ? 'upcoming-block' : undefined;
               return (
-                <li key={block.id} className={isCurrent ? 'current-block' : undefined}>
+                <li key={block.id} className={className}>
                   <span className="block-name">{block.name}</span>
                   <span className="block-time">
                     {toDisplayTime(start)} – {toDisplayTime(end)}

@@ -142,6 +142,21 @@ header h1 {
   background: #2ea043;
 }
 
+.schedule-list li.upcoming-block {
+  background: #f0fdf4;
+  position: relative;
+}
+
+.schedule-list li.upcoming-block::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #6fdd88;
+}
+
 .block-name {
   font-weight: 500;
 }
