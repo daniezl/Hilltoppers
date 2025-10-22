@@ -1,0 +1,34 @@
+[
+  {
+    "name": "A Block",
+    "start": "08:00",
+    "end": "08:45"
+  },
+  {
+    "name": "B Block",
+    "start": "08:50",
+    "end": "09:35"
+  },
+  {
+    "name": "D Block",
+    "start": "09:40",
+    "end": "10:25"
+  },
+  {
+    "name": "E Block",
+    "start": "10:30",
+    "end": "11:15"
+  },
+  {
+    "name": "C Block",
+    "start": "11:20",
+    "end": "12:50",
+    "subBlocks": [
+      { "name": "1st Lunch", "start": "11:20", "end": "11:50" },
+      { "name": "2nd Lunch", "start": "11:35", "end": "12:05" },
+      { "name": "3rd Lunch", "start": "11:50", "end": "12:20" },
+      { "name": "4th Lunch", "start": "12:05", "end": "12:35" },
+      { "name": "5th Lunch", "start": "12:20", "end": "12:50" }
+    ]
+  }
+]

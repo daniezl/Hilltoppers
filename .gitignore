@@ -90,4 +90,8 @@ fastlane/test_output
 # After new code Injection tools there's a generated folder /iOSInjectionProject
 # https://github.com/johnno1962/injectionforxcode
 
-iOSInjectionProject/ 
+iOSInjectionProject/
+
+# Chrome extension build artifacts
+chrome-extension/node_modules/
+chrome-extension/dist/
