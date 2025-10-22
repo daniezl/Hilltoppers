@@ -8,10 +8,12 @@ import {
   query,
   where
 } from 'firebase/firestore';
+import type { DocumentData } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 import { getDb } from '../firebase/app';
 import { Block, EST_ZONE, SubBlock } from '../types/schedule';
 import { firebaseConfig } from '../firebase/config';
+import { resolveBulletinDayType } from './dayTypeResolver';
 
 interface RawSubBlock {
   name: string;
@@ -24,6 +26,17 @@ interface RawBlock {
   start: string;
   end: string;
   subBlocks?: RawSubBlock[];
+}
+
+type SpecialDayRecord = DocumentData & {
+  type?: string;
+  details?: string;
+  schedule?: RawBlock[];
+};
+
+export interface ScheduleResult {
+  blocks: Block[];
+  dayType: string | null;
 }
 
 function makeId(prefix: string, name: string, index: number): string {
@@ -68,6 +81,49 @@ function isFirebaseReady(): boolean {
   return Object.values(firebaseConfig).every((value) => typeof value === 'string' && !value.startsWith('REPLACE_ME'));
 }
 
+async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null> {
+  if (!isFirebaseReady()) {
+    return null;
+  }
+  const db = getDb();
+  const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  const ref = doc(db, 'special_days', formatter);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) {
+    return null;
+  }
+  return snapshot.data() as SpecialDayRecord;
+}
+
+function decodeScheduleFromData(data: SpecialDayRecord | null): Block[] | null {
+  if (!data || !Array.isArray(data.schedule)) {
+    return null;
+  }
+  return mapBlocks(data.schedule);
+}
+
+function deriveDayTypeLabel(rawType?: string | null, details?: string | null): string | null {
+  const normalize = (value?: string | null): string | null => {
+    if (!value) {
+      return null;
+    }
+    const trimmed = value.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower.includes('green')) {
+      return 'Green Day';
+    }
+    if (lower.includes('white')) {
+      return 'White Day';
+    }
+    if (lower.includes('no_school') || lower.includes('no school')) {
+      return 'No School';
+    }
+    return null;
+  };
+
+  return normalize(rawType) ?? normalize(details) ?? (details ? details.trim() : null) ?? null;
+}
+
 async function loadJsonSchedule(key: string): Promise<Block[] | null> {
   try {
     const url = getAssetUrl(`schedule/${key}.json`);
@@ -106,37 +162,13 @@ export async function isInSpecialPeriod(date: Date): Promise<boolean> {
 }
 
 export async function fetchTypeFor(date: Date): Promise<string | null> {
-  if (!isFirebaseReady()) {
-    return null;
-  }
-  const db = getDb();
-  const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
-  const ref = doc(db, 'special_days', formatter);
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) {
-    return null;
-  }
-  const data = snapshot.data();
-  return typeof data.type === 'string' ? data.type : null;
+  const data = await fetchSpecialDayData(date);
+  return typeof data?.type === 'string' ? data.type : null;
 }
 
 export async function loadCustomSchedule(date: Date): Promise<Block[] | null> {
-  if (!isFirebaseReady()) {
-    return null;
-  }
-  const db = getDb();
-  const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
-  const ref = doc(db, 'special_days', formatter);
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) {
-    return null;
-  }
-  const data = snapshot.data();
-  const schedule = data.schedule as RawBlock[] | undefined;
-  if (!schedule) {
-    return null;
-  }
-  return mapBlocks(schedule);
+  const data = await fetchSpecialDayData(date);
+  return decodeScheduleFromData(data);
 }
 
 export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Record<string, string>> {
@@ -211,36 +243,47 @@ export async function loadScheduleByType(type: string): Promise<Block[] | null> 
   return loadJsonSchedule(type);
 }
 
-export async function loadBlocksForDate(date: Date): Promise<Block[]> {
+export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
   if (await isInSpecialPeriod(date)) {
-    return [];
+    return { blocks: [], dayType: 'No School' };
   }
 
-  const type = await fetchTypeFor(date);
-  if (type === 'no_school') {
-    return [];
+  const specialDayData = await fetchSpecialDayData(date);
+  const rawType = specialDayData?.type ?? null;
+  const details = specialDayData?.details ?? null;
+  let dayTypeLabel = deriveDayTypeLabel(rawType, details);
+
+  if (rawType === 'no_school') {
+    return { blocks: [], dayType: dayTypeLabel ?? 'No School' };
   }
 
-  if (type === 'custom') {
-    const custom = await loadCustomSchedule(date);
-    if (custom) {
-      return custom;
+  if (rawType === 'custom') {
+    if (!dayTypeLabel) {
+      dayTypeLabel = await resolveBulletinDayType(date);
     }
-    return [];
+    const custom = decodeScheduleFromData(specialDayData) ?? [];
+    return { blocks: custom, dayType: dayTypeLabel };
   }
 
-  if (type) {
-    const typedSchedule = await loadScheduleByType(type);
+  if (typeof rawType === 'string' && rawType) {
+    const typedSchedule = await loadScheduleByType(rawType);
     if (typedSchedule) {
-      return typedSchedule;
+      if (!dayTypeLabel) {
+        dayTypeLabel = await resolveBulletinDayType(date);
+      }
+      return { blocks: typedSchedule, dayType: dayTypeLabel };
     }
+  }
+
+  if (!dayTypeLabel) {
+    dayTypeLabel = await resolveBulletinDayType(date);
   }
 
   const fallbackKey = getDefaultScheduleForWeekday(date);
   if (!fallbackKey) {
-    return [];
+    return { blocks: [], dayType: dayTypeLabel ?? 'Unknown' };
   }
 
   const fallbackSchedule = await loadJsonSchedule(fallbackKey);
-  return fallbackSchedule ?? [];
+  return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel ?? 'Unknown' };
 }

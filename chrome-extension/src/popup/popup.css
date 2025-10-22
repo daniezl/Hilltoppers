@@ -19,7 +19,67 @@ header {
 
 header h1 {
   font-size: 18px;
-  margin: 0 0 4px;
+  margin: 0;
+}
+
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-date {
+  font-size: 13px;
+  color: #57606a;
+}
+
+.day-type-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.day-type-pill.green {
+  background: #e6f4ea;
+  color: #2ea043;
+  border-color: rgba(46, 160, 67, 0.35);
+}
+
+.day-type-pill.white {
+  background: #f6f8fa;
+  color: #57606a;
+  border-color: #d0d7de;
+}
+
+.day-type-pill.no-school {
+  background: #fbeae5;
+  color: #bc4c2c;
+  border-color: #f1a097;
+}
+
+.day-type-pill.neutral {
+  background: #f6f8fa;
+  color: #57606a;
+  border-color: #d0d7de;
 }
 
 .status {

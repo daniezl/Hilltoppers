@@ -5,6 +5,7 @@ import { Block, EST_ZONE, parseBlockTime, toDisplayTime } from '../types/schedul
 interface SchedulePayload {
   dateKey: string;
   blocks: Block[];
+  dayType: string | null;
 }
 
 function safeSendMessage<T>(message: unknown): Promise<T> {
@@ -36,14 +37,18 @@ function getBlockTimes(block: Block, baseDate: Date) {
 }
 
 const Popup: React.FC = () => {
-  const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [] });
+  const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [], dayType: null });
   const [error, setError] = useState<string | null>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
 
   useEffect(() => {
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
       .then((payload) => {
-        setSchedule(payload);
+        setSchedule({
+          dateKey: payload?.dateKey ?? '',
+          blocks: payload?.blocks ?? [],
+          dayType: payload?.dayType ?? null
+        });
       })
       .catch((err) => {
         console.error('[popup] Failed to get cached schedule', err);
@@ -57,7 +62,11 @@ const Popup: React.FC = () => {
         (message as { type?: string }).type === 'scheduleUpdated'
       ) {
         const payload = (message as { payload: SchedulePayload }).payload;
-        setSchedule(payload);
+        setSchedule({
+          dateKey: payload?.dateKey ?? '',
+          blocks: payload?.blocks ?? [],
+          dayType: payload?.dayType ?? null
+        });
       }
     }
 
@@ -86,6 +95,10 @@ const Popup: React.FC = () => {
     }
     return parseDateKey(schedule.dateKey);
   }, [schedule.dateKey]);
+
+  const formattedDate = useMemo(() => {
+    return DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('ccc, MMM d');
+  }, [baseDate]);
 
   const { currentBlock, nextBlock, remainingMs } = useMemo(() => {
     let current: Block | undefined;
@@ -133,6 +146,25 @@ const Popup: React.FC = () => {
     return `${hh}:${mm}:${ss}`;
   }, [currentBlock?.id, remainingMs]);
 
+  const dayTypeLabel = schedule.dayType;
+
+  const dayTypeClass = useMemo(() => {
+    if (!dayTypeLabel) {
+      return 'neutral';
+    }
+    const lower = dayTypeLabel.toLowerCase();
+    if (lower.includes('green')) {
+      return 'green';
+    }
+    if (lower.includes('white')) {
+      return 'white';
+    }
+    if (lower.includes('no school')) {
+      return 'no-school';
+    }
+    return 'neutral';
+  }, [dayTypeLabel]);
+
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;
   }
@@ -140,8 +172,15 @@ const Popup: React.FC = () => {
   return (
     <main className="popup">
       <header>
-        <h1>Hilltoppers</h1>
-        <p>{DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('cccc, LLL d')}</p>
+        <div className="header-row">
+          <div className="header-left">
+            <h1>Hilltoppers</h1>
+            <span className="header-date">{formattedDate}</span>
+          </div>
+          <div className="header-right">
+            {dayTypeLabel ? <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span> : null}
+          </div>
+        </div>
       </header>
       <section className="status">
         {currentBlock ? (

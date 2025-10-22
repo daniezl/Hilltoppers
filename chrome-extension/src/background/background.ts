@@ -7,6 +7,7 @@ const REFRESH_INTERVAL_MINUTES = 5;
 
 let cachedSchedule: Block[] = [];
 let cachedDateKey = '';
+let cachedDayType: string | null = null;
 
 function getTodayKey(): string {
   return DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');
@@ -15,16 +16,18 @@ function getTodayKey(): string {
 async function refreshSchedule(): Promise<void> {
   try {
     const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
-    const blocks = await loadBlocksForDate(today);
+    const { blocks, dayType } = await loadBlocksForDate(today);
     cachedSchedule = blocks;
     cachedDateKey = getTodayKey();
+    cachedDayType = dayType ?? null;
     if (typeof chrome !== 'undefined') {
       chrome.runtime.sendMessage(
         {
           type: 'scheduleUpdated',
           payload: {
             dateKey: cachedDateKey,
-            blocks
+            blocks,
+            dayType: cachedDayType
           }
         },
         () => {
@@ -68,7 +71,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'getScheduleCache') {
     sendResponse({
       dateKey: cachedDateKey,
-      blocks: cachedSchedule
+      blocks: cachedSchedule,
+      dayType: cachedDayType
     });
     return true;
   }
