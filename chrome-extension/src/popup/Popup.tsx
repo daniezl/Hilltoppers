@@ -115,13 +115,22 @@ const Popup: React.FC = () => {
 
   const formattedRemaining = useMemo(() => {
     if (!currentBlock) {
-      return '00:00:00';
+      return '00:00';
     }
     const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const seconds = String(totalSeconds % 60).padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+
+    if (hours === 0) {
+      return `${mm}:${ss}`;
+    }
+
+    const hh = String(hours).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
   }, [currentBlock?.id, remainingMs]);
 
   if (error) {
@@ -142,8 +151,8 @@ const Popup: React.FC = () => {
               <p className="current-name">{currentBlock.name}</p>
             </div>
             <span className="time-remaining">
+              <span className="time-label">ends in</span>
               <span className="time-value">{formattedRemaining}</span>
-              <span className="time-label">remaining</span>
             </span>
           </div>
         ) : (
