@@ -1,11 +1,11 @@
 {
-  "name": "SchoolApp Schedule",
+  "name": "Hilltoppers",
   "description": "View the current school schedule and day type from SchoolApp in Chrome.",
   "version": "0.1.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
-    "default_title": "SchoolApp Schedule"
+    "default_title": "Hilltoppers"
   },
   "background": {
     "service_worker": "background.js",

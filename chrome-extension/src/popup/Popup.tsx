@@ -119,7 +119,7 @@ const Popup: React.FC = () => {
   return (
     <main className="popup">
       <header>
-        <h1>SchoolApp Schedule</h1>
+        <h1>Hilltoppers</h1>
         <p>{DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('cccc, LLL d')}</p>
       </header>
       <section className="status">

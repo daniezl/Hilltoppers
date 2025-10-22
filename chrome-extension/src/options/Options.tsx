@@ -102,7 +102,7 @@ const Options: React.FC = () => {
 
   return (
     <main className="options">
-      <h1>SchoolApp Schedule Preferences</h1>
+      <h1>Hilltoppers Preferences</h1>
       <form onSubmit={handleSave}>
         <label>
           Lunch period
