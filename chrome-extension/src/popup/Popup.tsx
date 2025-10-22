@@ -38,6 +38,7 @@ function getBlockTimes(block: Block, baseDate: Date) {
 const Popup: React.FC = () => {
   const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [] });
   const [error, setError] = useState<string | null>(null);
+  const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
 
   useEffect(() => {
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
@@ -136,21 +137,32 @@ const Popup: React.FC = () => {
           </>
         )}
       </section>
-      <section className="schedule-list">
-        <h3>Today&apos;s Blocks</h3>
-        <ul>
-          {schedule.blocks.map((block) => {
-            const { start, end } = getBlockTimes(block, baseDate);
-            return (
-              <li key={block.id}>
-                <span className="block-name">{block.name}</span>
-                <span className="block-time">
-                  {toDisplayTime(start)} – {toDisplayTime(end)}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
+        <button
+          type="button"
+          className="schedule-toggle"
+          aria-expanded={scheduleExpanded}
+          onClick={() => setScheduleExpanded((prev) => !prev)}
+        >
+          <span>Today&apos;s Schedule</span>
+          <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
+        </button>
+        {scheduleExpanded && (
+          <ul>
+            {schedule.blocks.map((block) => {
+              const { start, end } = getBlockTimes(block, baseDate);
+              const isCurrent = currentBlock?.id === block.id;
+              return (
+                <li key={block.id} className={isCurrent ? 'current-block' : undefined}>
+                  <span className="block-name">{block.name}</span>
+                  <span className="block-time">
+                    {toDisplayTime(start)} – {toDisplayTime(end)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </main>
   );

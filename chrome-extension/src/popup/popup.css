@@ -41,31 +41,74 @@ header h1 {
 }
 
 .time-remaining {
-  color: #0969da;
+  color: #1f883d;
   margin: 4px 0 0;
 }
 
-.schedule-list h3 {
-  margin: 0 0 8px;
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #ffffff;
   font-size: 14px;
   font-weight: 600;
+  color: #0a0a0a;
+  cursor: pointer;
+}
+
+.schedule-toggle:hover {
+  background: #ecfdf3;
+  border-color: #1f883d;
 }
 
 .schedule-list ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  gap: 6px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.schedule-list.collapsed ul {
+  display: none;
 }
 
 .schedule-list li {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 8px;
+  padding: 6px 10px;
+  gap: 2px;
+}
+
+.schedule-list li + li {
+  border-top: 1px solid #d0d7de;
+}
+
+.schedule-list li.current-block {
+  background: #e6f4ea;
+  position: relative;
+}
+
+.schedule-list li.current-block::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #2ea043;
 }
 
 .block-name {
@@ -75,6 +118,20 @@ header h1 {
 .block-time {
   font-size: 12px;
   color: #57606a;
+}
+
+.chevron {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 4px 0 4px;
+  border-color: #0a0a0a transparent transparent transparent;
+  transition: transform 0.2s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
 }
 
 .error {

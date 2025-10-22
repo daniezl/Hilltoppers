@@ -41,14 +41,14 @@ button {
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
-  background: #0b69da;
+  background: #1f883d;
   color: #ffffff;
   font-size: 14px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #0958c5;
+  background: #18632c;
 }
 
 .status {
