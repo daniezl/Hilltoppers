@@ -186,7 +186,6 @@ const Popup: React.FC = () => {
         {currentBlock ? (
           <div className="status-current">
             <div className="current-details">
-              <h2>Current Block</h2>
               <p className="current-name">{currentBlock.name}</p>
             </div>
             <span className="time-remaining">
