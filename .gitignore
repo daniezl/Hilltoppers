@@ -95,3 +95,5 @@ iOSInjectionProject/
 # Chrome extension build artifacts
 chrome-extension/node_modules/
 chrome-extension/dist/
+chrome-extension/.env
+chrome-extension/.env.*

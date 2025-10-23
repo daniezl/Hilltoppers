@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DateTime } from 'luxon';
 import { Block, EST_ZONE, parseBlockTime, toDisplayTime } from '../types/schedule';
+import {
+  BlockPreferenceRecord,
+  createEmptyPreferences,
+  loadBlockPreferences,
+  resolveBlockDisplay
+} from '../storage/blockPreferences';
 
 interface SchedulePayload {
   dateKey: string;
@@ -40,6 +46,7 @@ const Popup: React.FC = () => {
   const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [], dayType: null });
   const [error, setError] = useState<string | null>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
+  const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
 
   useEffect(() => {
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
@@ -87,6 +94,33 @@ const Popup: React.FC = () => {
       setNow(DateTime.now().setZone(EST_ZONE).toJSDate());
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    loadBlockPreferences()
+      .then((prefs) => setBlockPrefs(prefs))
+      .catch((err) => console.error('[popup] Failed to load block preferences', err));
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+      const listener = (
+        changes: { [key: string]: chrome.storage.StorageChange },
+        area: string
+      ) => {
+        if (area === 'sync' && changes.blockPreferences) {
+          const next = changes.blockPreferences.newValue as BlockPreferenceRecord | undefined;
+          if (next) {
+            setBlockPrefs(next);
+          } else {
+            setBlockPrefs(createEmptyPreferences());
+          }
+        }
+      };
+      chrome.storage.onChanged.addListener(listener);
+      return () => {
+        chrome.storage.onChanged.removeListener(listener);
+      };
+    }
+    return () => {};
   }, []);
 
   const baseDate = useMemo(() => {
@@ -216,10 +250,16 @@ const Popup: React.FC = () => {
               const { start, end } = getBlockTimes(block, baseDate);
               const isCurrent = currentBlock?.id === block.id;
               const isNext = !currentBlock && nextBlock?.id === block.id;
-              const className = isCurrent ? 'current-block' : isNext ? 'upcoming-block' : undefined;
+              const display = resolveBlockDisplay(block.name, schedule.dayType, blockPrefs);
+              const itemClasses: string[] = [];
+              if (isCurrent) itemClasses.push('current-block');
+              else if (isNext) itemClasses.push('upcoming-block');
+              if (display.isFree) itemClasses.push('free-block');
+              if (display.emphasizeUnknown) itemClasses.push('unknown-block');
+              const className = itemClasses.join(' ') || undefined;
               return (
                 <li key={block.id} className={className}>
-                  <span className="block-name">{block.name}</span>
+                  <span className="block-name">{display.label}</span>
                   <span className="block-time">
                     {toDisplayTime(start)} – {toDisplayTime(end)}
                   </span>

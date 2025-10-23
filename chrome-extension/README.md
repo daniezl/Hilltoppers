@@ -32,9 +32,18 @@ This package contains the Chrome extension implementation for SchoolApp. It mirr
 
 ## Firebase Configuration
 
-Update `src/firebase/config.ts` with the values from `SJA_re/GoogleService-Info.plist`. Until the placeholders are replaced, the extension falls back to static schedule JSON files and skips Firestore calls.
+Create a `.env.local` file in `chrome-extension/` (the path is already ignored by git) and populate it with the web config values from `SJA_re/GoogleService-Info.plist`:
 
-Restrict the API key to the published extension identifier in the Google Cloud Console once you release the extension.
+```
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
+
+When these values are absent the extension falls back to static JSON schedules and skips Firestore calls. Remember to restrict your API key to the published extension identifier in the Google Cloud Console before release.
 
 ## Project Structure
 

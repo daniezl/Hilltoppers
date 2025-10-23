@@ -212,6 +212,15 @@ header h1 {
   background: #6fdd88;
 }
 
+.schedule-list li.free-block .block-name {
+  color: #57606a;
+  font-style: italic;
+}
+
+.schedule-list li.unknown-block .block-name {
+  color: #bc4c2c;
+}
+
  .block-name {
   font-weight: 600;
   font-size: 16px;

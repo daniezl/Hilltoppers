@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import {
+  DEFAULT_BLOCK_NAMES,
+  BlockPreferenceRecord,
+  BlockKey,
+  createEmptyPreferences,
+  loadBlockPreferences,
+  saveBlockPreferences
+} from '../storage/blockPreferences';
 
 interface SchedulePreferences {
   lunchPeriod: number;
-  hiddenBlocks: string[];
 }
 
 const DEFAULT_PREFERENCES: SchedulePreferences = {
-  lunchPeriod: 1,
-  hiddenBlocks: []
+  lunchPeriod: 1
 };
 
 function storageGet<T>(key: string, fallback: T): Promise<T> {
@@ -55,19 +61,23 @@ const PREF_KEY = 'schedulePreferences';
 const Options: React.FC = () => {
   const [preferences, setPreferences] = useState<SchedulePreferences>(DEFAULT_PREFERENCES);
   const [status, setStatus] = useState<string>('');
-  const [hiddenBlocksInput, setHiddenBlocksInput] = useState<string>('');
+  const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    storageGet<SchedulePreferences>(PREF_KEY, DEFAULT_PREFERENCES)
-      .then((prefs) => {
-        const merged = { ...DEFAULT_PREFERENCES, ...prefs };
-        setPreferences(merged);
-        setHiddenBlocksInput(merged.hiddenBlocks.join(', '));
-      })
-      .catch((error) => {
+    (async () => {
+      try {
+        const prefs = await storageGet<SchedulePreferences>(PREF_KEY, DEFAULT_PREFERENCES);
+        setPreferences({ ...DEFAULT_PREFERENCES, ...prefs });
+        const blocks = await loadBlockPreferences();
+        setBlockPrefs(blocks);
+      } catch (error) {
         console.error('[options] Failed to load preferences', error);
         setStatus('Unable to load saved preferences.');
-      });
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const handleLunchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -75,14 +85,24 @@ const Options: React.FC = () => {
     setPreferences((prev) => ({ ...prev, lunchPeriod: value }));
   };
 
-  const handleHiddenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const raw = event.target.value;
-    const hidden = raw
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean);
-    setHiddenBlocksInput(raw);
-    setPreferences((prev) => ({ ...prev, hiddenBlocks: hidden }));
+  const handleBlockNameChange = (key: BlockKey, value: string) => {
+    setBlockPrefs((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        name: value
+      }
+    }));
+  };
+
+  const handleBlockToggle = (key: BlockKey, field: 'showOnGreen' | 'showOnWhite') => {
+    setBlockPrefs((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        [field]: !prev[key][field]
+      }
+    }));
   };
 
   const handleSave = async (event: React.FormEvent) => {
@@ -90,8 +110,9 @@ const Options: React.FC = () => {
     setStatus('Saving…');
     try {
       await storageSet(PREF_KEY, preferences);
+      await saveBlockPreferences(blockPrefs);
       if (typeof chrome !== 'undefined') {
-        chrome.runtime.sendMessage({ type: 'preferencesUpdated', payload: preferences });
+        chrome.runtime.sendMessage({ type: 'preferencesUpdated' });
       }
       setStatus('Preferences saved.');
     } catch (error) {
@@ -103,6 +124,9 @@ const Options: React.FC = () => {
   return (
     <main className="options">
       <h1>Hilltoppers Preferences</h1>
+      {loading ? (
+        <p className="status">Loading…</p>
+      ) : (
       <form onSubmit={handleSave}>
         <label>
           Lunch period
@@ -115,18 +139,50 @@ const Options: React.FC = () => {
           </select>
         </label>
 
-        <label>
-          Hidden blocks (comma separated names)
-          <textarea
-            rows={3}
-            placeholder="Example: Advisory, Chapel"
-            value={hiddenBlocksInput}
-            onChange={handleHiddenChange}
-          />
-        </label>
+        <fieldset className="block-settings">
+          <legend>Block settings</legend>
+          <div className="block-settings-grid">
+            {(Object.keys(DEFAULT_BLOCK_NAMES) as BlockKey[]).map((key) => {
+              const pref = blockPrefs[key];
+              return (
+                <div key={key} className="block-settings-row">
+                  <div className="block-settings-name">
+                    <label htmlFor={`block-name-${key}`}>{DEFAULT_BLOCK_NAMES[key]}</label>
+                    <input
+                      id={`block-name-${key}`}
+                      type="text"
+                      value={pref.name}
+                      placeholder={DEFAULT_BLOCK_NAMES[key]}
+                      onChange={(event) => handleBlockNameChange(key, event.target.value)}
+                    />
+                  </div>
+                  <div className="block-settings-toggles">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={pref.showOnGreen}
+                        onChange={() => handleBlockToggle(key, 'showOnGreen')}
+                      />
+                      Green
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={pref.showOnWhite}
+                        onChange={() => handleBlockToggle(key, 'showOnWhite')}
+                      />
+                      White
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <button type="submit">Save Preferences</button>
       </form>
+      )}
       {status && <p className="status">{status}</p>}
     </main>
   );
