@@ -12,7 +12,7 @@ import type { DocumentData } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 import { getDb } from '../firebase/app';
 import { Block, EST_ZONE, SubBlock } from '../types/schedule';
-import { firebaseConfig } from '../firebase/config';
+import { isFirebaseConfigured } from '../firebase/config';
 import { resolveBulletinDayType } from './dayTypeResolver';
 
 interface RawSubBlock {
@@ -77,12 +77,8 @@ function getAssetUrl(path: string): string {
   return path;
 }
 
-function isFirebaseReady(): boolean {
-  return Object.values(firebaseConfig).every((value) => typeof value === 'string' && !value.startsWith('REPLACE_ME'));
-}
-
 async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null> {
-  if (!isFirebaseReady()) {
+  if (!isFirebaseConfigured()) {
     return null;
   }
   const db = getDb();
@@ -141,7 +137,7 @@ async function loadJsonSchedule(key: string): Promise<Block[] | null> {
 }
 
 export async function isInSpecialPeriod(date: Date): Promise<boolean> {
-  if (!isFirebaseReady()) {
+  if (!isFirebaseConfigured()) {
     return false;
   }
   const db = getDb();
@@ -172,7 +168,7 @@ export async function loadCustomSchedule(date: Date): Promise<Block[] | null> {
 }
 
 export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Record<string, string>> {
-  if (!isFirebaseReady()) {
+  if (!isFirebaseConfigured()) {
     return {};
   }
   const db = getDb();
@@ -198,7 +194,7 @@ export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Reco
 }
 
 export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array<{ start: Date; end: Date }>> {
-  if (!isFirebaseReady()) {
+  if (!isFirebaseConfigured()) {
     return [];
   }
   const db = getDb();

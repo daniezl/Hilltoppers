@@ -7,6 +7,7 @@ import {
   loadBlockPreferences,
   resolveBlockDisplay
 } from '../storage/blockPreferences';
+import { logAppOpen } from '../firebase/analytics';
 
 interface SchedulePayload {
   dateKey: string;
@@ -49,6 +50,8 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
 
   useEffect(() => {
+    void logAppOpen();
+
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
       .then((payload) => {
         setSchedule({

@@ -12,10 +12,14 @@
     "type": "module"
   },
   "options_page": "options.html",
-  "permissions": ["storage", "alarms"],
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
   "host_permissions": [
     "https://firestore.googleapis.com/*",
-    "https://stjacademy.org/*"
+    "https://stjacademy.org/*",
+    "https://www.google-analytics.com/*"
   ],
   "icons": {
     "16": "icons/icon16.png",
