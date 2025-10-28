@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
 import { Block, EST_ZONE, parseBlockTime, toDisplayTime } from '../types/schedule';
 import {
@@ -49,23 +49,36 @@ const Popup: React.FC = () => {
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const hasResolvedInitial = useRef(false);
 
   useEffect(() => {
     void logAppOpen();
 
+    const loadingTimeout = window.setTimeout(() => {
+      if (!hasResolvedInitial.current) {
+        hasResolvedInitial.current = true;
+        setIsLoading(false);
+      }
+    }, 1500);
+
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
       .then((payload) => {
-        setSchedule({
+        const next = {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
           dayType: payload?.dayType ?? null
-        });
+        };
+        setSchedule(next);
+        const hasContent = Boolean(next.dateKey) || (Array.isArray(next.blocks) && next.blocks.length > 0) || Boolean(next.dayType);
+        if (hasContent) {
+          hasResolvedInitial.current = true;
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
         console.error('[popup] Failed to get cached schedule', err);
         setError('Unable to retrieve schedule.');
-      })
-      .finally(() => {
+        hasResolvedInitial.current = true;
         setIsLoading(false);
       });
 
@@ -76,11 +89,13 @@ const Popup: React.FC = () => {
         (message as { type?: string }).type === 'scheduleUpdated'
       ) {
         const payload = (message as { payload: SchedulePayload }).payload;
-        setSchedule({
+        const next = {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
           dayType: payload?.dayType ?? null
-        });
+        };
+        setSchedule(next);
+        hasResolvedInitial.current = true;
         setIsLoading(false);
       }
     }
@@ -88,11 +103,16 @@ const Popup: React.FC = () => {
     if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage?.addListener) {
       chrome.runtime.onMessage.addListener(handleMessage);
       return () => {
+        hasResolvedInitial.current = true;
+        window.clearTimeout(loadingTimeout);
         chrome.runtime.onMessage.removeListener(handleMessage);
       };
     }
 
-    return () => {};
+    return () => {
+      hasResolvedInitial.current = true;
+      window.clearTimeout(loadingTimeout);
+    };
   }, []);
 
   const [now, setNow] = useState<Date>(() => DateTime.now().setZone(EST_ZONE).toJSDate());
