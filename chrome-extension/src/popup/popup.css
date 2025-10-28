@@ -248,3 +248,13 @@ header h1 {
 .error {
   color: #d1242f;
 }
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #57606a;
+}
+

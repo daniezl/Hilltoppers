@@ -48,6 +48,7 @@ const Popup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     void logAppOpen();
@@ -63,6 +64,9 @@ const Popup: React.FC = () => {
       .catch((err) => {
         console.error('[popup] Failed to get cached schedule', err);
         setError('Unable to retrieve schedule.');
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
 
     function handleMessage(message: unknown) {
@@ -77,6 +81,7 @@ const Popup: React.FC = () => {
           blocks: payload?.blocks ?? [],
           dayType: payload?.dayType ?? null
         });
+        setIsLoading(false);
       }
     }
 
@@ -204,6 +209,14 @@ const Popup: React.FC = () => {
 
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;
+  }
+
+  if (isLoading) {
+    return (
+      <main className="popup">
+        <div className="loading-state">Loading…</div>
+      </main>
+    );
   }
 
   return (
