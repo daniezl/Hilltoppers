@@ -38,7 +38,7 @@ header {
   padding: 2px 10px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border: 1px solid transparent;
@@ -53,7 +53,7 @@ header {
 .day-type-pill.white {
   background: #f0f2f5;
   color: #555f6a;
-  border-color: rgba(17, 17, 17, 0.08);
+  border-color: rgba(17, 17, 17, 0.18);
 }
 
 .day-type-pill.no-school {
@@ -65,7 +65,7 @@ header {
 .day-type-pill.neutral {
   background: #f0f2f5;
   color: #555f6a;
-  border-color: rgba(17, 17, 17, 0.08);
+  border-color: rgba(17, 17, 17, 0.18);
 }
 
 .header-right {
@@ -77,7 +77,7 @@ header {
 .settings-button {
   border: none;
   background: transparent;
-  color: #979fab;
+  color: #7d8591;
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -105,7 +105,7 @@ header {
 
 .status {
   background: #ffffff;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
@@ -131,7 +131,7 @@ header {
   margin: 0;
   color: #444444;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -145,7 +145,7 @@ header {
 .time-label {
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #979fab;
+  color: #7d8591;
 }
 
 .schedule-list {
@@ -156,15 +156,16 @@ header {
 
 .schedule-toggle {
   display: flex;
+  font-weight: 700;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 6px;
   background: #ffffff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111111;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -179,7 +180,7 @@ header {
   list-style: none;
   padding: 0;
   margin: 0;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 8px;
   overflow: hidden;
   background: #ffffff;
@@ -232,7 +233,7 @@ header {
 }
 
 .schedule-list li .block-name {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   color: #161b22;
 }
@@ -244,13 +245,13 @@ header {
 
 .schedule-list li.free-block .block-name,
 .schedule-list li.muted-block .block-name {
-  color: #a1a8b3;
-  font-style: italic;
+  color: #7d8591;
+  font-weight: 500;
 }
 
 .schedule-list li.free-block .block-time,
 .schedule-list li.muted-block .block-time {
-  color: #a1a8b3;
+  color: #7d8591;
 }
 
 .chevron {
@@ -277,6 +278,10 @@ header {
   justify-content: center;
   min-height: 160px;
   font-size: 14px;
-  font-weight: 600;
-  color: #a1a8b3;
+  font-weight: 500;
+  color: #7d8591;
+}
+
+.schedule-toggle span:first-child {
+  font-weight: 700;
 }

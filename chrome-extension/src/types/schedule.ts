@@ -34,5 +34,5 @@ export function isFuture(target: Date, from: Date = new Date()): boolean {
 }
 
 export function toDisplayTime(date: Date): string {
-  return DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('h:mm a');
+  return DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('HH:mm');
 }
