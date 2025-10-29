@@ -215,10 +215,29 @@ function ensureRefreshAlarm(): void {
   });
 }
 
+function isAlarmMinuteAligned(alarm: chrome.alarms.Alarm): boolean {
+  const remainder = alarm.scheduledTime % 60000;
+  const offset = remainder === 0 ? 0 : Math.min(remainder, 60000 - remainder);
+  return offset <= 250;
+}
+
+function scheduleAlignedIconAlarm(): void {
+  const now = Date.now();
+  const nextMinuteStart = Math.ceil((now + 1) / 60000) * 60000;
+  chrome.alarms.create(ICON_TICK_ALARM, {
+    when: nextMinuteStart + 150,
+    periodInMinutes: ICON_TICK_INTERVAL_MINUTES
+  });
+}
+
 function ensureIconAlarm(): void {
   chrome.alarms.get(ICON_TICK_ALARM, (alarm) => {
     if (!alarm) {
-      chrome.alarms.create(ICON_TICK_ALARM, { periodInMinutes: ICON_TICK_INTERVAL_MINUTES });
+      scheduleAlignedIconAlarm();
+      return;
+    }
+    if (!isAlarmMinuteAligned(alarm)) {
+      chrome.alarms.clear(ICON_TICK_ALARM, () => scheduleAlignedIconAlarm());
     }
   });
 }
