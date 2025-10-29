@@ -7,7 +7,7 @@ import {
   loadBlockPreferences,
   saveBlockPreferences
 } from '../storage/blockPreferences';
-import { logAnalyticsEvent } from '../firebase/analytics';
+import { logClassSettingsReset, logPreferenceSaved, logScreenView } from '../firebase/analytics';
 
 interface SaveState {
   status: 'idle' | 'saving' | 'success' | 'error';
@@ -25,7 +25,7 @@ const ClassSettings: React.FC = () => {
   const [saveState, setSaveState] = useState<SaveState>(INITIAL_SAVE_STATE);
 
   useEffect(() => {
-    void logAnalyticsEvent('screen_view', { screen_name: 'class_settings' });
+    void logScreenView('ClassSettings');
 
     (async () => {
       try {
@@ -73,7 +73,7 @@ const ClassSettings: React.FC = () => {
   const handleReset = () => {
     setBlockPrefs(createEmptyPreferences());
     setSaveState({ status: 'idle', message: '' });
-    void logAnalyticsEvent('class_settings_reset');
+    void logClassSettingsReset();
   };
 
   const handleSave = async (event: React.FormEvent) => {
@@ -86,7 +86,7 @@ const ClassSettings: React.FC = () => {
         chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
       }
       setSaveState({ status: 'success', message: 'Saved successfully.' });
-      void logAnalyticsEvent('preferences_saved', { source: 'class_settings' });
+      void logPreferenceSaved('class_settings');
     } catch (error) {
       console.error('[class-settings] Failed to save settings', error);
       setSaveState({ status: 'error', message: 'Failed to save changes.' });

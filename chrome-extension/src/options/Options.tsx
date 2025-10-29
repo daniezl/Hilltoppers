@@ -7,7 +7,7 @@ import {
   loadBlockPreferences,
   saveBlockPreferences
 } from '../storage/blockPreferences';
-import { logAnalyticsEvent } from '../firebase/analytics';
+import { logPreferenceSaved, logScreenView } from '../firebase/analytics';
 import {
   DEFAULT_SCHEDULE_PREFERENCES,
   loadSchedulePreferences,
@@ -22,7 +22,7 @@ const Options: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    void logAnalyticsEvent('screen_view', { screen_name: 'options' });
+    void logScreenView('Options');
 
     (async () => {
       try {
@@ -73,7 +73,7 @@ const Options: React.FC = () => {
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage({ type: 'preferencesUpdated' });
       }
-      void logAnalyticsEvent('preferences_saved', { source: 'options' });
+      void logPreferenceSaved('options');
       setStatus('Preferences saved.');
     } catch (error) {
       console.error('[options] Failed to save preferences', error);
