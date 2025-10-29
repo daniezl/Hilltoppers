@@ -5,7 +5,9 @@ import {
   BlockPreferenceRecord,
   createEmptyPreferences,
   loadBlockPreferences,
-  resolveBlockDisplay
+  resolveBlockDisplay,
+  DEFAULT_BLOCK_NAMES,
+  BlockKey
 } from '../storage/blockPreferences';
 import { logAppOpen } from '../firebase/analytics';
 
@@ -50,6 +52,13 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const hasResolvedInitial = useRef(false);
+
+  const isUsingDefaultBlockPrefs = useMemo(() =>
+    (Object.keys(DEFAULT_BLOCK_NAMES) as BlockKey[]).every((key) => {
+      const pref = blockPrefs[key];
+      return pref.name.trim().length === 0 && pref.showOnGreen && pref.showOnWhite;
+    }),
+  [blockPrefs]);
 
   useEffect(() => {
     void logAppOpen();
@@ -316,29 +325,39 @@ const Popup: React.FC = () => {
           <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
         {scheduleExpanded && (
-          <ul>
-            {schedule.blocks.map((block) => {
-              const { start, end } = getBlockTimes(block, baseDate);
-              const isCurrent = currentBlock?.id === block.id;
-              const isNext = !currentBlock && nextBlock?.id === block.id;
-              const display = resolveBlockDisplay(block.name, schedule.dayType, blockPrefs);
-              const itemClasses: string[] = [];
-              if (isCurrent) itemClasses.push('current-block');
-              else if (isNext) itemClasses.push('upcoming-block');
-              if (display.isFree) itemClasses.push('free-block');
-              if (display.emphasizeUnknown) itemClasses.push('unknown-block');
-              if (display.useGrayText) itemClasses.push('muted-block');
-              const className = itemClasses.join(' ') || undefined;
-              return (
-                <li key={block.id} className={className}>
-                  <span className="block-name">{display.label}</span>
-                  <span className="block-time">
-                    {toDisplayTime(start)} – {toDisplayTime(end)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          <>
+            <ul>
+              {schedule.blocks.map((block) => {
+                const { start, end } = getBlockTimes(block, baseDate);
+                const isCurrent = currentBlock?.id === block.id;
+                const isNext = !currentBlock && nextBlock?.id === block.id;
+                const display = resolveBlockDisplay(block.name, schedule.dayType, blockPrefs);
+                const itemClasses: string[] = [];
+                if (isCurrent) itemClasses.push('current-block');
+                else if (isNext) itemClasses.push('upcoming-block');
+                if (display.isFree) itemClasses.push('free-block');
+                if (display.emphasizeUnknown) itemClasses.push('unknown-block');
+                if (display.useGrayText) itemClasses.push('muted-block');
+                const className = itemClasses.join(' ') || undefined;
+                return (
+                  <li key={block.id} className={className}>
+                    <span className="block-name">{display.label}</span>
+                    <span className="block-time">
+                      {toDisplayTime(start)} – {toDisplayTime(end)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            {isUsingDefaultBlockPrefs ? (
+              <p className="schedule-hint">
+                You can go to the <a href="#" onClick={(event) => {
+                  event.preventDefault();
+                  handleOpenClassSettings();
+                }}>settings</a> (top left) to set courses in your schedule.
+              </p>
+            ) : null}
+          </>
         )}
       </section>
     </main>

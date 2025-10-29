@@ -285,3 +285,19 @@ header {
 .schedule-toggle span:first-child {
   font-weight: 700;
 }
+
+.schedule-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #7d8591;
+}
+
+.schedule-hint a {
+  color: #2a7a3e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.schedule-hint a:hover {
+  text-decoration: underline;
+}
