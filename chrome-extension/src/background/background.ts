@@ -55,11 +55,12 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
   label: string;
   tooltip: string;
   kind: CountdownKind;
+  useStaticIcon: boolean;
 } {
   if (!cachedSchedule.length) {
     const label = cachedDayType ? cachedDayType.slice(0, 2).toUpperCase() : '--';
     const tooltip = cachedDayType ?? 'No schedule available';
-    return { label, tooltip, kind: 'idle' };
+    return { label, tooltip, kind: 'idle', useStaticIcon: true };
   }
 
   const baseDate = getBaseDate();
@@ -80,7 +81,8 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
       return {
         label,
         tooltip: `${block.name} ends in ${formatDurationText(remainingMinutes)} (${endDisplay})`,
-        kind: 'current'
+        kind: 'current',
+        useStaticIcon: remainingMinutes > 99
       };
     }
 
@@ -91,7 +93,8 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
       return {
         label,
         tooltip: `Next: ${block.name} at ${startDisplay} (${formatDurationText(minutesUntilStart)} away)`,
-        kind: 'upcoming'
+        kind: 'upcoming',
+        useStaticIcon: minutesUntilStart > 99
       };
     }
   }
@@ -99,7 +102,8 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
   return {
     label: '--',
     tooltip: cachedDayType ? `${cachedDayType} · No remaining blocks` : 'Schedule complete',
-    kind: 'idle'
+    kind: 'idle',
+    useStaticIcon: true
   };
 }
 
@@ -109,7 +113,9 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
     return null;
   }
 
-  const background = '#213e26';
+  const isUpcoming = kind === 'upcoming';
+  const background = isUpcoming ? '#ffffff' : '#213e26';
+  const textColor = isUpcoming ? '#1f6f2b' : '#ffffff';
   const sizes = [16, 32, 48];
   const imageData: Partial<Record<'16' | '32' | '48', ImageData>> = {};
 
@@ -132,7 +138,7 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = textColor;
     const fontSize = label.length <= 2 ? Math.round(size * 0.65) : Math.round(size * 0.48);
     ctx.font = `${fontSize}px "Segoe UI", "Helvetica Neue", sans-serif`;
     ctx.textAlign = 'center';
@@ -147,16 +153,9 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
 }
 
 async function updateActionIcon(): Promise<void> {
-  const { label, tooltip, kind } = determineCountdown();
+  const { label, tooltip, kind, useStaticIcon } = determineCountdown();
   try {
-    if (kind !== 'current') {
-      await chrome.action.setIcon({ path: {
-        16: 'icons/icon16.png',
-        32: 'icons/icon32.png',
-        48: 'icons/icon48.png',
-        128: 'icons/icon128.png'
-      }});
-    } else {
+    if (!useStaticIcon && (kind === 'current' || kind === 'upcoming')) {
       const imageData = createIconImageData(label, kind);
       if (imageData) {
         await chrome.action.setIcon({ imageData });
@@ -168,6 +167,13 @@ async function updateActionIcon(): Promise<void> {
           128: 'icons/icon128.png'
         }});
       }
+    } else {
+      await chrome.action.setIcon({ path: {
+        16: 'icons/icon16.png',
+        32: 'icons/icon32.png',
+        48: 'icons/icon48.png',
+        128: 'icons/icon128.png'
+      }});
     }
     await chrome.action.setTitle({ title: tooltip });
   } catch (error) {

@@ -148,6 +148,22 @@ header {
   color: #7d8591;
 }
 
+.status-ended {
+  text-align: center;
+}
+
+.status-ended h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status-ended p {
+  margin: 4px 0 0;
+  color: #606770;
+  font-size: 13px;
+}
+
 .schedule-list {
   display: flex;
   flex-direction: column;

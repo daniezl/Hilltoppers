@@ -45,6 +45,23 @@ function getBlockTimes(block: Block, baseDate: Date) {
   return { start, end };
 }
 
+function formatCountdown(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
+
+  if (hours === 0) {
+    return `${mm}:${ss}`;
+  }
+
+  const hh = String(hours).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+}
+
 const Popup: React.FC = () => {
   const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [], dayType: null });
   const [error, setError] = useState<string | null>(null);
@@ -191,10 +208,11 @@ const Popup: React.FC = () => {
     return DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('ccc, MMM d');
   }, [baseDate]);
 
-  const { currentBlock, nextBlock, remainingMs } = useMemo(() => {
+  const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;
     let next: Block | undefined;
     let remaining = 0;
+    let nextStartsIn = 0;
 
     for (let i = 0; i < schedule.blocks.length; i += 1) {
       const block = schedule.blocks[i];
@@ -204,38 +222,35 @@ const Popup: React.FC = () => {
         const nextIndex = i + 1;
         if (nextIndex < schedule.blocks.length) {
           next = schedule.blocks[nextIndex];
+          const nextStart = parseBlockTime(schedule.blocks[nextIndex].start, baseDate);
+          nextStartsIn = Math.max(0, nextStart.getTime() - now.getTime());
         }
         remaining = Math.max(0, times.end.getTime() - now.getTime());
         break;
       }
       if (now < times.start) {
         next = block;
+        nextStartsIn = Math.max(0, times.start.getTime() - now.getTime());
         break;
       }
     }
 
-    return { currentBlock: current, nextBlock: next, remainingMs: remaining };
+    return { currentBlock: current, nextBlock: next, remainingMs: remaining, nextStartsInMs: nextStartsIn };
   }, [schedule.blocks, baseDate, now]);
 
   const formattedRemaining = useMemo(() => {
     if (!currentBlock) {
       return '00:00';
     }
-    const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const mm = String(minutes).padStart(2, '0');
-    const ss = String(seconds).padStart(2, '0');
-
-    if (hours === 0) {
-      return `${mm}:${ss}`;
-    }
-
-    const hh = String(hours).padStart(2, '0');
-    return `${hh}:${mm}:${ss}`;
+    return formatCountdown(remainingMs);
   }, [currentBlock?.id, remainingMs]);
+
+  const formattedNextStart = useMemo(() => {
+    if (!nextBlock) {
+      return '00:00';
+    }
+    return formatCountdown(nextStartsInMs);
+  }, [nextBlock?.id, nextStartsInMs]);
 
   const currentDisplay = useMemo(() => {
     if (!currentBlock) {
@@ -341,11 +356,21 @@ const Popup: React.FC = () => {
               <span className="time-value">{formattedRemaining}</span>
             </span>
           </div>
+        ) : nextBlock ? (
+          <div className="status-current upcoming-status">
+            <div className="current-details">
+              <p className="current-name">Next: {nextDisplay?.label ?? nextBlock.name}</p>
+            </div>
+            <span className="time-remaining">
+              <span className="time-label">starts in</span>
+              <span className="time-value">{formattedNextStart}</span>
+            </span>
+          </div>
         ) : (
-          <>
-            <h2>No Active Block</h2>
-            {nextBlock ? <p>Next: {nextDisplay?.label ?? nextBlock.name}</p> : <p>Enjoy your free time!</p>}
-          </>
+          <div className="status-ended">
+            <h2>School ended</h2>
+            <p>Have a good day!</p>
+          </div>
         )}
       </section>
       <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
