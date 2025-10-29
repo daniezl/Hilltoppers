@@ -109,14 +109,7 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
     return null;
   }
 
-  const colours: Record<CountdownKind, string> = {
-    current: '#1f883d',
-    upcoming: '#0969da',
-    idle: '#6e7781',
-    none: '#6e7781'
-  };
-
-  const background = colours[kind] ?? colours.idle;
+  const background = '#213e26';
   const sizes = [16, 32, 48];
   const imageData: Partial<Record<'16' | '32' | '48', ImageData>> = {};
 
@@ -128,10 +121,19 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
     }
 
     ctx.fillStyle = background;
-    ctx.fillRect(0, 0, size, size);
+    ctx.beginPath();
+    const radius = Math.round(size * 0.23);
+    const d = size;
+    ctx.moveTo(radius, 0);
+    ctx.arcTo(d, 0, d, d, radius);
+    ctx.arcTo(d, d, 0, d, radius);
+    ctx.arcTo(0, d, 0, 0, radius);
+    ctx.arcTo(0, 0, d, 0, radius);
+    ctx.closePath();
+    ctx.fill();
 
     ctx.fillStyle = '#ffffff';
-    const fontSize = label.length <= 2 ? Math.round(size * 0.7) : Math.round(size * 0.5);
+    const fontSize = label.length <= 2 ? Math.round(size * 0.65) : Math.round(size * 0.48);
     ctx.font = `${fontSize}px "Segoe UI", "Helvetica Neue", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
