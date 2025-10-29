@@ -8,59 +8,15 @@ import {
   saveBlockPreferences
 } from '../storage/blockPreferences';
 import { logAnalyticsEvent } from '../firebase/analytics';
-
-interface SchedulePreferences {
-  lunchPeriod: number;
-}
-
-const DEFAULT_PREFERENCES: SchedulePreferences = {
-  lunchPeriod: 1
-};
-
-function storageGet<T>(key: string, fallback: T): Promise<T> {
-  return new Promise((resolve, reject) => {
-    if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-      resolve(fallback);
-      return;
-    }
-
-    chrome.storage.sync.get([key], (result) => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (result[key]) {
-        resolve(result[key] as T);
-      } else {
-        resolve(fallback);
-      }
-    });
-  });
-}
-
-function storageSet<T>(key: string, value: T): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-      resolve();
-      return;
-    }
-
-    chrome.storage.sync.set({ [key]: value }, () => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
-}
-
-const PREF_KEY = 'schedulePreferences';
+import {
+  DEFAULT_SCHEDULE_PREFERENCES,
+  loadSchedulePreferences,
+  saveSchedulePreferences,
+  type SchedulePreferences
+} from '../storage/schedulePreferences';
 
 const Options: React.FC = () => {
-  const [preferences, setPreferences] = useState<SchedulePreferences>(DEFAULT_PREFERENCES);
+  const [preferences, setPreferences] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [status, setStatus] = useState<string>('');
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,8 +26,8 @@ const Options: React.FC = () => {
 
     (async () => {
       try {
-        const prefs = await storageGet<SchedulePreferences>(PREF_KEY, DEFAULT_PREFERENCES);
-        setPreferences({ ...DEFAULT_PREFERENCES, ...prefs });
+        const prefs = await loadSchedulePreferences();
+        setPreferences(prefs);
         const blocks = await loadBlockPreferences();
         setBlockPrefs(blocks);
       } catch (error) {
@@ -112,7 +68,7 @@ const Options: React.FC = () => {
     event.preventDefault();
     setStatus('Saving…');
     try {
-      await storageSet(PREF_KEY, preferences);
+      await saveSchedulePreferences(preferences);
       await saveBlockPreferences(blockPrefs);
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage({ type: 'preferencesUpdated' });

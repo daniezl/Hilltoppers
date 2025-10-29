@@ -14,6 +14,7 @@ export default defineConfig({
       input: {
         popup: path.resolve(rootDir, 'popup.html'),
         options: path.resolve(rootDir, 'options.html'),
+        classSettings: path.resolve(rootDir, 'class-settings.html'),
         background: path.resolve(rootDir, 'src/background/background.ts')
       },
       output: {

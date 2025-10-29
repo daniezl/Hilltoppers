@@ -210,6 +210,18 @@ const Popup: React.FC = () => {
 
   const dayTypeLabel = schedule.dayType;
 
+  const handleOpenClassSettings = () => {
+    const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
+      ? chrome.runtime.getURL('class-settings.html')
+      : 'class-settings.html';
+
+    if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
+      chrome.tabs.create({ url: targetUrl });
+    } else {
+      window.open(targetUrl, '_blank', 'noopener');
+    }
+  };
+
   const dayTypeClass = useMemo(() => {
     if (!dayTypeLabel) {
       return 'neutral';
@@ -248,6 +260,9 @@ const Popup: React.FC = () => {
             <span className="header-date">{formattedDate}</span>
           </div>
           <div className="header-right">
+            <button type="button" className="settings-button" onClick={handleOpenClassSettings}>
+              Edit Classes
+            </button>
             {dayTypeLabel ? <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span> : null}
           </div>
         </div>

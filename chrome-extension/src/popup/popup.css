@@ -39,6 +39,7 @@ header h1 {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .header-date {
@@ -259,3 +260,29 @@ header h1 {
 }
 
 
+
+.settings-button {
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-button:hover {
+  border-color: var(--color-toggle-hover-border);
+  background: var(--color-toggle-hover-bg);
+}
+
+.settings-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(31, 136, 61, 0.2);
+}
+
+.settings-button:active {
+  transform: translateY(1px);
+}
