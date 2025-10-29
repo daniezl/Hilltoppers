@@ -237,6 +237,20 @@ const Popup: React.FC = () => {
     return `${hh}:${mm}:${ss}`;
   }, [currentBlock?.id, remainingMs]);
 
+  const currentDisplay = useMemo(() => {
+    if (!currentBlock) {
+      return null;
+    }
+    return resolveBlockDisplay(currentBlock.name, schedule.dayType, blockPrefs);
+  }, [blockPrefs, currentBlock, schedule.dayType]);
+
+  const nextDisplay = useMemo(() => {
+    if (!nextBlock) {
+      return null;
+    }
+    return resolveBlockDisplay(nextBlock.name, schedule.dayType, blockPrefs);
+  }, [blockPrefs, nextBlock, schedule.dayType]);
+
   const dayTypeLabel = schedule.dayType;
 
   const handleOpenClassSettings = () => {
@@ -320,7 +334,7 @@ const Popup: React.FC = () => {
         {currentBlock ? (
           <div className="status-current">
             <div className="current-details">
-              <p className="current-name">{currentBlock.name}</p>
+              <p className="current-name">{currentDisplay?.label ?? currentBlock.name}</p>
             </div>
             <span className="time-remaining">
               <span className="time-label">ends in</span>
@@ -330,7 +344,7 @@ const Popup: React.FC = () => {
         ) : (
           <>
             <h2>No Active Block</h2>
-            {nextBlock ? <p>Next: {nextBlock.name}</p> : <p>Enjoy your free time!</p>}
+            {nextBlock ? <p>Next: {nextDisplay?.label ?? nextBlock.name}</p> : <p>Enjoy your free time!</p>}
           </>
         )}
       </section>
