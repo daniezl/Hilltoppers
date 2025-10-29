@@ -150,7 +150,14 @@ async function updateActionIcon(): Promise<void> {
   const { label, tooltip, kind } = determineCountdown();
   try {
     const imageData = createIconImageData(label, kind);
-    if (imageData) {
+    if (label === '--') {
+      await chrome.action.setIcon({ path: {
+        16: 'icons/icon16.png',
+        32: 'icons/icon32.png',
+        48: 'icons/icon48.png',
+        128: 'icons/icon128.png'
+      }});
+    } else if (imageData) {
       await chrome.action.setIcon({ imageData });
     }
     await chrome.action.setTitle({ title: tooltip });
