@@ -118,6 +118,15 @@ header {
   gap: 12px;
 }
 
+.next-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7d8591;
+  margin-bottom: 2px;
+}
+
 .current-name {
   font-size: 20px;
   font-weight: 700;

@@ -70,6 +70,23 @@ const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const hasResolvedInitial = useRef(false);
 
+  const debugTestTime = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get('testTime');
+    if (!value) {
+      return null;
+    }
+    const parsed = DateTime.fromISO(value, { zone: EST_ZONE });
+    if (!parsed.isValid) {
+      console.warn('[popup] Ignoring invalid testTime param', value);
+      return null;
+    }
+    return parsed.toJSDate();
+  }, []);
+
   const scheduleDate = useMemo(
     () =>
       schedule.dateKey
@@ -161,14 +178,18 @@ const Popup: React.FC = () => {
     };
   }, []);
 
-  const [now, setNow] = useState<Date>(() => DateTime.now().setZone(EST_ZONE).toJSDate());
+  const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
 
   useEffect(() => {
+    if (debugTestTime) {
+      setNow(debugTestTime);
+      return () => undefined;
+    }
     const interval = setInterval(() => {
       setNow(DateTime.now().setZone(EST_ZONE).toJSDate());
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [debugTestTime]);
 
   useEffect(() => {
     loadBlockPreferences()
@@ -359,7 +380,8 @@ const Popup: React.FC = () => {
         ) : nextBlock ? (
           <div className="status-current upcoming-status">
             <div className="current-details">
-              <p className="current-name">Next: {nextDisplay?.label ?? nextBlock.name}</p>
+              <span className="next-label">Next up</span>
+              <p className="current-name">{nextDisplay?.label ?? nextBlock.name}</p>
             </div>
             <span className="time-remaining">
               <span className="time-label">starts in</span>
