@@ -46,7 +46,7 @@ header {
 
 .day-type-pill.green {
   background: rgba(46, 160, 67, 0.12);
-  color: #2a7a3e;
+  color: currentColor;
   border-color: rgba(46, 160, 67, 0.25);
 }
 
@@ -292,7 +292,7 @@ header {
 }
 
 .schedule-hint a {
-  color: #2a7a3e;
+  color: currentColor;
   font-weight: 600;
   text-decoration: none;
 }
@@ -338,7 +338,7 @@ header {
   padding: 4px;
   border: none;
   background: transparent;
-  color: #2a7a3e;
+  color: currentColor;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -356,4 +356,10 @@ header {
 
 .subblock-list .subblock-name {
   font-weight: 600;
+}
+
+.block-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }

@@ -366,33 +366,32 @@ const Popup: React.FC = () => {
                   <li key={block.id} className={className}>
                     <div className="block-row">
                       <span className="block-name">{display.label}</span>
-                      <span className="block-time">
-                        {toDisplayTime(start)} – {toDisplayTime(end)}
-                      </span>
-                    </div>
-                    {isLunchBlock ? (
-                      <>
-                        <button
-                          type="button"
-                          className="lunch-inline-toggle"
-                          onClick={() => setShowLunchDetails((prev) => !prev)}
-                        >
-                          Lunch
-                          <span aria-hidden="true">{showLunchDetails ? '▲' : '▼'}</span>
-                        </button>
-                        {showLunchDetails ? (
-                          <ul className="subblock-list">
-                            {subBlocksForBlock.map((sub) => (
-                              <li key={sub.id ?? sub.name}>
-                                <span className="subblock-name">{sub.name}</span>
-                                <span className="subblock-time">
-                                  {toDisplayTime(parseBlockTime(sub.start, baseDate))} – {toDisplayTime(parseBlockTime(sub.end, baseDate))}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                      <div className="block-right">
+                        <span className="block-time">
+                          {toDisplayTime(start)} – {toDisplayTime(end)}
+                        </span>
+                        {isLunchBlock ? (
+                          <button
+                            type="button"
+                            className="lunch-inline-toggle"
+                            onClick={() => setShowLunchDetails((prev) => !prev)}
+                          >
+                            <span aria-hidden="true">{showLunchDetails ? '▲' : '▼'}</span>
+                          </button>
                         ) : null}
-                      </>
+                      </div>
+                    </div>
+                    {isLunchBlock && showLunchDetails ? (
+                      <ul className="subblock-list">
+                        {subBlocksForBlock.map((sub) => (
+                          <li key={sub.id ?? sub.name}>
+                            <span className="subblock-name">{sub.name}</span>
+                            <span className="subblock-time">
+                              {toDisplayTime(parseBlockTime(sub.start, baseDate))} – {toDisplayTime(parseBlockTime(sub.end, baseDate))}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     ) : null}
                   </li>
                 );
