@@ -256,13 +256,35 @@ const Popup: React.FC = () => {
       <header>
         <div className="header-row">
           <div className="header-left">
+            <div className="header-title-row">
+              <button
+                type="button"
+                className="settings-button"
+                onClick={handleOpenClassSettings}
+                aria-label="Open settings"
+                title="Settings"
+              >
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 7.5h14M5 12h14M5 16.5h14"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
             <h1>Hilltoppers</h1>
             <span className="header-date">{formattedDate}</span>
           </div>
           <div className="header-right">
-            <button type="button" className="settings-button" onClick={handleOpenClassSettings}>
-              Edit Classes
-            </button>
             {dayTypeLabel ? <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span> : null}
           </div>
         </div>

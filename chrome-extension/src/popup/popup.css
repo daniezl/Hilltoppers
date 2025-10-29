@@ -262,27 +262,37 @@ header h1 {
 
 
 .settings-button {
-  border: 1px solid var(--color-border);
-  background: var(--color-card);
-  color: var(--color-text);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 13px;
-  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
 .settings-button:hover {
-  border-color: var(--color-toggle-hover-border);
+  color: var(--color-text);
   background: var(--color-toggle-hover-bg);
 }
 
 .settings-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(31, 136, 61, 0.2);
+  box-shadow: 0 0 0 2px rgba(31, 136, 61, 0.25);
 }
 
 .settings-button:active {
-  transform: translateY(1px);
+  transform: scale(0.92);
+}
+
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
