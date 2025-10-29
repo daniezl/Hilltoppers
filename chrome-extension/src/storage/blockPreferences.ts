@@ -119,6 +119,7 @@ export interface BlockDisplayInfo {
   originalName: string;
   isFree: boolean;
   emphasizeUnknown: boolean;
+  useGrayText: boolean;
 }
 
 function hasOnlyOneDay(pref: BlockPreference): boolean {
@@ -136,7 +137,8 @@ export function resolveBlockDisplay(
       label: blockName,
       originalName: blockName,
       isFree: false,
-      emphasizeUnknown: false
+      emphasizeUnknown: false,
+      useGrayText: true
     };
   }
   const pref = preferences[key];
@@ -149,7 +151,8 @@ export function resolveBlockDisplay(
         label: blockName,
         originalName: blockName,
         isFree: false,
-        emphasizeUnknown: true
+        emphasizeUnknown: true,
+        useGrayText: false
       };
     }
     const show = pref.showOnWhite;
@@ -158,7 +161,8 @@ export function resolveBlockDisplay(
         label: 'Free Block',
         originalName: blockName,
         isFree: true,
-        emphasizeUnknown: false
+        emphasizeUnknown: false,
+        useGrayText: true
       };
     }
     const custom = pref.name.trim();
@@ -166,7 +170,8 @@ export function resolveBlockDisplay(
       label: custom || blockName,
       originalName: blockName,
       isFree: false,
-      emphasizeUnknown: false
+      emphasizeUnknown: false,
+      useGrayText: false
     };
   }
 
@@ -177,7 +182,8 @@ export function resolveBlockDisplay(
       label: 'Free Block',
       originalName: blockName,
       isFree: true,
-      emphasizeUnknown: false
+      emphasizeUnknown: false,
+      useGrayText: true
     };
   }
   const custom = pref.name.trim();
@@ -185,6 +191,7 @@ export function resolveBlockDisplay(
     label: custom || blockName,
     originalName: blockName,
     isFree: false,
-    emphasizeUnknown: false
+    emphasizeUnknown: false,
+    useGrayText: false
   };
 }

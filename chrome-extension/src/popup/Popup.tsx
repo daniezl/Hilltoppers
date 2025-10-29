@@ -327,6 +327,7 @@ const Popup: React.FC = () => {
               else if (isNext) itemClasses.push('upcoming-block');
               if (display.isFree) itemClasses.push('free-block');
               if (display.emphasizeUnknown) itemClasses.push('unknown-block');
+              if (display.useGrayText) itemClasses.push('muted-block');
               const className = itemClasses.join(' ') || undefined;
               return (
                 <li key={block.id} className={className}>
