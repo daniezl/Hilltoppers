@@ -149,16 +149,25 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
 async function updateActionIcon(): Promise<void> {
   const { label, tooltip, kind } = determineCountdown();
   try {
-    const imageData = createIconImageData(label, kind);
-    if (label === '--') {
+    if (kind !== 'current') {
       await chrome.action.setIcon({ path: {
         16: 'icons/icon16.png',
         32: 'icons/icon32.png',
         48: 'icons/icon48.png',
         128: 'icons/icon128.png'
       }});
-    } else if (imageData) {
-      await chrome.action.setIcon({ imageData });
+    } else {
+      const imageData = createIconImageData(label, kind);
+      if (imageData) {
+        await chrome.action.setIcon({ imageData });
+      } else {
+        await chrome.action.setIcon({ path: {
+          16: 'icons/icon16.png',
+          32: 'icons/icon32.png',
+          48: 'icons/icon48.png',
+          128: 'icons/icon128.png'
+        }});
+      }
     }
     await chrome.action.setTitle({ title: tooltip });
   } catch (error) {
