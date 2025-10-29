@@ -281,8 +281,6 @@ const Popup: React.FC = () => {
                 </svg>
               </button>
             </div>
-            <h1>Hilltoppers</h1>
-            <span className="header-date">{formattedDate}</span>
           </div>
           <div className="header-right">
             {dayTypeLabel ? <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span> : null}
