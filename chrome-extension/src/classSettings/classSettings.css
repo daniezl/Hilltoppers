@@ -179,6 +179,14 @@ body, html {
   overflow: hidden;
 }
 
+
+.class-settings__table-input {
+  max-width: 220px;
+}
+
+.class-settings__table-input input[type='text'] {
+  width: 100%;
+}
 .class-settings__table-row {
   display: grid;
   grid-template-columns: 140px 1fr 120px 120px;
