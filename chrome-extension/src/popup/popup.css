@@ -233,14 +233,13 @@ header {
 
 .schedule-list li .block-name {
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
   color: #161b22;
 }
 
 .schedule-list li .block-time {
   font-size: 13px;
   color: #111111;
-  font-weight: 500;
 }
 
 .schedule-list li.free-block .block-name,
@@ -332,22 +331,29 @@ header {
 
 .lunch-inline-toggle {
   margin-top: 6px;
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 0;
+  padding: 4px;
   border: none;
   background: transparent;
   color: #2a7a3e;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-}
-
-.lunch-inline-toggle span {
-  font-size: 10px;
+  align-self: flex-end;
 }
 
 .lunch-inline-toggle:hover {
   color: #20652f;
+}
+
+.lunch-inline-toggle span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.subblock-list .subblock-name {
+  font-weight: 600;
 }

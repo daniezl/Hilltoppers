@@ -377,7 +377,7 @@ const Popup: React.FC = () => {
                           className="lunch-inline-toggle"
                           onClick={() => setShowLunchDetails((prev) => !prev)}
                         >
-                          Lunch periods
+                          Lunch
                           <span aria-hidden="true">{showLunchDetails ? '▲' : '▼'}</span>
                         </button>
                         {showLunchDetails ? (
