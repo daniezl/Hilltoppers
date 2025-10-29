@@ -53,6 +53,44 @@ const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const hasResolvedInitial = useRef(false);
 
+  const scheduleDate = useMemo(
+    () =>
+      schedule.dateKey
+        ? parseDateKey(schedule.dateKey)
+        : DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate(),
+    [schedule.dateKey]
+  );
+  const lunchBlock = useMemo(
+    () =>
+      schedule.blocks.find(
+        (block) => Array.isArray(block.subBlocks) && block.subBlocks.length > 0
+      ) ?? null,
+    [schedule.blocks]
+  );
+  const lunchSubBlocks = lunchBlock?.subBlocks ?? [];
+  const [selectedLunch, setSelectedLunch] = useState<string>(() => {
+    const stored = localStorage.getItem('selectedLunchPeriod');
+    if (stored && lunchSubBlocks.some((sub) => sub.name === stored)) {
+      return stored;
+    }
+    return lunchSubBlocks[0]?.name ?? '';
+  });
+
+  useEffect(() => {
+    if (lunchSubBlocks.length === 0) {
+      return;
+    }
+    if (!selectedLunch || !lunchSubBlocks.some((sub) => sub.name === selectedLunch)) {
+      setSelectedLunch(lunchSubBlocks[0]?.name ?? '');
+    }
+  }, [lunchSubBlocks, selectedLunch]);
+
+  useEffect(() => {
+    if (selectedLunch) {
+      localStorage.setItem('selectedLunchPeriod', selectedLunch);
+    }
+  }, [selectedLunch]);
+
   const isUsingDefaultBlockPrefs = useMemo(() =>
     (Object.keys(DEFAULT_BLOCK_NAMES) as BlockKey[]).every((key) => {
       const pref = blockPrefs[key];
@@ -339,12 +377,50 @@ const Popup: React.FC = () => {
                 if (display.emphasizeUnknown) itemClasses.push('unknown-block');
                 if (display.useGrayText) itemClasses.push('muted-block');
                 const className = itemClasses.join(' ') || undefined;
+                const subBlocksForBlock = Array.isArray(block.subBlocks) ? block.subBlocks : [];
+                const isLunchBlock = lunchBlock && block.id === lunchBlock.id;
+
                 return (
                   <li key={block.id} className={className}>
-                    <span className="block-name">{display.label}</span>
-                    <span className="block-time">
-                      {toDisplayTime(start)} – {toDisplayTime(end)}
-                    </span>
+                    <div className="block-row">
+                      <span className="block-name">{display.label}</span>
+                      <span className="block-time">
+                        {toDisplayTime(start)} – {toDisplayTime(end)}
+                      </span>
+                    </div>
+                    {isLunchBlock ? (
+                      <>
+                        <div className="block-row lunch-select-row">
+                          <label className="lunch-inline-label">
+                            Lunch period
+                            <select
+                              className="lunch-inline-select"
+                              value={selectedLunch}
+                              onChange={(event) => setSelectedLunch(event.target.value)}
+                            >
+                              {subBlocksForBlock.map((sub) => (
+                                <option key={sub.id ?? sub.name} value={sub.name}>
+                                  {sub.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <ul className="subblock-list">
+                          {subBlocksForBlock.map((sub) => (
+                            <li
+                              key={sub.id ?? sub.name}
+                              className={sub.name === selectedLunch ? 'active-subblock' : ''}
+                            >
+                              <span className="subblock-name">{sub.name}</span>
+                              <span className="subblock-time">
+                                {toDisplayTime(parseBlockTime(sub.start, baseDate))} – {toDisplayTime(parseBlockTime(sub.end, baseDate))}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
                   </li>
                 );
               })}

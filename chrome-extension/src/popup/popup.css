@@ -192,10 +192,9 @@ header {
 
 .schedule-list li {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 8px 12px;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
 }
 
 .schedule-list li + li {
@@ -234,13 +233,14 @@ header {
 
 .schedule-list li .block-name {
   font-weight: 500;
-  font-size: 16px;
+  font-size: 13px;
   color: #161b22;
 }
 
 .schedule-list li .block-time {
   font-size: 13px;
   color: #111111;
+  font-weight: 500;
 }
 
 .schedule-list li.free-block .block-name,
@@ -300,4 +300,70 @@ header {
 
 .schedule-hint a:hover {
   text-decoration: underline;
+}
+
+.subblock-list {
+  margin: 6px 0 0 12px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subblock-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #606770;
+}
+
+.subblock-list li.active-subblock {
+  font-weight: 600;
+  color: #2a7a3e;
+}
+
+.subblock-list .subblock-name {
+  font-weight: 600;
+}
+
+.subblock-list .subblock-time {
+  font-weight: 500;
+}
+
+
+
+
+
+
+
+
+
+
+
+.block-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.lunch-select-row {
+  margin-top: 6px;
+}
+
+.lunch-inline-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #606770;
+}
+
+.lunch-inline-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  background: #ffffff;
+  color: #111111;
 }
