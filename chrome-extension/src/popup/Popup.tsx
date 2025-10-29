@@ -376,7 +376,7 @@ const Popup: React.FC = () => {
                             className="lunch-inline-toggle"
                             onClick={() => setShowLunchDetails((prev) => !prev)}
                           >
-                            <span aria-hidden="true">{showLunchDetails ? '▲' : '▼'}</span>
+                            <span className={`chevron ${showLunchDetails ? "open" : ""}`} aria-hidden="true" />
                           </button>
                         ) : null}
                       </div>
