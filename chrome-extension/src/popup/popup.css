@@ -310,13 +310,14 @@ header {
   flex-direction: column;
   gap: 4px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .subblock-list li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: baseline;
-  gap: 12px;
+  gap: 10px;
   font-size: 12px;
   color: #606770;
   width: 100%;
@@ -332,6 +333,7 @@ header {
   font-weight: 500;
   text-align: right;
   white-space: nowrap;
+  margin-right: 24px;
 }
 
 .block-row {
