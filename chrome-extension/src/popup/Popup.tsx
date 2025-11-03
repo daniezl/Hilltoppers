@@ -69,6 +69,7 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const hasResolvedInitial = useRef(false);
+  const refreshRequestedRef = useRef(false);
 
   const debugTestTime = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -124,6 +125,31 @@ const Popup: React.FC = () => {
       }
     }, 1500);
 
+    const maybeRequestRefresh = (payload: SchedulePayload | null, reason: string) => {
+      if (refreshRequestedRef.current) {
+        return;
+      }
+      const todayKey = DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');
+      const payloadKey = payload?.dateKey ?? '';
+      if (payloadKey && payloadKey === todayKey) {
+        return;
+      }
+      refreshRequestedRef.current = true;
+      safeSendMessage<{ ok: boolean; error?: string }>({
+        type: 'requestScheduleRefresh',
+        reason
+      })
+        .then((response) => {
+          if (!response?.ok) {
+            refreshRequestedRef.current = false;
+          }
+        })
+        .catch((err) => {
+          console.error('[popup] Failed to request schedule refresh', err);
+          refreshRequestedRef.current = false;
+        });
+    };
+
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
       .then((payload) => {
         const next = {
@@ -137,6 +163,7 @@ const Popup: React.FC = () => {
           hasResolvedInitial.current = true;
           setIsLoading(false);
         }
+        maybeRequestRefresh(next, 'popup-init');
       })
       .catch((err) => {
         console.error('[popup] Failed to get cached schedule', err);
@@ -158,6 +185,7 @@ const Popup: React.FC = () => {
           dayType: payload?.dayType ?? null
         };
         setSchedule(next);
+        refreshRequestedRef.current = false;
         hasResolvedInitial.current = true;
         setIsLoading(false);
       }

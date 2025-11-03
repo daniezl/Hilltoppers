@@ -13,6 +13,7 @@ const ICON_TICK_INTERVAL_MINUTES = 1;
 let cachedSchedule: Block[] = [];
 let cachedDateKey = '';
 let cachedDayType: string | null = null;
+let refreshInFlight: Promise<void> | null = null;
 
 function getTodayKey(): string {
   return DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');
@@ -182,35 +183,52 @@ async function updateActionIcon(): Promise<void> {
 }
 
 async function refreshSchedule(): Promise<void> {
-  try {
-    const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
-    const { blocks, dayType } = await loadBlocksForDate(today);
-    cachedSchedule = blocks;
-    cachedDateKey = getTodayKey();
-    cachedDayType = dayType ?? null;
-    if (typeof chrome !== 'undefined') {
-      chrome.runtime.sendMessage(
-        {
-          type: 'scheduleUpdated',
-          payload: {
-            dateKey: cachedDateKey,
-            blocks,
-            dayType: cachedDayType
-          }
-        },
-        () => {
-          const error = chrome.runtime.lastError;
-          if (error) {
-            console.debug('[background] scheduleUpdated sendMessage lastError', error.message);
-          }
-        }
-      );
-    }
-  } catch (error) {
-    console.error('[background] Failed to refresh schedule', error);
-  } finally {
-    await updateActionIcon();
+  if (refreshInFlight) {
+    await refreshInFlight;
+    return;
   }
+
+  refreshInFlight = (async () => {
+    try {
+      const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
+      const todayKey = getTodayKey();
+      console.info('[background] Refreshing schedule for', todayKey);
+      const { blocks, dayType } = await loadBlocksForDate(today);
+      cachedSchedule = blocks;
+      cachedDateKey = todayKey;
+      cachedDayType = dayType ?? null;
+      console.info('[background] Refresh complete', {
+        dateKey: cachedDateKey,
+        blockCount: cachedSchedule.length,
+        dayType: cachedDayType
+      });
+      if (typeof chrome !== 'undefined') {
+        chrome.runtime.sendMessage(
+          {
+            type: 'scheduleUpdated',
+            payload: {
+              dateKey: cachedDateKey,
+              blocks,
+              dayType: cachedDayType
+            }
+          },
+          () => {
+            const error = chrome.runtime.lastError;
+            if (error) {
+              console.debug('[background] scheduleUpdated sendMessage lastError', error.message);
+            }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('[background] Failed to refresh schedule', error);
+    } finally {
+      await updateActionIcon();
+      refreshInFlight = null;
+    }
+  })();
+
+  await refreshInFlight;
 }
 
 function ensureRefreshAlarm(): void {
@@ -281,6 +299,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message?.type === 'preferencesUpdated') {
     refreshSchedule().finally(() => sendResponse({ ok: true }));
+    return true;
+  }
+  if (message?.type === 'requestScheduleRefresh') {
+    refreshSchedule()
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => {
+        console.error('[background] Forced refresh failed', error);
+        sendResponse({ ok: false, error: (error as Error)?.message ?? 'refresh_failed' });
+      });
     return true;
   }
   return false;

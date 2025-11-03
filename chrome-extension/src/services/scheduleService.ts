@@ -219,16 +219,16 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
 function getDefaultScheduleForWeekday(date: Date): string | null {
   const weekday = DateTime.fromJSDate(date, { zone: EST_ZONE }).weekday;
   switch (weekday) {
-    case 1:
-    case 7:
+    case 6: // Saturday
+    case 7: // Sunday
       return null; // weekend
-    case 2:
-    case 3:
-    case 5:
+    case 1: // Monday
+    case 2: // Tuesday
+    case 4: // Thursday
       return 'schedule_mon_thu';
-    case 4:
+    case 3: // Wednesday
       return 'schedule_wed';
-    case 6:
+    case 5: // Friday
       return 'schedule_fri';
     default:
       return null;
@@ -240,16 +240,29 @@ export async function loadScheduleByType(type: string): Promise<Block[] | null> 
 }
 
 export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
+  const requestKey = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  console.info('[scheduleService] loadBlocksForDate start', requestKey);
+
   if (await isInSpecialPeriod(date)) {
+    console.info('[scheduleService] Date falls within special period, returning No School');
     return { blocks: [], dayType: 'No School' };
   }
 
   const specialDayData = await fetchSpecialDayData(date);
   const rawType = specialDayData?.type ?? null;
   const details = specialDayData?.details ?? null;
+  if (specialDayData) {
+    console.info('[scheduleService] Special day record found', {
+      type: rawType,
+      details
+    });
+  } else {
+    console.info('[scheduleService] No special day record for', requestKey);
+  }
   let dayTypeLabel = deriveDayTypeLabel(rawType, details);
 
   if (rawType === 'no_school') {
+    console.info('[scheduleService] Raw type no_school, returning empty schedule');
     return { blocks: [], dayType: dayTypeLabel ?? 'No School' };
   }
 
@@ -258,6 +271,10 @@ export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
       dayTypeLabel = await resolveBulletinDayType(date);
     }
     const custom = decodeScheduleFromData(specialDayData) ?? [];
+    console.info('[scheduleService] Using custom schedule', {
+      dayTypeLabel,
+      blocks: custom.length
+    });
     return { blocks: custom, dayType: dayTypeLabel };
   }
 
@@ -267,8 +284,14 @@ export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
       if (!dayTypeLabel) {
         dayTypeLabel = await resolveBulletinDayType(date);
       }
+      console.info('[scheduleService] Loaded typed schedule', {
+        rawType,
+        dayTypeLabel,
+        blocks: typedSchedule.length
+      });
       return { blocks: typedSchedule, dayType: dayTypeLabel };
     }
+    console.warn('[scheduleService] Failed to load typed schedule asset', rawType);
   }
 
   if (!dayTypeLabel) {
@@ -277,9 +300,19 @@ export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
 
   const fallbackKey = getDefaultScheduleForWeekday(date);
   if (!fallbackKey) {
+    console.info('[scheduleService] No fallback key (likely weekend)', { dayTypeLabel });
     return { blocks: [], dayType: dayTypeLabel ?? 'Unknown' };
   }
 
   const fallbackSchedule = await loadJsonSchedule(fallbackKey);
+  if (!fallbackSchedule || !fallbackSchedule.length) {
+    console.warn('[scheduleService] Fallback schedule missing or empty', fallbackKey);
+  } else {
+    console.info('[scheduleService] Using fallback schedule', {
+      fallbackKey,
+      blocks: fallbackSchedule.length,
+      dayTypeLabel
+    });
+  }
   return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel ?? 'Unknown' };
 }
