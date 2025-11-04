@@ -48,6 +48,8 @@ function mapAuthError(error: unknown): string {
         return 'Your password must be at least 6 characters long.';
       case 'auth/network-request-failed':
         return 'Network error. Check your connection and try again.';
+      case 'auth/too-many-requests':
+        return 'Too many attempts. Please wait a moment before trying again.';
       case 'auth/popup-closed-by-user':
         return 'The sign-in window was closed before completing the process.';
       case 'auth/cancelled-popup-request':
@@ -72,10 +74,11 @@ const Login: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [redirecting, setRedirecting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const classSettingsUrl = useMemo(() => resolveExtensionUrl('class-settings.html'), []);
 
@@ -92,6 +95,13 @@ const Login: React.FC = () => {
     };
   }, []);
 
+  const identityLabel = useMemo(() => {
+    if (!authUser) {
+      return '';
+    }
+    return authUser.displayName || authUser.email || authUser.uid;
+  }, [authUser]);
+
   const needsEmailVerification = useMemo(() => {
     if (!authUser) {
       return false;
@@ -102,6 +112,16 @@ const Login: React.FC = () => {
     const providers = authUser.providerData?.map((entry) => entry?.providerId).filter(Boolean) as string[];
     return providers.includes('password');
   }, [authUser]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (!needsEmailVerification) {
@@ -163,6 +183,7 @@ const Login: React.FC = () => {
       return;
     }
     setFeedback(null);
+    setRedirecting(false);
     setBusy(true);
     try {
       if (provider === 'google') {
@@ -187,7 +208,6 @@ const Login: React.FC = () => {
 
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
-    const trimmedDisplayName = displayName.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
       setFeedback({ type: 'error', message: 'Email and password are required.' });
@@ -196,22 +216,24 @@ const Login: React.FC = () => {
 
     setBusy(true);
     setFeedback(null);
+    setRedirecting(false);
 
     try {
       if (authMode === 'register') {
-        const credential = await registerWithEmail(trimmedEmail, trimmedPassword, trimmedDisplayName || undefined);
+        const credential = await registerWithEmail(trimmedEmail, trimmedPassword);
         const createdUser = credential.user;
         setFeedback({
           type: 'info',
-          message: 'Account created. We just sent a verification email — please check your inbox.'
+          message: 'Account created. We just sent a verification email — please check your inbox (including spam or junk folders).'
         });
         try {
           await sendVerificationEmail(createdUser);
+          setResendCooldown(60);
         } catch (error) {
           console.error('[login] Failed to send verification email', error);
           setFeedback({
             type: 'error',
-            message: 'Account created, but the verification email could not be sent. Please try resending.'
+            message: 'Account created, but the verification email could not be sent. Please try resending in a moment.'
           });
         }
       } else {
@@ -228,24 +250,50 @@ const Login: React.FC = () => {
       setPassword('');
     } catch (error) {
       console.error('[login] Email auth failed', error);
-      setFeedback({ type: 'error', message: mapAuthError(error) });
+      if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
+        setFeedback({
+          type: 'error',
+          message: 'Too many attempts. Please wait a minute before trying again and check your spam folder for earlier emails.'
+        });
+        setResendCooldown((prev) => (prev > 30 ? prev : 60));
+      } else {
+        setFeedback({ type: 'error', message: mapAuthError(error) });
+      }
     } finally {
       setBusy(false);
     }
   };
 
   const handleResendVerification = async () => {
-    if (busy) {
+    if (busy || resendCooldown > 0) {
+      if (resendCooldown > 0) {
+        setFeedback({
+          type: 'info',
+          message: `Please wait ${resendCooldown} seconds before sending another verification email.`
+        });
+      }
       return;
     }
     setBusy(true);
     setFeedback(null);
     try {
       await sendVerificationEmail();
-      setFeedback({ type: 'info', message: 'Verification email sent. Please check your inbox.' });
+      setFeedback({
+        type: 'info',
+        message: 'Verification email sent. Please check your inbox (including spam or junk folders).'
+      });
+      setResendCooldown(60);
     } catch (error) {
       console.error('[login] Resend verification failed', error);
-      setFeedback({ type: 'error', message: mapAuthError(error) });
+      if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
+        setFeedback({
+          type: 'error',
+          message: 'Too many attempts. Please wait one minute before trying again.'
+        });
+        setResendCooldown(60);
+      } else {
+        setFeedback({ type: 'error', message: mapAuthError(error) });
+      }
     } finally {
       setBusy(false);
     }
@@ -290,6 +338,7 @@ const Login: React.FC = () => {
     }
     setBusy(true);
     setFeedback(null);
+    setRedirecting(false);
     try {
       await signOutUser();
       setFeedback({ type: 'info', message: 'Signed out. You can still browse settings locally.' });
@@ -315,6 +364,9 @@ const Login: React.FC = () => {
   return (
     <main className="login">
       <div className="login__container" role="main">
+        <button type="button" className="login__back" onClick={openSettings}>
+          ← Back to settings
+        </button>
         <header className="login__header">
           <h1>Sign in to Hilltoppers</h1>
           <p>Sync your schedule and class preferences across every device.</p>
@@ -328,10 +380,15 @@ const Login: React.FC = () => {
 
         {authUser && needsEmailVerification ? (
           <div className="login__notice login__notice--warning" role="status" aria-live="polite">
-            <p>Your email is not verified yet. Check your inbox for a message from Hilltoppers and click the verification link.</p>
+            <p>Your email is not verified yet. Check your inbox (including spam or junk folders) and click the verification link.</p>
             <div className="login__notice-actions">
-              <button type="button" className="secondary" onClick={handleResendVerification} disabled={busy}>
-                Resend verification email
+              <button
+                type="button"
+                className="secondary"
+                onClick={handleResendVerification}
+                disabled={busy || resendCooldown > 0}
+              >
+                {resendCooldown > 0 ? `Resend verification email (${resendCooldown}s)` : 'Resend verification email'}
               </button>
               <button type="button" className="tertiary" onClick={handleRefreshVerification} disabled={busy}>
                 I&apos;ve verified my email
@@ -372,29 +429,26 @@ const Login: React.FC = () => {
                 disabled={busy}
               />
             </label>
-            <label>
+            <label className="login__password-label">
               Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-                required
-                disabled={busy}
-              />
-            </label>
-            {authMode === 'register' ? (
-              <label>
-                Display name (optional)
+              <div className="login__password-field">
                 <input
-                  type="text"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  autoComplete="name"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                  required
                   disabled={busy}
                 />
-              </label>
-            ) : null}
+                <button
+                  type="button"
+                  className="login__password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </label>
             <button type="submit" className="primary" disabled={busy}>
               {authMode === 'register' ? 'Create account' : 'Sign in with email'}
             </button>
@@ -404,16 +458,13 @@ const Login: React.FC = () => {
           </form>
         </div>
 
-        <footer className="login__footer">
-          <button type="button" className="login__footer-button" onClick={openSettings} disabled={busy && redirecting}>
-            Open settings
-          </button>
-          {authUser ? (
+        {authUser ? (
+          <footer className="login__footer">
             <button type="button" className="login__footer-button secondary" onClick={handleSignOut} disabled={busy}>
               Sign out
             </button>
-          ) : null}
-        </footer>
+          </footer>
+        ) : null}
       </div>
     </main>
   );

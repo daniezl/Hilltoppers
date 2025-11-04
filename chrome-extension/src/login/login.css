@@ -15,9 +15,25 @@
   background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 40px 80px rgba(4, 7, 20, 0.35);
-  padding: 40px;
+  padding: 56px 40px 40px;
   display: grid;
   gap: 24px;
+  position: relative;
+}
+
+.login__back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login__back:hover {
+  text-decoration: underline;
 }
 
 .login__header h1 {
@@ -131,6 +147,37 @@
   font-family: inherit;
 }
 
+.login__password-label {
+  gap: 8px;
+}
+
+.login__password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login__password-field input {
+  width: 100%;
+  padding-right: 70px;
+}
+
+.login__password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  color: #2563eb;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login__password-toggle:hover {
+  text-decoration: underline;
+}
+
 .login button {
   padding: 12px 18px;
   border-radius: 10px;
@@ -177,14 +224,7 @@
 
 .login__footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.login__footer-button {
-  flex: 1 1 160px;
+  justify-content: flex-end;
 }
 
 @media (max-width: 600px) {
@@ -193,7 +233,7 @@
   }
 
   .login__container {
-    padding: 32px 24px 28px;
+    padding: 52px 24px 28px;
   }
 
   .login__footer {
