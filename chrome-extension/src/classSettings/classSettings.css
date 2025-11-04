@@ -66,8 +66,9 @@ body, html {
   gap: 12px;
 }
 
-.class-settings__header-actions .primary,
-.class-settings__header-actions .secondary {
+.class-settings button.primary,
+.class-settings button.secondary,
+.class-settings button.tertiary {
   padding: 10px 18px;
   border-radius: 8px;
   font-weight: 600;
@@ -77,34 +78,44 @@ body, html {
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.class-settings__header-actions .primary {
+.class-settings button.primary {
   background: var(--accent);
   color: #ffffff;
 }
 
-.class-settings__header-actions .primary:disabled {
+.class-settings button.primary:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-.class-settings__header-actions .primary:not(:disabled):hover {
+.class-settings button.primary:not(:disabled):hover {
   box-shadow: 0 8px 16px rgba(46, 160, 67, 0.25);
   transform: translateY(-1px);
 }
 
-.class-settings__header-actions .secondary {
+.class-settings button.secondary {
   background: var(--surface-muted);
   color: var(--text);
   border-color: var(--border);
 }
 
-.class-settings__header-actions .secondary:disabled {
+.class-settings button.secondary:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-.class-settings__header-actions .secondary:not(:disabled):hover {
+.class-settings button.secondary:not(:disabled):hover {
   border-color: var(--accent);
+}
+
+.class-settings button.tertiary {
+  background: transparent;
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.class-settings button.tertiary:not(:disabled):hover {
+  text-decoration: underline;
 }
 
 .class-settings__status {
@@ -163,12 +174,25 @@ body, html {
   font-weight: 600;
 }
 
-.class-settings__field select {
+.class-settings__field label {
+  font-weight: 600;
+}
+
+.class-settings__field select,
+.class-settings__email-auth input,
+.class-settings__email-auth select,
+.class-settings__email-auth textarea {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-muted);
   color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.class-settings__field select {
+  min-width: 120px;
 }
 
 .class-settings__table {
@@ -237,6 +261,117 @@ body, html {
   height: 18px;
 }
 
+.class-settings__account {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 18px rgba(15, 17, 21, 0.08);
+  display: grid;
+  gap: 18px;
+}
+
+.class-settings__account-header h2 {
+  margin: 0 0 6px;
+}
+
+.class-settings__account-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.class-settings__account-status {
+  margin: 0;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.class-settings__account-status--success {
+  color: var(--accent);
+}
+
+.class-settings__account-status--warning {
+  color: #b26a00;
+}
+
+.class-settings__account-status--error {
+  color: var(--danger);
+}
+
+.class-settings__account-card {
+  display: grid;
+  gap: 8px;
+}
+
+.class-settings__account-summary {
+  margin: 0;
+}
+
+.class-settings__account-email {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.class-settings__signin-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.class-settings__oauth-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.class-settings__oauth-buttons button {
+  flex: 1 1 220px;
+}
+
+.class-settings__email-auth {
+  display: grid;
+  gap: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.class-settings__email-auth label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.class-settings__email-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.class-settings__verification {
+  display: grid;
+  gap: 12px;
+}
+
+.class-settings__verification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.class-settings__hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.class-settings__hint--warning {
+  color: #b26a00;
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   .class-settings {
     padding: 24px 16px 40px;
@@ -249,6 +384,19 @@ body, html {
 
   .class-settings__header-actions {
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .class-settings__account {
+    padding: 18px 16px;
+  }
+
+  .class-settings__oauth-buttons {
+    flex-direction: column;
+  }
+
+  .class-settings__verification-actions {
+    flex-direction: column;
   }
 
   .class-settings__table-row,

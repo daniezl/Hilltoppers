@@ -29,7 +29,9 @@ label {
 
 select,
 textarea,
-input[type='text'] {
+input[type='text'],
+input[type='email'],
+input[type='password'] {
   font-size: 14px;
   padding: 8px;
   border: 1px solid #d0d7de;
@@ -103,7 +105,80 @@ button:hover {
   background: #18632c;
 }
 
+button:disabled {
+  background: #9bd4ae;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: #f6f8fa;
+  color: #24292f;
+  border: 1px solid #d0d7de;
+}
+
+button.secondary:hover {
+  background: #eaeef2;
+}
+
 .status {
   margin-top: 12px;
   color: #57606a;
+}
+
+.status.success {
+  color: #1f883d;
+}
+
+.status.error {
+  color: #cf222e;
+}
+
+.account-section {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.account-card,
+.signin-card {
+  display: grid;
+  gap: 12px;
+}
+
+.account-summary {
+  font-size: 14px;
+}
+
+.account-email {
+  font-size: 13px;
+  color: #57606a;
+}
+
+.oauth-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.oauth-buttons button {
+  flex: 1 1 200px;
+}
+
+.email-auth {
+  display: grid;
+  gap: 12px;
+  background: #f6f8fa;
+  border: 1px solid #e4e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.email-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }

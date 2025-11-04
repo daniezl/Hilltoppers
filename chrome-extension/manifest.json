@@ -1,7 +1,8 @@
 {
   "name": "Hilltoppers",
   "description": "View the current school schedule and day type from SchoolApp in Chrome.",
-  "version": "0.2.1",
+
+  "version": "0.2.3",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
@@ -18,6 +19,12 @@
   ],
   "host_permissions": [
     "https://firestore.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://accounts.google.com/*",
+    "https://apis.google.com/*",
+    "https://appleid.apple.com/*",
     "https://stjacademy.org/*",
     "https://www.google-analytics.com/*"
   ],

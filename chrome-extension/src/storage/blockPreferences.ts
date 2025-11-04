@@ -1,3 +1,8 @@
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getDb } from '../firebase/app';
+import { getCurrentUser } from '../firebase/auth';
+import { isFirebaseConfigured } from '../firebase/config';
+
 export type BlockKey = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface BlockPreference {
@@ -23,6 +28,7 @@ export const DEFAULT_BLOCK_NAMES: Record<BlockKey, string> = {
 };
 
 const STORAGE_KEY = 'blockPreferences';
+const USERS_COLLECTION = 'users';
 
 function createDefaultPreferences(): BlockPreferenceRecord {
   return {
@@ -38,42 +44,46 @@ export function createEmptyPreferences(): BlockPreferenceRecord {
   return createDefaultPreferences();
 }
 
-export async function loadBlockPreferences(): Promise<BlockPreferenceRecord> {
-  return new Promise((resolve) => {
-    if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-      resolve(createDefaultPreferences());
-      return;
+function mergeWithDefaults(
+  stored: Partial<Record<BlockKey, Partial<BlockPreference>>> | undefined
+): BlockPreferenceRecord {
+  const defaults = createDefaultPreferences();
+  const merged = { ...defaults };
+  if (!stored) {
+    return merged;
+  }
+  (Object.keys(defaults) as BlockKey[]).forEach((key) => {
+    const pref = stored[key];
+    if (pref) {
+      merged[key] = {
+        name: pref.name ?? '',
+        showOnGreen: pref.showOnGreen ?? true,
+        showOnWhite: pref.showOnWhite ?? true
+      };
     }
+  });
+  return merged;
+}
 
+async function loadFromSyncStorage(): Promise<BlockPreferenceRecord> {
+  if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
+    return createDefaultPreferences();
+  }
+
+  return new Promise((resolve) => {
     chrome.storage.sync.get([STORAGE_KEY], (result) => {
-      const stored = result[STORAGE_KEY] as BlockPreferenceRecord | undefined;
-      if (!stored) {
-        resolve(createDefaultPreferences());
-        return;
-      }
-      const defaults = createDefaultPreferences();
-      const merged = { ...defaults };
-      (Object.keys(defaults) as BlockKey[]).forEach((key) => {
-        if (stored[key]) {
-          merged[key] = {
-            name: stored[key].name ?? '',
-            showOnGreen: stored[key].showOnGreen ?? true,
-            showOnWhite: stored[key].showOnWhite ?? true
-          };
-        }
-      });
-      resolve(merged);
+      const stored = result[STORAGE_KEY] as Partial<Record<BlockKey, Partial<BlockPreference>>> | undefined;
+      resolve(mergeWithDefaults(stored));
     });
   });
 }
 
-export async function saveBlockPreferences(preferences: BlockPreferenceRecord): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-      resolve();
-      return;
-    }
+async function saveToSyncStorage(preferences: BlockPreferenceRecord): Promise<void> {
+  if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
+    return;
+  }
 
+  return new Promise((resolve, reject) => {
     chrome.storage.sync.set({ [STORAGE_KEY]: preferences }, () => {
       const err = chrome.runtime.lastError;
       if (err) {
@@ -83,6 +93,71 @@ export async function saveBlockPreferences(preferences: BlockPreferenceRecord): 
       resolve();
     });
   });
+}
+
+async function loadFromRemote(userId: string): Promise<BlockPreferenceRecord | null> {
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
+  try {
+    const db = getDb();
+    const ref = doc(db, USERS_COLLECTION, userId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) {
+      return null;
+    }
+    const data = snapshot.data();
+    const stored = data?.blockPreferences as Partial<Record<BlockKey, Partial<BlockPreference>>> | undefined;
+    if (!stored) {
+      return null;
+    }
+    return mergeWithDefaults(stored);
+  } catch (error) {
+    console.warn('[blockPreferences] Failed to load remote preferences', error);
+    return null;
+  }
+}
+
+async function saveToRemote(userId: string, preferences: BlockPreferenceRecord): Promise<void> {
+  if (!isFirebaseConfigured()) {
+    return;
+  }
+  const db = getDb();
+  const ref = doc(db, USERS_COLLECTION, userId);
+  await setDoc(
+    ref,
+    {
+      blockPreferences: preferences,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+}
+
+export async function loadBlockPreferences(): Promise<BlockPreferenceRecord> {
+  const user = getCurrentUser();
+  if (user) {
+    const remote = await loadFromRemote(user.uid);
+    if (remote) {
+      try {
+        await saveToSyncStorage(remote);
+      } catch (error) {
+        console.warn('[blockPreferences] Failed to cache remote preferences locally', error);
+      }
+      return remote;
+    }
+  }
+
+  return loadFromSyncStorage();
+}
+
+export async function saveBlockPreferences(preferences: BlockPreferenceRecord): Promise<void> {
+  await saveToSyncStorage(preferences);
+
+  const user = getCurrentUser();
+  if (user) {
+    await saveToRemote(user.uid, preferences);
+  }
 }
 
 export function getBlockKey(blockName: string): BlockKey | null {
