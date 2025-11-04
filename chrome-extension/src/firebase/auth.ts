@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
+  type ActionCodeSettings,
   type Auth,
   type Unsubscribe,
   type User,
@@ -108,7 +109,10 @@ export async function signOut(): Promise<void> {
   await firebaseSignOut(auth);
 }
 
-export async function sendVerificationEmail(user?: User | null): Promise<void> {
+export async function sendVerificationEmail(
+  user?: User | null,
+  actionCodeSettings?: ActionCodeSettings
+): Promise<void> {
   const target = user ?? getCurrentUser();
   if (!target) {
     throw new Error('No authenticated user available for verification email.');
@@ -116,7 +120,7 @@ export async function sendVerificationEmail(user?: User | null): Promise<void> {
   if (target.emailVerified) {
     return;
   }
-  await sendEmailVerification(target);
+  await sendEmailVerification(target, actionCodeSettings);
 }
 
 export async function reloadCurrentUser(): Promise<User | null> {
@@ -129,6 +133,11 @@ export async function reloadCurrentUser(): Promise<User | null> {
     return null;
   }
   await reload(user);
+  try {
+    await user.getIdToken(true);
+  } catch (tokenError) {
+    console.warn('[auth] Failed to refresh ID token after reload', tokenError);
+  }
   return auth.currentUser;
 }
 

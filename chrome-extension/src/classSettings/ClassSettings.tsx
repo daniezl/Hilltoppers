@@ -13,18 +13,10 @@ import {
   saveSchedulePreferences,
   type SchedulePreferences
 } from '../storage/schedulePreferences';
-import {
-  onAuthState,
-  registerWithEmail,
-  signInWithApple,
-  signInWithEmail,
-  signInWithGoogle,
-  signOut as signOutUser,
-  reloadCurrentUser,
-  sendVerificationEmail
-} from '../firebase/auth';
+import { onAuthState, reloadCurrentUser, signOut as signOutUser } from '../firebase/auth';
 import type { AuthUser } from '../firebase/auth';
 import { logClassSettingsReset, logPreferenceSaved, logScreenView } from '../firebase/analytics';
+import { FirebaseError } from 'firebase/app';
 
 interface SaveState {
   status: 'idle' | 'saving' | 'success' | 'error';
@@ -36,6 +28,43 @@ const INITIAL_SAVE_STATE: SaveState = {
   message: ''
 };
 
+function resolveExtensionUrl(path: string): string {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(path);
+  }
+  return path;
+}
+
+function mapSaveError(error: unknown): string {
+  if (error instanceof FirebaseError) {
+    switch (error.code) {
+      case 'permission-denied':
+        return 'Unable to save because your account does not have permission. Please verify your email or sign in again.';
+      case 'failed-precondition':
+      case 'unavailable':
+        return 'Saving failed because the connection to the server was interrupted. Please check your network and try again.';
+      case 'unauthenticated':
+        return 'Please sign in before saving your preferences.';
+      default:
+        return `Saving failed (${error.code}). Please try again or sign in again.`;
+    }
+  }
+  if (error instanceof Error) {
+    return `Saving failed: ${error.message}`;
+  }
+  return 'Saving failed due to an unexpected error. Please try again.';
+}
+
+function mapSignOutError(error: unknown): string {
+  if (error instanceof FirebaseError) {
+    return `Unable to sign out right now (${error.code}). Please try again.`;
+  }
+  if (error instanceof Error) {
+    return `Unable to sign out: ${error.message}`;
+  }
+  return 'Unable to sign out right now. Please try again.';
+}
+
 const ClassSettings: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
@@ -43,13 +72,10 @@ const ClassSettings: React.FC = () => {
   const [saveState, setSaveState] = useState<SaveState>(INITIAL_SAVE_STATE);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
-  const [authPending, setAuthPending] = useState(false);
-  const [authMessage, setAuthMessage] = useState('');
-  const [authError, setAuthError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [emailMode, setEmailMode] = useState<'signIn' | 'register'>('signIn');
+  const [signOutPending, setSignOutPending] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const loginUrl = useMemo(() => resolveExtensionUrl('login.html'), []);
 
   useEffect(() => {
     void logScreenView('ClassSettings');
@@ -86,7 +112,10 @@ const ClassSettings: React.FC = () => {
       } catch (error) {
         console.error('[class-settings] Failed to load data', error);
         if (!cancelled) {
-          setSaveState({ status: 'error', message: 'Unable to load saved settings.' });
+          setSaveState({
+            status: 'error',
+            message: 'Unable to load saved settings. Check your connection and try again.'
+          });
         }
       } finally {
         if (!cancelled) {
@@ -98,7 +127,7 @@ const ClassSettings: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, authUser]);
+  }, [authInitialized, authUser?.uid, authUser?.emailVerified]);
 
   useEffect(() => {
     if (saveState.status === 'success' || saveState.status === 'error') {
@@ -131,24 +160,41 @@ const ClassSettings: React.FC = () => {
   }, [authUser]);
 
   useEffect(() => {
-    if (!authUser) {
-      return;
+    if (!needsEmailVerification) {
+      return undefined;
     }
-    if (needsEmailVerification) {
-      setAuthMessage((prev) => {
-        if (prev) {
-          return prev;
-        }
-        const emailLabel = authUser.email ? ` (${authUser.email})` : '';
-        return `Please verify your email${emailLabel} to sync preferences.`;
-      });
-    }
-  }, [authUser, needsEmailVerification]);
 
-  const resetAuthMessages = () => {
-    setAuthMessage('');
-    setAuthError('');
-  };
+    let cancelled = false;
+
+    const refreshStatus = async () => {
+      try {
+        const updated = await reloadCurrentUser();
+        if (cancelled) {
+          return;
+        }
+        if (updated) {
+          setAuthUser(updated);
+          if (updated.emailVerified) {
+            setFeedback({ type: 'success', message: 'Email verified! You can now sync preferences.' });
+          }
+        }
+      } catch (error) {
+        console.warn('[class-settings] Auto refresh verification failed', error);
+      }
+    };
+
+    void refreshStatus();
+    const handleFocus = () => {
+      void refreshStatus();
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [needsEmailVerification]);
 
   const handleBlockNameChange = (key: BlockKey, value: string) => {
     setBlockPrefs((prev) => ({
@@ -179,15 +225,17 @@ const ClassSettings: React.FC = () => {
     setBlockPrefs(createEmptyPreferences());
     setSchedulePrefs(DEFAULT_SCHEDULE_PREFERENCES);
     setSaveState({ status: 'idle', message: '' });
+    setFeedback({ type: 'info', message: 'Preferences reset to defaults.' });
     void logClassSettingsReset();
   };
 
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
+    setFeedback(null);
     if (needsEmailVerification) {
       setSaveState({
         status: 'error',
-        message: 'Please verify your email before saving your preferences.'
+        message: 'Email not verified. Please confirm your email before saving.'
       });
       return;
     }
@@ -201,236 +249,90 @@ const ClassSettings: React.FC = () => {
       if (typeof chrome !== 'undefined') {
         chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
       }
-      setSaveState({ status: 'success', message: 'Saved successfully.' });
+      setSaveState({ status: 'success', message: 'All changes saved successfully.' });
       void logPreferenceSaved('class_settings');
     } catch (error) {
       console.error('[class-settings] Failed to save settings', error);
-      setSaveState({ status: 'error', message: 'Failed to save changes.' });
-    }
-  };
-
-  const handleSignIn = async (provider: 'google' | 'apple') => {
-    resetAuthMessages();
-    setAuthPending(true);
-    try {
-      if (provider === 'google') {
-        await signInWithGoogle();
-      } else {
-        await signInWithApple();
-      }
-      setAuthMessage('Signed in successfully.');
-    } catch (error) {
-      console.error('[class-settings] OAuth sign-in failed', error);
-      const message = error instanceof Error ? error.message : 'Unable to sign in right now.';
-      setAuthError(message);
-    } finally {
-      setAuthPending(false);
-    }
-  };
-
-  const handleEmailSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    resetAuthMessages();
-    setAuthPending(true);
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-    const trimmedDisplayName = displayName.trim();
-
-    try {
-      if (!trimmedEmail || !trimmedPassword) {
-        setAuthError('Email and password are required.');
-        return;
-      }
-
-      if (emailMode === 'register') {
-        const credential = await registerWithEmail(trimmedEmail, trimmedPassword, trimmedDisplayName || undefined);
-        const registeredUser = credential.user;
-        if (registeredUser && !registeredUser.emailVerified) {
-          try {
-            await sendVerificationEmail(registeredUser);
-            const targetEmail = registeredUser.email ?? 'your email address';
-            setAuthMessage(`Account created. Verification email sent to ${targetEmail}.`);
-          } catch (sendError) {
-            console.error('[class-settings] Failed to send verification email', sendError);
-            setAuthError('Account created, but failed to send verification email. Please try resending.');
-          }
-        } else {
-          setAuthMessage('Account created. You are now signed in.');
-        }
-      } else {
-        const credential = await signInWithEmail(trimmedEmail, trimmedPassword);
-        if (credential.user && !credential.user.emailVerified) {
-          setAuthMessage('Signed in. Please verify your email before making changes.');
-        } else {
-          setAuthMessage('Signed in successfully.');
-        }
-      }
-      setPassword('');
-    } catch (error) {
-      console.error('[class-settings] Email auth failed', error);
-      const message = error instanceof Error ? error.message : 'Unable to complete request.';
-      setAuthError(message);
-    } finally {
-      setAuthPending(false);
+      setSaveState({
+        status: 'error',
+        message: mapSaveError(error)
+      });
     }
   };
 
   const handleSignOut = async () => {
-    resetAuthMessages();
-    setAuthPending(true);
+    setFeedback(null);
+    setSignOutPending(true);
     try {
       await signOutUser();
-      setAuthMessage('Signed out. Preferences will now stay on this device only.');
+      setFeedback({ type: 'info', message: 'Signed out. Changes will now stay on this device only.' });
     } catch (error) {
       console.error('[class-settings] Sign-out failed', error);
-      const message = error instanceof Error ? error.message : 'Unable to sign out right now.';
-      setAuthError(message);
+      setFeedback({ type: 'error', message: mapSignOutError(error) });
     } finally {
-      setAuthPending(false);
+      setSignOutPending(false);
     }
   };
 
-  const handleResendVerification = async () => {
-    resetAuthMessages();
-    setAuthPending(true);
-    try {
-      await sendVerificationEmail();
-      setAuthMessage('Verification email sent. Please check your inbox.');
-    } catch (error) {
-      console.error('[class-settings] Failed to resend verification email', error);
-      const message = error instanceof Error ? error.message : 'Unable to resend verification email right now.';
-      setAuthError(message);
-    } finally {
-      setAuthPending(false);
+  const openLoginPage = () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = loginUrl;
     }
-  };
-
-  const handleRefreshVerification = async () => {
-    resetAuthMessages();
-    setAuthPending(true);
-    try {
-      const updated = await reloadCurrentUser();
-      if (updated) {
-        setAuthUser(updated);
-      }
-      if (updated?.emailVerified) {
-        setAuthMessage('Thank you! Your email is verified.');
-      } else {
-        setAuthError('We still have not detected a verified email. Please click the link in your inbox, then try again.');
-      }
-    } catch (error) {
-      console.error('[class-settings] Failed to refresh verification status', error);
-      const message = error instanceof Error ? error.message : 'Unable to refresh verification status right now.';
-      setAuthError(message);
-    } finally {
-      setAuthPending(false);
-    }
-  };
-
-  const toggleEmailMode = () => {
-    setEmailMode((prev) => (prev === 'signIn' ? 'register' : 'signIn'));
-    resetAuthMessages();
   };
 
   return (
     <main className="class-settings">
-      <section className="class-settings__account" aria-labelledby="account-heading">
-        <div className="class-settings__account-header">
-          <h2 id="account-heading">Account</h2>
-          <p>Sign in to sync your schedule and class preferences across devices.</p>
-        </div>
+      <header className="class-settings__topbar" aria-label="Account status">
         {!authInitialized ? (
-          <p className="class-settings__account-status">Checking sign-in status…</p>
+          <span className="class-settings__topbar-text">Checking sign-in status…</span>
         ) : authUser ? (
-          <div className="class-settings__account-card">
-            <p className="class-settings__account-summary">
-              Signed in as <strong>{identityLabel}</strong>
-            </p>
-            {authUser.email ? <p className="class-settings__account-email">{authUser.email}</p> : null}
-            <button type="button" className="secondary" onClick={handleSignOut} disabled={authPending}>
-              Sign out
+          <div className="class-settings__topbar-user">
+            <div className="class-settings__topbar-details">
+              <span className="class-settings__topbar-label">Signed in as</span>
+              <strong>{identityLabel}</strong>
+              {needsEmailVerification ? (
+                <span className="class-settings__badge">Email not verified</span>
+              ) : null}
+            </div>
+            <button type="button" className="secondary" onClick={handleSignOut} disabled={signOutPending}>
+              {signOutPending ? 'Signing out…' : 'Sign out'}
             </button>
           </div>
         ) : (
-          <div className="class-settings__signin-grid">
-            <div className="class-settings__oauth-buttons">
-              <button type="button" className="primary" onClick={() => void handleSignIn('google')} disabled={authPending}>
-                Continue with Google
-              </button>
-              <button type="button" className="secondary" onClick={() => void handleSignIn('apple')} disabled={authPending}>
-                Continue with Apple
-              </button>
-            </div>
-            <form className="class-settings__email-auth" onSubmit={handleEmailSubmit}>
-              <label>
-                Email
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete={emailMode === 'register' ? 'new-password' : 'current-password'}
-                  required
-                />
-              </label>
-              {emailMode === 'register' ? (
-                <label>
-                  Display name (optional)
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    autoComplete="name"
-                  />
-                </label>
-              ) : null}
-              <div className="class-settings__email-actions">
-                <button type="submit" className="primary" disabled={authPending}>
-                  {emailMode === 'register' ? 'Create account' : 'Sign in with email'}
-                </button>
-                <button type="button" className="tertiary" onClick={toggleEmailMode} disabled={authPending}>
-                  {emailMode === 'register' ? 'Have an account? Sign in' : 'Need an account? Register'}
-                </button>
-              </div>
-            </form>
+          <div className="class-settings__topbar-cta">
+            <p>Sign in to sync your schedule and class preferences across devices.</p>
+            <button type="button" className="primary" onClick={openLoginPage}>
+              Go to Sign In
+            </button>
           </div>
         )}
-        {authUser && needsEmailVerification ? (
-          <div className="class-settings__verification" role="status" aria-live="polite">
-            <p className="class-settings__account-status class-settings__account-status--warning">
-              Please verify your email to sync your schedule and classes.
-            </p>
-            <div className="class-settings__verification-actions">
-              <button type="button" className="secondary" onClick={handleResendVerification} disabled={authPending}>
-                Resend verification email
-              </button>
-              <button type="button" className="tertiary" onClick={handleRefreshVerification} disabled={authPending}>
-                I&apos;ve verified my email
-              </button>
-            </div>
-          </div>
-        ) : null}
-        {authMessage ? <p className="class-settings__account-status class-settings__account-status--success">{authMessage}</p> : null}
-        {authError ? (
-          <p className="class-settings__account-status class-settings__account-status--error" role="alert">
-            {authError}
-          </p>
-        ) : null}
-      </section>
+      </header>
+
+      {feedback ? (
+        <div className={`class-settings__notification class-settings__notification--${feedback.type}`} role="status" aria-live="polite">
+          <p>{feedback.message}</p>
+        </div>
+      ) : null}
+
+      {authUser && needsEmailVerification ? (
+        <div className="class-settings__notification class-settings__notification--warning" role="status" aria-live="polite">
+          <p>Your email is not verified. Open the sign-in page to resend the verification email or confirm the link in your inbox.</p>
+          <button type="button" className="tertiary" onClick={openLoginPage}>
+            Manage verification
+          </button>
+        </div>
+      ) : null}
+
+      {!authUser && authInitialized ? (
+        <div className="class-settings__notification class-settings__notification--info" role="status" aria-live="polite">
+          <p>Not signed in. Changes are saved to this browser only.</p>
+        </div>
+      ) : null}
 
       <header className="class-settings__header">
         <div>
-          <h1>Class & Schedule Settings</h1>
-          <p>Rename blocks, pick your lunch period, and choose how classes show up on Green and White days.</p>
+          <h1>Class &amp; Schedule Settings</h1>
+          <p>Rename blocks, choose your lunch period, and control how classes appear on Green and White days.</p>
         </div>
         <div className="class-settings__header-actions">
           <button type="button" className="secondary" onClick={handleReset} disabled={loading || saveState.status === 'saving'}>
@@ -474,7 +376,7 @@ const ClassSettings: React.FC = () => {
                 ))}
               </select>
             </div>
-            <p className="class-settings__hint">Your lunch selection and classes sync automatically when you are signed in.</p>
+            <p className="class-settings__hint">Signed-in users can sync these preferences across every device.</p>
             {needsEmailVerification ? (
               <p className="class-settings__hint class-settings__hint--warning">Verify your email to enable syncing and saving changes.</p>
             ) : null}
