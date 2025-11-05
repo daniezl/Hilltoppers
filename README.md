@@ -33,7 +33,9 @@ A toolkit for people in Saint Johnsbury Academy
 [App Store Link](https://apps.apple.com/us/app/hilltoppers/id6749836752)
 
 ## Chrome Extension:
-Since this extension isn’t on the Chrome Web Store yet, you’ll need to install it manually.
+[Chrome Web Store Link](https://chromewebstore.google.com/detail/bcjpcmlikbccobbpheojlnmiaffilnaa?utm_source=item-share-cb)
+
+You can also install it manually.
 It’s quick and safe — no special permissions required.
 
 ### 1️⃣ Download the dist.zip file
