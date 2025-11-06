@@ -33,6 +33,7 @@ export function isFuture(target: Date, from: Date = new Date()): boolean {
   return target.getTime() > from.getTime();
 }
 
-export function toDisplayTime(date: Date): string {
-  return DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('HH:mm');
+export function toDisplayTime(date: Date, format: '12h' | '24h' = '12h'): string {
+  const dt = DateTime.fromJSDate(date, { zone: EST_ZONE });
+  return format === '24h' ? dt.toFormat('HH:mm') : dt.toFormat('h:mm');
 }

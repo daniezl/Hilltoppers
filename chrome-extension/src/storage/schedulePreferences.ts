@@ -3,12 +3,16 @@ import { getDb } from '../firebase/app';
 import { getCurrentUser } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
 
+export type TimeFormat = '12h' | '24h';
+
 export interface SchedulePreferences {
   lunchPeriod: number;
+  timeFormat: TimeFormat;
 }
 
 export const DEFAULT_SCHEDULE_PREFERENCES: SchedulePreferences = {
-  lunchPeriod: 1
+  lunchPeriod: 1,
+  timeFormat: '12h'
 };
 
 const PREF_KEY = 'schedulePreferences';

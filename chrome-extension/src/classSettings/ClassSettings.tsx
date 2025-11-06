@@ -269,6 +269,14 @@ const ClassSettings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  const handleTimeFormatChange = (format: '12h' | '24h') => {
+    setSchedulePrefs((prev) => ({
+      ...prev,
+      timeFormat: format
+    }));
+    setHasUnsavedChanges(true);
+  };
+
 
   const handleReset = () => {
     const confirmed = window.confirm(
@@ -390,6 +398,21 @@ const ClassSettings: React.FC = () => {
         <div className="class-settings__loading">Loading…</div>
       ) : (
         <div className="class-settings__form">
+          <section className="class-settings__panel">
+            <h2>Display Settings</h2>
+            <div className="class-settings__field">
+              <label htmlFor="time-format">Time format</label>
+              <select
+                id="time-format"
+                value={schedulePrefs.timeFormat}
+                onChange={(e) => handleTimeFormatChange(e.target.value as '12h' | '24h')}
+              >
+                <option value="12h">12-hour</option>
+                <option value="24h">24-hour</option>
+              </select>
+            </div>
+          </section>
+
           <section className="class-settings__panel">
             <h2>Class Blocks</h2>
             <div className="class-settings__table" role="table" aria-label="Class block preferences">

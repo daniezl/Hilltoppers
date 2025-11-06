@@ -9,6 +9,7 @@ import {
   DEFAULT_BLOCK_NAMES,
   BlockKey
 } from '../storage/blockPreferences';
+import { loadSchedulePreferences, type SchedulePreferences, DEFAULT_SCHEDULE_PREFERENCES } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
 
 interface SchedulePayload {
@@ -67,6 +68,7 @@ const Popup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
+  const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
@@ -220,21 +222,37 @@ const Popup: React.FC = () => {
   }, [debugTestTime]);
 
   useEffect(() => {
-    loadBlockPreferences()
-      .then((prefs) => setBlockPrefs(prefs))
-      .catch((err) => console.error('[popup] Failed to load block preferences', err));
+    Promise.all([
+      loadBlockPreferences(),
+      loadSchedulePreferences()
+    ])
+      .then(([blockPrefs, schedulePrefs]) => {
+        setBlockPrefs(blockPrefs);
+        setSchedulePrefs(schedulePrefs);
+      })
+      .catch((err) => console.error('[popup] Failed to load preferences', err));
 
     if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
       const listener = (
         changes: { [key: string]: chrome.storage.StorageChange },
         area: string
       ) => {
-        if (area === 'sync' && changes.blockPreferences) {
-          const next = changes.blockPreferences.newValue as BlockPreferenceRecord | undefined;
-          if (next) {
-            setBlockPrefs(next);
-          } else {
-            setBlockPrefs(createEmptyPreferences());
+        if (area === 'sync') {
+          if (changes.blockPreferences) {
+            const next = changes.blockPreferences.newValue as BlockPreferenceRecord | undefined;
+            if (next) {
+              setBlockPrefs(next);
+            } else {
+              setBlockPrefs(createEmptyPreferences());
+            }
+          }
+          if (changes.schedulePreferences) {
+            const next = changes.schedulePreferences.newValue as SchedulePreferences | undefined;
+            if (next) {
+              setSchedulePrefs(next);
+            } else {
+              setSchedulePrefs(DEFAULT_SCHEDULE_PREFERENCES);
+            }
           }
         }
       };
@@ -457,7 +475,7 @@ const Popup: React.FC = () => {
                       <span className="block-name">{display.label}</span>
                       <div className="block-right">
                         <span className="block-time">
-                          {toDisplayTime(start)} – {toDisplayTime(end)}
+                          {toDisplayTime(start, schedulePrefs.timeFormat)} – {toDisplayTime(end, schedulePrefs.timeFormat)}
                         </span>
                         {isLunchBlock ? (
                           <button
@@ -476,7 +494,7 @@ const Popup: React.FC = () => {
                           <li key={sub.id ?? sub.name}>
                             <span className="subblock-name">{sub.name}</span>
                             <span className="subblock-time">
-                              {toDisplayTime(parseBlockTime(sub.start, baseDate))} – {toDisplayTime(parseBlockTime(sub.end, baseDate))}
+                              {toDisplayTime(parseBlockTime(sub.start, baseDate), schedulePrefs.timeFormat)} – {toDisplayTime(parseBlockTime(sub.end, baseDate), schedulePrefs.timeFormat)}
                             </span>
                           </li>
                         ))}
