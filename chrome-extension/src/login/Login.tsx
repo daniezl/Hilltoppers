@@ -140,6 +140,12 @@ const Login: React.FC = () => {
           setAuthUser(updated);
           if (updated.emailVerified) {
             setFeedback({ type: 'success', message: 'Email verified! Opening settings…' });
+            console.log('[login] Email verified, redirecting to:', classSettingsUrl);
+            // Redirect immediately when email is verified
+            requestAnimationFrame(() => {
+              console.log('[login] Executing redirect after verification...');
+              window.location.href = classSettingsUrl;
+            });
           }
         }
       } catch (error) {
@@ -158,24 +164,22 @@ const Login: React.FC = () => {
       cancelled = true;
       window.removeEventListener('focus', handleFocus);
     };
-  }, [needsEmailVerification]);
+  }, [needsEmailVerification, classSettingsUrl]);
 
   useEffect(() => {
     if (!authInitialized || !authUser || needsEmailVerification || redirecting) {
       return;
     }
 
+    console.log('[login] Triggering redirect to settings:', classSettingsUrl);
     setRedirecting(true);
     setFeedback({ type: 'success', message: 'Signed in successfully. Opening settings…' });
-    const timeout = window.setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        window.location.href = classSettingsUrl;
-      }
-    }, 1200);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
+    
+    // Use requestAnimationFrame for immediate redirect
+    requestAnimationFrame(() => {
+      console.log('[login] Executing redirect now...');
+      window.location.href = classSettingsUrl;
+    });
   }, [authInitialized, authUser, needsEmailVerification, redirecting, classSettingsUrl]);
 
   const handleOAuth = async (provider: 'google' | 'apple') => {
@@ -313,10 +317,12 @@ const Login: React.FC = () => {
       if (updated?.emailVerified) {
         setFeedback({ type: 'success', message: 'Email verified! Opening settings…' });
         if (!redirecting) {
+          console.log('[login] Manual verification confirmed, redirecting to:', classSettingsUrl);
           setRedirecting(true);
-          if (typeof window !== 'undefined') {
+          requestAnimationFrame(() => {
+            console.log('[login] Executing manual verification redirect...');
             window.location.href = classSettingsUrl;
-          }
+          });
         }
       } else {
         setFeedback({
@@ -351,9 +357,8 @@ const Login: React.FC = () => {
   };
 
   const openSettings = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = classSettingsUrl;
-    }
+    console.log('[login] Back to settings clicked, redirecting to:', classSettingsUrl);
+    window.location.href = classSettingsUrl;
   };
 
   const toggleMode = () => {
