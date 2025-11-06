@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		668F6147BDDB2702B2A11253 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0771171D9E05D8FD244231C9 /* AuthView.swift */; };
 		921C56449A714013AB99266A /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82AF040DECD4BCE9F07528B /* ScheduleService.swift */; };
 		A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825B2E935CE500774386 /* FeatureShowcaseView.swift */; };
 		A228825E2E937DC800774386 /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A228825D2E937DC800774386 /* AppUpdateManager.swift */; };
@@ -46,6 +47,7 @@
 		B9A0F1012F10A1B000000002 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9A0F1002F10A1B000000001 /* NavigationRouter.swift */; };
 		B9A0F1032F10A1B000000004 /* TimeSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */; };
 		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
+		C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */; };
 		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -81,6 +83,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthManager.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		0771171D9E05D8FD244231C9 /* AuthView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthView.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
@@ -135,16 +139,22 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A25EA2E02DB9E0780037D8D9 /* SJA_reTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = SJA_reTests;
 			sourceTree = "<group>";
 		};
 		A25EA2EA2DB9E0780037D8D9 /* SJA_reUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = SJA_reUITests;
 			sourceTree = "<group>";
 		};
 		A25EA3B32DC018000037D8D9 /* DayTypeWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = DayTypeWidget;
 			sourceTree = "<group>";
 		};
@@ -268,6 +278,8 @@
 				A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */,
 				A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */,
 				B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */,
+				066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */,
+				0771171D9E05D8FD244231C9 /* AuthView.swift */,
 			);
 			path = SJA_re;
 			sourceTree = "<group>";
@@ -333,6 +345,7 @@
 				A24509CE2DEEB14500BCDAB5 /* FirebaseCore */,
 				A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */,
 				A2F8BEA02E19100200EAD8F9 /* Lottie */,
+				43C2CA118D4F0525E716EF03 /* FirebaseAuth */,
 			);
 			productName = SJA_re;
 			productReference = A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */;
@@ -355,8 +368,6 @@
 				A25EA2E02DB9E0780037D8D9 /* SJA_reTests */,
 			);
 			name = SJA_reTests;
-			packageProductDependencies = (
-			);
 			productName = SJA_reTests;
 			productReference = A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -378,8 +389,6 @@
 				A25EA2EA2DB9E0780037D8D9 /* SJA_reUITests */,
 			);
 			name = SJA_reUITests;
-			packageProductDependencies = (
-			);
 			productName = SJA_reUITests;
 			productReference = A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -400,8 +409,6 @@
 				A287C2E82E6CA9E3005129F0 /* ClassCountdownWidget */,
 			);
 			name = ClassCountdownWidgetExtension;
-			packageProductDependencies = (
-			);
 			productName = ClassCountdownWidgetExtension;
 			productReference = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -526,6 +533,8 @@
 				A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */,
 				A280A0F62DDCE7E300F98F3F /* SJA_reApp.swift in Sources */,
 				A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */,
+				C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */,
+				668F6147BDDB2702B2A11253 /* AuthView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -993,6 +1002,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		43C2CA118D4F0525E716EF03 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A24509CB2DEEB14500BCDAB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
 		A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A24509CB2DEEB14500BCDAB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

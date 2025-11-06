@@ -194,11 +194,11 @@ class AuthManager: ObservableObject {
     // MARK: - Error Mapping
     
     private func mapAuthError(_ error: NSError) -> AuthError {
-        guard let errorCode = AuthErrorCode(_bridgedNSError: error) else {
+        guard let errorCode = AuthErrorCode.Code(rawValue: error.code) else {
             return .unknown(error.localizedDescription)
         }
         
-        switch errorCode.code {
+        switch errorCode {
         case .invalidEmail:
             return .invalidEmail
         case .wrongPassword, .invalidCredential:
@@ -218,7 +218,7 @@ class AuthManager: ObservableObject {
         case .operationNotAllowed:
             return .operationNotAllowed
         default:
-            return .unknown("Unable to sign in right now. Please try again.")
+            return .unknown("Unable to sign in right now (\(errorCode.rawValue)). Please try again.")
         }
     }
 }
