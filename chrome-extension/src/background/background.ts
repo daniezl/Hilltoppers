@@ -2,12 +2,12 @@
 import { DateTime } from 'luxon';
 import { loadBlocksForDate } from '../services/scheduleService';
 import { Block, EST_ZONE, parseBlockTime } from '../types/schedule';
-import { loadSchedulePreferences, type TimeFormat } from '../storage/schedulePreferences';
+import { type TimeFormat } from '../storage/schedulePreferences';
 
 type CountdownKind = 'current' | 'upcoming' | 'idle' | 'none';
 
 const REFRESH_ALARM = 'schedule-refresh';
-const REFRESH_INTERVAL_MINUTES = 5;
+const REFRESH_INTERVAL_MINUTES = 60;
 const ICON_TICK_ALARM = 'schedule-icon-tick';
 const ICON_TICK_INTERVAL_MINUTES = 1;
 const ICON_PRECISE_ALARM = 'schedule-icon-precise';
@@ -252,20 +252,15 @@ async function refreshSchedule(): Promise<void> {
       const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
       const todayKey = getTodayKey();
       console.info('[background] Refreshing schedule for', todayKey);
-      const [scheduleResult, schedulePrefs] = await Promise.all([
-        loadBlocksForDate(today),
-        loadSchedulePreferences()
-      ]);
+      const scheduleResult = await loadBlocksForDate(today);
       const { blocks, dayType } = scheduleResult;
       cachedSchedule = blocks;
       cachedDateKey = todayKey;
       cachedDayType = dayType ?? null;
-      cachedTimeFormat = schedulePrefs.timeFormat;
       console.info('[background] Refresh complete', {
         dateKey: cachedDateKey,
         blockCount: cachedSchedule.length,
-        dayType: cachedDayType,
-        timeFormat: cachedTimeFormat
+        dayType: cachedDayType
       });
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage(

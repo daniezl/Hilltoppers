@@ -127,13 +127,8 @@ const Popup: React.FC = () => {
       }
     }, 1500);
 
-    const maybeRequestRefresh = (payload: SchedulePayload | null, reason: string) => {
+    const requestRefresh = (reason: string) => {
       if (refreshRequestedRef.current) {
-        return;
-      }
-      const todayKey = DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');
-      const payloadKey = payload?.dateKey ?? '';
-      if (payloadKey && payloadKey === todayKey) {
         return;
       }
       refreshRequestedRef.current = true;
@@ -165,7 +160,8 @@ const Popup: React.FC = () => {
           hasResolvedInitial.current = true;
           setIsLoading(false);
         }
-        maybeRequestRefresh(next, 'popup-init');
+        // Always request fresh data from Firestore when popup opens
+        requestRefresh('popup-init');
       })
       .catch((err) => {
         console.error('[popup] Failed to get cached schedule', err);
