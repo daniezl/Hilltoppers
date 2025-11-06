@@ -1247,6 +1247,7 @@ class BlockSettingsManager: ObservableObject {
 
 struct SettingsView: View {
     @EnvironmentObject private var router: NavigationRouter
+    @StateObject private var authManager = AuthManager.shared
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     private let horizontalInset: CGFloat = 32
 
@@ -1269,6 +1270,27 @@ struct SettingsView: View {
                 // settingsRow(icon: "clock", title: "Time") {
                 //     router.push(.settingsTime)
                 // }
+                
+                // Account/Login row
+                settingsRow(
+                    icon: "person.circle",
+                    title: authManager.isAuthenticated ? "Account" : "Sign In",
+                    accessory: {
+                        if authManager.isAuthenticated && authManager.isEmailVerified {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.body)
+                        } else if authManager.needsEmailVerification {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(.orange)
+                                .font(.body)
+                        } else {
+                            EmptyView()
+                        }
+                    }
+                ) {
+                    router.push(.settingsAuth)
+                }
 
                 settingsRow(icon: "ellipsis.circle", title: "More") {
                     router.push(.settingsMore)

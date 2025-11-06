@@ -7,6 +7,7 @@ enum AppRoute: Hashable {
     case settingsNotifications
     case settingsTime
     case settingsMore
+    case settingsAuth
 }
 
 @MainActor
