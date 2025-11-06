@@ -409,7 +409,8 @@ const Login: React.FC = () => {
         ) : null}
 
         <div className="login__content">
-          <div className="login__oauth">
+          {/* Temporarily hidden OAuth buttons */}
+          {/* <div className="login__oauth">
             <button type="button" className="primary" onClick={() => void handleOAuth('google')} disabled={busy}>
               Continue with Google
             </button>
@@ -420,16 +421,19 @@ const Login: React.FC = () => {
 
           <div className="login__divider">
             <span>or</span>
-          </div>
+          </div> */}
 
-          <form className="login__form" onSubmit={handleEmailSubmit}>
+          {!needsEmailVerification && (
+          <form className="login__form" onSubmit={handleEmailSubmit} method="post">
             <label>
               Email
               <input
                 type="email"
+                name="email"
+                id="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                autoComplete="email"
+                autoComplete="username email"
                 required
                 disabled={busy}
               />
@@ -439,6 +443,8 @@ const Login: React.FC = () => {
               <div className="login__password-field">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  id="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
@@ -449,6 +455,7 @@ const Login: React.FC = () => {
                   type="button"
                   className="login__password-toggle"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={-1}
                 >
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
@@ -461,6 +468,7 @@ const Login: React.FC = () => {
               {authMode === 'register' ? 'Have an account? Sign in' : 'Need an account? Register'}
             </button>
           </form>
+          )}
         </div>
 
         {authUser ? (
