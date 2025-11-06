@@ -74,6 +74,7 @@ const ClassSettings: React.FC = () => {
   const [authInitialized, setAuthInitialized] = useState(false);
   const [signOutPending, setSignOutPending] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const loginUrl = useMemo(() => resolveExtensionUrl('login.html'), []);
 
@@ -133,7 +134,7 @@ const ClassSettings: React.FC = () => {
     if (saveState.status === 'success' || saveState.status === 'error') {
       const timeout = window.setTimeout(() => {
         setSaveState((prev) => (prev.status === 'saving' ? prev : INITIAL_SAVE_STATE));
-      }, 4000);
+      }, 3000);
       return () => window.clearTimeout(timeout);
     }
     return () => {};
@@ -158,6 +159,56 @@ const ClassSettings: React.FC = () => {
     const providers = authUser.providerData?.map((entry) => entry?.providerId).filter(Boolean) as string[];
     return providers.includes('password');
   }, [authUser]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (loading || !authInitialized) {
+      return undefined;
+    }
+
+    if (!hasUnsavedChanges) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        if (needsEmailVerification) {
+          setSaveState({
+            status: 'error',
+            message: 'Email not verified. Please confirm your email before saving.'
+          });
+          setHasUnsavedChanges(false);
+          return;
+        }
+
+        setSaveState({ status: 'saving', message: 'Auto-saving…' });
+
+        try {
+          await Promise.all([
+            saveBlockPreferences(blockPrefs),
+            saveSchedulePreferences(schedulePrefs)
+          ]);
+          if (typeof chrome !== 'undefined') {
+            chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
+          }
+          setSaveState({ status: 'success', message: 'Changes saved automatically.' });
+          setHasUnsavedChanges(false);
+          void logPreferenceSaved('class_settings_auto');
+        } catch (error) {
+          console.error('[class-settings] Auto-save failed', error);
+          setSaveState({
+            status: 'error',
+            message: mapSaveError(error)
+          });
+          setHasUnsavedChanges(false);
+        }
+      })();
+    }, 1000); // 1 second debounce
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [blockPrefs, schedulePrefs, hasUnsavedChanges, loading, authInitialized, needsEmailVerification]);
 
   useEffect(() => {
     if (!needsEmailVerification) {
@@ -204,6 +255,7 @@ const ClassSettings: React.FC = () => {
         name: value
       }
     }));
+    setHasUnsavedChanges(true);
   };
 
   const handleBlockToggle = (key: BlockKey, field: 'showOnGreen' | 'showOnWhite') => {
@@ -214,51 +266,27 @@ const ClassSettings: React.FC = () => {
         [field]: !prev[key][field]
       }
     }));
+    setHasUnsavedChanges(true);
   };
 
-  const handleLunchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = Number(event.target.value);
-    setSchedulePrefs((prev) => ({ ...prev, lunchPeriod: value }));
-  };
 
   const handleReset = () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to reset all settings to defaults? This will erase all your custom block names and preferences.'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+
     setBlockPrefs(createEmptyPreferences());
     setSchedulePrefs(DEFAULT_SCHEDULE_PREFERENCES);
     setSaveState({ status: 'idle', message: '' });
     setFeedback({ type: 'info', message: 'Preferences reset to defaults.' });
+    setHasUnsavedChanges(true);
     void logClassSettingsReset();
   };
 
-  const handleSave = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setFeedback(null);
-    if (needsEmailVerification) {
-      setSaveState({
-        status: 'error',
-        message: 'Email not verified. Please confirm your email before saving.'
-      });
-      return;
-    }
-    setSaveState({ status: 'saving', message: 'Saving…' });
-
-    try {
-      await Promise.all([
-        saveBlockPreferences(blockPrefs),
-        saveSchedulePreferences(schedulePrefs)
-      ]);
-      if (typeof chrome !== 'undefined') {
-        chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
-      }
-      setSaveState({ status: 'success', message: 'All changes saved successfully.' });
-      void logPreferenceSaved('class_settings');
-    } catch (error) {
-      console.error('[class-settings] Failed to save settings', error);
-      setSaveState({
-        status: 'error',
-        message: mapSaveError(error)
-      });
-    }
-  };
 
   const handleSignOut = async () => {
     setFeedback(null);
@@ -332,25 +360,28 @@ const ClassSettings: React.FC = () => {
       <header className="class-settings__header">
         <div>
           <h1>Class &amp; Schedule Settings</h1>
-          <p>Rename blocks, choose your lunch period, and control how classes appear on Green and White days.</p>
+          <p>Rename blocks and control how classes appear on Green and White days. Changes save automatically.</p>
         </div>
         <div className="class-settings__header-actions">
+          {saveState.status === 'saving' && (
+            <span className="class-settings__autosave-indicator">
+              <span className="class-settings__autosave-spinner"></span>
+              Auto-saving…
+            </span>
+          )}
+          {saveState.status === 'success' && (
+            <span className="class-settings__autosave-indicator class-settings__autosave-indicator--success">
+              ✓ Saved
+            </span>
+          )}
           <button type="button" className="secondary" onClick={handleReset} disabled={loading || saveState.status === 'saving'}>
             Reset to Defaults
-          </button>
-          <button
-            type="submit"
-            form="class-settings-form"
-            className="primary"
-            disabled={loading || saveState.status === 'saving' || needsEmailVerification}
-          >
-            {saveState.status === 'saving' ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </header>
 
-      {saveState.message ? (
-        <div className={`class-settings__status class-settings__status--${saveState.status}`}>
+      {saveState.status === 'error' && saveState.message ? (
+        <div className={`class-settings__status class-settings__status--error`}>
           {saveState.message}
         </div>
       ) : null}
@@ -358,30 +389,7 @@ const ClassSettings: React.FC = () => {
       {loading ? (
         <div className="class-settings__loading">Loading…</div>
       ) : (
-        <form id="class-settings-form" className="class-settings__form" onSubmit={handleSave}>
-          <section className="class-settings__panel class-settings__panel--schedule">
-            <h2>Daily Schedule</h2>
-            <div className="class-settings__field">
-              <label htmlFor="lunch-period">Lunch period</label>
-              <select
-                id="lunch-period"
-                value={schedulePrefs.lunchPeriod}
-                onChange={handleLunchChange}
-                disabled={saveState.status === 'saving' || needsEmailVerification}
-              >
-                {[1, 2, 3, 4, 5].map((period) => (
-                  <option key={period} value={period}>
-                    {period}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="class-settings__hint">Signed-in users can sync these preferences across every device.</p>
-            {needsEmailVerification ? (
-              <p className="class-settings__hint class-settings__hint--warning">Verify your email to enable syncing and saving changes.</p>
-            ) : null}
-          </section>
-
+        <div className="class-settings__form">
           <section className="class-settings__panel">
             <h2>Class Blocks</h2>
             <div className="class-settings__table" role="table" aria-label="Class block preferences">
@@ -432,7 +440,7 @@ const ClassSettings: React.FC = () => {
               })}
             </div>
           </section>
-        </form>
+        </div>
       )}
     </main>
   );

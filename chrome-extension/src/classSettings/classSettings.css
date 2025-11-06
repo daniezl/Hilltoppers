@@ -63,7 +63,39 @@ body, html {
 
 .class-settings__header-actions {
   display: flex;
+  align-items: center;
   gap: 12px;
+}
+
+.class-settings__autosave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--surface-muted);
+}
+
+.class-settings__autosave-indicator--success {
+  color: var(--accent);
+}
+
+.class-settings__autosave-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .class-settings button.primary,
@@ -139,8 +171,10 @@ body, html {
 .class-settings__topbar-user {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .class-settings__topbar-details {
@@ -171,9 +205,11 @@ body, html {
 .class-settings__topbar-cta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
   color: var(--muted);
+  width: 100%;
 }
 
 .class-settings__topbar-cta p {
