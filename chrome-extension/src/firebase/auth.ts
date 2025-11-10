@@ -10,6 +10,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
+  browserLocalPersistence,
+  setPersistence,
   type ActionCodeSettings,
   type Auth,
   type Unsubscribe,
@@ -28,6 +30,12 @@ function getOrInitAuth(): Auth {
 
   if (!cachedAuth) {
     cachedAuth = getAuth(getFirebaseApp());
+    
+    // Set persistence and configure for Chrome extension environment
+    setPersistence(cachedAuth, browserLocalPersistence).catch((error) => {
+      console.warn('[auth] Failed to set persistence', error);
+    });
+    
     if ('useDeviceLanguage' in cachedAuth && typeof cachedAuth.useDeviceLanguage === 'function') {
       cachedAuth.useDeviceLanguage();
     }

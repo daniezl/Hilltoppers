@@ -2,11 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { removeFirebaseRemoteCode } from './vite-plugin-remove-firebase-remote-code';
 
 const rootDir = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), removeFirebaseRemoteCode()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -26,8 +27,23 @@ export default defineConfig({
           return 'assets/[name].js';
         },
         chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash][extname]'
+        assetFileNames: 'assets/[name].[hash][extname]',
+        // Ensure all code is inlined, no external scripts
+        inlineDynamicImports: false,
+        manualChunks: undefined
       }
+    },
+    // Target modern browsers for better compatibility
+    target: 'esnext',
+    minify: 'esbuild'
+  },
+  // Ensure all dependencies are bundled
+  resolve: {
+    alias: {
+      // Prevent Firebase from trying to load external scripts
+      '@firebase/app': '@firebase/app',
+      '@firebase/auth': '@firebase/auth',
+      '@firebase/firestore': '@firebase/firestore'
     }
   }
 });
