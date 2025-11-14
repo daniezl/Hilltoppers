@@ -7,16 +7,39 @@ export type BlockKey = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface BlockPreference {
   name: string;
-  showOnGreen: boolean;
-  showOnWhite: boolean;
+  // Legacy fields - only used for migration, will be removed after migration
+  showOnGreen?: boolean;
+  showOnWhite?: boolean;
+  // New fields for alternating mode
+  alternating?: boolean;
+  nameGreen?: string;
+  nameWhite?: string;
+  freeGreen?: boolean;
+  freeWhite?: boolean;
+  // Free block option for non-alternating mode
+  free?: boolean;
+  // Backup fields to store original names when marked as free
+  nameBackup?: string;
+  nameGreenBackup?: string;
+  nameWhiteBackup?: string;
+  // Migration flag - indicates if migration from old format has been completed
+  migrated?: boolean;
 }
 
 export type BlockPreferenceRecord = Record<BlockKey, BlockPreference>;
 
 const DEFAULT_PREFERENCE: BlockPreference = {
   name: '',
-  showOnGreen: true,
-  showOnWhite: true
+  alternating: false,
+  nameGreen: '',
+  nameWhite: '',
+  freeGreen: false,
+  freeWhite: false,
+  free: false,
+  nameBackup: '',
+  nameGreenBackup: '',
+  nameWhiteBackup: '',
+  migrated: true
 };
 
 export const DEFAULT_BLOCK_NAMES: Record<BlockKey, string> = {
@@ -55,11 +78,70 @@ function mergeWithDefaults(
   (Object.keys(defaults) as BlockKey[]).forEach((key) => {
     const pref = stored[key];
     if (pref) {
-      merged[key] = {
-        name: pref.name ?? '',
-        showOnGreen: pref.showOnGreen ?? true,
-        showOnWhite: pref.showOnWhite ?? true
-      };
+      const name = pref.name ?? '';
+      const isMigrated = pref.migrated ?? false;
+      
+      // Only perform migration if not already migrated
+      if (!isMigrated && (pref.showOnGreen !== undefined || pref.showOnWhite !== undefined)) {
+        const showOnGreen = pref.showOnGreen ?? true;
+        const showOnWhite = pref.showOnWhite ?? true;
+        
+        // Migration logic: if only one day is checked, convert to alternating mode
+        const shouldBeAlternating = showOnGreen !== showOnWhite;
+        const isAlternating = pref.alternating ?? shouldBeAlternating;
+        
+        let nameGreen = pref.nameGreen ?? '';
+        let nameWhite = pref.nameWhite ?? '';
+        let freeGreen = pref.freeGreen ?? false;
+        let freeWhite = pref.freeWhite ?? false;
+        
+        // If migrating to alternating mode, set up the fields
+        if (shouldBeAlternating && !pref.alternating) {
+          if (showOnGreen && !showOnWhite) {
+            // Only green day checked -> green has class, white is free
+            nameGreen = name;
+            nameWhite = '';
+            freeGreen = false;
+            freeWhite = true;
+          } else if (!showOnGreen && showOnWhite) {
+            // Only white day checked -> white has class, green is free
+            nameGreen = '';
+            nameWhite = name;
+            freeGreen = true;
+            freeWhite = false;
+          }
+        }
+        
+        // After migration, mark as migrated and don't include old fields
+        merged[key] = {
+          name,
+          alternating: isAlternating,
+          nameGreen,
+          nameWhite,
+          freeGreen,
+          freeWhite,
+          free: pref.free ?? false,
+          nameBackup: pref.nameBackup ?? '',
+          nameGreenBackup: pref.nameGreenBackup ?? '',
+          nameWhiteBackup: pref.nameWhiteBackup ?? '',
+          migrated: true
+        };
+      } else {
+        // Already migrated or no old fields - use new format directly
+        merged[key] = {
+          name,
+          alternating: pref.alternating ?? false,
+          nameGreen: pref.nameGreen ?? '',
+          nameWhite: pref.nameWhite ?? '',
+          freeGreen: pref.freeGreen ?? false,
+          freeWhite: pref.freeWhite ?? false,
+          free: pref.free ?? false,
+          nameBackup: pref.nameBackup ?? '',
+          nameGreenBackup: pref.nameGreenBackup ?? '',
+          nameWhiteBackup: pref.nameWhiteBackup ?? '',
+          migrated: true
+        };
+      }
     }
   });
   return merged;
@@ -78,13 +160,38 @@ async function loadFromSyncStorage(): Promise<BlockPreferenceRecord> {
   });
 }
 
+// Clean old fields from preferences before saving
+function cleanPreferences(preferences: BlockPreferenceRecord): BlockPreferenceRecord {
+  const cleaned: BlockPreferenceRecord = {} as BlockPreferenceRecord;
+  (Object.keys(preferences) as BlockKey[]).forEach((key) => {
+    const pref = preferences[key];
+    cleaned[key] = {
+      name: pref.name,
+      alternating: pref.alternating ?? false,
+      nameGreen: pref.nameGreen ?? '',
+      nameWhite: pref.nameWhite ?? '',
+      freeGreen: pref.freeGreen ?? false,
+      freeWhite: pref.freeWhite ?? false,
+      free: pref.free ?? false,
+      nameBackup: pref.nameBackup ?? '',
+      nameGreenBackup: pref.nameGreenBackup ?? '',
+      nameWhiteBackup: pref.nameWhiteBackup ?? '',
+      migrated: true
+    };
+  });
+  return cleaned;
+}
+
 async function saveToSyncStorage(preferences: BlockPreferenceRecord): Promise<void> {
   if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
     return;
   }
 
+  // Clean old fields before saving
+  const cleaned = cleanPreferences(preferences);
+
   return new Promise((resolve, reject) => {
-    chrome.storage.sync.set({ [STORAGE_KEY]: preferences }, () => {
+    chrome.storage.sync.set({ [STORAGE_KEY]: cleaned }, () => {
       const err = chrome.runtime.lastError;
       if (err) {
         reject(err);
@@ -124,10 +231,14 @@ async function saveToRemote(userId: string, preferences: BlockPreferenceRecord):
   }
   const db = getDb();
   const ref = doc(db, USERS_COLLECTION, userId);
+  
+  // Clean old fields before saving
+  const cleaned = cleanPreferences(preferences);
+  
   await setDoc(
     ref,
     {
-      blockPreferences: preferences,
+      blockPreferences: cleaned,
       updatedAt: serverTimestamp()
     },
     { merge: true }
@@ -198,7 +309,13 @@ export interface BlockDisplayInfo {
 }
 
 function hasOnlyOneDay(pref: BlockPreference): boolean {
-  return pref.showOnGreen !== pref.showOnWhite;
+  // This function is only used for legacy mode, which should not happen after migration
+  // But we keep it for backward compatibility during migration
+  if (pref.showOnGreen !== undefined && pref.showOnWhite !== undefined) {
+    return pref.showOnGreen !== pref.showOnWhite;
+  }
+  // After migration, this should not be used, but return false as default
+  return false;
 }
 
 export function resolveBlockDisplay(
@@ -218,10 +335,12 @@ export function resolveBlockDisplay(
   }
   const pref = preferences[key];
   const normalized = normalizeDayType(dayType);
-  const onlyOneDay = hasOnlyOneDay(pref);
+  const isAlternating = pref.alternating ?? false;
 
-  if (!normalized) {
-    if (onlyOneDay) {
+  // Handle alternating mode
+  if (isAlternating) {
+    if (!normalized) {
+      // Unknown day type - show both or emphasize
       return {
         label: blockName,
         originalName: blockName,
@@ -230,8 +349,12 @@ export function resolveBlockDisplay(
         useGrayText: false
       };
     }
-    const show = pref.showOnWhite;
-    if (!show) {
+
+    const isGreen = normalized === 'Green Day';
+    const isFree = isGreen ? (pref.freeGreen ?? false) : (pref.freeWhite ?? false);
+    const customName = isGreen ? (pref.nameGreen ?? '').trim() : (pref.nameWhite ?? '').trim();
+
+    if (isFree) {
       return {
         label: 'Free Block',
         originalName: blockName,
@@ -240,9 +363,9 @@ export function resolveBlockDisplay(
         useGrayText: true
       };
     }
-    const custom = pref.name.trim();
+
     return {
-      label: custom || blockName,
+      label: customName || blockName,
       originalName: blockName,
       isFree: false,
       emphasizeUnknown: false,
@@ -250,9 +373,10 @@ export function resolveBlockDisplay(
     };
   }
 
-  const isGreen = normalized === 'Green Day';
-  const show = isGreen ? pref.showOnGreen : pref.showOnWhite;
-  if (!show) {
+  // Non-alternating mode
+  const isFree = pref.free ?? false;
+  
+  if (isFree) {
     return {
       label: 'Free Block',
       originalName: blockName,
@@ -261,6 +385,7 @@ export function resolveBlockDisplay(
       useGrayText: true
     };
   }
+
   const custom = pref.name.trim();
   return {
     label: custom || blockName,

@@ -258,14 +258,138 @@ const ClassSettings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
-  const handleBlockToggle = (key: BlockKey, field: 'showOnGreen' | 'showOnWhite') => {
+  const handleBlockNameChangeAlternating = (key: BlockKey, day: 'green' | 'white', value: string) => {
     setBlockPrefs((prev) => ({
       ...prev,
       [key]: {
         ...prev[key],
-        [field]: !prev[key][field]
+        [day === 'green' ? 'nameGreen' : 'nameWhite']: value
       }
     }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleAlternatingToggle = (key: BlockKey) => {
+    setBlockPrefs((prev) => {
+      const current = prev[key];
+      const newAlternating = !(current.alternating ?? false);
+      const currentName = current.name.trim();
+      const isFree = current.free ?? false;
+      
+      return {
+        ...prev,
+        [key]: {
+          ...current,
+          alternating: newAlternating,
+          // When enabling alternating, copy current name to both fields if they're empty
+          nameGreen: newAlternating 
+            ? (current.nameGreen && current.nameGreen.trim() ? current.nameGreen : (isFree ? '' : currentName))
+            : current.nameGreen,
+          nameWhite: newAlternating 
+            ? (current.nameWhite && current.nameWhite.trim() ? current.nameWhite : (isFree ? '' : currentName))
+            : current.nameWhite,
+          // If current is free, set both days as free when enabling alternating
+          freeGreen: newAlternating 
+            ? (current.freeGreen ?? (isFree ? true : false))
+            : current.freeGreen,
+          freeWhite: newAlternating 
+            ? (current.freeWhite ?? (isFree ? true : false))
+            : current.freeWhite
+        }
+      };
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  const handleFreeToggle = (key: BlockKey) => {
+    setBlockPrefs((prev) => {
+      const current = prev[key];
+      const isFree = !(current.free ?? false);
+      
+      if (isFree) {
+        // Marking as free: save current name to backup and set display to "Free Block"
+        const currentName = current.name.trim();
+        return {
+          ...prev,
+          [key]: {
+            ...current,
+            free: true,
+            nameBackup: currentName && currentName !== 'Free Block' ? currentName : (current.nameBackup ?? ''),
+            name: 'Free Block'
+          }
+        };
+      } else {
+        // Unmarking free: restore name from backup
+        return {
+          ...prev,
+          [key]: {
+            ...current,
+            free: false,
+            name: current.nameBackup && current.nameBackup.trim() ? current.nameBackup : ''
+          }
+        };
+      }
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  const handleFreeToggleAlternating = (key: BlockKey, day: 'green' | 'white') => {
+    setBlockPrefs((prev) => {
+      const current = prev[key];
+      const isFree = !(current[day === 'green' ? 'freeGreen' : 'freeWhite'] ?? false);
+      
+      if (isFree) {
+        // Marking as free: save current name to backup and set display to "Free Block"
+        if (day === 'green') {
+          const currentName = current.nameGreen ?? '';
+          const trimmedName = currentName.trim();
+          return {
+            ...prev,
+            [key]: {
+              ...current,
+              freeGreen: true,
+              nameGreenBackup: trimmedName && trimmedName !== 'Free Block' ? trimmedName : (current.nameGreenBackup ?? ''),
+              nameGreen: 'Free Block'
+            }
+          };
+        } else {
+          const currentName = current.nameWhite ?? '';
+          const trimmedName = currentName.trim();
+          return {
+            ...prev,
+            [key]: {
+              ...current,
+              freeWhite: true,
+              nameWhiteBackup: trimmedName && trimmedName !== 'Free Block' ? trimmedName : (current.nameWhiteBackup ?? ''),
+              nameWhite: 'Free Block'
+            }
+          };
+        }
+      } else {
+        // Unmarking free: restore name from backup
+        if (day === 'green') {
+          const backupName = current.nameGreenBackup ?? '';
+          return {
+            ...prev,
+            [key]: {
+              ...current,
+              freeGreen: false,
+              nameGreen: backupName.trim() ? backupName : ''
+            }
+          };
+        } else {
+          const backupName = current.nameWhiteBackup ?? '';
+          return {
+            ...prev,
+            [key]: {
+              ...current,
+              freeWhite: false,
+              nameWhite: backupName.trim() ? backupName : ''
+            }
+          };
+        }
+      }
+    });
     setHasUnsavedChanges(true);
   };
 
@@ -419,43 +543,91 @@ const ClassSettings: React.FC = () => {
               <div className="class-settings__table-row class-settings__table-row--header" role="row">
                 <div role="columnheader">Block</div>
                 <div role="columnheader">Course name</div>
-                <div role="columnheader">Green day</div>
-                <div role="columnheader">White day</div>
+                <div role="columnheader">Alternating</div>
               </div>
               {blockRows.map((key) => {
                 const pref = blockPrefs[key];
+                const isAlternating = pref.alternating ?? false;
                 return (
                   <div key={key} className="class-settings__table-row" role="row">
                     <div role="cell" className="class-settings__table-label">
                       <strong>{DEFAULT_BLOCK_NAMES[key]}</strong>
                     </div>
-                    <div role="cell" className="class-settings__table-input">
-                      <input
-                        type="text"
-                        value={pref.name}
-                        placeholder={DEFAULT_BLOCK_NAMES[key]}
-                        onChange={(event) => handleBlockNameChange(key, event.target.value)}
-                        aria-label={`Course name for ${DEFAULT_BLOCK_NAMES[key]}`}
-                      />
+                    <div role="cell" className="class-settings__table-input-group">
+                      {!isAlternating ? (
+                        <div className="class-settings__input-with-free">
+                          <input
+                            type="text"
+                            value={pref.name}
+                            placeholder={DEFAULT_BLOCK_NAMES[key]}
+                            onChange={(event) => handleBlockNameChange(key, event.target.value)}
+                            aria-label={`Course name for ${DEFAULT_BLOCK_NAMES[key]}`}
+                            disabled={pref.free ?? false}
+                          />
+                          <label className="class-settings__free-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={pref.free ?? false}
+                              onChange={() => handleFreeToggle(key)}
+                              aria-label={`Free block for ${DEFAULT_BLOCK_NAMES[key]}`}
+                            />
+                            <span>Free</span>
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="class-settings__alternating-inputs">
+                          <div className="class-settings__input-with-free">
+                            <span className="class-settings__day-label">💚 Green</span>
+                            <input
+                              type="text"
+                              value={pref.nameGreen ?? ''}
+                              placeholder={`${DEFAULT_BLOCK_NAMES[key]} (Green day)`}
+                              onChange={(event) => handleBlockNameChangeAlternating(key, 'green', event.target.value)}
+                              aria-label={`Course name for ${DEFAULT_BLOCK_NAMES[key]} on Green days`}
+                              disabled={pref.freeGreen ?? false}
+                            />
+                            <label className="class-settings__free-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={pref.freeGreen ?? false}
+                                onChange={() => handleFreeToggleAlternating(key, 'green')}
+                                aria-label={`Free block for ${DEFAULT_BLOCK_NAMES[key]} on Green days`}
+                              />
+                              <span>Free</span>
+                            </label>
+                          </div>
+                          <div className="class-settings__input-with-free">
+                            <span className="class-settings__day-label">🤍 White</span>
+                            <input
+                              type="text"
+                              value={pref.nameWhite ?? ''}
+                              placeholder={`${DEFAULT_BLOCK_NAMES[key]} (White day)`}
+                              onChange={(event) => handleBlockNameChangeAlternating(key, 'white', event.target.value)}
+                              aria-label={`Course name for ${DEFAULT_BLOCK_NAMES[key]} on White days`}
+                              disabled={pref.freeWhite ?? false}
+                            />
+                            <label className="class-settings__free-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={pref.freeWhite ?? false}
+                                onChange={() => handleFreeToggleAlternating(key, 'white')}
+                                aria-label={`Free block for ${DEFAULT_BLOCK_NAMES[key]} on White days`}
+                              />
+                              <span>Free</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div role="cell" className="class-settings__table-toggle">
                       <label>
                         <input
                           type="checkbox"
-                          checked={pref.showOnGreen}
-                          onChange={() => handleBlockToggle(key, 'showOnGreen')}
-                          aria-label={`Show ${DEFAULT_BLOCK_NAMES[key]} on Green days`}
+                          checked={isAlternating}
+                          onChange={() => handleAlternatingToggle(key)}
+                          aria-label={`Alternating classes for ${DEFAULT_BLOCK_NAMES[key]}`}
                         />
-                      </label>
-                    </div>
-                    <div role="cell" className="class-settings__table-toggle">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={pref.showOnWhite}
-                          onChange={() => handleBlockToggle(key, 'showOnWhite')}
-                          aria-label={`Show ${DEFAULT_BLOCK_NAMES[key]} on White days`}
-                        />
+                        <span>Alternating</span>
                       </label>
                     </div>
                   </div>
