@@ -577,7 +577,7 @@ const ClassSettings: React.FC = () => {
                       ) : (
                         <div className="class-settings__alternating-inputs">
                           <div className="class-settings__input-with-free">
-                            <span className="class-settings__day-label">💚 Green</span>
+                            <span className="class-settings__day-label">🟩 Green</span>
                             <input
                               type="text"
                               value={pref.nameGreen ?? ''}
@@ -597,7 +597,7 @@ const ClassSettings: React.FC = () => {
                             </label>
                           </div>
                           <div className="class-settings__input-with-free">
-                            <span className="class-settings__day-label">🤍 White</span>
+                            <span className="class-settings__day-label">⬜️ White</span>
                             <input
                               type="text"
                               value={pref.nameWhite ?? ''}

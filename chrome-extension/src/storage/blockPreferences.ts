@@ -86,42 +86,58 @@ function mergeWithDefaults(
         const showOnGreen = pref.showOnGreen ?? true;
         const showOnWhite = pref.showOnWhite ?? true;
         
-        // Migration logic: if only one day is checked, convert to alternating mode
-        const shouldBeAlternating = showOnGreen !== showOnWhite;
-        const isAlternating = pref.alternating ?? shouldBeAlternating;
-        
+        let isAlternating = pref.alternating ?? false;
         let nameGreen = pref.nameGreen ?? '';
         let nameWhite = pref.nameWhite ?? '';
         let freeGreen = pref.freeGreen ?? false;
         let freeWhite = pref.freeWhite ?? false;
+        let isFree = pref.free ?? false;
         
-        // If migrating to alternating mode, set up the fields
-        if (shouldBeAlternating && !pref.alternating) {
-          if (showOnGreen && !showOnWhite) {
-            // Only green day checked -> green has class, white is free
-            nameGreen = name;
-            nameWhite = '';
-            freeGreen = false;
-            freeWhite = true;
-          } else if (!showOnGreen && showOnWhite) {
-            // Only white day checked -> white has class, green is free
-            nameGreen = '';
-            nameWhite = name;
-            freeGreen = true;
-            freeWhite = false;
-          }
+        // Migration logic based on old showOnGreen/showOnWhite values
+        if (!showOnGreen && !showOnWhite) {
+          // Both unchecked -> mark as free block, not alternating
+          isFree = true;
+          isAlternating = false;
+          nameGreen = '';
+          nameWhite = '';
+          freeGreen = false;
+          freeWhite = false;
+        } else if (showOnGreen && !showOnWhite) {
+          // Only green day checked -> convert to alternating mode
+          isAlternating = true;
+          nameGreen = name;
+          nameWhite = '';
+          freeGreen = false;
+          freeWhite = true;
+          isFree = false;
+        } else if (!showOnGreen && showOnWhite) {
+          // Only white day checked -> convert to alternating mode
+          isAlternating = true;
+          nameGreen = '';
+          nameWhite = name;
+          freeGreen = true;
+          freeWhite = false;
+          isFree = false;
+        } else {
+          // Both checked -> normal mode, not alternating, not free
+          isAlternating = false;
+          isFree = false;
+          nameGreen = '';
+          nameWhite = '';
+          freeGreen = false;
+          freeWhite = false;
         }
         
         // After migration, mark as migrated and don't include old fields
         merged[key] = {
-          name,
+          name: isFree ? 'Free Block' : name,
           alternating: isAlternating,
           nameGreen,
           nameWhite,
           freeGreen,
           freeWhite,
-          free: pref.free ?? false,
-          nameBackup: pref.nameBackup ?? '',
+          free: isFree,
+          nameBackup: isFree && name.trim() && name !== 'Free Block' ? name : (pref.nameBackup ?? ''),
           nameGreenBackup: pref.nameGreenBackup ?? '',
           nameWhiteBackup: pref.nameWhiteBackup ?? '',
           migrated: true
