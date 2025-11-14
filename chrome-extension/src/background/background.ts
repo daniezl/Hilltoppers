@@ -204,9 +204,16 @@ async function schedulePreciseIconUpdate(): Promise<void> {
         });
         console.debug('[background] Scheduled precise icon update in', Math.round(delayMs / 1000), 'seconds');
       }
+    } else {
+      // No next transition found (all classes ended or no schedule)
+      // Ensure the periodic icon tick alarm is active as a fallback
+      ensureIconAlarm();
+      console.debug('[background] No next transition found, relying on periodic icon tick alarm');
     }
   } catch (error) {
     console.debug('[background] Failed to schedule precise icon update', error);
+    // Ensure icon alarm is active even if scheduling fails
+    ensureIconAlarm();
   }
 }
 
