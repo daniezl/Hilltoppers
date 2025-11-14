@@ -14,6 +14,14 @@ import { getDb } from '../firebase/app';
 import { Block, EST_ZONE, SubBlock } from '../types/schedule';
 import { isFirebaseConfigured } from '../firebase/config';
 import { resolveBulletinDayType } from './dayTypeResolver';
+import {
+  getCachedSpecialPeriods,
+  setCachedSpecialPeriods,
+  getCachedSpecialDay,
+  setCachedSpecialDay,
+  getCachedSpecialDaysDict,
+  setCachedSpecialDaysDict
+} from '../storage/firestoreCache';
 
 interface RawSubBlock {
   name: string;
@@ -81,14 +89,31 @@ async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null>
   if (!isFirebaseConfigured()) {
     return null;
   }
-  const db = getDb();
   const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  
+  // Try cache first
+  const cached = await getCachedSpecialDay(formatter);
+  if (cached) {
+    return cached as SpecialDayRecord;
+  }
+  
+  // Fetch from Firestore
+  const db = getDb();
   const ref = doc(db, 'special_days', formatter);
   const snapshot = await getDoc(ref);
   if (!snapshot.exists()) {
     return null;
   }
-  return snapshot.data() as SpecialDayRecord;
+  const data = snapshot.data() as SpecialDayRecord;
+  
+  // Cache the result
+  await setCachedSpecialDay(formatter, {
+    type: data.type,
+    details: data.details,
+    schedule: data.schedule
+  });
+  
+  return data;
 }
 
 function decodeScheduleFromData(data: SpecialDayRecord | null): Block[] | null {
@@ -140,8 +165,23 @@ export async function isInSpecialPeriod(date: Date): Promise<boolean> {
   if (!isFirebaseConfigured()) {
     return false;
   }
+  
+  // Try cache first
+  const cachedPeriods = await getCachedSpecialPeriods();
+  if (cachedPeriods) {
+    for (const period of cachedPeriods) {
+      if (date >= period.start && date <= period.end) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  // Fetch from Firestore
   const db = getDb();
   const snapshot = await getDocs(collection(db, 'special_periods'));
+  const periods: Array<{ start: Date; end: Date }> = [];
+  
   for (const docSnap of snapshot.docs) {
     const data = docSnap.data();
     const start = data.start as Timestamp | undefined;
@@ -150,10 +190,17 @@ export async function isInSpecialPeriod(date: Date): Promise<boolean> {
 
     const startDate = start.toDate();
     const endDate = end.toDate();
+    periods.push({ start: startDate, end: endDate });
+    
     if (date >= startDate && date <= endDate) {
+      // Cache the periods for future use
+      await setCachedSpecialPeriods(periods);
       return true;
     }
   }
+  
+  // Cache the periods even if date is not in any period
+  await setCachedSpecialPeriods(periods);
   return false;
 }
 
@@ -171,14 +218,34 @@ export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Reco
   if (!isFirebaseConfigured()) {
     return {};
   }
-  const db = getDb();
   const formatter = (date: Date) => DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   const startId = formatter(start);
   const endId = formatter(end);
 
+  // Try cache first
+  const cached = await getCachedSpecialDaysDict(startId, endId);
+  if (cached) {
+    return cached;
+  }
+
+  // Limit date range to 60 days to prevent excessive reads in edge cases
+  // Normally bulletin date is recent (yesterday/today), so range is only 1-2 days
+  const maxDays = 60;
+  const startDt = DateTime.fromJSDate(start, { zone: EST_ZONE });
+  const endDt = DateTime.fromJSDate(end, { zone: EST_ZONE });
+  const daysDiff = endDt.diff(startDt, 'days').days;
+  
+  // If date range is too large (edge case), limit to last 60 days from end date
+  // This should rarely trigger since bulletin dates are usually recent
+  const queryStart = daysDiff > maxDays 
+    ? endDt.minus({ days: maxDays }).startOf('day')
+    : startDt.startOf('day');
+  const queryStartId = formatter(queryStart.toJSDate());
+  
+  const db = getDb();
   const q = query(
     collection(db, 'special_days'),
-    where(documentId(), '>=', startId),
+    where(documentId(), '>=', queryStartId),
     where(documentId(), '<=', endId)
   );
 
@@ -190,6 +257,10 @@ export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Reco
       dict[docSnap.id] = data.type;
     }
   });
+  
+  // Cache the result
+  await setCachedSpecialDaysDict(dict);
+  
   return dict;
 }
 
@@ -197,9 +268,21 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
   if (!isFirebaseConfigured()) {
     return [];
   }
+  
+  // Try cache first
+  const cachedPeriods = await getCachedSpecialPeriods();
+  if (cachedPeriods) {
+    // Filter by date range
+    return cachedPeriods.filter((period) => {
+      return period.end >= start && period.start <= end;
+    });
+  }
+  
+  // Fetch from Firestore
   const db = getDb();
   const snapshot = await getDocs(collection(db, 'special_periods'));
   const periods: Array<{ start: Date; end: Date }> = [];
+  
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
     const startTs = data.start as Timestamp | undefined;
@@ -209,11 +292,16 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
     }
     const s = startTs.toDate();
     const e = endTs.toDate();
-    if (e >= start && s <= end) {
-      periods.push({ start: s, end: e });
-    }
+    periods.push({ start: s, end: e });
   });
-  return periods;
+  
+  // Cache the periods
+  await setCachedSpecialPeriods(periods);
+  
+  // Filter by date range
+  return periods.filter((period) => {
+    return period.end >= start && period.start <= end;
+  });
 }
 
 function getDefaultScheduleForWeekday(date: Date): string | null {

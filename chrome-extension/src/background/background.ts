@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { loadBlocksForDate } from '../services/scheduleService';
 import { Block, EST_ZONE, parseBlockTime } from '../types/schedule';
 import { type TimeFormat } from '../storage/schedulePreferences';
+import { isWithinSchoolHours, getNextSchoolHoursStart } from '../utils/timeUtils';
 
 type CountdownKind = 'current' | 'upcoming' | 'idle' | 'none';
 
@@ -294,7 +295,32 @@ async function refreshSchedule(): Promise<void> {
 function ensureRefreshAlarm(): void {
   chrome.alarms.get(REFRESH_ALARM, (alarm) => {
     if (!alarm) {
-      chrome.alarms.create(REFRESH_ALARM, { periodInMinutes: REFRESH_INTERVAL_MINUTES });
+      if (isWithinSchoolHours()) {
+        // Within school hours, create periodic alarm
+        chrome.alarms.create(REFRESH_ALARM, { periodInMinutes: REFRESH_INTERVAL_MINUTES });
+        console.info('[background] Created refresh alarm (within school hours)');
+      } else {
+        // Outside school hours, schedule alarm for next 6am
+        const nextStart = getNextSchoolHoursStart();
+        chrome.alarms.create(REFRESH_ALARM, { when: nextStart.getTime() });
+        console.info('[background] Scheduled refresh alarm for next school hours start', nextStart);
+      }
+    } else {
+      // Check if we're outside school hours and alarm is still periodic
+      if (!isWithinSchoolHours() && alarm.periodInMinutes) {
+        // Clear periodic alarm and schedule for next school hours
+        chrome.alarms.clear(REFRESH_ALARM, () => {
+          const nextStart = getNextSchoolHoursStart();
+          chrome.alarms.create(REFRESH_ALARM, { when: nextStart.getTime() });
+          console.info('[background] Cleared periodic alarm, scheduled for next school hours start', nextStart);
+        });
+      } else if (isWithinSchoolHours() && !alarm.periodInMinutes) {
+        // We're in school hours but alarm is one-time, switch to periodic
+        chrome.alarms.clear(REFRESH_ALARM, () => {
+          chrome.alarms.create(REFRESH_ALARM, { periodInMinutes: REFRESH_INTERVAL_MINUTES });
+          console.info('[background] Switched to periodic alarm (entered school hours)');
+        });
+      }
     }
   });
 }
@@ -340,7 +366,15 @@ chrome.runtime.onStartup.addListener(async () => {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === REFRESH_ALARM) {
-    await refreshSchedule();
+    if (isWithinSchoolHours()) {
+      // Within school hours, refresh and ensure periodic alarm continues
+      await refreshSchedule();
+      ensureRefreshAlarm(); // Re-ensure alarm is periodic
+    } else {
+      // Outside school hours, don't refresh but schedule for next school hours
+      console.info('[background] Refresh alarm triggered outside school hours, scheduling for next 6am');
+      ensureRefreshAlarm(); // This will schedule for next 6am
+    }
     return;
   }
   if (alarm.name === ICON_TICK_ALARM) {
@@ -367,6 +401,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === 'requestScheduleRefresh') {
+    // Always allow manual refresh from popup, regardless of time
     refreshSchedule()
       .then(() => sendResponse({ ok: true }))
       .catch((error) => {
