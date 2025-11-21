@@ -97,3 +97,13 @@ chrome-extension/node_modules/
 chrome-extension/dist/
 chrome-extension/.env
 chrome-extension/.env.*
+
+# Firebase service account key (包含敏感信息，不应提交到 Git)
+serviceAccountKey.json
+
+# 导出的数据文件（可选，如果不想提交到 Git）
+special_days.json
+special_periods.json
+
+# Firebase configuration (包含 API keys，不应提交到 Git)
+SJA_re/GoogleService-Info.plist

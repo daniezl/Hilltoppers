@@ -78,6 +78,29 @@ function mapBlocks(raw: RawBlock[]): Block[] {
   });
 }
 
+// Cloudflare Pages URL - 请替换为您的实际 Cloudflare Pages URL
+// 例如: "https://schoolapp-schedules.pages.dev"
+const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_SCHEDULE_URL || '';
+
+// 调试：检查环境变量是否正确加载
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  console.log('[scheduleService] Cloudflare URL:', CLOUDFLARE_BASE_URL || 'NOT SET');
+}
+
+function getCloudflareSpecialDaysUrl(): string {
+  if (CLOUDFLARE_BASE_URL) {
+    return `${CLOUDFLARE_BASE_URL}/special_days.json`;
+  }
+  return '';
+}
+
+function getCloudflareSpecialPeriodsUrl(): string {
+  if (CLOUDFLARE_BASE_URL) {
+    return `${CLOUDFLARE_BASE_URL}/special_periods.json`;
+  }
+  return '';
+}
+
 function getAssetUrl(path: string): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
     return chrome.runtime.getURL(path);
@@ -85,10 +108,85 @@ function getAssetUrl(path: string): string {
   return path;
 }
 
-async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null> {
-  if (!isFirebaseConfigured()) {
+// 缓存 special_days 和 special_periods 数据
+let cachedSpecialDaysData: Record<string, SpecialDayRecord> | null = null;
+let cachedSpecialPeriodsData: Array<{ start: Date; end: Date }> | null = null;
+
+async function loadSpecialDaysFromCloudflare(): Promise<Record<string, SpecialDayRecord> | null> {
+  if (cachedSpecialDaysData) {
+    return cachedSpecialDaysData;
+  }
+  
+  const url = getCloudflareSpecialDaysUrl();
+  if (!url) {
+    console.warn('[scheduleService] Cloudflare URL not configured, VITE_CLOUDFLARE_SCHEDULE_URL is empty');
     return null;
   }
+  
+  try {
+    console.info('[scheduleService] Loading special_days from Cloudflare:', url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`[scheduleService] Failed to load special_days from Cloudflare: HTTP ${response.status}`);
+      return null;
+    }
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text) as Record<string, SpecialDayRecord>;
+      cachedSpecialDaysData = data;
+      console.info('[scheduleService] Successfully loaded special_days from Cloudflare');
+      return data;
+    } catch (parseError) {
+      console.error('[scheduleService] JSON parse error in special_days:', parseError);
+      console.error('[scheduleService] Response text (first 500 chars):', text.substring(0, 500));
+      return null;
+    }
+  } catch (error) {
+    console.warn('[scheduleService] Error loading special_days from Cloudflare:', error);
+    return null;
+  }
+}
+
+async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: Date; end: Date }> | null> {
+  if (cachedSpecialPeriodsData) {
+    return cachedSpecialPeriodsData;
+  }
+  
+  const url = getCloudflareSpecialPeriodsUrl();
+  if (!url) {
+    console.warn('[scheduleService] Cloudflare URL not configured, VITE_CLOUDFLARE_SCHEDULE_URL is empty');
+    return null;
+  }
+  
+  try {
+    console.info('[scheduleService] Loading special_periods from Cloudflare:', url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`[scheduleService] Failed to load special_periods from Cloudflare: HTTP ${response.status}`);
+      return null;
+    }
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text) as Array<{ start: string; end: string }>;
+      const periods = data.map(p => ({
+        start: new Date(p.start),
+        end: new Date(p.end)
+      }));
+      cachedSpecialPeriodsData = periods;
+      console.info('[scheduleService] Successfully loaded special_periods from Cloudflare');
+      return periods;
+    } catch (parseError) {
+      console.error('[scheduleService] JSON parse error in special_periods:', parseError);
+      console.error('[scheduleService] Response text (first 500 chars):', text.substring(0, 500));
+      return null;
+    }
+  } catch (error) {
+    console.warn('[scheduleService] Error loading special_periods from Cloudflare:', error);
+    return null;
+  }
+}
+
+async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null> {
   const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   
   // Try cache first
@@ -97,23 +195,20 @@ async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null>
     return cached as SpecialDayRecord;
   }
   
-  // Fetch from Firestore
-  const db = getDb();
-  const ref = doc(db, 'special_days', formatter);
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) {
-    return null;
+  // 从 Cloudflare 加载
+  const cloudflareData = await loadSpecialDaysFromCloudflare();
+  if (cloudflareData && cloudflareData[formatter]) {
+    const data = cloudflareData[formatter];
+    // Cache the result
+    await setCachedSpecialDay(formatter, {
+      type: data.type,
+      details: data.details,
+      schedule: data.schedule
+    });
+    return data;
   }
-  const data = snapshot.data() as SpecialDayRecord;
   
-  // Cache the result
-  await setCachedSpecialDay(formatter, {
-    type: data.type,
-    details: data.details,
-    schedule: data.schedule
-  });
-  
-  return data;
+  return null;
 }
 
 function decodeScheduleFromData(data: SpecialDayRecord | null): Block[] | null {
@@ -162,10 +257,6 @@ async function loadJsonSchedule(key: string): Promise<Block[] | null> {
 }
 
 export async function isInSpecialPeriod(date: Date): Promise<boolean> {
-  if (!isFirebaseConfigured()) {
-    return false;
-  }
-  
   // Try cache first
   const cachedPeriods = await getCachedSpecialPeriods();
   if (cachedPeriods) {
@@ -177,30 +268,21 @@ export async function isInSpecialPeriod(date: Date): Promise<boolean> {
     return false;
   }
   
-  // Fetch from Firestore
-  const db = getDb();
-  const snapshot = await getDocs(collection(db, 'special_periods'));
-  const periods: Array<{ start: Date; end: Date }> = [];
-  
-  for (const docSnap of snapshot.docs) {
-    const data = docSnap.data();
-    const start = data.start as Timestamp | undefined;
-    const end = data.end as Timestamp | undefined;
-    if (!start || !end) continue;
-
-    const startDate = start.toDate();
-    const endDate = end.toDate();
-    periods.push({ start: startDate, end: endDate });
-    
-    if (date >= startDate && date <= endDate) {
-      // Cache the periods for future use
-      await setCachedSpecialPeriods(periods);
-      return true;
+  // 从 Cloudflare 加载
+  const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
+  if (cloudflarePeriods) {
+    for (const period of cloudflarePeriods) {
+      if (date >= period.start && date <= period.end) {
+        // Cache the periods for future use
+        await setCachedSpecialPeriods(cloudflarePeriods);
+        return true;
+      }
     }
+    // Cache the periods even if date is not in any period
+    await setCachedSpecialPeriods(cloudflarePeriods);
+    return false;
   }
   
-  // Cache the periods even if date is not in any period
-  await setCachedSpecialPeriods(periods);
   return false;
 }
 
@@ -215,9 +297,6 @@ export async function loadCustomSchedule(date: Date): Promise<Block[] | null> {
 }
 
 export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Record<string, string>> {
-  if (!isFirebaseConfigured()) {
-    return {};
-  }
   const formatter = (date: Date) => DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   const startId = formatter(start);
   const endId = formatter(end);
@@ -228,47 +307,24 @@ export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Reco
     return cached;
   }
 
-  // Limit date range to 60 days to prevent excessive reads in edge cases
-  // Normally bulletin date is recent (yesterday/today), so range is only 1-2 days
-  const maxDays = 60;
-  const startDt = DateTime.fromJSDate(start, { zone: EST_ZONE });
-  const endDt = DateTime.fromJSDate(end, { zone: EST_ZONE });
-  const daysDiff = endDt.diff(startDt, 'days').days;
-  
-  // If date range is too large (edge case), limit to last 60 days from end date
-  // This should rarely trigger since bulletin dates are usually recent
-  const queryStart = daysDiff > maxDays 
-    ? endDt.minus({ days: maxDays }).startOf('day')
-    : startDt.startOf('day');
-  const queryStartId = formatter(queryStart.toJSDate());
-  
-  const db = getDb();
-  const q = query(
-    collection(db, 'special_days'),
-    where(documentId(), '>=', queryStartId),
-    where(documentId(), '<=', endId)
-  );
-
-  const snapshot = await getDocs(q);
-  const dict: Record<string, string> = {};
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    if (typeof data.type === 'string') {
-      dict[docSnap.id] = data.type;
+  // 从 Cloudflare 加载
+  const cloudflareData = await loadSpecialDaysFromCloudflare();
+  if (cloudflareData) {
+    const dict: Record<string, string> = {};
+    for (const [dateKey, data] of Object.entries(cloudflareData)) {
+      if (dateKey >= startId && dateKey <= endId && typeof data.type === 'string') {
+        dict[dateKey] = data.type;
+      }
     }
-  });
+    // Cache the result
+    await setCachedSpecialDaysDict(dict);
+    return dict;
+  }
   
-  // Cache the result
-  await setCachedSpecialDaysDict(dict);
-  
-  return dict;
+  return {};
 }
 
 export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array<{ start: Date; end: Date }>> {
-  if (!isFirebaseConfigured()) {
-    return [];
-  }
-  
   // Try cache first
   const cachedPeriods = await getCachedSpecialPeriods();
   if (cachedPeriods) {
@@ -278,30 +334,18 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
     });
   }
   
-  // Fetch from Firestore
-  const db = getDb();
-  const snapshot = await getDocs(collection(db, 'special_periods'));
-  const periods: Array<{ start: Date; end: Date }> = [];
+  // 从 Cloudflare 加载
+  const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
+  if (cloudflarePeriods) {
+    // Cache the periods
+    await setCachedSpecialPeriods(cloudflarePeriods);
+    // Filter by date range
+    return cloudflarePeriods.filter((period) => {
+      return period.end >= start && period.start <= end;
+    });
+  }
   
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const startTs = data.start as Timestamp | undefined;
-    const endTs = data.end as Timestamp | undefined;
-    if (!startTs || !endTs) {
-      return;
-    }
-    const s = startTs.toDate();
-    const e = endTs.toDate();
-    periods.push({ start: s, end: e });
-  });
-  
-  // Cache the periods
-  await setCachedSpecialPeriods(periods);
-  
-  // Filter by date range
-  return periods.filter((period) => {
-    return period.end >= start && period.start <= end;
-  });
+  return [];
 }
 
 function getDefaultScheduleForWeekday(date: Date): string | null {

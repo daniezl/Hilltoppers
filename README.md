@@ -68,3 +68,15 @@ Click the puzzle icon 🧩 → Pin it for quick access.
 If there is a new version, just:
 
 Load the new dist folder again
+
+---
+
+# 🔧 Development Setup
+
+For developers who want to build and run the project locally, see [SETUP.md](./SETUP.md) for detailed instructions.
+
+**Important**: This project requires Firebase configuration. Make sure to:
+- Add `SJA_re/GoogleService-Info.plist` for iOS app
+- Create `chrome-extension/.env.local` for Chrome extension
+
+See [SETUP.md](./SETUP.md) for more details.

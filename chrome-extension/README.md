@@ -47,6 +47,19 @@ VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 
 When these values are absent the extension falls back to static JSON schedules and skips Firestore calls. Providing both `VITE_FIREBASE_MEASUREMENT_ID` and `VITE_FIREBASE_MEASUREMENT_API_SECRET` enables analytics reporting through the GA4 Measurement Protocol; omit them if you want analytics disabled during development. Remember to restrict your API key to the published extension identifier in the Google Cloud Console before release.
 
+## Cloudflare Schedule Configuration
+
+The extension now supports loading special_days and special_periods from Cloudflare Pages. To enable this:
+
+1. Set up Cloudflare Pages (see `CLOUDFLARE_SETUP_GUIDE.md` in the project root)
+2. Add the Cloudflare URL to your `.env.local` file:
+
+```
+VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
+```
+
+If `VITE_CLOUDFLARE_SCHEDULE_URL` is not set, the extension will return empty data (using default weekday schedules).
+
 ## Project Structure
 
 - `manifest.json`: Chrome extension manifest (MV3).

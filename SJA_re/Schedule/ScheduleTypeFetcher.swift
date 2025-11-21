@@ -1,5 +1,4 @@
 import Foundation
-import FirebaseFirestore
 
 struct SpecialDayInfo {
     let type: String
@@ -8,150 +7,96 @@ struct SpecialDayInfo {
 
 struct ScheduleTypeFetcher {
     static func fetchTypeFor(date: Date) async throws -> String? {
-        // print("FIREBASE CALL: fetchTypeFor")
-        let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
-        // print("Looking up Firestore for date: \(dateString)")
         
-        do {
-            let docRef = db.collection("special_days").document(dateString)
-            let snapshot = try await docRef.getDocument()
-            if let data = snapshot.data(), let type = data["type"] as? String {
-                return type
-            }
-            return nil
-        } catch {
-            // print("Firebase error in fetchTypeFor: \(error)")
-            throw error
+        // 从 Cloudflare 加载
+        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
+           let dayData = cloudflareData[dateString],
+           let type = dayData.type {
+            return type
         }
+        
+        return nil
     }
     
     static func fetchSpecialDayInfo(date: Date) async throws -> SpecialDayInfo? {
-        // print("FIREBASE CALL: fetchSpecialDayInfo")
-        let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
-        // print("Looking up Firestore for date: \(dateString)")
         
-        do {
-            let docRef = db.collection("special_days").document(dateString)
-            let snapshot = try await docRef.getDocument()
-            if let data = snapshot.data(), let type = data["type"] as? String {
-                let details = data["details"] as? String
-                return SpecialDayInfo(type: type, details: details)
-            }
-            return nil
-        } catch {
-            // print("Firebase error in fetchSpecialDayInfo: \(error)")
-            throw error
+        // 从 Cloudflare 加载
+        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
+           let dayData = cloudflareData[dateString],
+           let type = dayData.type {
+            return SpecialDayInfo(type: type, details: dayData.details)
         }
+        
+        return nil
     }
 
     static func isInSpecialPeriod(date: Date) async throws -> Bool {
-        // print("FIREBASE CALL: isInSpecialPeriod")
-        let db = Firestore.firestore()
-        
-        do {
-            let snapshot = try await db.collection("special_periods").getDocuments()
-            for doc in snapshot.documents {
-                let data = doc.data()
-                guard let start = data["start"] as? Timestamp,
-                      let end = data["end"] as? Timestamp else { continue }
-                let startDate = start.dateValue()
-                let endDate = end.dateValue()
-                if date >= startDate && date <= endDate {
+        // 从 Cloudflare 加载
+        if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
+            for period in periods {
+                if date >= period.start && date <= period.end {
                     return true
                 }
             }
-            return false
-        } catch {
-            // print("Firebase error in isInSpecialPeriod: \(error)")
-            throw error
         }
+        
+        return false
     }
 
     static func loadCustomSchedule(for date: Date) async throws -> [Block]? {
-        // print("FIREBASE CALL: loadCustomSchedule")
-        let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
         
-        do {
-            let docRef = db.collection("special_days").document(dateString)
-            let snapshot = try await docRef.getDocument()
-            guard let data = snapshot.data() else { return nil }
-
-            // Always try to read and decode the 'schedule' array
-            if let scheduleArray = data["schedule"] as? [[String: Any]] {
-                let jsonData = try JSONSerialization.data(withJSONObject: scheduleArray)
-                let blocks = try JSONDecoder().decode([Block].self, from: jsonData)
-                return blocks
-            }
-
-            // If no schedule array, return nil
-            return nil
-        } catch {
-            // print("Firebase error in loadCustomSchedule: \(error)")
-            throw error
+        // 从 Cloudflare 加载
+        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
+           let dayData = cloudflareData[dateString],
+           let schedule = dayData.schedule {
+            return schedule
         }
+        
+        return nil
     }
 
     // Batch fetch all special days in a date range
     static func fetchSpecialDaysDict(start: Date, end: Date) async throws -> [String: String] {
-        // print("FIREBASE CALL: fetchSpecialDaysDict")
-        let db = Firestore.firestore()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let startString = formatter.string(from: start)
         let endString = formatter.string(from: end)
         
-        do {
-            let query = db.collection("special_days")
-                .whereField(FieldPath.documentID(), isGreaterThanOrEqualTo: startString)
-                .whereField(FieldPath.documentID(), isLessThanOrEqualTo: endString)
-            let snapshot = try await query.getDocuments()
+        // 从 Cloudflare 加载
+        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays() {
             var dict: [String: String] = [:]
-            for doc in snapshot.documents {
-                if let type = doc.data()["type"] as? String {
-                    dict[doc.documentID] = type
+            for (dateKey, dayData) in cloudflareData {
+                if dateKey >= startString && dateKey <= endString,
+                   let type = dayData.type {
+                    dict[dateKey] = type
                 }
             }
             return dict
-        } catch {
-            // print("Firebase error in fetchSpecialDaysDict: \(error)")
-            throw error
         }
+        
+        return [:]
     }
 
     // Batch fetch all special periods overlapping a date range
     static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
-        // print("FIREBASE CALL: fetchSpecialPeriods")
-        let db = Firestore.firestore()
-        
-        do {
-            let snapshot = try await db.collection("special_periods").getDocuments()
-            var periods: [(Date, Date)] = []
-            for doc in snapshot.documents {
-                let data = doc.data()
-                if let startTS = data["start"] as? Timestamp,
-                   let endTS = data["end"] as? Timestamp {
-                    let s = startTS.dateValue()
-                    let e = endTS.dateValue()
-                    // Only include periods that overlap our range
-                    if e >= start && s <= end {
-                        periods.append((s, e))
-                    }
-                }
+        // 从 Cloudflare 加载
+        if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
+            // Filter periods that overlap the date range
+            return periods.filter { period in
+                period.end >= start && period.start <= end
             }
-            return periods
-        } catch {
-            // print("Firebase error in fetchSpecialPeriods: \(error)")
-            throw error
         }
+        
+        return []
     }
 
     // Predict day type using batch-fetched data

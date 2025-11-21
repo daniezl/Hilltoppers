@@ -48,6 +48,8 @@
 	<string>This app requires internet access to download the latest school schedule and daily bulletin from the school's website.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>This app needs to access the school's website to load daily schedules and bulletin information.</string>
+	<key>CloudflareBaseURL</key>
+	<string>https://hilltoppers.pages.dev</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
