@@ -18,10 +18,12 @@ import {
   getCachedSpecialPeriods,
   setCachedSpecialPeriods,
   getCachedSpecialDay,
+  getAllCachedSpecialDays,
   setCachedSpecialDay,
+  removeCachedSpecialDay,
   getCachedSpecialDaysDict,
   setCachedSpecialDaysDict
-} from '../storage/firestoreCache';
+} from '../storage/localCache';
 
 interface RawSubBlock {
   name: string;
@@ -112,8 +114,8 @@ function getAssetUrl(path: string): string {
 let cachedSpecialDaysData: Record<string, SpecialDayRecord> | null = null;
 let cachedSpecialPeriodsData: Array<{ start: Date; end: Date }> | null = null;
 
-async function loadSpecialDaysFromCloudflare(): Promise<Record<string, SpecialDayRecord> | null> {
-  if (cachedSpecialDaysData) {
+async function loadSpecialDaysFromCloudflare(forceRefresh = false): Promise<Record<string, SpecialDayRecord> | null> {
+  if (cachedSpecialDaysData && !forceRefresh) {
     return cachedSpecialDaysData;
   }
   
@@ -123,19 +125,82 @@ async function loadSpecialDaysFromCloudflare(): Promise<Record<string, SpecialDa
     return null;
   }
   
-  try {
-    console.info('[scheduleService] Loading special_days from Cloudflare:', url);
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`[scheduleService] Failed to load special_days from Cloudflare: HTTP ${response.status}`);
-      return null;
-    }
-    const text = await response.text();
     try {
-      const data = JSON.parse(text) as Record<string, SpecialDayRecord>;
-      cachedSpecialDaysData = data;
-      console.info('[scheduleService] Successfully loaded special_days from Cloudflare');
-      return data;
+      console.info('[scheduleService] Loading special_days from Cloudflare:', url);
+      
+      // 使用 cache: 'no-cache' 强制绕过浏览器缓存，确保从服务器获取
+      const response = await fetch(url, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      
+      // 检查 HTTP 状态码，判断是否真的从服务器获取了数据
+      if (!response.ok) {
+        // HTTP 错误（4xx, 5xx），说明网络请求失败或服务器错误
+        console.warn(`[scheduleService] Failed to load special_days from Cloudflare: HTTP ${response.status}`);
+        return null;
+      }
+      
+      // HTTP 200 表示成功从服务器获取了响应
+      // 检查响应头，确认这是真实的服务器响应
+      const responseDate = response.headers.get('Date');
+      const contentType = response.headers.get('Content-Type');
+      const contentLength = response.headers.get('Content-Length');
+      
+      // Cloudflare Pages 部署相关信息
+      const cfPagesDeploymentId = response.headers.get('cf-pages-deployment-id');
+      const cfPagesVersion = response.headers.get('cf-pages-version');
+      const cfRay = response.headers.get('cf-ray');
+      const server = response.headers.get('server');
+      
+      // 获取所有响应头（用于调试）
+      const allHeaders: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        allHeaders[key] = value;
+      });
+      
+      const text = await response.text();
+      
+      try {
+        const data = JSON.parse(text) as Record<string, SpecialDayRecord>;
+        const hasData = Object.keys(data).length > 0;
+        
+        // 如果 HTTP 200 且成功解析 JSON，说明真的从 Cloudflare 获取了数据
+        console.info('[scheduleService] Successfully fetched from Cloudflare', {
+          hasData,
+          dataKeysCount: Object.keys(data).length,
+          httpStatus: response.status,
+          responseDate,
+          contentType,
+          contentLength,
+          responseSize: text.length,
+          // Cloudflare Pages 部署信息
+          cfPagesDeploymentId: cfPagesDeploymentId || 'not available',
+          cfPagesVersion: cfPagesVersion || 'not available',
+          cfRay: cfRay || 'not available',
+          server: server || 'not available',
+          // 所有响应头（用于调试，可以查看是否有其他部署相关的 header）
+          allHeaders: Object.keys(allHeaders).filter(key => 
+            key.toLowerCase().includes('cf-') || 
+            key.toLowerCase().includes('deploy') ||
+            key.toLowerCase().includes('version')
+          ).reduce((acc, key) => {
+            acc[key] = allHeaders[key];
+            return acc;
+          }, {} as Record<string, string>)
+        });
+        
+        // 如果 HTTP 200 且成功解析 JSON，说明真的从 Cloudflare 获取了数据
+        // 无论是否为空，都要缓存到内存（因为这是真实的服务器响应）
+        cachedSpecialDaysData = data;
+        if (!hasData) {
+          console.info('[scheduleService] Cloudflare returned empty JSON (server confirmed), cached to memory');
+        } else {
+          console.info('[scheduleService] Cached special_days data to memory');
+        }
+        return data;
     } catch (parseError) {
       console.error('[scheduleService] JSON parse error in special_days:', parseError);
       console.error('[scheduleService] Response text (first 500 chars):', text.substring(0, 500));
@@ -189,26 +254,80 @@ async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: Date; 
 async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null> {
   const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   
-  // Try cache first
-  const cached = await getCachedSpecialDay(formatter);
-  if (cached) {
-    return cached as SpecialDayRecord;
+  // 从 Cloudflare 加载（强制刷新，使用 cache: 'no-cache' 绕过浏览器缓存）
+  const cloudflareData = await loadSpecialDaysFromCloudflare(true);
+  
+  if (cloudflareData === null) {
+    // loadSpecialDaysFromCloudflare 返回 null 表示：
+    // - 网络错误（fetch 抛出异常，如网络断开）
+    // - HTTP 错误（response.ok === false，如 404, 500）
+    // - JSON 解析错误
+    // 这些情况都说明没有成功从 Cloudflare 获取数据，使用缓存
+    const cached = await getCachedSpecialDay(formatter);
+    if (cached) {
+      console.info('[scheduleService] Cloudflare fetch failed (network/HTTP/parse error), using cached data for', formatter);
+      return cached as SpecialDayRecord;
+    }
+    return null;
   }
   
-  // 从 Cloudflare 加载
-  const cloudflareData = await loadSpecialDaysFromCloudflare();
-  if (cloudflareData && cloudflareData[formatter]) {
-    const data = cloudflareData[formatter];
-    // Cache the result
-    await setCachedSpecialDay(formatter, {
-      type: data.type,
-      details: data.details,
-      schedule: data.schedule
-    });
-    return data;
+  // cloudflareData 不为 null，说明：
+  // - HTTP 200 成功（response.ok === true）
+  // - JSON 解析成功
+  // - 这是从 Cloudflare 服务器获取的真实响应（因为使用了 cache: 'no-cache'）
+  // 所以我们可以信任这个响应，即使它是空对象
+  
+  // 文件有变化时，比较数据并只更新变化的部分
+  const dataKeys = Object.keys(cloudflareData);
+  if (dataKeys.length > 0) {
+    // 获取当前缓存，用于比较
+    const cachedDays = await getAllCachedSpecialDays();
+    let updateCount = 0;
+    
+    // 只更新变化的数据
+    for (const dateKey of dataKeys) {
+      const newData = cloudflareData[dateKey];
+      const cachedData = cachedDays?.[dateKey];
+      
+      // 比较数据是否相同
+      const isSame = cachedData && 
+        cachedData.type === newData.type &&
+        cachedData.details === newData.details &&
+        JSON.stringify(cachedData.schedule) === JSON.stringify(newData.schedule);
+      
+      if (!isSame) {
+        // 数据不同，更新缓存
+        await setCachedSpecialDay(dateKey, {
+          type: newData.type,
+          details: newData.details,
+          schedule: newData.schedule
+        });
+        updateCount++;
+      }
+    }
+    
+    if (updateCount > 0) {
+      console.info('[scheduleService] Updated cache for', updateCount, 'out of', dataKeys.length, 'dates');
+    } else {
+      console.info('[scheduleService] No cache updates needed, all data unchanged');
+    }
+  } else {
+    console.info('[scheduleService] Cloudflare returned empty data, no cache updates');
   }
   
-  return null;
+  // 返回今天的数据（如果存在）
+  if (cloudflareData[formatter]) {
+    return cloudflareData[formatter];
+  } else {
+    // 今天的数据不存在，使用之前的缓存（如果有）
+    const cached = await getCachedSpecialDay(formatter);
+    if (cached) {
+      console.info('[scheduleService] Date not found in Cloudflare data, using cached data for', formatter);
+      return cached as SpecialDayRecord;
+    }
+    // 没有缓存，返回 null
+    return null;
+  }
 }
 
 function decodeScheduleFromData(data: SpecialDayRecord | null): Block[] | null {

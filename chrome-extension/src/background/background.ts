@@ -17,6 +17,7 @@ let cachedSchedule: Block[] = [];
 let cachedDateKey = '';
 let cachedDayType: string | null = null;
 let cachedTimeFormat: TimeFormat = '12h';
+let cachedTimestamp: number | null = null; // Timestamp when cache was last updated
 let refreshInFlight: Promise<void> | null = null;
 
 function getTodayKey(): string {
@@ -256,27 +257,75 @@ async function refreshSchedule(): Promise<void> {
   }
 
   refreshInFlight = (async () => {
+    // Save current cache as fallback
+    const previousSchedule = [...cachedSchedule];
+    const previousDateKey = cachedDateKey;
+    const previousDayType = cachedDayType;
+    const previousTimestamp = cachedTimestamp;
+    
     try {
       const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
       const todayKey = getTodayKey();
       console.info('[background] Refreshing schedule for', todayKey);
       const scheduleResult = await loadBlocksForDate(today);
       const { blocks, dayType } = scheduleResult;
-      cachedSchedule = blocks;
-      cachedDateKey = todayKey;
-      cachedDayType = dayType ?? null;
-      console.info('[background] Refresh complete', {
-        dateKey: cachedDateKey,
-        blockCount: cachedSchedule.length,
-        dayType: cachedDayType
-      });
+      
+      // Only update cache if we got valid data
+      // Valid data means: we have blocks, or a meaningful dayType (not just "Unknown" or null)
+      // If we have blocks, it's always valid even if dayType is "Unknown"
+      const hasValidBlocks = blocks.length > 0;
+      const hasValidDayType = dayType !== null && dayType !== 'Unknown';
+      const isValidData = hasValidBlocks || hasValidDayType;
+      
+      if (isValidData) {
+        cachedSchedule = blocks;
+        cachedDateKey = todayKey;
+        cachedDayType = dayType ?? null;
+        cachedTimestamp = Date.now();
+        console.info('[background] Refresh complete', {
+          dateKey: cachedDateKey,
+          blockCount: cachedSchedule.length,
+          dayType: cachedDayType,
+          cachedAt: new Date(cachedTimestamp).toISOString()
+        });
+      } else {
+        // If we got invalid/empty data but have previous cache for today, keep previous cache
+        if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
+          const cacheAge = previousTimestamp ? Date.now() - previousTimestamp : null;
+          const cacheAgeMinutes = cacheAge ? Math.round(cacheAge / 60000) : null;
+          console.warn('[background] Refresh returned invalid data, keeping previous cache for today', {
+            previousBlockCount: previousSchedule.length,
+            previousDayType: previousDayType,
+            cacheTimestamp: previousTimestamp ? new Date(previousTimestamp).toISOString() : null,
+            cacheAgeMinutes: cacheAgeMinutes
+          });
+          // Restore previous cache
+          cachedSchedule = previousSchedule;
+          cachedDateKey = previousDateKey;
+          cachedDayType = previousDayType;
+          // Keep previous timestamp since we're using the same cache
+        } else {
+          // No valid data and no previous cache for today, use the new data anyway
+          cachedSchedule = blocks;
+          cachedDateKey = todayKey;
+          cachedDayType = dayType ?? null;
+          cachedTimestamp = Date.now();
+          console.warn('[background] Refresh returned invalid data, but no previous cache available', {
+            dateKey: cachedDateKey,
+            blockCount: cachedSchedule.length,
+            dayType: cachedDayType,
+            cachedAt: new Date(cachedTimestamp).toISOString()
+          });
+        }
+      }
+      
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage(
           {
             type: 'scheduleUpdated',
             payload: {
               dateKey: cachedDateKey,
-              blocks,
+              blocks: cachedSchedule,
               dayType: cachedDayType
             }
           },
@@ -290,6 +339,26 @@ async function refreshSchedule(): Promise<void> {
       }
     } catch (error) {
       console.error('[background] Failed to refresh schedule', error);
+      // On error, restore previous cache if it's for today
+      const todayKey = getTodayKey();
+      if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
+        const cacheAge = previousTimestamp ? Date.now() - previousTimestamp : null;
+        const cacheAgeMinutes = cacheAge ? Math.round(cacheAge / 60000) : null;
+        console.info('[background] Restoring previous cache due to refresh error', {
+          previousBlockCount: previousSchedule.length,
+          previousDayType: previousDayType,
+          cacheTimestamp: previousTimestamp ? new Date(previousTimestamp).toISOString() : null,
+          cacheAgeMinutes: cacheAgeMinutes
+        });
+        cachedSchedule = previousSchedule;
+        cachedDateKey = previousDateKey;
+        cachedDayType = previousDayType;
+        // Keep previous timestamp since we're using the same cache
+      } else {
+        // If previous cache is not for today, we still need to update dateKey
+        cachedDateKey = todayKey;
+        console.warn('[background] Refresh failed and no valid previous cache for today');
+      }
     } finally {
       await updateActionIcon();
       refreshInFlight = null;
@@ -396,6 +465,23 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'getScheduleCache') {
+    if (cachedTimestamp) {
+      const cacheAge = Date.now() - cachedTimestamp;
+      const cacheAgeMinutes = Math.round(cacheAge / 60000);
+      console.info('[background] Returning cached schedule', {
+        dateKey: cachedDateKey,
+        blockCount: cachedSchedule.length,
+        dayType: cachedDayType,
+        cacheTimestamp: new Date(cachedTimestamp).toISOString(),
+        cacheAgeMinutes: cacheAgeMinutes
+      });
+    } else {
+      console.info('[background] Returning cached schedule (no timestamp)', {
+        dateKey: cachedDateKey,
+        blockCount: cachedSchedule.length,
+        dayType: cachedDayType
+      });
+    }
     sendResponse({
       dateKey: cachedDateKey,
       blocks: cachedSchedule,

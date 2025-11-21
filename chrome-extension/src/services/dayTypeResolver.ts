@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { EST_ZONE } from '../types/schedule';
 import { predictDayType } from './dayTypePredictor';
-import { getCachedDayType, setCachedDayType } from '../storage/firestoreCache';
+import { getCachedDayType, setCachedDayType } from '../storage/localCache';
 
 const BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const MONTH_NAMES = [
