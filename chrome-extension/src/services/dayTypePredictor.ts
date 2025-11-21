@@ -10,14 +10,15 @@ function isWeekend(date: DateTime): boolean {
   return date.weekday === 6 || date.weekday === 7;
 }
 
-async function isSchoolDay(date: DateTime, specials: Record<string, string>, periods: Array<{ start: Date; end: Date }>): Promise<boolean> {
+async function isSchoolDay(date: DateTime, specials: Record<string, string>, periods: Array<{ start: string; end: string; details?: string }>): Promise<boolean> {
   const key = date.toFormat('yyyy-LL-dd');
   if (key in specials) {
     return specials[key] !== 'no_school';
   }
 
+  // Compare date strings (EST format: "yyyy-LL-dd")
   for (const period of periods) {
-    if (date.toJSDate() >= period.start && date.toJSDate() <= period.end) {
+    if (key >= period.start && key <= period.end) {
       return false;
     }
   }

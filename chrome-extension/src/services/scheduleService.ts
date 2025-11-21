@@ -112,7 +112,7 @@ function getAssetUrl(path: string): string {
 
 // 缓存 special_days 和 special_periods 数据
 let cachedSpecialDaysData: Record<string, SpecialDayRecord> | null = null;
-let cachedSpecialPeriodsData: Array<{ start: Date; end: Date }> | null = null;
+let cachedSpecialPeriodsData: Array<{ start: string; end: string; details?: string }> | null = null;
 
 async function loadSpecialDaysFromCloudflare(forceRefresh = false): Promise<Record<string, SpecialDayRecord> | null> {
   if (cachedSpecialDaysData && !forceRefresh) {
@@ -212,7 +212,7 @@ async function loadSpecialDaysFromCloudflare(forceRefresh = false): Promise<Reco
   }
 }
 
-async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: Date; end: Date }> | null> {
+async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: string; end: string; details?: string }> | null> {
   if (cachedSpecialPeriodsData) {
     return cachedSpecialPeriodsData;
   }
@@ -232,14 +232,18 @@ async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: Date; 
     }
     const text = await response.text();
     try {
-      const data = JSON.parse(text) as Array<{ start: string; end: string }>;
-      const periods = data.map(p => ({
-        start: new Date(p.start),
-        end: new Date(p.end)
-      }));
-      cachedSpecialPeriodsData = periods;
+      // Expect date strings in EST format: "yyyy-LL-dd" (e.g., "2025-11-30")
+      const data = JSON.parse(text) as Array<{ start: string; end: string; details?: string }>;
+      // Validate format (should be "yyyy-LL-dd")
+      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+      for (const period of data) {
+        if (!dateFormatRegex.test(period.start) || !dateFormatRegex.test(period.end)) {
+          console.warn('[scheduleService] Invalid date format in special_periods, expected "yyyy-LL-dd"', period);
+        }
+      }
+      cachedSpecialPeriodsData = data;
       console.info('[scheduleService] Successfully loaded special_periods from Cloudflare');
-      return periods;
+      return data;
     } catch (parseError) {
       console.error('[scheduleService] JSON parse error in special_periods:', parseError);
       console.error('[scheduleService] Response text (first 500 chars):', text.substring(0, 500));
@@ -376,11 +380,15 @@ async function loadJsonSchedule(key: string): Promise<Block[] | null> {
 }
 
 export async function isInSpecialPeriod(date: Date): Promise<boolean> {
+  // Convert date to EST date string format: "yyyy-LL-dd"
+  const dateStr = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  
   // Try cache first
   const cachedPeriods = await getCachedSpecialPeriods();
   if (cachedPeriods) {
     for (const period of cachedPeriods) {
-      if (date >= period.start && date <= period.end) {
+      // Compare date strings (EST format: "yyyy-LL-dd")
+      if (dateStr >= period.start && dateStr <= period.end) {
         return true;
       }
     }
@@ -391,7 +399,8 @@ export async function isInSpecialPeriod(date: Date): Promise<boolean> {
   const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
   if (cloudflarePeriods) {
     for (const period of cloudflarePeriods) {
-      if (date >= period.start && date <= period.end) {
+      // Compare date strings (EST format: "yyyy-LL-dd")
+      if (dateStr >= period.start && dateStr <= period.end) {
         // Cache the periods for future use
         await setCachedSpecialPeriods(cloudflarePeriods);
         return true;
@@ -443,13 +452,17 @@ export async function fetchSpecialDaysDict(start: Date, end: Date): Promise<Reco
   return {};
 }
 
-export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array<{ start: Date; end: Date }>> {
+export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array<{ start: string; end: string; details?: string }>> {
+  // Convert dates to EST date strings for comparison
+  const startStr = DateTime.fromJSDate(start, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  const endStr = DateTime.fromJSDate(end, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  
   // Try cache first
   const cachedPeriods = await getCachedSpecialPeriods();
   if (cachedPeriods) {
-    // Filter by date range
+    // Filter by date range (comparing date strings)
     return cachedPeriods.filter((period) => {
-      return period.end >= start && period.start <= end;
+      return period.end >= startStr && period.start <= endStr;
     });
   }
   
@@ -458,9 +471,9 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
   if (cloudflarePeriods) {
     // Cache the periods
     await setCachedSpecialPeriods(cloudflarePeriods);
-    // Filter by date range
+    // Filter by date range (comparing date strings)
     return cloudflarePeriods.filter((period) => {
-      return period.end >= start && period.start <= end;
+      return period.end >= startStr && period.start <= endStr;
     });
   }
   

@@ -1,6 +1,7 @@
 interface CachedSpecialPeriod {
-  start: string; // ISO string
-  end: string; // ISO string
+  start: string; // Date string in EST format: "yyyy-LL-dd" (e.g., "2025-11-30")
+  end: string; // Date string in EST format: "yyyy-LL-dd" (e.g., "2025-11-30")
+  details?: string; // Optional details/description for the special period
 }
 
 interface CachedSpecialDay {
@@ -78,23 +79,20 @@ interface CachedSpecialPeriods {
   periods: CachedSpecialPeriod[];
 }
 
-export async function getCachedSpecialPeriods(): Promise<Array<{ start: Date; end: Date }> | null> {
+export async function getCachedSpecialPeriods(): Promise<Array<{ start: string; end: string; details?: string }> | null> {
   const cached = await getCacheItem<CachedSpecialPeriods>(CACHE_KEYS.SPECIAL_PERIODS);
   if (isCacheValid(cached, SPECIAL_PERIODS_CACHE_DURATION_MS)) {
-    // Convert ISO strings back to Date objects
-    return cached!.periods.map((period) => ({
-      start: new Date(period.start),
-      end: new Date(period.end)
-    }));
+    // Return date strings directly (already in EST format: "yyyy-LL-dd")
+    return cached!.periods;
   }
   return null;
 }
 
-export async function setCachedSpecialPeriods(periods: Array<{ start: Date; end: Date }>): Promise<void> {
-  // Convert Date objects to ISO strings for storage
+export async function setCachedSpecialPeriods(periods: Array<{ start: string; end: string; details?: string }>): Promise<void> {
+  // Store date strings directly (should be in EST format: "yyyy-LL-dd")
   const serializedPeriods: CachedSpecialPeriod[] = periods.map((period) => ({
-    start: period.start.toISOString(),
-    end: period.end.toISOString()
+    start: period.start,
+    end: period.end
   }));
   
   const cacheData: CachedSpecialPeriods = {
