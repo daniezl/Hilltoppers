@@ -238,6 +238,11 @@ async function updateActionIcon(): Promise<void> {
     
     // Schedule precise alarm for next state transition
     await schedulePreciseIconUpdate();
+    
+    // Ensure icon alarm is active even when using static icon (for minute-aligned updates)
+    if (useStaticIcon) {
+      ensureIconAlarm();
+    }
   } catch (error) {
     console.debug('[background] Failed to update action icon', error);
   }
