@@ -16,6 +16,7 @@ const ICON_PRECISE_ALARM = 'schedule-icon-precise';
 let cachedSchedule: Block[] = [];
 let cachedDateKey = '';
 let cachedDayType: string | null = null;
+let cachedDetails: string | null = null;
 let cachedTimeFormat: TimeFormat = '12h';
 let cachedTimestamp: number | null = null; // Timestamp when cache was last updated
 let refreshInFlight: Promise<void> | null = null;
@@ -259,6 +260,7 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
     const previousSchedule = [...cachedSchedule];
     const previousDateKey = cachedDateKey;
     const previousDayType = cachedDayType;
+    const previousDetails = cachedDetails;
     const previousTimestamp = cachedTimestamp;
     
     try {
@@ -266,7 +268,7 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
       const todayKey = getTodayKey();
       console.info('[background] Refreshing schedule for', todayKey, { forceRefresh });
       const scheduleResult = await loadBlocksForDate(today, forceRefresh);
-      const { blocks, dayType } = scheduleResult;
+      const { blocks, dayType, details } = scheduleResult;
       
       // Only update cache if we got valid data
       // Valid data means: we have blocks, or a meaningful dayType (not just "Unknown" or null)
@@ -279,11 +281,13 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
         cachedSchedule = blocks;
         cachedDateKey = todayKey;
         cachedDayType = dayType ?? null;
+        cachedDetails = details ?? null;
         cachedTimestamp = Date.now();
         console.info('[background] Refresh complete', {
           dateKey: cachedDateKey,
           blockCount: cachedSchedule.length,
           dayType: cachedDayType,
+          details: cachedDetails,
           cachedAt: new Date(cachedTimestamp).toISOString()
         });
       } else {
@@ -301,17 +305,20 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
           cachedSchedule = previousSchedule;
           cachedDateKey = previousDateKey;
           cachedDayType = previousDayType;
+          cachedDetails = previousDetails;
           // Keep previous timestamp since we're using the same cache
         } else {
           // No valid data and no previous cache for today, use the new data anyway
           cachedSchedule = blocks;
           cachedDateKey = todayKey;
           cachedDayType = dayType ?? null;
+          cachedDetails = details ?? null;
           cachedTimestamp = Date.now();
           console.warn('[background] Refresh returned invalid data, but no previous cache available', {
             dateKey: cachedDateKey,
             blockCount: cachedSchedule.length,
             dayType: cachedDayType,
+            details: cachedDetails,
             cachedAt: new Date(cachedTimestamp).toISOString()
           });
         }
@@ -324,7 +331,8 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
             payload: {
               dateKey: cachedDateKey,
               blocks: cachedSchedule,
-              dayType: cachedDayType
+              dayType: cachedDayType,
+              details: cachedDetails
             }
           },
           () => {
@@ -351,6 +359,7 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
         cachedSchedule = previousSchedule;
         cachedDateKey = previousDateKey;
         cachedDayType = previousDayType;
+        cachedDetails = previousDetails;
         // Keep previous timestamp since we're using the same cache
       } else {
         // If previous cache is not for today, we still need to update dateKey
@@ -483,7 +492,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     sendResponse({
       dateKey: cachedDateKey,
       blocks: cachedSchedule,
-      dayType: cachedDayType
+      dayType: cachedDayType,
+      details: cachedDetails
     });
     return true;
   }

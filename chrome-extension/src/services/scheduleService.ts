@@ -47,6 +47,7 @@ type SpecialDayRecord = DocumentData & {
 export interface ScheduleResult {
   blocks: Block[];
   dayType: string | null;
+  details?: string | null;
 }
 
 function makeId(prefix: string, name: string, index: number): string {
@@ -466,6 +467,56 @@ export async function isInSpecialPeriod(date: Date, forceRefresh = false): Promi
   return false;
 }
 
+async function getSpecialPeriodDetails(date: Date, forceRefresh = false): Promise<string | null> {
+  // Convert date to EST date string format: "yyyy-LL-dd"
+  const dateStr = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
+  
+  // 强制刷新时，优先从网络加载最新数据
+  if (forceRefresh) {
+    const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare(true);
+    if (cloudflarePeriods !== null) {
+      await setCachedSpecialPeriods(cloudflarePeriods);
+      
+      if (cloudflarePeriods.length > 0) {
+        for (const period of cloudflarePeriods) {
+          if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
+            return period.details ?? null;
+          }
+        }
+      }
+      return null;
+    }
+  }
+  
+  // 非强制刷新时，先尝试使用缓存
+  const cachedPeriods = await getCachedSpecialPeriods();
+  if (cachedPeriods && cachedPeriods.length > 0) {
+    for (const period of cachedPeriods) {
+      if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
+        return period.details ?? null;
+      }
+    }
+    return null;
+  }
+  
+  // 缓存无效时，从 Cloudflare 加载
+  const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
+  if (cloudflarePeriods !== null) {
+    await setCachedSpecialPeriods(cloudflarePeriods);
+    
+    if (cloudflarePeriods.length > 0) {
+      for (const period of cloudflarePeriods) {
+        if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
+          return period.details ?? null;
+        }
+      }
+    }
+    return null;
+  }
+  
+  return null;
+}
+
 export async function fetchTypeFor(date: Date): Promise<string | null> {
   const data = await fetchSpecialDayData(date);
   return typeof data?.type === 'string' ? data.type : null;
@@ -561,7 +612,8 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
 
   if (await isInSpecialPeriod(date, forceRefresh)) {
     console.info('[scheduleService] Date falls within special period, returning No School');
-    return { blocks: [], dayType: 'No School' };
+    const periodDetails = await getSpecialPeriodDetails(date, forceRefresh);
+    return { blocks: [], dayType: 'No School', details: periodDetails };
   }
 
   const specialDayData = await fetchSpecialDayData(date);
@@ -579,7 +631,7 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
 
   if (rawType === 'no_school') {
     console.info('[scheduleService] Raw type no_school, returning empty schedule');
-    return { blocks: [], dayType: dayTypeLabel ?? 'No School' };
+    return { blocks: [], dayType: dayTypeLabel ?? 'No School', details: details ?? null };
   }
 
   if (rawType === 'custom') {
@@ -616,6 +668,11 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
 
   const fallbackKey = getDefaultScheduleForWeekday(date);
   if (!fallbackKey) {
+    // If it's weekend and not a special day, return No School with weekend details
+    if (!rawType) {
+      console.info('[scheduleService] Weekend (not special day), returning No School');
+      return { blocks: [], dayType: 'No School', details: 'Weekend' };
+    }
     console.info('[scheduleService] No fallback key (likely weekend)', { dayTypeLabel });
     return { blocks: [], dayType: dayTypeLabel ?? 'Unknown' };
   }

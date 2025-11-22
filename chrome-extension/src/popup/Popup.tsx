@@ -16,6 +16,7 @@ interface SchedulePayload {
   dateKey: string;
   blocks: Block[];
   dayType: string | null;
+  details?: string | null;
 }
 
 function safeSendMessage<T>(message: unknown): Promise<T> {
@@ -64,7 +65,7 @@ function formatCountdown(ms: number): string {
 }
 
 const Popup: React.FC = () => {
-  const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [], dayType: null });
+  const [schedule, setSchedule] = useState<SchedulePayload>({ dateKey: '', blocks: [], dayType: null, details: null });
   const [error, setError] = useState<string | null>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
@@ -152,7 +153,8 @@ const Popup: React.FC = () => {
         const next = {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
-          dayType: payload?.dayType ?? null
+          dayType: payload?.dayType ?? null,
+          details: payload?.details ?? null
         };
         setSchedule(next);
         const hasContent = Boolean(next.dateKey) || (Array.isArray(next.blocks) && next.blocks.length > 0) || Boolean(next.dayType);
@@ -180,7 +182,8 @@ const Popup: React.FC = () => {
         const next = {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
-          dayType: payload?.dayType ?? null
+          dayType: payload?.dayType ?? null,
+          details: payload?.details ?? null
         };
         setSchedule(next);
         refreshRequestedRef.current = false;
@@ -330,6 +333,10 @@ const Popup: React.FC = () => {
   }, [blockPrefs, nextBlock, schedule.dayType]);
 
   const dayTypeLabel = schedule.dayType;
+  
+  // Check if it's a no school day (no blocks and dayType indicates no school)
+  const isNoSchool = schedule.blocks.length === 0 && 
+    (dayTypeLabel?.toLowerCase().includes('no school') ?? false);
 
   const handleOpenClassSettings = () => {
     const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
@@ -432,21 +439,31 @@ const Popup: React.FC = () => {
           </div>
         ) : (
           <div className="status-ended">
-            <h2>School ended</h2>
-            <p>Have a good day!</p>
+            {isNoSchool ? (
+              <>
+                <h2>{schedule.details ?? 'No school today'}</h2>
+                <p>Have a good day!</p>
+              </>
+            ) : (
+              <>
+                <h2>School ended</h2>
+                <p>Have a good day!</p>
+              </>
+            )}
           </div>
         )}
       </section>
-      <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
-        <button
-          type="button"
-          className="schedule-toggle"
-          aria-expanded={scheduleExpanded}
-          onClick={() => setScheduleExpanded((prev) => !prev)}
-        >
-          <span>Today&apos;s Schedule</span>
-          <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
-        </button>
+      {!isNoSchool && (
+        <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
+          <button
+            type="button"
+            className="schedule-toggle"
+            aria-expanded={scheduleExpanded}
+            onClick={() => setScheduleExpanded((prev) => !prev)}
+          >
+            <span>Today&apos;s Schedule</span>
+            <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
+          </button>
         {scheduleExpanded && (
           <>
             <ul>
@@ -510,7 +527,8 @@ const Popup: React.FC = () => {
             ) : null}
           </>
         )}
-      </section>
+        </section>
+      )}
     </main>
   );
 };
