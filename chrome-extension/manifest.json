@@ -5,7 +5,10 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Hilltoppers"
+    "default_title": "Hilltoppers",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js",
@@ -23,7 +26,8 @@
     "https://accounts.google.com/*",
     "https://appleid.apple.com/*",
     "https://stjacademy.org/*",
-    "https://www.google-analytics.com/*"
+    "https://www.google-analytics.com/*",
+    "https://hilltoppers.pages.dev/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"

@@ -129,11 +129,9 @@ async function loadSpecialDaysFromCloudflare(forceRefresh = false): Promise<Reco
       console.info('[scheduleService] Loading special_days from Cloudflare:', url);
       
       // 使用 cache: 'no-cache' 强制绕过浏览器缓存，确保从服务器获取
+      // 对于 Chrome 扩展，避免添加可能触发 CORS 预检请求的自定义 headers
       const response = await fetch(url, {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
+        cache: 'no-cache'
       });
       
       // 检查 HTTP 状态码，判断是否真的从服务器获取了数据
@@ -212,8 +210,13 @@ async function loadSpecialDaysFromCloudflare(forceRefresh = false): Promise<Reco
   }
 }
 
-async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: string; end: string; details?: string }> | null> {
-  if (cachedSpecialPeriodsData) {
+async function loadSpecialPeriodsFromCloudflare(forceRefresh = false): Promise<Array<{ start: string; end: string; details?: string }> | null> {
+  // 强制刷新时，清除内存缓存，确保从网络加载最新数据
+  if (forceRefresh) {
+    cachedSpecialPeriodsData = null;
+  }
+  
+  if (cachedSpecialPeriodsData && !forceRefresh) {
     return cachedSpecialPeriodsData;
   }
   
@@ -225,7 +228,10 @@ async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: string
   
   try {
     console.info('[scheduleService] Loading special_periods from Cloudflare:', url);
-    const response = await fetch(url);
+    // 对于 Chrome 扩展，避免添加可能触发 CORS 预检请求的自定义 headers
+    const response = await fetch(url, {
+      cache: 'no-cache'
+    });
     if (!response.ok) {
       console.warn(`[scheduleService] Failed to load special_periods from Cloudflare: HTTP ${response.status}`);
       return null;
@@ -234,16 +240,27 @@ async function loadSpecialPeriodsFromCloudflare(): Promise<Array<{ start: string
     try {
       // Expect date strings in EST format: "yyyy-LL-dd" (e.g., "2025-11-30")
       const data = JSON.parse(text) as Array<{ start: string; end: string; details?: string }>;
-      // Validate format (should be "yyyy-LL-dd")
+      // Validate format (should be "yyyy-LL-dd") and filter out invalid periods
       const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
-      for (const period of data) {
-        if (!dateFormatRegex.test(period.start) || !dateFormatRegex.test(period.end)) {
-          console.warn('[scheduleService] Invalid date format in special_periods, expected "yyyy-LL-dd"', period);
+      const validPeriods = data.filter((period) => {
+        // Filter out periods without start or end, or with invalid format
+        if (!period.start || !period.end) {
+          console.warn('[scheduleService] Period missing start or end field, skipping', period);
+          return false;
         }
+        if (!dateFormatRegex.test(period.start) || !dateFormatRegex.test(period.end)) {
+          console.warn('[scheduleService] Invalid date format in special_periods, expected "yyyy-LL-dd", skipping', period);
+          return false;
+        }
+        return true;
+      });
+      cachedSpecialPeriodsData = validPeriods;
+      if (validPeriods.length !== data.length) {
+        console.info(`[scheduleService] Filtered out ${data.length - validPeriods.length} invalid periods, ${validPeriods.length} valid periods remaining`);
+      } else {
+        console.info('[scheduleService] Successfully loaded special_periods from Cloudflare', { count: validPeriods.length });
       }
-      cachedSpecialPeriodsData = data;
-      console.info('[scheduleService] Successfully loaded special_periods from Cloudflare');
-      return data;
+      return validPeriods;
     } catch (parseError) {
       console.error('[scheduleService] JSON parse error in special_periods:', parseError);
       console.error('[scheduleService] Response text (first 500 chars):', text.substring(0, 500));
@@ -259,7 +276,15 @@ async function fetchSpecialDayData(date: Date): Promise<SpecialDayRecord | null>
   const formatter = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   
   // 从 Cloudflare 加载（强制刷新，使用 cache: 'no-cache' 绕过浏览器缓存）
-  const cloudflareData = await loadSpecialDaysFromCloudflare(true);
+  // 同时刷新 special periods，确保数据同步
+  const cloudflareDataPromise = loadSpecialDaysFromCloudflare(true);
+  const cloudflarePeriodsPromise = loadSpecialPeriodsFromCloudflare(true);
+  const [cloudflareData, cloudflarePeriods] = await Promise.all([cloudflareDataPromise, cloudflarePeriodsPromise]);
+  
+  // 如果成功加载了 periods，更新缓存
+  if (cloudflarePeriods) {
+    await setCachedSpecialPeriods(cloudflarePeriods);
+  }
   
   if (cloudflareData === null) {
     // loadSpecialDaysFromCloudflare 返回 null 表示：
@@ -379,35 +404,62 @@ async function loadJsonSchedule(key: string): Promise<Block[] | null> {
   }
 }
 
-export async function isInSpecialPeriod(date: Date): Promise<boolean> {
+export async function isInSpecialPeriod(date: Date, forceRefresh = false): Promise<boolean> {
   // Convert date to EST date string format: "yyyy-LL-dd"
   const dateStr = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   
-  // Try cache first
+  // 强制刷新时，优先从网络加载最新数据
+  if (forceRefresh) {
+    const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare(true);
+    // cloudflarePeriods 可能是空数组 []，这也需要更新缓存（清除旧的 periods）
+    if (cloudflarePeriods !== null) {
+      // 先更新缓存，确保后续使用最新数据
+      await setCachedSpecialPeriods(cloudflarePeriods);
+      
+      // 然后基于最新的 periods 检查日期是否在其中
+      if (cloudflarePeriods.length > 0) {
+        for (const period of cloudflarePeriods) {
+          // Ensure period has valid start and end before comparing
+          if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
+            return true;
+          }
+        }
+      }
+      // 没有匹配的 period 或数组为空，返回 false
+      return false;
+    }
+    // 网络加载失败（返回 null），fallback 到缓存
+  }
+  
+  // 非强制刷新时，先尝试使用缓存
   const cachedPeriods = await getCachedSpecialPeriods();
-  if (cachedPeriods) {
+  if (cachedPeriods && cachedPeriods.length > 0) {
     for (const period of cachedPeriods) {
-      // Compare date strings (EST format: "yyyy-LL-dd")
-      if (dateStr >= period.start && dateStr <= period.end) {
+      // Ensure period has valid start and end before comparing
+      if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
         return true;
       }
     }
     return false;
   }
   
-  // 从 Cloudflare 加载
+  // 缓存无效时，从 Cloudflare 加载
   const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
-  if (cloudflarePeriods) {
-    for (const period of cloudflarePeriods) {
-      // Compare date strings (EST format: "yyyy-LL-dd")
-      if (dateStr >= period.start && dateStr <= period.end) {
-        // Cache the periods for future use
-        await setCachedSpecialPeriods(cloudflarePeriods);
-        return true;
+  // cloudflarePeriods 可能是空数组 []，这也需要更新缓存（清除旧的 periods）
+  if (cloudflarePeriods !== null) {
+    // 先更新缓存
+    await setCachedSpecialPeriods(cloudflarePeriods);
+    
+    // 然后检查日期是否在其中
+    if (cloudflarePeriods.length > 0) {
+      for (const period of cloudflarePeriods) {
+        // Ensure period has valid start and end before comparing
+        if (period.start && period.end && dateStr >= period.start && dateStr <= period.end) {
+          return true;
+        }
       }
     }
-    // Cache the periods even if date is not in any period
-    await setCachedSpecialPeriods(cloudflarePeriods);
+    // 没有匹配的 period 或数组为空，返回 false
     return false;
   }
   
@@ -459,21 +511,21 @@ export async function fetchSpecialPeriods(start: Date, end: Date): Promise<Array
   
   // Try cache first
   const cachedPeriods = await getCachedSpecialPeriods();
-  if (cachedPeriods) {
-    // Filter by date range (comparing date strings)
+  if (cachedPeriods && cachedPeriods.length > 0) {
+    // Filter by date range (comparing date strings) and ensure valid periods
     return cachedPeriods.filter((period) => {
-      return period.end >= startStr && period.start <= endStr;
+      return period.start && period.end && period.end >= startStr && period.start <= endStr;
     });
   }
   
   // 从 Cloudflare 加载
   const cloudflarePeriods = await loadSpecialPeriodsFromCloudflare();
-  if (cloudflarePeriods) {
+  if (cloudflarePeriods && cloudflarePeriods.length > 0) {
     // Cache the periods
     await setCachedSpecialPeriods(cloudflarePeriods);
-    // Filter by date range (comparing date strings)
+    // Filter by date range (comparing date strings) and ensure valid periods
     return cloudflarePeriods.filter((period) => {
-      return period.end >= startStr && period.start <= endStr;
+      return period.start && period.end && period.end >= startStr && period.start <= endStr;
     });
   }
   
@@ -503,11 +555,11 @@ export async function loadScheduleByType(type: string): Promise<Block[] | null> 
   return loadJsonSchedule(type);
 }
 
-export async function loadBlocksForDate(date: Date): Promise<ScheduleResult> {
+export async function loadBlocksForDate(date: Date, forceRefresh = false): Promise<ScheduleResult> {
   const requestKey = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
-  console.info('[scheduleService] loadBlocksForDate start', requestKey);
+  console.info('[scheduleService] loadBlocksForDate start', requestKey, { forceRefresh });
 
-  if (await isInSpecialPeriod(date)) {
+  if (await isInSpecialPeriod(date, forceRefresh)) {
     console.info('[scheduleService] Date falls within special period, returning No School');
     return { blocks: [], dayType: 'No School' };
   }

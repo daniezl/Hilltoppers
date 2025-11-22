@@ -76,31 +76,37 @@ function parseBulletin(html: string): BulletinResult {
   }
 
   let dayTypeRaw: string | null = null;
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const searchSelectors = ['h1', 'h2', 'h3', 'h4', 'strong', 'p', 'span', 'li'];
-    for (const selector of searchSelectors) {
-      const nodes = Array.from(doc.querySelectorAll(selector));
-      for (const node of nodes) {
-        const text = node.textContent?.trim();
-        if (!text) continue;
-        const lower = text.toLowerCase();
-        if (lower.includes('green day') || lower.includes('white day')) {
-          dayTypeRaw = text;
-          break;
+  // DOMParser is not available in Service Worker environment
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const searchSelectors = ['h1', 'h2', 'h3', 'h4', 'strong', 'p', 'span', 'li'];
+      for (const selector of searchSelectors) {
+        const nodes = Array.from(doc.querySelectorAll(selector));
+        for (const node of nodes) {
+          const text = node.textContent?.trim();
+          if (!text) continue;
+          const lower = text.toLowerCase();
+          if (lower.includes('green day') || lower.includes('white day')) {
+            dayTypeRaw = text;
+            break;
+          }
+          if (lower.includes('no school')) {
+            dayTypeRaw = text;
+            break;
+          }
         }
-        if (lower.includes('no school')) {
-          dayTypeRaw = text;
+        if (dayTypeRaw) {
           break;
         }
       }
-      if (dayTypeRaw) {
-        break;
-      }
+    } catch (error) {
+      console.warn('[dayTypeResolver] DOM parse failed, falling back to regex scan', error);
     }
-  } catch (error) {
-    console.warn('[dayTypeResolver] DOM parse failed, falling back to regex scan', error);
+  } else {
+    // Skip DOM parsing in Service Worker, will use regex fallback
+    console.debug('[dayTypeResolver] DOMParser not available, using regex scan');
   }
 
   if (!dayTypeRaw) {

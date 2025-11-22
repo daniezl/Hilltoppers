@@ -118,7 +118,7 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
   };
 }
 
-function createIconImageData(label: string, kind: CountdownKind): Partial<Record<'16' | '32' | '48', ImageData>> | null {
+function createIconImageData(label: string, kind: CountdownKind): { [index: number]: ImageData } | null {
   if (typeof OffscreenCanvas === 'undefined') {
     console.debug('[background] OffscreenCanvas unavailable; skipping icon render');
     return null;
@@ -128,7 +128,7 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
   const background = isUpcoming ? '#ffffff' : '#213e26';
   const textColor = isUpcoming ? '#1f6f2b' : '#ffffff';
   const sizes = [16, 32, 48];
-  const imageData: Partial<Record<'16' | '32' | '48', ImageData>> = {};
+  const imageData: { [index: number]: ImageData } = {};
 
   for (const size of sizes) {
     const canvas = new OffscreenCanvas(size, size);
@@ -156,11 +156,10 @@ function createIconImageData(label: string, kind: CountdownKind): Partial<Record
     ctx.textBaseline = 'middle';
     ctx.fillText(label, size / 2, size / 2 + (size >= 32 ? 1 : 0));
 
-    const key = String(size) as '16' | '32' | '48';
-    imageData[key] = ctx.getImageData(0, 0, size, size);
+    imageData[size] = ctx.getImageData(0, 0, size, size);
   }
 
-  return Object.keys(imageData).length ? imageData : null;
+  return Object.keys(imageData).length > 0 ? imageData : null;
 }
 
 async function schedulePreciseIconUpdate(): Promise<void> {
@@ -250,7 +249,7 @@ async function updateActionIcon(): Promise<void> {
   }
 }
 
-async function refreshSchedule(): Promise<void> {
+async function refreshSchedule(forceRefresh = false): Promise<void> {
   if (refreshInFlight) {
     await refreshInFlight;
     return;
@@ -266,8 +265,8 @@ async function refreshSchedule(): Promise<void> {
     try {
       const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
       const todayKey = getTodayKey();
-      console.info('[background] Refreshing schedule for', todayKey);
-      const scheduleResult = await loadBlocksForDate(today);
+      console.info('[background] Refreshing schedule for', todayKey, { forceRefresh });
+      const scheduleResult = await loadBlocksForDate(today, forceRefresh);
       const { blocks, dayType } = scheduleResult;
       
       // Only update cache if we got valid data
@@ -431,20 +430,20 @@ function ensureIconAlarm(): void {
 chrome.runtime.onInstalled.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
-  await refreshSchedule();
+  await refreshSchedule(true); // 强制刷新，优先从网络加载
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
-  await refreshSchedule();
+  await refreshSchedule(true); // 强制刷新，优先从网络加载
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === REFRESH_ALARM) {
     if (isWithinSchoolHours()) {
       // Within school hours, refresh and ensure periodic alarm continues
-      await refreshSchedule();
+      await refreshSchedule(true); // 强制刷新，优先从网络加载
       ensureRefreshAlarm(); // Re-ensure alarm is periodic
     } else {
       // Outside school hours, don't refresh but schedule for next school hours
@@ -490,12 +489,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === 'preferencesUpdated') {
-    refreshSchedule().finally(() => sendResponse({ ok: true }));
+    refreshSchedule(true).finally(() => sendResponse({ ok: true })); // 强制刷新，优先从网络加载
     return true;
   }
   if (message?.type === 'requestScheduleRefresh') {
     // Always allow manual refresh from popup, regardless of time
-    refreshSchedule()
+    // Popup 打开时强制刷新，优先从网络加载，失败时使用缓存
+    refreshSchedule(true)
       .then(() => sendResponse({ ok: true }))
       .catch((error) => {
         console.error('[background] Forced refresh failed', error);
@@ -523,7 +523,7 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
 }
 
 // Initial kick-off when the service worker spins up.
-refreshSchedule().catch((error) => {
+refreshSchedule(true).catch((error) => { // 强制刷新，优先从网络加载
   console.error('[background] Initial refresh failed', error);
 });
 ensureRefreshAlarm();
