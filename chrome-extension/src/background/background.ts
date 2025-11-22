@@ -127,7 +127,7 @@ function createIconImageData(label: string, kind: CountdownKind): { [index: numb
   const isUpcoming = kind === 'upcoming';
   const background = isUpcoming ? '#ffffff' : '#213e26';
   const textColor = isUpcoming ? '#1f6f2b' : '#ffffff';
-  const sizes = [16, 32, 48];
+  const sizes = [16, 32, 48, 128];
   const imageData: { [index: number]: ImageData } = {};
 
   for (const size of sizes) {
@@ -226,17 +226,11 @@ async function updateActionIcon(): Promise<void> {
         await chrome.action.setIcon({ imageData });
       } else {
         await chrome.action.setIcon({ path: {
-          16: 'icons/icon16.png',
-          32: 'icons/icon32.png',
-          48: 'icons/icon48.png',
           128: 'icons/icon128.png'
         }});
       }
     } else {
       await chrome.action.setIcon({ path: {
-        16: 'icons/icon16.png',
-        32: 'icons/icon32.png',
-        48: 'icons/icon48.png',
         128: 'icons/icon128.png'
       }});
     }
