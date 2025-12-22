@@ -136,8 +136,10 @@ struct SJA_reApp: App {
                                 .environmentObject(timeSettings)
                         case .settingsMore:
                             MoreInfoView(onDismiss: { router.pop() })
+                        // Sign in feature temporarily commented out
                         case .settingsAuth:
-                            AuthView(onDismiss: { router.pop() })
+                            // AuthView(onDismiss: { router.pop() })
+                            EmptyView()
                         }
                     }
                     .toolbarBackground(.visible, for: .navigationBar)

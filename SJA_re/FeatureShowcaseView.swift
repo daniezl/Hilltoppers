@@ -30,19 +30,20 @@ struct FeatureShowcaseView: View {
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundColor(accentGreen)
 
-                Text("BETA")
-                    .font(.system(size: 15, weight: .bold))
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 14)
-                    .background(
-                        Capsule()
-                            .fill(accentGreen.opacity(colorScheme == .dark ? 0.5 : 0.12))
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(accentGreen.opacity(colorScheme == .dark ? 0.8 : 0.4), lineWidth: 1)
-                    )
-                    .foregroundColor(accentGreen)
+                // Beta badge removed
+                // Text("BETA")
+                //     .font(.system(size: 15, weight: .bold))
+                //     .padding(.vertical, 5)
+                //     .padding(.horizontal, 14)
+                //     .background(
+                //         Capsule()
+                //             .fill(accentGreen.opacity(colorScheme == .dark ? 0.5 : 0.12))
+                //     )
+                //     .overlay(
+                //         Capsule()
+                //             .stroke(accentGreen.opacity(colorScheme == .dark ? 0.8 : 0.4), lineWidth: 1)
+                //     )
+                //     .foregroundColor(accentGreen)
             }
 
             Text("The new Class Countdown widget brings your schedule to the Home Screen and Lock Screen")

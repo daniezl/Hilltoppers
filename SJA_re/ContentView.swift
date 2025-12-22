@@ -1255,7 +1255,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             // Menu items near top
             VStack(spacing: 16) {
-                settingsRow(icon: "square.grid.2x2", title: "Widget", accessory: { betaBadge }) {
+                settingsRow(icon: "square.grid.2x2", title: "Widget") {
                     router.push(.settingsFeatureShowcase)
                 }
 
@@ -1271,26 +1271,26 @@ struct SettingsView: View {
                 //     router.push(.settingsTime)
                 // }
                 
-                // Account/Login row
-                settingsRow(
-                    icon: "person.circle",
-                    title: authManager.isAuthenticated ? "Account" : "Sign In",
-                    accessory: {
-                        if authManager.isAuthenticated && authManager.isEmailVerified {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.body)
-                        } else if authManager.needsEmailVerification {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundColor(.orange)
-                                .font(.body)
-                        } else {
-                            EmptyView()
-                        }
-                    }
-                ) {
-                    router.push(.settingsAuth)
-                }
+                // Account/Login row - Temporarily commented out
+                // settingsRow(
+                //     icon: "person.circle",
+                //     title: authManager.isAuthenticated ? "Account" : "Sign In",
+                //     accessory: {
+                //         if authManager.isAuthenticated && authManager.isEmailVerified {
+                //             Image(systemName: "checkmark.circle.fill")
+                //                 .foregroundColor(.green)
+                //                 .font(.body)
+                //         } else if authManager.needsEmailVerification {
+                //             Image(systemName: "exclamationmark.circle.fill")
+                //                 .foregroundColor(.orange)
+                //                 .font(.body)
+                //         } else {
+                //             EmptyView()
+                //         }
+                //     }
+                // ) {
+                //     router.push(.settingsAuth)
+                // }
 
                 settingsRow(icon: "ellipsis.circle", title: "More") {
                     router.push(.settingsMore)
@@ -1318,17 +1318,18 @@ struct SettingsView: View {
         }
     }
 
-    private var betaBadge: some View {
-        Text("BETA")
-            .font(.caption.bold())
-            .padding(.vertical, 4)
-            .padding(.horizontal, 10)
-            .background(
-                Capsule()
-                    .fill(accentGreen.opacity(0.15))
-            )
-            .foregroundColor(accentGreen)
-    }
+    // Beta badge removed
+    // private var betaBadge: some View {
+    //     Text("BETA")
+    //         .font(.caption.bold())
+    //         .padding(.vertical, 4)
+    //         .padding(.horizontal, 10)
+    //         .background(
+    //             Capsule()
+    //                 .fill(accentGreen.opacity(0.15))
+    //         )
+    //         .foregroundColor(accentGreen)
+    // }
 
     private func settingsRow(icon: String, title: String, action: @escaping () -> Void) -> some View {
         settingsRow(icon: icon, title: title, accessory: { EmptyView() }, action: action)
