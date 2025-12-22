@@ -241,20 +241,56 @@ async function loadSpecialPeriodsFromCloudflare(forceRefresh = false): Promise<A
     try {
       // Expect date strings in EST format: "yyyy-LL-dd" (e.g., "2025-11-30")
       const data = JSON.parse(text) as Array<{ start: string; end: string; details?: string }>;
-      // Validate format (should be "yyyy-LL-dd") and filter out invalid periods
-      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
-      const validPeriods = data.filter((period) => {
-        // Filter out periods without start or end, or with invalid format
-        if (!period.start || !period.end) {
-          console.warn('[scheduleService] Period missing start or end field, skipping', period);
-          return false;
+      
+      // Normalize date strings to "yyyy-MM-dd" format (handles both "2025-11-30" and "2026-1-6")
+      const normalizeDateString = (dateStr: string): string | null => {
+        if (!dateStr) return null;
+        
+        // Check if already in correct format "yyyy-MM-dd"
+        const correctFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (correctFormatRegex.test(dateStr)) {
+          return dateStr;
         }
-        if (!dateFormatRegex.test(period.start) || !dateFormatRegex.test(period.end)) {
-          console.warn('[scheduleService] Invalid date format in special_periods, expected "yyyy-LL-dd", skipping', period);
-          return false;
+        
+        // Try to parse and normalize formats like "2026-1-6" -> "2026-01-06"
+        const flexibleFormatRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+        const match = dateStr.match(flexibleFormatRegex);
+        if (match) {
+          const [, year, month, day] = match;
+          // Pad month and day with zeros
+          const normalizedMonth = month.padStart(2, '0');
+          const normalizedDay = day.padStart(2, '0');
+          return `${year}-${normalizedMonth}-${normalizedDay}`;
         }
-        return true;
-      });
+        
+        return null;
+      };
+      
+      // Validate and normalize periods
+      const validPeriods = data
+        .map((period) => {
+          // Filter out periods without start or end
+          if (!period.start || !period.end) {
+            console.warn('[scheduleService] Period missing start or end field, skipping', period);
+            return null;
+          }
+          
+          // Normalize date strings
+          const normalizedStart = normalizeDateString(period.start);
+          const normalizedEnd = normalizeDateString(period.end);
+          
+          if (!normalizedStart || !normalizedEnd) {
+            console.warn('[scheduleService] Invalid date format in special_periods, expected "yyyy-MM-dd" or "yyyy-M-d", skipping', period);
+            return null;
+          }
+          
+          return {
+            start: normalizedStart,
+            end: normalizedEnd,
+            details: period.details
+          };
+        })
+        .filter((period): period is { start: string; end: string; details?: string } => period !== null);
       cachedSpecialPeriodsData = validPeriods;
       if (validPeriods.length !== data.length) {
         console.info(`[scheduleService] Filtered out ${data.length - validPeriods.length} invalid periods, ${validPeriods.length} valid periods remaining`);

@@ -972,7 +972,19 @@ struct ScheduleView: View {
                 print("✅ [SCHEDULE] In special period (break) - setting no school")
                 noSchool = true
                 loader.blocks = []
-                scheduleTitle = "No School (Break)"
+                
+                // 获取 special period 的详细信息
+                if let periodDetails = try await ScheduleTypeFetcher.getSpecialPeriodDetails(date: currentTime), !periodDetails.isEmpty {
+                    scheduleTitle = periodDetails
+                    noSchoolDetails = periodDetails
+                    showDetailsText = true  // 确保 details 文本显示
+                    print("✅ [SCHEDULE] Special period details: '\(periodDetails)'")
+                } else {
+                    scheduleTitle = "No School (Break)"
+                    noSchoolDetails = "Break"
+                    showDetailsText = true  // 确保 details 文本显示
+                    print("⚠️ [SCHEDULE] No special period details found, using default")
+                }
                 firebaseSucceeded = true
             }
             // 2. Try to find special_day and get type with details
@@ -985,6 +997,7 @@ struct ScheduleView: View {
                         print("📅 [SCHEDULE] Special day is no_school")
                         noSchool = true
                         noSchoolDetails = specialDayInfo.details
+                        showDetailsText = true  // 确保 details 文本显示
                         loader.blocks = []
                         scheduleTitle = "No School"
                         firebaseSucceeded = true
@@ -1169,12 +1182,12 @@ struct ScheduleView: View {
         print("🔍 DEBUG: noSchoolDetails = '\(noSchoolDetails ?? "nil")'")
         showNoSchoolText = true
         
-        // Show details text after a short delay if available
-        if noSchoolDetails != nil {
-            print("🔍 DEBUG: Setting showDetailsText = true")
+        // Show details text if available (will be set by refreshSchedule if needed)
+        if let details = noSchoolDetails, !details.isEmpty {
+            print("🔍 DEBUG: Setting showDetailsText = true for details: '\(details)'")
             showDetailsText = true
         } else {
-            print("🔍 DEBUG: noSchoolDetails is nil, not showing details")
+            print("🔍 DEBUG: noSchoolDetails is nil or empty, not showing details")
         }
     }
     

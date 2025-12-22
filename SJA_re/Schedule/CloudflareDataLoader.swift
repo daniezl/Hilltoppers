@@ -3,7 +3,7 @@ import Foundation
 struct CloudflareDataLoader {
     // 缓存 special_days 和 special_periods 数据
     private static var cachedSpecialDays: [String: SpecialDayRecord]?
-    private static var cachedSpecialPeriods: [(start: Date, end: Date)]?
+    private static var cachedSpecialPeriods: [(start: String, end: String, details: String?)]?
     
     struct SpecialDayRecord: Codable {
         let type: String?
@@ -47,7 +47,8 @@ struct CloudflareDataLoader {
     }
     
     /// 从 Cloudflare 加载 special_periods 数据
-    static func loadSpecialPeriods() async throws -> [(start: Date, end: Date)]? {
+    /// 返回日期字符串格式 (start: "yyyy-MM-dd", end: "yyyy-MM-dd", details: String?)
+    static func loadSpecialPeriods() async throws -> [(start: String, end: String, details: String?)]? {
         if let cached = cachedSpecialPeriods {
             return cached
         }
@@ -69,20 +70,54 @@ struct CloudflareDataLoader {
             struct PeriodRecord: Codable {
                 let start: String
                 let end: String
+                let details: String?
             }
             
             let decoder = JSONDecoder()
             let periods = try decoder.decode([PeriodRecord].self, from: data)
             
-            let dateFormatter = ISO8601DateFormatter()
-            dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            // 日期格式验证和规范化函数
+            func normalizeDateString(_ dateStr: String) -> String? {
+                // 检查是否已经是 "yyyy-MM-dd" 格式
+                let dateFormatRegex = #"^\d{4}-\d{2}-\d{2}$"#
+                if dateStr.range(of: dateFormatRegex, options: .regularExpression) != nil {
+                    return dateStr
+                }
+                
+                // 尝试解析并规范化格式（处理 "2026-1-6" -> "2026-01-06"）
+                let inputFormatter = DateFormatter()
+                inputFormatter.dateFormat = "yyyy-M-d"
+                inputFormatter.timeZone = Date.estTimeZone
+                
+                if let date = inputFormatter.date(from: dateStr) {
+                    let outputFormatter = DateFormatter()
+                    outputFormatter.dateFormat = "yyyy-MM-dd"
+                    outputFormatter.timeZone = Date.estTimeZone
+                    return outputFormatter.string(from: date)
+                }
+                
+                // 尝试 ISO8601 格式
+                let isoFormatter = ISO8601DateFormatter()
+                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let date = isoFormatter.date(from: dateStr) {
+                    let outputFormatter = DateFormatter()
+                    outputFormatter.dateFormat = "yyyy-MM-dd"
+                    outputFormatter.timeZone = Date.estTimeZone
+                    return outputFormatter.string(from: date)
+                }
+                
+                return nil
+            }
             
-            let datePeriods = periods.compactMap { period -> (start: Date, end: Date)? in
-                guard let startDate = dateFormatter.date(from: period.start) ?? ISO8601DateFormatter().date(from: period.start),
-                      let endDate = dateFormatter.date(from: period.end) ?? ISO8601DateFormatter().date(from: period.end) else {
+            let datePeriods = periods.compactMap { period -> (start: String, end: String, details: String?)? in
+                // 规范化日期字符串
+                guard let startString = normalizeDateString(period.start),
+                      let endString = normalizeDateString(period.end) else {
+                    print("⚠️ [CLOUDFLARE] Failed to parse period dates: start=\(period.start), end=\(period.end)")
                     return nil
                 }
-                return (start: startDate, end: endDate)
+                
+                return (start: startString, end: endString, details: period.details)
             }
             
             cachedSpecialPeriods = datePeriods

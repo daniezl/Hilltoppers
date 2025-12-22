@@ -9,6 +9,7 @@ struct ScheduleTypeFetcher {
     static func fetchTypeFor(date: Date) async throws -> String? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
         // 从 Cloudflare 加载
@@ -24,6 +25,7 @@ struct ScheduleTypeFetcher {
     static func fetchSpecialDayInfo(date: Date) async throws -> SpecialDayInfo? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
         // 从 Cloudflare 加载
@@ -37,10 +39,18 @@ struct ScheduleTypeFetcher {
     }
 
     static func isInSpecialPeriod(date: Date) async throws -> Bool {
+        // 将日期转换为 EST 时区的日期字符串 (yyyy-MM-dd 格式)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
+        let dateString = formatter.string(from: date)
+        
         // 从 Cloudflare 加载
         if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
             for period in periods {
-                if date >= period.start && date <= period.end {
+                // 使用日期字符串比较（与 Chrome extension 逻辑一致）
+                if period.start <= dateString && dateString <= period.end {
+                    print("✅ [SPECIAL_PERIOD] Date \(dateString) is in special period: \(period.start) to \(period.end)")
                     return true
                 }
             }
@@ -48,10 +58,40 @@ struct ScheduleTypeFetcher {
         
         return false
     }
+    
+    /// 获取 special period 的详细信息
+    static func getSpecialPeriodDetails(date: Date) async throws -> String? {
+        // 将日期转换为 EST 时区的日期字符串 (yyyy-MM-dd 格式)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
+        let dateString = formatter.string(from: date)
+        
+        print("🔍 [SPECIAL_PERIOD] Checking details for date: \(dateString)")
+        
+        // 从 Cloudflare 加载
+        if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
+            print("🔍 [SPECIAL_PERIOD] Loaded \(periods.count) periods")
+            for period in periods {
+                print("🔍 [SPECIAL_PERIOD] Checking period: \(period.start) to \(period.end), details: '\(period.details ?? "nil")'")
+                // 使用日期字符串比较
+                if period.start <= dateString && dateString <= period.end {
+                    print("✅ [SPECIAL_PERIOD] Found matching period, details: '\(period.details ?? "nil")'")
+                    return period.details
+                }
+            }
+        } else {
+            print("⚠️ [SPECIAL_PERIOD] No periods loaded")
+        }
+        
+        print("❌ [SPECIAL_PERIOD] No matching period found for date: \(dateString)")
+        return nil
+    }
 
     static func loadCustomSchedule(for date: Date) async throws -> [Block]? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
         // 从 Cloudflare 加载
@@ -68,6 +108,7 @@ struct ScheduleTypeFetcher {
     static func fetchSpecialDaysDict(start: Date, end: Date) async throws -> [String: String] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
         let startString = formatter.string(from: start)
         let endString = formatter.string(from: end)
         
@@ -87,12 +128,19 @@ struct ScheduleTypeFetcher {
     }
 
     // Batch fetch all special periods overlapping a date range
-    static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: Date, end: Date)] {
+    static func fetchSpecialPeriods(start: Date, end: Date) async throws -> [(start: String, end: String, details: String?)] {
+        // 将日期转换为 EST 时区的日期字符串 (yyyy-MM-dd 格式)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = Date.estTimeZone
+        let startString = formatter.string(from: start)
+        let endString = formatter.string(from: end)
+        
         // 从 Cloudflare 加载
         if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
-            // Filter periods that overlap the date range
+            // Filter periods that overlap the date range (使用日期字符串比较)
             return periods.filter { period in
-                period.end >= start && period.start <= end
+                period.end >= startString && period.start <= endString
             }
         }
         
@@ -127,7 +175,8 @@ struct ScheduleTypeFetcher {
                         return type != "no_school"
                     }
                     for period in specialPeriods {
-                        if date >= period.0 && date <= period.1 {
+                        // 使用日期字符串比较
+                        if period.start <= dateString && dateString <= period.end {
                             // print("Checked \(dateString): in special period")
                             return false
                         }
@@ -194,9 +243,11 @@ struct ScheduleTypeFetcher {
                     
                     // Check special periods
                     for period in specialPeriods {
-                        if date >= period.0 && date <= period.1 {
+                        // 使用日期字符串比较
+                        if period.start <= dateString && dateString <= period.end {
                             // print("Checked \(dateString): in special period")
-                            return (false, "No school (break)")
+                            let details = period.details ?? "Break"
+                            return (false, "No school (\(details))")
                         }
                     }
                     

@@ -34,6 +34,9 @@
 		A287C2E62E6CA9E3005129F0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */; };
 		A287C2E72E6CA9E3005129F0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3B12DC018000037D8D9 /* SwiftUI.framework */; };
 		A2B4D9AA2FCBC8C400EEA00C /* MoreInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */; };
+		A2DB29D32EF9D0A400006E68 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 43C2CA118D4F0525E716EF03 /* FirebaseAuth */; };
+		A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */; };
+		A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */; };
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
@@ -83,8 +86,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthManager.swift; path = AuthManager.swift; sourceTree = "<group>"; };
-		0771171D9E05D8FD244231C9 /* AuthView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthView.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		0771171D9E05D8FD244231C9 /* AuthView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
@@ -114,6 +117,8 @@
 		A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClassCountdownWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2ACF6042E8422F600C8E7D5 /* SJA-re-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SJA-re-Info.plist"; sourceTree = SOURCE_ROOT; };
 		A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreInfoView.swift; sourceTree = "<group>"; };
+		A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareDataLoader.swift; sourceTree = "<group>"; };
+		A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleConfig.swift; sourceTree = "<group>"; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
 		B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedTypes.swift; sourceTree = "<group>"; };
@@ -139,22 +144,16 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A25EA2E02DB9E0780037D8D9 /* SJA_reTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = SJA_reTests;
 			sourceTree = "<group>";
 		};
 		A25EA2EA2DB9E0780037D8D9 /* SJA_reUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = SJA_reUITests;
 			sourceTree = "<group>";
 		};
 		A25EA3B32DC018000037D8D9 /* DayTypeWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = DayTypeWidget;
 			sourceTree = "<group>";
 		};
@@ -173,6 +172,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2DB29D32EF9D0A400006E68 /* FirebaseAuth in Frameworks */,
 				A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */,
 				A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */,
 				A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */,
@@ -249,6 +249,8 @@
 				A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */,
 				A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */,
 				A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */,
+				A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */,
+				A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */,
 			);
 			path = Schedule;
 			sourceTree = "<group>";
@@ -535,6 +537,8 @@
 				A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */,
 				C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */,
 				668F6147BDDB2702B2A11253 /* AuthView.swift in Sources */,
+				A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */,
+				A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
