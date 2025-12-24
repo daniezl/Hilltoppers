@@ -1,0 +1,7 @@
+# Cloudflare Pages Redirects
+# SPA routing - all routes go to index.html
+# Note: /api/* routes are handled by Pages Functions, not redirects
+
+/admin/*  /index.html  200
+/editor/*  /index.html  200
+

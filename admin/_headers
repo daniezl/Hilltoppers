@@ -1,0 +1,11 @@
+# Cloudflare Pages Headers
+# Ensure API routes are handled correctly
+
+/api/admin/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+
+/admin/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+

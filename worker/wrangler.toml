@@ -1,0 +1,24 @@
+name = "schedule-admin-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# 生产环境配置
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# KV Namespace 配置
+# 使用命令创建: npx wrangler kv namespace create SCHEDULE_KV
+# 然后将输出的 id 填入下面
+[[env.production.kv_namespaces]]
+binding = "SCHEDULE_KV"
+id = "0dc72530532c41f3b79647f91bac9766"
+
+# 环境变量说明：
+# - EDITORS: 编辑器邮箱列表（逗号分隔），通过 wrangler secret put EDITORS 设置
+# - ADMINS: 管理员邮箱列表（逗号分隔），通过 wrangler secret put ADMINS 设置
+# - CLOUDFLARE_ACCESS_AUD: (可选) Cloudflare Access audience tag，用于 JWT 验证
+#
+# 设置环境变量：
+# 方式 1 (推荐): npx wrangler secret put EDITORS
+# 方式 2: 在 Cloudflare Dashboard → Workers → Settings → Variables 中设置
+

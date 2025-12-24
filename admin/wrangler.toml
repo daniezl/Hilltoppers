@@ -1,0 +1,6 @@
+# Pages Functions configuration
+# This file is used by Cloudflare Pages to configure Functions
+
+[env.production]
+vars = { WORKER_URL = "https://schedule-admin-api.danielzhang089.workers.dev" }
+

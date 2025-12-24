@@ -1,0 +1,290 @@
+/**
+ * Admin UI - Strict Design System
+ * 
+ * NO gradients, blur, shadows, animations, or decorative effects.
+ * Flat, calm, utilitarian design matching Chrome extension palette.
+ */
+
+:root {
+  color-scheme: light;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-muted: #f0f2f5;
+  --text: #111111;
+  --muted: #5b6570;
+  --border: #d0d7de;
+  --accent: #2ea043;
+  --accent-muted: rgba(46, 160, 67, 0.12);
+  --danger: #bc4c2c;
+  --warning: #b26a00;
+  --success: #2ea043;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --surface: #1a1d23;
+    --surface-muted: #1f242c;
+    --text: #e6e8eb;
+    --muted: #a5acb5;
+    --border: #2d333c;
+    --accent: #6bd48a;
+    --accent-muted: rgba(107, 212, 138, 0.18);
+    --danger: #f3a38b;
+    --warning: #d4a574;
+    --success: #6bd48a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+button.primary:hover:not(:disabled) {
+  background: #238636;
+  border-color: #238636;
+}
+
+button.danger {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+}
+
+button.danger:hover:not(:disabled) {
+  background: #9d3a1f;
+  border-color: #9d3a1f;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: var(--surface-muted);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Labels */
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+thead {
+  background: var(--surface-muted);
+}
+
+th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--surface-muted);
+}
+
+/* Cards/Panels */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+/* Dividers */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+  border: none;
+}
+
+/* Status messages */
+.status {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.status.error {
+  background: rgba(188, 76, 44, 0.12);
+  border-color: rgba(188, 76, 44, 0.35);
+  color: var(--danger);
+}
+
+.status.success {
+  background: var(--accent-muted);
+  border-color: rgba(46, 160, 67, 0.35);
+  color: var(--accent);
+}
+
+.status.warning {
+  background: rgba(178, 106, 0, 0.12);
+  border-color: rgba(178, 106, 0, 0.35);
+  color: var(--warning);
+}
+
+/* Utility classes */
+.text-muted {
+  color: var(--muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+.gap-3 { gap: 24px; }
+

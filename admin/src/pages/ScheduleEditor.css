@@ -1,0 +1,104 @@
+.schedule-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.schedule-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.schedule-editor-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.schedule-editor-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.form-section-header h3 {
+  margin: 0;
+}
+
+.block-editor {
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-bottom: 16px;
+  background: var(--surface-muted);
+}
+
+.block-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.block-editor-header h4 {
+  margin: 0;
+}
+
+.block-editor-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.subblocks-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.subblocks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.subblocks-header h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.subblock-editor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.subblock-editor button {
+  align-self: end;
+}
+
