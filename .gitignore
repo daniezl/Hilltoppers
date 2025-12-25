@@ -43,3 +43,4 @@ chrome-extension/.env.local
 # iOS
 *.xcuserstate
 project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/

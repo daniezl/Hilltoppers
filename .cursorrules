@@ -1,0 +1,21 @@
+# Cursor AI Rules for SchoolApp
+
+## Documentation Guidelines
+
+- **DO NOT create temporary documentation files** (e.g., `FIX_*.md`, `SOLUTION_*.md`, `TROUBLESHOOT_*.md`, etc.)
+- **DO NOT create multiple explanation documents** for the same issue
+- If documentation is needed, update existing README files or create permanent documentation
+- Prefer inline code comments over separate documentation files for temporary solutions
+
+## Code Style
+
+- Use TypeScript for all new code
+- Follow existing code patterns and conventions
+- Keep functions focused and single-purpose
+
+## File Management
+
+- Clean up temporary files and folders after use
+- Do not create deployment folders unless explicitly requested
+- Keep the repository structure clean and organized
+
