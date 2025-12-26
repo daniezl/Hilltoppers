@@ -50,6 +50,8 @@
 	<string>This app needs to access the school's website to load daily schedules and bulletin information.</string>
 	<key>CloudflareBaseURL</key>
 	<string>https://hilltoppers.pages.dev</string>
+	<key>CloudflareWorkerURL</key>
+	<string>https://schedule-admin-api.danielzhang089.workers.dev</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import ScheduleEditor from './pages/ScheduleEditor';
+import Calendar from './components/Calendar';
 import './App.css';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -36,6 +37,14 @@ function AppRoutes() {
       <Route path="/" element={<Layout />}>
         <Route
           index
+          element={
+            <ProtectedRoute>
+              <Calendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />

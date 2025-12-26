@@ -8,6 +8,11 @@
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 0;
+  transition: transform 0.3s ease;
+}
+
+body.sidebar-open .layout-header {
+  transform: translateY(-100%);
 }
 
 .layout-header-content {

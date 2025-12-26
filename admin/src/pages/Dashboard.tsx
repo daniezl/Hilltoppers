@@ -44,6 +44,30 @@ export default function Dashboard() {
 
   const draftEntries = Object.entries(drafts).sort(([a], [b]) => b.localeCompare(a));
 
+  const handleDiscardDraft = async (dateKey: string) => {
+    if (!confirm(`Are you sure you want to discard the draft for ${dateKey}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/drafts/${dateKey}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        const updatedDrafts = { ...drafts };
+        delete updatedDrafts[dateKey];
+        setDrafts(updatedDrafts);
+      } else {
+        const data = await response.json();
+        alert(`Failed to discard draft: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert('Network error while discarding draft');
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -112,7 +136,7 @@ export default function Dashboard() {
                           </Link>
                           {user?.role === 'admin' && (
                             <button
-                              className="button primary"
+                              className="button"
                               onClick={async () => {
                                 if (!confirm(`Publish schedule for ${dateKey}?`)) return;
                                 
@@ -138,6 +162,13 @@ export default function Dashboard() {
                               Publish
                             </button>
                           )}
+                          <button
+                            className="button danger"
+                            onClick={() => handleDiscardDraft(dateKey)}
+                            title="Discard draft"
+                          >
+                            Discard
+                          </button>
                         </div>
                       </td>
                     </tr>

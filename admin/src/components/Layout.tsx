@@ -17,16 +17,14 @@ export default function Layout() {
                 to="/"
                 className={location.pathname === '/' ? 'active' : ''}
               >
+                Calendar
+              </Link>
+              <Link
+                to="/dashboard"
+                className={location.pathname === '/dashboard' ? 'active' : ''}
+              >
                 Dashboard
               </Link>
-              {user && (
-                <Link
-                  to="/editor"
-                  className={location.pathname.startsWith('/editor') ? 'active' : ''}
-                >
-                  Editor
-                </Link>
-              )}
             </nav>
           </div>
           {user && (

@@ -44,21 +44,47 @@ export default function ScheduleEditor() {
   const loadDraft = async (key: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/drafts`);
       
-      if (!response.ok) return;
-      
-      const data = await response.json();
-      const draft = data.drafts?.[key];
-      
-      if (draft) {
-        setDateKey(key);
-        setType(draft.data?.type || 'custom');
-        setDetails(draft.data?.details || '');
-        setBlocks(draft.data?.schedule || []);
+      // First, try to load draft
+      const draftsResponse = await fetch(`${API_BASE}/drafts`);
+      if (draftsResponse.ok) {
+        const draftsData = await draftsResponse.json();
+        const draft = draftsData.drafts?.[key];
+        
+        if (draft) {
+          setDateKey(key);
+          setType(draft.data?.type || 'custom');
+          setDetails(draft.data?.details || '');
+          setBlocks(draft.data?.schedule || []);
+          return;
+        }
       }
+      
+      // If no draft, try to load from published schedule (Worker API)
+      // Worker 端口固定为 8787（在 wrangler.toml 中配置）
+      const WORKER_PORT = import.meta.env.VITE_WORKER_PORT || '8787';
+      const WORKER_API_BASE = import.meta.env.DEV
+        ? `http://localhost:${WORKER_PORT}/api`
+        : '/api';
+      
+      const publishedResponse = await fetch(`${WORKER_API_BASE}/special_days.json`);
+      if (publishedResponse.ok) {
+        const publishedData = await publishedResponse.json();
+        const published = publishedData[key];
+        
+        if (published) {
+          setDateKey(key);
+          setType(published.type || 'custom');
+          setDetails(published.details || '');
+          setBlocks(published.schedule || []);
+          return;
+        }
+      }
+      
+      // If neither draft nor published exists, set dateKey and leave form empty
+      setDateKey(key);
     } catch (err) {
-      setError('Failed to load draft');
+      setError('Failed to load schedule data');
     } finally {
       setLoading(false);
     }

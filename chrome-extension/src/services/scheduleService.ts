@@ -81,23 +81,28 @@ function mapBlocks(raw: RawBlock[]): Block[] {
   });
 }
 
-// Cloudflare Pages URL - 请替换为您的实际 Cloudflare Pages URL
-// 例如: "https://schoolapp-schedules.pages.dev"
-const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_SCHEDULE_URL || '';
+// Worker URL - 从 Worker 读取 special_days
+const WORKER_BASE_URL = import.meta.env.VITE_CLOUDFLARE_WORKER_URL || 'https://schedule-admin-api.danielzhang089.workers.dev';
+
+// Cloudflare Pages URL - 用于读取 special_periods（如果 Worker 不支持）
+const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_SCHEDULE_URL || 'https://hilltoppers.pages.dev';
 
 // 调试：检查环境变量是否正确加载
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
-  console.log('[scheduleService] Cloudflare URL:', CLOUDFLARE_BASE_URL || 'NOT SET');
+  console.log('[scheduleService] Worker URL:', WORKER_BASE_URL);
+  console.log('[scheduleService] Cloudflare Pages URL:', CLOUDFLARE_BASE_URL);
 }
 
 function getCloudflareSpecialDaysUrl(): string {
-  if (CLOUDFLARE_BASE_URL) {
-    return `${CLOUDFLARE_BASE_URL}/special_days.json`;
-  }
-  return '';
+  // 从 Worker 读取
+  return `${WORKER_BASE_URL}/api/special_days.json`;
 }
 
 function getCloudflareSpecialPeriodsUrl(): string {
+  // 优先从 Worker 读取，如果没有则从 Pages 读取
+  if (WORKER_BASE_URL) {
+    return `${WORKER_BASE_URL}/api/special_periods.json`;
+  }
   if (CLOUDFLARE_BASE_URL) {
     return `${CLOUDFLARE_BASE_URL}/special_periods.json`;
   }

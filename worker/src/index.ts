@@ -30,7 +30,7 @@ interface AuthResult {
 /**
  * Extract user email from Cloudflare Access headers
  */
-function extractUserEmail(request: Request): string | null {
+function extractUserEmail(request: Request, env: Env): string | null {
   // Cloudflare Access injects the authenticated email in this header
   const email = request.headers.get('Cf-Access-Authenticated-User-Email');
   if (email) {
@@ -54,14 +54,22 @@ function extractUserEmail(request: Request): string | null {
     }
   }
   
-  // 临时方案：如果是从 Pages 域名来的请求，尝试从 Referer 或其他方式获取
-  // 但这不安全，只是临时方案
-  const referer = request.headers.get('Referer');
-  if (referer && referer.includes('schedule-admin-ui.pages.dev')) {
-    // 如果是从 Pages 来的请求，但没有 Access 头
-    // 说明 Worker 域名没有配置 Access
-    // 这种情况下，我们需要在 Worker 域名上配置 Access
-    return null;
+  // 本地开发模式：如果没有 Access 头，使用环境变量中的第一个 admin 邮箱作为测试用户
+  // 检测方法：检查 Origin/Referer 是否包含 localhost，或者检查环境变量中是否有开发模式标记
+  const origin = request.headers.get('Origin') || '';
+  const referer = request.headers.get('Referer') || '';
+  const host = request.headers.get('Host') || '';
+  const isLocalDev = origin.includes('localhost') || origin.includes('127.0.0.1') || 
+                     referer.includes('localhost') || referer.includes('127.0.0.1') ||
+                     host.includes('localhost') || host.includes('127.0.0.1');
+  
+  if (isLocalDev && env.ADMINS) {
+    // 使用第一个 admin 邮箱作为测试用户
+    const admins = env.ADMINS.split(',').map(e => e.toLowerCase().trim()).filter(Boolean);
+    if (admins.length > 0) {
+      console.log(`[Local Dev] Using test user: ${admins[0]}`);
+      return admins[0];
+    }
   }
   
   return null;
@@ -88,7 +96,7 @@ function determineRole(email: string, env: Env): 'editor' | 'admin' | null {
  * Authenticate request and extract user info
  */
 function authenticate(request: Request, env: Env): AuthResult {
-  const email = extractUserEmail(request);
+  const email = extractUserEmail(request, env);
   
   if (!email) {
     return {
@@ -319,9 +327,42 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
     days[dateKey] = JSON.parse(draft);
     await env.SCHEDULE_KV.put('special_days', JSON.stringify(days));
     
+    // Note: Data is now served from Worker, no need to update Pages repository
+    
     return jsonResponse({ success: true, dateKey }, 200, request);
   } catch (error) {
     return errorResponse('Failed to publish', 500, request);
+  }
+}
+
+/**
+ * Get published schedules (editor+)
+ */
+async function handleGetPublished(request: Request, env: Env): Promise<Response> {
+  const auth = authenticate(request, env);
+  if (auth.error || !auth.user) {
+    return errorResponse(auth.error || 'Unauthorized', 403, request);
+  }
+  
+  if (!hasRole(auth.user, 'editor')) {
+    return errorResponse('Insufficient permissions', 403, request);
+  }
+  
+  try {
+    const published = await env.SCHEDULE_KV.list({ prefix: 'published:' });
+    const scheduleData: Record<string, any> = {};
+    
+    for (const key of published.keys) {
+      const value = await env.SCHEDULE_KV.get(key.name);
+      if (value) {
+        const dateKey = key.name.replace('published:', '');
+        scheduleData[dateKey] = JSON.parse(value);
+      }
+    }
+    
+    return jsonResponse({ schedules: scheduleData }, 200, request);
+  } catch (error) {
+    return errorResponse('Failed to fetch published schedules', 500, request);
   }
 }
 
@@ -377,15 +418,54 @@ export default {
     // Public endpoints (no auth required)
     if (path === '/api/special_days.json' && request.method === 'GET') {
       try {
-        const data = await env.SCHEDULE_KV.get('special_days') || '{}';
+        const data = await env.SCHEDULE_KV.get('special_days');
+        if (!data) {
+          // If special_days not found, return empty object
+          return new Response('{}', {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Cache-Control': 'public, max-age=300',
+            },
+          });
+        }
         return new Response(data, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
+            'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
           },
         });
       } catch (error) {
-        return errorResponse('Failed to fetch schedule', 500, request);
+        console.error('Error fetching special_days:', error);
+        return errorResponse(`Failed to fetch schedule: ${error instanceof Error ? error.message : String(error)}`, 500, request);
+      }
+    }
+    
+    // Public endpoint for special_periods (read from KV or return empty array)
+    if (path === '/api/special_periods.json' && request.method === 'GET') {
+      try {
+        const data = await env.SCHEDULE_KV.get('special_periods');
+        if (!data) {
+          // If special_periods not found, return empty array
+          return new Response('[]', {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Cache-Control': 'public, max-age=300',
+            },
+          });
+        }
+        return new Response(data, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Cache-Control': 'public, max-age=300',
+          },
+        });
+      } catch (error) {
+        console.error('Error fetching special_periods:', error);
+        return errorResponse(`Failed to fetch special periods: ${error instanceof Error ? error.message : String(error)}`, 500, request);
       }
     }
     
@@ -399,6 +479,10 @@ export default {
       
       if (adminPath === 'drafts' && request.method === 'GET') {
         return handleGetDrafts(request, env);
+      }
+      
+      if (adminPath === 'published' && request.method === 'GET') {
+        return handleGetPublished(request, env);
       }
       
       if (adminPath === 'drafts' && request.method === 'POST') {
