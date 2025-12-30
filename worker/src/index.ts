@@ -257,9 +257,9 @@ async function handleSaveDraft(request: Request, env: Env): Promise<Response> {
       return errorResponse('Invalid date format. Use yyyy-MM-dd', 400, request);
     }
     
-    // Store draft
+    // Store draft (包装成 { data: {...}, updatedBy, updatedAt } 格式)
     await env.SCHEDULE_KV.put(`draft:${dateKey}`, JSON.stringify({
-      ...data,
+      data: data,  // 将 data 包装在 data 字段中
       updatedBy: auth.user.email,
       updatedAt: new Date().toISOString()
     }));

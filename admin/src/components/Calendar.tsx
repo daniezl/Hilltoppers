@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import DaySidebar from './DaySidebar';
 import './Calendar.css';
@@ -35,13 +34,12 @@ interface SpecialPeriod {
 // Worker API 配置 - 统一从 Worker API 获取数据
 // 本地开发时使用本地 Worker，生产环境通过 Pages Function 代理
 // Worker 端口固定为 8787（在 wrangler.toml 中配置）
-const WORKER_PORT = import.meta.env.VITE_WORKER_PORT || '8787';
-const WORKER_API_BASE = import.meta.env.DEV
+const WORKER_PORT = '8787'; // 固定端口
+const WORKER_API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
   ? `http://localhost:${WORKER_PORT}/api`
   : '/api';
 
 export default function Calendar() {
-  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [specialDays, setSpecialDays] = useState<Record<string, SpecialDayRecord>>({});
@@ -236,17 +234,35 @@ export default function Calendar() {
     setSelectedDay(null);
   };
 
-  const handleSaveSidebar = () => {
-    loadData(); // 重新加载数据
-    setSelectedDay(null);
+  const handleSaveSidebar = async () => {
+    // 重新加载数据，但不关闭 sidebar
+    await loadData();
+    // 不调用 setSelectedDay(null)，保持 sidebar 打开
+  };
+
+  // 只刷新 drafts，不刷新其他数据（用于保存后快速更新日历标记）
+  const refreshDrafts = async () => {
+    try {
+      const draftsRes = await fetch(`${API_BASE}/drafts`);
+      if (draftsRes.ok) {
+        const draftsData = await draftsRes.json();
+        setDrafts(draftsData.drafts || {});
+      }
+    } catch (err) {
+      console.error('Failed to refresh drafts:', err);
+    }
   };
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    // 切换月份时重新加载数据，确保 draft 状态正确
+    loadData();
   };
 
   const handleNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    // 切换月份时重新加载数据，确保 draft 状态正确
+    loadData();
   };
 
   const handleToday = () => {
@@ -302,10 +318,14 @@ export default function Calendar() {
                 onClick={() => day.isCurrentMonth && handleDateClick(day)}
                 style={{ cursor: day.isCurrentMonth ? 'pointer' : 'default' }}
               >
-              <div className="calendar-day-number">{day.date.getDate()}</div>
-              <div className="calendar-day-indicators">
-                {/* Draft is now shown with diagonal lines, no indicator needed */}
-              </div>
+              {day.isCurrentMonth && (
+                <>
+                  <div className="calendar-day-number">{day.date.getDate()}</div>
+                  <div className="calendar-day-indicators">
+                    {/* Draft is now shown with diagonal lines, no indicator needed */}
+                  </div>
+                </>
+              )}
               </div>
             ))}
           </div>
@@ -342,13 +362,16 @@ export default function Calendar() {
 
       {selectedDay && (
         <DaySidebar
+          key={selectedDay.dateKey} // 添加 key 确保日期切换时重新渲染
           dateKey={selectedDay.dateKey}
           date={selectedDay.date}
           specialDay={specialDays[selectedDay.dateKey] || null}
           specialPeriod={getSelectedDayPeriod()}
           dayType={selectedDay.dayType}
+          draft={drafts[selectedDay.dateKey] || null}
           onClose={handleCloseSidebar}
           onSave={handleSaveSidebar}
+          onRefreshDrafts={refreshDrafts}
         />
       )}
     </>
