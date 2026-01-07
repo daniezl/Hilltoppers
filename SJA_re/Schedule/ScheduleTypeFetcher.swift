@@ -28,11 +28,26 @@ struct ScheduleTypeFetcher {
         formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
-        // 从 Cloudflare 加载
-        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
-           let dayData = cloudflareData[dateString],
-           let type = dayData.type {
-            return SpecialDayInfo(type: type, details: dayData.details)
+        print("🔍 [SCHEDULE_TYPE] Fetching special day info for date: \(dateString)")
+        
+        // 从 Cloudflare 加载（使用缓存，因为 refreshSchedule 已经清除了缓存）
+        if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays() {
+            print("📦 [SCHEDULE_TYPE] Loaded \(cloudflareData.count) special days from Cloudflare")
+            
+            if let dayData = cloudflareData[dateString] {
+                print("✅ [SCHEDULE_TYPE] Found data for \(dateString): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
+                
+                if let type = dayData.type {
+                    return SpecialDayInfo(type: type, details: dayData.details)
+                } else {
+                    print("⚠️ [SCHEDULE_TYPE] Day data exists but type is nil for \(dateString)")
+                }
+            } else {
+                print("❌ [SCHEDULE_TYPE] No data found for date \(dateString)")
+                print("📋 [SCHEDULE_TYPE] Available dates: \(Array(cloudflareData.keys.prefix(10)))")
+            }
+        } else {
+            print("❌ [SCHEDULE_TYPE] Failed to load special_days from Cloudflare")
         }
         
         return nil
@@ -94,7 +109,7 @@ struct ScheduleTypeFetcher {
         formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
-        // 从 Cloudflare 加载
+        // 从 Cloudflare 加载（使用缓存，因为 refreshSchedule 已经清除了缓存）
         if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
            let dayData = cloudflareData[dateString],
            let schedule = dayData.schedule {

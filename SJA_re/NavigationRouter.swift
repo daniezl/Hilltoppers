@@ -8,6 +8,7 @@ enum AppRoute: Hashable {
     case settingsTime
     case settingsMore
     case settingsAuth
+    case coursesLogin
 }
 
 @MainActor

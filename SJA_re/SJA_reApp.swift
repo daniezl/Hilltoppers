@@ -125,10 +125,12 @@ struct SJA_reApp: App {
                         case .settingsFeatureShowcase:
                             FeatureShowcaseView()
                         case .settingsCourses:
-                            BlockConfigurationView(
-                                blockManager: BlockSettingsManager.shared,
+                            NewBlockConfigurationView(
                                 onDismissSettings: { router.pop() }
                             )
+                            .environmentObject(router)
+                        case .coursesLogin:
+                            LoginView(onDismiss: { router.pop() })
                         case .settingsNotifications:
                             NotificationSettingsView(onDismissSettings: { router.pop() })
                         case .settingsTime:

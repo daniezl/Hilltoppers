@@ -963,6 +963,10 @@ struct ScheduleView: View {
         
         print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
         
+        // 清除缓存以确保获取最新数据
+        CloudflareDataLoader.clearCache()
+        print("🗑️ [SCHEDULE] Cleared Cloudflare cache")
+        
         var firebaseSucceeded = false
         
         do {

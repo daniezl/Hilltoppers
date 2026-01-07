@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftSoup
-import FirebaseFirestore
 
 struct RippleEffect: View {
     let isGreenDay: Bool
@@ -532,6 +531,10 @@ struct DayTypeView: View {
                 self.currentDayTypeDate = nil
             }
 
+            // 清除缓存以确保获取最新数据
+            CloudflareDataLoader.clearCache()
+            print("🗑️ [DAYTYPE] Cleared Cloudflare cache")
+
             let referenceDate = self.testDate ?? Date()
             if await loadManualOverride(for: referenceDate) {
                 return
@@ -543,18 +546,19 @@ struct DayTypeView: View {
 
     private func loadManualOverride(for referenceDate: Date) async -> Bool {
         do {
-            let db = Firestore.firestore()
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             formatter.timeZone = Date.estTimeZone
-            let documentId = formatter.string(from: referenceDate)
+            let dateString = formatter.string(from: referenceDate)
 
-            let snapshot = try await db.collection("special_days").document(documentId).getDocument()
-            guard let data = snapshot.data() else {
+            // 从 Cloudflare 加载 special_days 数据
+            guard let cloudflareData = try await CloudflareDataLoader.loadSpecialDays(),
+                  let dayData = cloudflareData[dateString] else {
                 return false
             }
 
-            let rawAnnouncementValue = data["banner"] as? String
+            // 读取 banner 信息
+            let rawAnnouncementValue = dayData.banner
             let rawAnnouncement = rawAnnouncementValue?.trimmingCharacters(in: .whitespacesAndNewlines)
             await MainActor.run {
                 if let announcement = rawAnnouncement, !announcement.isEmpty {
@@ -564,20 +568,42 @@ struct DayTypeView: View {
                 }
             }
 
-            guard let colorValue = data["color"] as? String else {
+            // 优先使用 type 字段，如果没有则使用 color 字段
+            let normalized: String?
+            if let typeValue = dayData.type {
+                // 如果 type 是 "no_school" 或 "custom"，这些不是标准的 day type，跳过
+                if typeValue == "no_school" || typeValue == "custom" {
+                    return false
+                }
+                // 尝试从 type 字段解析 day type
+                normalized = normalizedStandardDayType(from: typeValue)
+                if normalized != nil {
+                    await MainActor.run {
+                        print("🧭 [DAYTYPE] Using manual override type '\(typeValue)' -> '\(normalized!)'")
+                    }
+                }
+            } else if let colorValue = dayData.color {
+                // 如果没有 type，使用 color 字段
+                normalized = normalizedStandardDayType(from: colorValue)
+                if normalized != nil {
+                    await MainActor.run {
+                        print("🧭 [DAYTYPE] Using manual override color '\(colorValue)' -> '\(normalized!)'")
+                    }
+                }
+            } else {
+                // 既没有 type 也没有 color，无法确定 day type
                 return false
             }
 
-            guard let normalized = normalizedStandardDayType(from: colorValue) else {
-                print("⚠️ [DAYTYPE] Manual override color '\(colorValue)' not recognized")
+            guard let finalNormalized = normalized else {
+                print("⚠️ [DAYTYPE] Manual override type/color not recognized")
                 return false
             }
 
             await MainActor.run {
-                print("🧭 [DAYTYPE] Using manual override color '\(colorValue)' -> '\(normalized)'")
                 self.dayTypeSource = .manualOverride
-                self.dayType = normalized
-                self.predicted = normalized
+                self.dayType = finalNormalized
+                self.predicted = finalNormalized
                 self.dbDate = referenceDate
                 self.isDateToday = true
                 self.firebaseError = false

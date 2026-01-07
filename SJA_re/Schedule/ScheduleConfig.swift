@@ -21,9 +21,9 @@ struct ScheduleConfig {
         return "https://hilltoppers.pages.dev"
     }
     
-    /// 获取 special_days 数据的 URL（优先从 Worker 读取）
+    /// 获取 special_days 数据的 URL（从 Hilltoppers Pages 读取，与 Chrome extension 保持一致）
     static var specialDaysURL: URL? {
-        return URL(string: "\(workerBaseURL)/api/special_days.json")
+        return URL(string: "\(cloudflareBaseURL)/special_days.json")
     }
     
     /// 获取 special_periods 数据的 URL（从 Pages 读取，因为 Worker 暂不支持）
