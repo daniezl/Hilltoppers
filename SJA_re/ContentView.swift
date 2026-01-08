@@ -3102,7 +3102,7 @@ enum TimeFormat: String, Codable {
 
 struct SchedulePreferences: Codable {
     var lunchPeriod: Int = 1
-    var timeFormat: TimeFormat = .hour12
+    var timeFormat: TimeFormat = .hour24
 }
 
 class SchedulePreferencesManager: ObservableObject {
