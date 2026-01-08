@@ -1167,6 +1167,13 @@ struct BlockSettings: Codable {
     var showOnWhiteDay: Bool = true
 }
 
+// Legacy BlockSettings format for migration
+struct BlockSettingsLegacy: Codable {
+    var name: String = ""
+    var showOnGreenDay: Bool = true
+    var showOnWhiteDay: Bool = true
+}
+
 class BlockSettingsManager: ObservableObject {
     static let shared = BlockSettingsManager()
     
@@ -2710,6 +2717,9 @@ class BlockPreferencesManager: ObservableObject {
     
     private init() {
         setupAuthListener()
+        // Perform initial migration check synchronously on first load
+        _ = loadFromLocalStorage()
+        // Then load async (may reload from cloud if authenticated)
         loadPreferences()
     }
     
@@ -2762,13 +2772,93 @@ class BlockPreferencesManager: ObservableObject {
     }
     
     private func loadFromLocalStorage() -> BlockPreferenceRecord {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
-              let decoded = try? JSONDecoder().decode(BlockPreferenceRecord.self, from: data) else {
-            return createDefaultPreferences()
+        // First, try to load new format
+        if let data = UserDefaults.standard.data(forKey: storageKey),
+           let decoded = try? JSONDecoder().decode(BlockPreferenceRecord.self, from: data) {
+            // Migrate old format if needed
+            return migratePreferences(decoded)
         }
         
-        // Migrate old format if needed
-        return migratePreferences(decoded)
+        // If new format doesn't exist, try to migrate from old BlockSettings format
+        if let migrated = migrateFromOldBlockSettings() {
+            print("✅ [BlockPreferences] Migrated from old BlockSettings format")
+            return migrated
+        }
+        
+        // Return defaults if nothing found
+        return createDefaultPreferences()
+    }
+    
+    // MARK: - Migration from Old BlockSettings Format
+    
+    private func migrateFromOldBlockSettings() -> BlockPreferenceRecord? {
+        // Check for old BlockSettings format
+        guard let oldData = UserDefaults.standard.data(forKey: "BlockSettings"),
+              let oldSettings = try? JSONDecoder().decode([String: BlockSettingsLegacy].self, from: oldData) else {
+            return nil
+        }
+        
+        print("🔄 [BlockPreferences] Found old BlockSettings format, migrating...")
+        
+        var newPrefs: BlockPreferenceRecord = [:]
+        let blockKeys: [BlockKey] = ["A", "B", "C", "D", "E"]
+        
+        for key in blockKeys {
+            guard let oldSetting = oldSettings[key] else {
+                newPrefs[key] = BlockPreference()
+                continue
+            }
+            
+            var newPref = BlockPreference()
+            newPref.name = oldSetting.name
+            newPref.migrated = true
+            
+            // Migrate based on showOnGreenDay/showOnWhiteDay
+            let showOnGreen = oldSetting.showOnGreenDay
+            let showOnWhite = oldSetting.showOnWhiteDay
+            
+            if !showOnGreen && !showOnWhite {
+                // Both unchecked -> free block
+                newPref.free = true
+                if oldSetting.name.isEmpty || oldSetting.name == "Free Block" {
+                    newPref.name = "Free Block"
+                    newPref.nameBackup = ""
+                } else {
+                    newPref.name = "Free Block"
+                    newPref.nameBackup = oldSetting.name
+                }
+                newPref.alternating = false
+            } else if showOnGreen && !showOnWhite {
+                // Only green -> alternating mode, only show on green
+                newPref.alternating = true
+                newPref.nameGreen = oldSetting.name
+                newPref.nameWhite = ""
+                newPref.freeGreen = false
+                newPref.freeWhite = true
+            } else if !showOnGreen && showOnWhite {
+                // Only white -> alternating mode, only show on white
+                newPref.alternating = true
+                newPref.nameGreen = ""
+                newPref.nameWhite = oldSetting.name
+                newPref.freeGreen = true
+                newPref.freeWhite = false
+            } else {
+                // Both checked -> normal mode, show on both days
+                newPref.alternating = false
+                newPref.free = false
+                newPref.name = oldSetting.name
+            }
+            
+            newPrefs[key] = newPref
+        }
+        
+        // Save migrated preferences immediately
+        if let encoded = try? JSONEncoder().encode(newPrefs) {
+            UserDefaults.standard.set(encoded, forKey: storageKey)
+            print("✅ [BlockPreferences] Saved migrated preferences")
+        }
+        
+        return newPrefs
     }
     
     private func loadFromRemote(userId: String) async -> BlockPreferenceRecord? {
