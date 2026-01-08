@@ -1319,12 +1319,12 @@ struct SettingsView: View {
                     router.push(.settingsFeatureShowcase)
                 }
 
-                settingsRow(icon: "book.closed", title: "Courses") {
-                    router.push(.settingsCourses)
-                }
-
                 settingsRow(icon: "bell.badge", title: "Notifications") {
                     router.push(.settingsNotifications)
+                }
+
+                settingsRow(icon: "book.closed", title: "Courses") {
+                    router.push(.settingsCourses)
                 }
 
                 // settingsRow(icon: "clock", title: "Time") {
@@ -3326,9 +3326,14 @@ struct NewBlockConfigurationView: View {
                             // Reset Button
                             Button(action: { showResetAlert = true }) {
                                 Text("Reset")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .font(.footnote.weight(.semibold))
+                                    .padding(.vertical, 9)
+                                    .padding(.horizontal, 14)
+                                    .background(Color.red.opacity(0.12))
+                                    .foregroundColor(.red)
+                                    .cornerRadius(11)
                             }
+                            .buttonStyle(.plain)
                             .disabled(prefsManager.isLoading || prefsManager.saveStatus == .saving)
                         }
                     }
@@ -3745,24 +3750,49 @@ struct BlockPreferenceRow: View {
                 .fill(Color(UIColor.separator))
                 .frame(width: 1)
             
-            // Free Checkbox
-            Button(action: {
-                if preference.alternating {
-                    // In alternating mode, toggle both free states together
-                    let bothFree = preference.freeGreen && preference.freeWhite
-                    let newValue = !bothFree
-                    preference.freeGreen = newValue
-                    preference.freeWhite = newValue
-                    if newValue {
-                        preference.nameGreenBackup = preference.nameGreen
-                        preference.nameWhiteBackup = preference.nameWhite
-                        preference.nameGreen = "Free Block"
-                        preference.nameWhite = "Free Block"
-                    } else {
-                        preference.nameGreen = preference.nameGreenBackup.isEmpty ? "" : preference.nameGreenBackup
-                        preference.nameWhite = preference.nameWhiteBackup.isEmpty ? "" : preference.nameWhiteBackup
+            // Free Checkbox(es)
+            if preference.alternating {
+                // Alternating mode: show two checkboxes (one for Green, one for White)
+                VStack(spacing: 6) {
+                    // Green day free checkbox
+                    Button(action: {
+                        preference.freeGreen.toggle()
+                        if preference.freeGreen {
+                            preference.nameGreenBackup = preference.nameGreen
+                            preference.nameGreen = "Free Block"
+                        } else {
+                            preference.nameGreen = preference.nameGreenBackup.isEmpty ? "" : preference.nameGreenBackup
+                        }
+                        savePreference()
+                    }) {
+                        Image(systemName: preference.freeGreen ? "checkmark.square.fill" : "square")
+                            .font(.system(size: 18))
+                            .foregroundColor(preference.freeGreen ? .blue : .gray)
                     }
-                } else {
+                    .buttonStyle(.plain)
+                    
+                    // White day free checkbox
+                    Button(action: {
+                        preference.freeWhite.toggle()
+                        if preference.freeWhite {
+                            preference.nameWhiteBackup = preference.nameWhite
+                            preference.nameWhite = "Free Block"
+                        } else {
+                            preference.nameWhite = preference.nameWhiteBackup.isEmpty ? "" : preference.nameWhiteBackup
+                        }
+                        savePreference()
+                    }) {
+                        Image(systemName: preference.freeWhite ? "checkmark.square.fill" : "square")
+                            .font(.system(size: 18))
+                            .foregroundColor(preference.freeWhite ? .blue : .gray)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .frame(width: 50, alignment: .center)
+                .padding(.vertical, 6)
+            } else {
+                // Non-alternating mode: single checkbox
+                Button(action: {
                     preference.free.toggle()
                     if preference.free {
                         preference.nameBackup = preference.name
@@ -3770,15 +3800,15 @@ struct BlockPreferenceRow: View {
                     } else {
                         preference.name = preference.nameBackup.isEmpty ? "" : preference.nameBackup
                     }
+                    savePreference()
+                }) {
+                    Image(systemName: preference.free ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 18))
+                        .foregroundColor(preference.free ? .blue : .gray)
                 }
-                savePreference()
-            }) {
-                Image(systemName: (preference.alternating ? (preference.freeGreen && preference.freeWhite) : preference.free) ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 18))
-                    .foregroundColor((preference.alternating ? (preference.freeGreen && preference.freeWhite) : preference.free) ? .blue : .gray)
+                .buttonStyle(.plain)
+                .frame(width: 50, alignment: .center)
             }
-            .buttonStyle(.plain)
-            .frame(width: 50, alignment: .center)
             
             Rectangle()
                 .fill(Color(UIColor.separator))
@@ -3822,6 +3852,7 @@ struct CourseNameTextField: View {
     @Binding var text: String
     let placeholder: String
     let disabled: Bool
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -3830,6 +3861,12 @@ struct CourseNameTextField: View {
                 .disabled(disabled)
                 .foregroundColor(disabled ? .secondary : .primary)
                 .lineLimit(1)
+                .submitLabel(.done)
+                .focused($isFocused)
+                .onSubmit {
+                    // Dismiss keyboard when Done is pressed
+                    isFocused = false
+                }
             
             // Fade gradient overlay on the right side to indicate text continues
             // This creates a visual fade effect instead of ellipsis
