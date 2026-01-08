@@ -868,7 +868,7 @@ struct ScheduleView: View {
         if schedulePrefsManager.preferences.timeFormat == .hour24 {
             outputFormatter.dateFormat = "HH:mm"
         } else {
-            outputFormatter.dateFormat = "h:mm" // 12-hour format without AM/PM
+            outputFormatter.dateFormat = "hh:mm" // 12-hour format with leading zero, without AM/PM
         }
         
         // Parse and format start time
