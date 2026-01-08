@@ -17,7 +17,7 @@ struct FeatureShowcaseView: View {
             .padding(.horizontal, 24)
         }
         .background(backgroundColor.ignoresSafeArea())
-        .navigationTitle("What's New")
+        .navigationTitle("Widget")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)

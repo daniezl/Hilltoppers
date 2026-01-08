@@ -528,6 +528,7 @@ struct ScheduleView: View {
     let currentDayType: String
     let currentDayTypeDate: Date?
     @ObservedObject private var blockManager = BlockSettingsManager.shared
+    @ObservedObject private var schedulePrefsManager = SchedulePreferencesManager.shared
     @State private var expandedBlockID: UUID?
     @State private var now = Date.currentEST
     @State private var scheduleTitle: String = "Loading..."
@@ -672,7 +673,7 @@ struct ScheduleView: View {
                                             .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
                                             .foregroundColor(loader.showBlocks ? getBlockTextColor(for: block) : .primary)
                                         Spacer()
-                                        Text("\(block.start)-\(block.end)")
+                                        Text(formatTimeRange(start: block.start, end: block.end))
                                             .font(.callout.weight(.regular))
                                             .monospacedDigit()
                                             .foregroundColor(loader.showBlocks ? (shouldUseGrayColor(for: block) ? .secondary : .primary) : .primary)
@@ -741,7 +742,7 @@ struct ScheduleView: View {
                                                         .font(.caption)
                                                         .foregroundColor(.secondary)
                                                     Spacer()
-                                                    Text("\(sub.start)-\(sub.end)")
+                                                    Text(formatTimeRange(start: sub.start, end: sub.end))
                                                         .font(.caption)
                                                         .monospacedDigit()
                                                         .foregroundColor(.secondary)
@@ -852,6 +853,34 @@ struct ScheduleView: View {
         guard let t = formatter.date(from: time) else { return nil }
         let comps = calendar.dateComponents([.year, .month, .day], from: currentTime)
         return calendar.date(bySettingHour: calendar.component(.hour, from: t), minute: calendar.component(.minute, from: t), second: 0, of: calendar.date(from: comps)!)
+    }
+    
+    // Format time string (HH:mm) according to user's time format preference
+    func formatTimeRange(start: String, end: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "HH:mm"
+        inputFormatter.timeZone = Date.estTimeZone
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.timeZone = Date.estTimeZone
+        
+        // Set format based on user preference
+        if schedulePrefsManager.preferences.timeFormat == .hour24 {
+            outputFormatter.dateFormat = "HH:mm"
+        } else {
+            outputFormatter.dateFormat = "h:mm" // 12-hour format without AM/PM
+        }
+        
+        // Parse and format start time
+        guard let startDate = inputFormatter.date(from: start),
+              let endDate = inputFormatter.date(from: end) else {
+            return "\(start)-\(end)" // Fallback to original if parsing fails
+        }
+        
+        let formattedStart = outputFormatter.string(from: startDate)
+        let formattedEnd = outputFormatter.string(from: endDate)
+        
+        return "\(formattedStart)-\(formattedEnd)"
     }
 
     func isNextBlock(index: Int) -> Bool {
