@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FeatureShowcaseView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var router: NavigationRouter
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
 
     var body: some View {
@@ -21,6 +22,14 @@ struct FeatureShowcaseView: View {
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") {
+                    router.popToRoot()
+                }
+                .foregroundColor(accentGreen)
+            }
+        }
     }
 
     private var header: some View {

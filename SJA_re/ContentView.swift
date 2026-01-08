@@ -1371,9 +1371,9 @@ struct SettingsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
-                    router.pop()
+                    router.popToRoot()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(accentGreen)
             }
         }
     }
@@ -1428,6 +1428,7 @@ struct SettingsView: View {
 struct TimeSettingsView: View {
     @EnvironmentObject private var timeSettings: TimeSettingsModel
     let onDismissRoot: () -> Void
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
 
     var body: some View {
         Form {
@@ -1466,6 +1467,7 @@ struct TimeSettingsView: View {
                 Button("Done") {
                     onDismissRoot()
                 }
+                .foregroundColor(accentGreen)
             }
         }
     }
@@ -1479,6 +1481,7 @@ struct BlockConfigurationView: View {
     @State private var showValidationAlert = false
     @State private var alertMessage = ""
     @Environment(\.dismiss) private var dismiss
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     
     var body: some View {
         VStack(spacing: 0) {
@@ -1556,7 +1559,7 @@ struct BlockConfigurationView: View {
                 Button("Done") {
                     onDismissSettings()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(accentGreen)
             }
         }
         .alert("Invalid Configuration", isPresented: $showValidationAlert) {
@@ -1668,6 +1671,7 @@ struct NotificationSettingsView: View {
     @ObservedObject private var notificationManager = NotificationSettingsManager.shared
     let onDismissSettings: () -> Void
     @State private var showingPermissionDeniedAlert = false
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     
     var body: some View {
         VStack(spacing: 0) {
@@ -1818,7 +1822,7 @@ struct NotificationSettingsView: View {
                 Button("Done") {
                     onDismissSettings()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(accentGreen)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: notificationManager.notificationsEnabled)
@@ -3479,7 +3483,7 @@ struct NewBlockConfigurationView: View {
                 Button("Done") {
                     onDismissSettings()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(accentGreen)
             }
         }
         .alert("Reset to Defaults", isPresented: $showResetAlert) {

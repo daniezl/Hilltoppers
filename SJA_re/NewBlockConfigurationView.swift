@@ -254,7 +254,7 @@ struct NewBlockConfigurationView: View {
                 Button("Done") {
                     onDismissSettings()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(Color(red: 20/255, green: 54/255, blue: 27/255))
             }
         }
         .alert("Reset to Defaults", isPresented: $showResetAlert) {

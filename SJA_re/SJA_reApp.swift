@@ -124,20 +124,21 @@ struct SJA_reApp: App {
                                 .environmentObject(timeSettings)
                         case .settingsFeatureShowcase:
                             FeatureShowcaseView()
+                                .environmentObject(router)
                         case .settingsCourses:
                             NewBlockConfigurationView(
-                                onDismissSettings: { router.pop() }
+                                onDismissSettings: { router.popToRoot() }
                             )
                             .environmentObject(router)
                         case .coursesLogin:
-                            LoginView(onDismiss: { router.pop() })
+                            LoginView(onDismiss: { router.popToRoot() })
                         case .settingsNotifications:
-                            NotificationSettingsView(onDismissSettings: { router.pop() })
+                            NotificationSettingsView(onDismissSettings: { router.popToRoot() })
                         case .settingsTime:
-                            TimeSettingsView(onDismissRoot: { router.pop() })
+                            TimeSettingsView(onDismissRoot: { router.popToRoot() })
                                 .environmentObject(timeSettings)
                         case .settingsMore:
-                            MoreInfoView(onDismiss: { router.pop() })
+                            MoreInfoView(onDismiss: { router.popToRoot() })
                         // Sign in feature temporarily commented out
                         case .settingsAuth:
                             // AuthView(onDismiss: { router.pop() })

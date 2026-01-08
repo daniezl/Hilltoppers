@@ -201,7 +201,7 @@ struct LoginView: View {
                 Button("Done") {
                     onDismiss()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(Color(red: 20/255, green: 54/255, blue: 27/255))
             }
         }
         .onAppear {
