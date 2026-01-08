@@ -3402,19 +3402,38 @@ struct NewBlockConfigurationView: View {
                                     Text("Block")
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .frame(width: 50, alignment: .leading)
+                                        .padding(.leading, 12)
+                                    
+                                    Rectangle()
+                                        .fill(Color(UIColor.separator))
+                                        .frame(width: 1)
                                     
                                     Text("Course name")
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
                                         .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.leading, 12)
+                                    
+                                    Rectangle()
+                                        .fill(Color(UIColor.separator))
+                                        .frame(width: 1)
+                                    
+                                    Text("Free")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .frame(width: 50, alignment: .center)
+                                    
+                                    Rectangle()
+                                        .fill(Color(UIColor.separator))
+                                        .frame(width: 1)
                                     
                                     Text("Alternating")
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
-                                        .frame(width: 100)
+                                        .frame(width: 80, alignment: .center)
                                 }
-                                .padding()
+                                .padding(.vertical, 12)
                                 .background(Color(UIColor.secondarySystemBackground))
                                 
                                 Divider()
@@ -3423,7 +3442,6 @@ struct NewBlockConfigurationView: View {
                                 ForEach(blockKeys, id: \.self) { key in
                                     BlockPreferenceRow(
                                         blockKey: key,
-                                        blockName: defaultBlockNames[key] ?? "\(key) Block",
                                         preference: Binding(
                                             get: { prefsManager.getPreference(for: key) },
                                             set: { newValue in
@@ -3650,162 +3668,183 @@ struct NotSignedInBanner: View {
 
 struct BlockPreferenceRow: View {
     let blockKey: BlockKey
-    let blockName: String
     @Binding var preference: BlockPreference
     
     var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 0) {
-                // Block Label
-                Text(blockName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Course Name Input
-                VStack(alignment: .leading, spacing: 8) {
-                    if preference.alternating {
-                        // Alternating mode: show Green and White inputs
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("🟩 Green")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                            }
-                            
-                            HStack {
-                                TextField("\(blockName) (Green day)", text: Binding(
-                                    get: { preference.nameGreen },
-                                    set: { newValue in
-                                        preference.nameGreen = newValue
-                                        savePreference()
-                                    }
-                                ))
-                                .textFieldStyle(.roundedBorder)
-                                .disabled(preference.freeGreen)
-                                
-                                Toggle("", isOn: Binding(
-                                    get: { preference.freeGreen },
-                                    set: { newValue in
-                                        preference.freeGreen = newValue
-                                        if newValue {
-                                            preference.nameGreenBackup = preference.nameGreen
-                                            preference.nameGreen = "Free Block"
-                                        } else {
-                                            preference.nameGreen = preference.nameGreenBackup.isEmpty ? "" : preference.nameGreenBackup
-                                        }
-                                        savePreference()
-                                    }
-                                ))
-                                .labelsHidden()
-                                Text("Free")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            HStack {
-                                Text("⬜️ White")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                            }
-                            
-                            HStack {
-                                TextField("\(blockName) (White day)", text: Binding(
-                                    get: { preference.nameWhite },
-                                    set: { newValue in
-                                        preference.nameWhite = newValue
-                                        savePreference()
-                                    }
-                                ))
-                                .textFieldStyle(.roundedBorder)
-                                .disabled(preference.freeWhite)
-                                
-                                Toggle("", isOn: Binding(
-                                    get: { preference.freeWhite },
-                                    set: { newValue in
-                                        preference.freeWhite = newValue
-                                        if newValue {
-                                            preference.nameWhiteBackup = preference.nameWhite
-                                            preference.nameWhite = "Free Block"
-                                        } else {
-                                            preference.nameWhite = preference.nameWhiteBackup.isEmpty ? "" : preference.nameWhiteBackup
-                                        }
-                                        savePreference()
-                                    }
-                                ))
-                                .labelsHidden()
-                                Text("Free")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    } else {
-                        // Non-alternating mode: single input
-                        HStack {
-                            TextField(blockName, text: Binding(
-                                get: { preference.name },
+        HStack(spacing: 0) {
+            // Block Label - just the letter
+            Text(blockKey)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .frame(width: 50, alignment: .leading)
+                .padding(.leading, 12)
+            
+            Rectangle()
+                .fill(Color(UIColor.separator))
+                .frame(width: 1)
+            
+            // Course Name Input - takes most space
+            if preference.alternating {
+                // Alternating mode: show Green and White inputs stacked
+                VStack(alignment: .leading, spacing: 6) {
+                    // Green day row
+                    HStack(spacing: 6) {
+                        Text("🟩")
+                            .font(.caption2)
+                        CourseNameTextField(
+                            text: Binding(
+                                get: { preference.nameGreen },
                                 set: { newValue in
-                                    preference.name = newValue
+                                    preference.nameGreen = newValue
                                     savePreference()
                                 }
-                            ))
-                            .textFieldStyle(.roundedBorder)
-                            .disabled(preference.free)
-                            
-                            Toggle("", isOn: Binding(
-                                get: { preference.free },
+                            ),
+                            placeholder: "Green day",
+                            disabled: preference.freeGreen
+                        )
+                    }
+                    
+                    // White day row
+                    HStack(spacing: 6) {
+                        Text("⬜")
+                            .font(.caption2)
+                        CourseNameTextField(
+                            text: Binding(
+                                get: { preference.nameWhite },
                                 set: { newValue in
-                                    preference.free = newValue
-                                    if newValue {
-                                        preference.nameBackup = preference.name
-                                        preference.name = "Free Block"
-                                    } else {
-                                        preference.name = preference.nameBackup.isEmpty ? "" : preference.nameBackup
-                                    }
+                                    preference.nameWhite = newValue
                                     savePreference()
                                 }
-                            ))
-                            .labelsHidden()
-                            Text("Free")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                            ),
+                            placeholder: "White day",
+                            disabled: preference.freeWhite
+                        )
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Alternating Toggle
-                Toggle("", isOn: Binding(
-                    get: { preference.alternating },
-                    set: { newValue in
-                        preference.alternating = newValue
-                        if newValue {
-                            // When enabling alternating, copy current name to both fields if they're empty
-                            if preference.nameGreen.isEmpty {
-                                preference.nameGreen = preference.free ? "" : preference.name
-                            }
-                            if preference.nameWhite.isEmpty {
-                                preference.nameWhite = preference.free ? "" : preference.name
-                            }
-                            if preference.free {
-                                preference.freeGreen = true
-                                preference.freeWhite = true
-                            }
+                .padding(.leading, 12)
+                .padding(.vertical, 6)
+            } else {
+                // Non-alternating mode: single input
+                CourseNameTextField(
+                    text: Binding(
+                        get: { preference.name },
+                        set: { newValue in
+                            preference.name = newValue
+                            savePreference()
                         }
-                        savePreference()
-                    }
-                ))
-                .labelsHidden()
-                .frame(width: 100)
+                    ),
+                    placeholder: "Course name",
+                    disabled: preference.free
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 12)
             }
+            
+            Rectangle()
+                .fill(Color(UIColor.separator))
+                .frame(width: 1)
+            
+            // Free Checkbox
+            Button(action: {
+                if preference.alternating {
+                    // In alternating mode, toggle both free states together
+                    let bothFree = preference.freeGreen && preference.freeWhite
+                    let newValue = !bothFree
+                    preference.freeGreen = newValue
+                    preference.freeWhite = newValue
+                    if newValue {
+                        preference.nameGreenBackup = preference.nameGreen
+                        preference.nameWhiteBackup = preference.nameWhite
+                        preference.nameGreen = "Free Block"
+                        preference.nameWhite = "Free Block"
+                    } else {
+                        preference.nameGreen = preference.nameGreenBackup.isEmpty ? "" : preference.nameGreenBackup
+                        preference.nameWhite = preference.nameWhiteBackup.isEmpty ? "" : preference.nameWhiteBackup
+                    }
+                } else {
+                    preference.free.toggle()
+                    if preference.free {
+                        preference.nameBackup = preference.name
+                        preference.name = "Free Block"
+                    } else {
+                        preference.name = preference.nameBackup.isEmpty ? "" : preference.nameBackup
+                    }
+                }
+                savePreference()
+            }) {
+                Image(systemName: (preference.alternating ? (preference.freeGreen && preference.freeWhite) : preference.free) ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 18))
+                    .foregroundColor((preference.alternating ? (preference.freeGreen && preference.freeWhite) : preference.free) ? .blue : .gray)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 50, alignment: .center)
+            
+            Rectangle()
+                .fill(Color(UIColor.separator))
+                .frame(width: 1)
+            
+            // Alternating Checkbox
+            Button(action: {
+                preference.alternating.toggle()
+                if preference.alternating {
+                    // When enabling alternating, copy current name to both fields if they're empty
+                    if preference.nameGreen.isEmpty {
+                        preference.nameGreen = preference.free ? "" : preference.name
+                    }
+                    if preference.nameWhite.isEmpty {
+                        preference.nameWhite = preference.free ? "" : preference.name
+                    }
+                    if preference.free {
+                        preference.freeGreen = true
+                        preference.freeWhite = true
+                    }
+                }
+                savePreference()
+            }) {
+                Image(systemName: preference.alternating ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 18))
+                    .foregroundColor(preference.alternating ? .blue : .gray)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 80, alignment: .center)
         }
-        .padding()
+        .padding(.vertical, 10)
     }
     
     private func savePreference() {
         BlockPreferencesManager.shared.updatePreference(for: blockKey, preference: preference)
+    }
+}
+
+// Custom TextField with fade gradient when text is truncated
+struct CourseNameTextField: View {
+    @Binding var text: String
+    let placeholder: String
+    let disabled: Bool
+    
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.plain)
+                .disabled(disabled)
+                .foregroundColor(disabled ? .secondary : .primary)
+                .lineLimit(1)
+            
+            // Fade gradient overlay on the right side to indicate text continues
+            // This creates a visual fade effect instead of ellipsis
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: Color.clear, location: 0.0),
+                    .init(color: Color(UIColor.systemBackground).opacity(0.3), location: 0.5),
+                    .init(color: Color(UIColor.systemBackground), location: 1.0)
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: 25)
+            .allowsHitTesting(false)
+        }
     }
 }
 
