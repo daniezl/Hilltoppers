@@ -3269,6 +3269,8 @@ struct NewBlockConfigurationView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Account Status Header (matching Chrome extension)
+            // Temporarily commented out - hide login UI
+            /*
             AccountStatusHeader(
                 authManager: authManager,
                 onSignOut: handleSignOut,
@@ -3289,6 +3291,7 @@ struct NewBlockConfigurationView: View {
             if !authManager.isAuthenticated && authManager.currentUser == nil {
                 NotSignedInBanner()
             }
+            */
             
             // Main Content
             ScrollView {
