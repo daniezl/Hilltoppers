@@ -13,7 +13,7 @@ import Combine
 
 typealias BlockKey = String // "A", "B", "C", "D", "E"
 
-struct BlockPreference: Codable {
+struct BlockPreference: Codable, Equatable {
     var name: String = ""
     var alternating: Bool = false
     var nameGreen: String = ""
@@ -29,6 +29,16 @@ struct BlockPreference: Codable {
     // Legacy fields for migration (not saved to cloud)
     var showOnGreen: Bool?
     var showOnWhite: Bool?
+    
+    static func == (lhs: BlockPreference, rhs: BlockPreference) -> Bool {
+        return lhs.name == rhs.name &&
+               lhs.alternating == rhs.alternating &&
+               lhs.nameGreen == rhs.nameGreen &&
+               lhs.nameWhite == rhs.nameWhite &&
+               lhs.freeGreen == rhs.freeGreen &&
+               lhs.freeWhite == rhs.freeWhite &&
+               lhs.free == rhs.free
+    }
 }
 
 typealias BlockPreferenceRecord = [BlockKey: BlockPreference]
@@ -39,6 +49,8 @@ class BlockPreferencesManager: ObservableObject {
     @Published var preferences: BlockPreferenceRecord = [:]
     @Published var isLoading: Bool = false
     @Published var saveStatus: SaveStatus = .idle
+    @Published var hasConflict: Bool = false
+    @Published var remotePreferences: BlockPreferenceRecord?
     
     enum SaveStatus {
         case idle
@@ -76,27 +88,90 @@ class BlockPreferencesManager: ObservableObject {
     func loadPreferences() async {
         await MainActor.run {
             isLoading = true
+            hasConflict = false
+            remotePreferences = nil
         }
         
-        // Try to load from cloud first if authenticated
+        // Load local preferences first
+        let local = loadFromLocalStorage()
+        
+        // Try to load from cloud if authenticated
         if let user = Auth.auth().currentUser, user.isEmailVerified {
             if let remote = await loadFromRemote(userId: user.uid) {
-                await MainActor.run {
-                    self.preferences = remote
-                    self.isLoading = false
+                // Check for conflict
+                if !arePreferencesEqual(local, remote) {
+                    // Conflict detected - store both and let user choose
+                    await MainActor.run {
+                        self.preferences = local // Keep local as current
+                        self.remotePreferences = remote
+                        self.hasConflict = true
+                        self.isLoading = false
+                    }
+                    return
+                } else {
+                    // No conflict - use remote
+                    await MainActor.run {
+                        self.preferences = remote
+                        self.isLoading = false
+                    }
+                    // Cache locally
+                    await saveToLocalStorage(remote)
+                    return
                 }
-                // Cache locally
-                await saveToLocalStorage(remote)
-                return
             }
         }
         
-        // Fall back to local storage
-        let local = loadFromLocalStorage()
+        // Fall back to local storage (no remote or not authenticated)
         await MainActor.run {
             self.preferences = local
             self.isLoading = false
         }
+    }
+    
+    // Check if two preference records are equal
+    private func arePreferencesEqual(_ local: BlockPreferenceRecord, _ remote: BlockPreferenceRecord) -> Bool {
+        let allKeys = Set(local.keys).union(Set(remote.keys))
+        for key in allKeys {
+            let localPref = local[key] ?? BlockPreference()
+            let remotePref = remote[key] ?? BlockPreference()
+            if localPref != remotePref {
+                return false
+            }
+        }
+        return true
+    }
+    
+    // Use local preferences and upload to cloud
+    func useLocalPreferences() async {
+        guard let remote = remotePreferences else { return }
+        guard let user = Auth.auth().currentUser, user.isEmailVerified else { return }
+        
+        // Save local preferences to cloud
+        do {
+            try await saveToRemote(userId: user.uid, preferences: preferences)
+            await MainActor.run {
+                self.hasConflict = false
+                self.remotePreferences = nil
+            }
+            print("✅ [BlockPreferences] Uploaded local preferences to cloud")
+        } catch {
+            print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
+        }
+    }
+    
+    // Use remote preferences
+    func useRemotePreferences() async {
+        guard let remote = remotePreferences else { return }
+        
+        await MainActor.run {
+            self.preferences = remote
+            self.hasConflict = false
+            self.remotePreferences = nil
+        }
+        
+        // Cache locally
+        await saveToLocalStorage(remote)
+        print("✅ [BlockPreferences] Using remote preferences")
     }
     
     private func loadPreferences() {

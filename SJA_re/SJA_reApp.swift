@@ -132,6 +132,7 @@ struct SJA_reApp: App {
                             .environmentObject(router)
                         case .coursesLogin:
                             LoginView(onDismiss: { router.popToRoot() })
+                                .environmentObject(router)
                         case .settingsNotifications:
                             NotificationSettingsView(onDismissSettings: { router.popToRoot() })
                         case .settingsTime:

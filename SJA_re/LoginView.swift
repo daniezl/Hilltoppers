@@ -107,12 +107,14 @@ struct LoginView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
                             
-                            TextField("your@email.com", text: $email)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("enter your email", text: $email)
                                 .textInputAutocapitalization(.never)
                                 .keyboardType(.emailAddress)
                                 .autocorrectionDisabled()
                                 .disabled(isBusy)
+                                .padding(12)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
                         }
                         
                         // Password Field
@@ -201,7 +203,7 @@ struct LoginView: View {
                 Button("Done") {
                     onDismiss()
                 }
-                .foregroundColor(Color(red: 20/255, green: 54/255, blue: 27/255))
+                .foregroundColor(accentGreen)
             }
         }
         .onAppear {

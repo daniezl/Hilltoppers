@@ -2183,6 +2183,7 @@ struct LoginFeedback {
 
 struct LoginView: View {
     @StateObject private var authManager = AuthManager.shared
+    @EnvironmentObject private var router: NavigationRouter
     @State private var authMode: LoginAuthMode = .signIn
     @State private var email: String = ""
     @State private var password: String = ""
@@ -2191,6 +2192,9 @@ struct LoginView: View {
     @State private var feedback: LoginFeedback?
     @State private var resendCooldown: Int = 0
     @State private var redirecting: Bool = false
+    @State private var showSavePasswordAlert: Bool = false
+    @State private var savedEmail: String = ""
+    @State private var savedPassword: String = ""
     
     let onDismiss: () -> Void
     
@@ -2242,12 +2246,14 @@ struct LoginView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
                             
-                            TextField("your@email.com", text: $email)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("enter your email", text: $email)
                                 .textInputAutocapitalization(.never)
                                 .keyboardType(.emailAddress)
                                 .autocorrectionDisabled()
                                 .disabled(isBusy)
+                                .padding(12)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
                         }
                         
                         // Password Field
@@ -2326,6 +2332,22 @@ struct LoginView: View {
                     }
                     .padding(.horizontal)
                     .disabled(isBusy)
+                    
+                    // Debug: Show saved accounts (for testing)
+                    if !KeychainManager.shared.getAllSavedAccounts().isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Saved accounts in Keychain:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            ForEach(KeychainManager.shared.getAllSavedAccounts(), id: \.self) { account in
+                                Text("• \(account)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    }
                 }
             }
         }
@@ -2336,31 +2358,31 @@ struct LoginView: View {
                 Button("Done") {
                     onDismiss()
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(accentGreen)
             }
         }
         .onAppear {
             // Auto-redirect if authenticated and verified
             if authManager.isAuthenticated && !authManager.needsEmailVerification && !redirecting {
                 redirecting = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    onDismiss()
+                Task {
+                    await proceedAfterLogin()
                 }
             }
         }
         .onChange(of: authManager.isAuthenticated) { isAuthenticated in
             if isAuthenticated && !authManager.needsEmailVerification && !redirecting {
                 redirecting = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    onDismiss()
+                Task {
+                    await proceedAfterLogin()
                 }
             }
         }
         .onChange(of: authManager.needsEmailVerification) { needsVerification in
             if !needsVerification && authManager.isAuthenticated && !redirecting {
                 redirecting = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    onDismiss()
+                Task {
+                    await proceedAfterLogin()
                 }
             }
         }
@@ -2371,6 +2393,25 @@ struct LoginView: View {
                     await checkVerificationStatus()
                 }
             }
+        }
+        .alert("Save Password to Keychain", isPresented: $showSavePasswordAlert) {
+            Button("Save") {
+                if KeychainManager.shared.savePassword(email: savedEmail, password: savedPassword) {
+                    feedback = LoginFeedback(type: .success, message: "Password saved to Keychain")
+                } else {
+                    feedback = LoginFeedback(type: .error, message: "Failed to save password")
+                }
+                Task {
+                    await proceedAfterLogin()
+                }
+            }
+            Button("Don't Save", role: .cancel) {
+                Task {
+                    await proceedAfterLogin()
+                }
+            }
+        } message: {
+            Text("Would you like to save your password to Keychain? This will make it easier to sign in next time.")
         }
     }
     
@@ -2421,6 +2462,18 @@ struct LoginView: View {
                         )
                     } else {
                         feedback = LoginFeedback(type: .success, message: "Signed in successfully.")
+                        // Check if password is already saved
+                        if !KeychainManager.shared.hasPassword(email: trimmedEmail) {
+                            // Ask user if they want to save password
+                            await MainActor.run {
+                                savedEmail = trimmedEmail
+                                savedPassword = trimmedPassword
+                                showSavePasswordAlert = true
+                            }
+                        } else {
+                            // Password already saved, proceed normally
+                            await proceedAfterLogin()
+                        }
                     }
                 }
                 password = ""
@@ -2505,9 +2558,7 @@ struct LoginView: View {
                 await MainActor.run {
                     feedback = LoginFeedback(type: .success, message: "Email verified! Opening settings…")
                 }
-                // Reload preferences after verification
-                await BlockPreferencesManager.shared.loadPreferences()
-                await SchedulePreferencesManager.shared.loadPreferences()
+                await proceedAfterLogin()
             } else {
                 await MainActor.run {
                     feedback = LoginFeedback(
@@ -2520,6 +2571,15 @@ struct LoginView: View {
             await MainActor.run {
                 feedback = LoginFeedback(type: .error, message: "Failed to check verification status.")
             }
+        }
+    }
+    
+    private func proceedAfterLogin() async {
+        // Load preferences and navigate to courses settings
+        await BlockPreferencesManager.shared.loadPreferences()
+        await SchedulePreferencesManager.shared.loadPreferences()
+        await MainActor.run {
+            router.push(.settingsCourses)
         }
     }
     
@@ -2680,7 +2740,7 @@ struct LoginAuthenticatedNotice: View {
 
 typealias BlockKey = String // "A", "B", "C", "D", "E"
 
-struct BlockPreference: Codable {
+struct BlockPreference: Codable, Equatable {
     var name: String = ""
     var alternating: Bool = false
     var nameGreen: String = ""
@@ -2696,6 +2756,16 @@ struct BlockPreference: Codable {
     // Legacy fields for migration (not saved to cloud)
     var showOnGreen: Bool?
     var showOnWhite: Bool?
+    
+    static func == (lhs: BlockPreference, rhs: BlockPreference) -> Bool {
+        return lhs.name == rhs.name &&
+               lhs.alternating == rhs.alternating &&
+               lhs.nameGreen == rhs.nameGreen &&
+               lhs.nameWhite == rhs.nameWhite &&
+               lhs.freeGreen == rhs.freeGreen &&
+               lhs.freeWhite == rhs.freeWhite &&
+               lhs.free == rhs.free
+    }
 }
 
 typealias BlockPreferenceRecord = [BlockKey: BlockPreference]
@@ -2706,6 +2776,8 @@ class BlockPreferencesManager: ObservableObject {
     @Published var preferences: BlockPreferenceRecord = [:]
     @Published var isLoading: Bool = false
     @Published var saveStatus: SaveStatus = .idle
+    @Published var hasConflict: Bool = false
+    @Published var remotePreferences: BlockPreferenceRecord?
     
     enum SaveStatus: Equatable {
         case idle
@@ -2746,23 +2818,40 @@ class BlockPreferencesManager: ObservableObject {
     func loadPreferences() async {
         await MainActor.run {
             isLoading = true
+            hasConflict = false
+            remotePreferences = nil
         }
         
-        // Try to load from cloud first if authenticated
+        // Load local preferences first
+        let local = loadFromLocalStorage()
+        
+        // Try to load from cloud if authenticated
         if let user = Auth.auth().currentUser, user.isEmailVerified {
             if let remote = await loadFromRemote(userId: user.uid) {
-                await MainActor.run {
-                    self.preferences = remote
-                    self.isLoading = false
+                // Check for conflict
+                if !arePreferencesEqual(local, remote) {
+                    // Conflict detected - store both and let user choose
+                    await MainActor.run {
+                        self.preferences = local // Keep local as current
+                        self.remotePreferences = remote
+                        self.hasConflict = true
+                        self.isLoading = false
+                    }
+                    return
+                } else {
+                    // No conflict - use remote
+                    await MainActor.run {
+                        self.preferences = remote
+                        self.isLoading = false
+                    }
+                    // Cache locally
+                    await saveToLocalStorage(remote)
+                    return
                 }
-                // Cache locally
-                await saveToLocalStorage(remote)
-                return
             }
         }
         
-        // Fall back to local storage
-        let local = loadFromLocalStorage()
+        // Fall back to local storage (no remote or not authenticated)
         await MainActor.run {
             self.preferences = local
             self.isLoading = false
@@ -2773,6 +2862,60 @@ class BlockPreferencesManager: ObservableObject {
         Task {
             await loadPreferences()
         }
+    }
+    
+    // Check if two preference records are equal
+    private func arePreferencesEqual(_ local: BlockPreferenceRecord, _ remote: BlockPreferenceRecord) -> Bool {
+        let allKeys = Set(local.keys).union(Set(remote.keys))
+        for key in allKeys {
+            let localPref = local[key] ?? BlockPreference()
+            let remotePref = remote[key] ?? BlockPreference()
+            if localPref != remotePref {
+                return false
+            }
+        }
+        return true
+    }
+    
+    // Use local preferences and upload to cloud
+    func useLocalPreferences() async {
+        let (remote, prefs, user) = await MainActor.run {
+            (self.remotePreferences, self.preferences, Auth.auth().currentUser)
+        }
+        
+        guard let remote = remote else { return }
+        guard let user = user, user.isEmailVerified else { return }
+        
+        // Save local preferences to cloud
+        do {
+            try await saveToRemote(userId: user.uid, preferences: prefs)
+            await MainActor.run {
+                self.hasConflict = false
+                self.remotePreferences = nil
+            }
+            print("✅ [BlockPreferences] Uploaded local preferences to cloud")
+        } catch {
+            print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
+        }
+    }
+    
+    // Use remote preferences
+    func useRemotePreferences() async {
+        let remote = await MainActor.run {
+            self.remotePreferences
+        }
+        
+        guard let remote = remote else { return }
+        
+        await MainActor.run {
+            self.preferences = remote
+            self.hasConflict = false
+            self.remotePreferences = nil
+        }
+        
+        // Cache locally
+        await saveToLocalStorage(remote)
+        print("✅ [BlockPreferences] Using remote preferences")
     }
     
     private func loadFromLocalStorage() -> BlockPreferenceRecord {
@@ -3100,7 +3243,7 @@ enum TimeFormat: String, Codable {
     case hour24 = "24h"
 }
 
-struct SchedulePreferences: Codable {
+struct SchedulePreferences: Codable, Equatable {
     var lunchPeriod: Int = 1
     var timeFormat: TimeFormat = .hour12
 }
@@ -3268,34 +3411,78 @@ struct NewBlockConfigurationView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Account Status Header (matching Chrome extension)
-            // Temporarily commented out - hide login UI
-            /*
-            AccountStatusHeader(
-                authManager: authManager,
-                onSignOut: handleSignOut,
-                onOpenLogin: { router.push(.coursesLogin) }
-            )
-            
-            // Feedback Messages
-            if let feedback = feedback {
-                FeedbackBanner(feedback: feedback)
-            }
-            
-            // Email Verification Warning
-            if authManager.needsEmailVerification {
-                EmailVerificationBanner(onOpenLogin: { router.push(.coursesLogin) })
-            }
-            
-            // Not Signed In Info
-            if !authManager.isAuthenticated && authManager.currentUser == nil {
-                NotSignedInBanner()
-            }
-            */
-            
             // Main Content
             ScrollView {
                 VStack(spacing: 24) {
+                    // Login Card
+                    VStack(alignment: .leading, spacing: 16) {
+                        if authManager.isAuthenticated, let email = authManager.userEmail {
+                            // Signed in state
+                            HStack(spacing: 12) {
+                                // User initial circle
+                                Circle()
+                                    .fill(accentGreen.opacity(0.12))
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Text(getUserInitial(from: email))
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(accentGreen)
+                                    )
+                                
+                                // Email address
+                                Text(email)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                // Sign out button
+                                Button(action: handleSignOut) {
+                                    Text("Sign out")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(UIColor.systemGray5))
+                                        .cornerRadius(6)
+                                }
+                            }
+                        } else {
+                            // Not signed in state
+                            HStack {
+                                Text("Sign in to sync your schedule across devices.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                // Sign in button
+                                Button(action: {
+                                    router.push(.coursesLogin)
+                                }) {
+                                    Text("Sign in")
+                                        .font(.subheadline)
+                                        .foregroundColor(accentGreen)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(accentGreen.opacity(0.12))
+                                        .cornerRadius(6)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top)
+                    
+                    // Conflict Resolution Banner
+                    if prefsManager.hasConflict {
+                        ConflictResolutionBanner()
+                            .padding(.horizontal)
+                    }
+                    
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -3523,6 +3710,13 @@ struct NewBlockConfigurationView: View {
             await schedulePrefsManager.savePreferences()
         }
         feedback = LoginFeedback(type: .info, message: "Preferences reset to defaults.")
+    }
+    
+    // Get user's initial from email
+    private func getUserInitial(from email: String) -> String {
+        guard !email.isEmpty else { return "?" }
+        let firstChar = email.prefix(1).uppercased()
+        return firstChar
     }
 }
 
@@ -3889,6 +4083,68 @@ struct CourseNameTextField: View {
             .frame(width: 25)
             .allowsHitTesting(false)
         }
+    }
+}
+
+// MARK: - Conflict Resolution Banner
+
+struct ConflictResolutionBanner: View {
+    @StateObject private var prefsManager = BlockPreferencesManager.shared
+    @State private var isResolving = false
+    
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Settings Conflict")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            Text("Your local settings differ from your account settings. Choose which settings to use.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 12) {
+                // Use Local Button
+                Button(action: {
+                    isResolving = true
+                    Task {
+                        await BlockPreferencesManager.shared.useLocalPreferences()
+                        isResolving = false
+                    }
+                }) {
+                    Text("Use Local")
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(accentGreen)
+                        .cornerRadius(8)
+                }
+                .disabled(isResolving)
+                
+                // Use Account Button
+                Button(action: {
+                    isResolving = true
+                    Task {
+                        await BlockPreferencesManager.shared.useRemotePreferences()
+                        isResolving = false
+                    }
+                }) {
+                    Text("Use Account")
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(accentGreen)
+                        .cornerRadius(8)
+                }
+                .disabled(isResolving)
+            }
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(8)
     }
 }
 

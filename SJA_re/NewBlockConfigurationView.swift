@@ -62,34 +62,72 @@ struct NewBlockConfigurationView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Account Status Header (matching Chrome extension)
-            // Temporarily commented out - hide login UI
-            /*
-            AccountStatusHeader(
-                authManager: authManager,
-                onSignOut: handleSignOut,
-                onOpenLogin: { router.push(.coursesLogin) }
-            )
-            
-            // Feedback Messages
-            if let feedback = feedback {
-                FeedbackBanner(feedback: feedback)
-            }
-            
-            // Email Verification Warning
-            if authManager.needsEmailVerification {
-                EmailVerificationBanner(onOpenLogin: { router.push(.coursesLogin) })
-            }
-            
-            // Not Signed In Info
-            if !authManager.isAuthenticated && authManager.currentUser == nil {
-                NotSignedInBanner()
-            }
-            */
-            
             // Main Content
             ScrollView {
                 VStack(spacing: 24) {
+                    // Login Card
+                    VStack(alignment: .leading, spacing: 16) {
+                        if authManager.isAuthenticated, let email = authManager.userEmail {
+                            // Signed in state
+                            HStack(spacing: 12) {
+                                // User initial circle
+                                Circle()
+                                    .fill(accentGreen.opacity(0.12))
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Text(getUserInitial(from: email))
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(accentGreen)
+                                    )
+                                
+                                // Email address
+                                Text(email)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                // Sign out button
+                                Button(action: handleSignOut) {
+                                    Text("Sign out")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(UIColor.systemGray5))
+                                        .cornerRadius(6)
+                                }
+                            }
+                        } else {
+                            // Not signed in state
+                            HStack {
+                                Text("Sign in to sync your schedule across devices.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                // Sign in button
+                                Button(action: {
+                                    router.push(.coursesLogin)
+                                }) {
+                                    Text("Sign in")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(UIColor.systemGray5))
+                                        .cornerRadius(6)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top)
+                    
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -294,6 +332,13 @@ struct NewBlockConfigurationView: View {
             await schedulePrefsManager.savePreferences()
         }
         feedback = Feedback(type: .info, message: "Preferences reset to defaults.")
+    }
+    
+    // Get user's initial from email
+    private func getUserInitial(from email: String) -> String {
+        guard !email.isEmpty else { return "?" }
+        let firstChar = email.prefix(1).uppercased()
+        return firstChar
     }
 }
 

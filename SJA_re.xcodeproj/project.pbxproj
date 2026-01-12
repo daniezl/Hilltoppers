@@ -51,6 +51,7 @@
 		B9A0F1032F10A1B000000004 /* TimeSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */; };
 		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
 		C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */; };
+		A69137D8DADFCFA061EF06FC /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69137D8DADFCFA061EF06FB /* KeychainManager.swift */; };
 		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -88,6 +89,7 @@
 /* Begin PBXFileReference section */
 		066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		0771171D9E05D8FD244231C9 /* AuthView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		A69137D8DADFCFA061EF06FB /* KeychainManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		845FCFE81465410FA49CF218 /* DayTypeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeCache.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 				B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */,
 				066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */,
 				0771171D9E05D8FD244231C9 /* AuthView.swift */,
+				A69137D8DADFCFA061EF06FB /* KeychainManager.swift */,
 			);
 			path = SJA_re;
 			sourceTree = "<group>";
@@ -537,6 +540,7 @@
 				A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */,
 				C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */,
 				668F6147BDDB2702B2A11253 /* AuthView.swift in Sources */,
+				A69137D8DADFCFA061EF06FC /* KeychainManager.swift in Sources */,
 				A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */,
 				A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */,
 			);
