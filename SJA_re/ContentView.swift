@@ -2251,7 +2251,7 @@ struct LoginView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
                             
-                            TextField("enter your email", text: $email)
+                            TextField("Enter your email", text: $email)
                                 .textInputAutocapitalization(.never)
                                 .keyboardType(.emailAddress)
                                 .autocorrectionDisabled()
@@ -3376,6 +3376,7 @@ struct NewBlockConfigurationView: View {
     
     @State private var feedback: LoginFeedback?
     @State private var showResetAlert = false
+    @State private var showSignOutAlert = false
     @State private var showClearDataAlert = false
     
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
@@ -3416,15 +3417,16 @@ struct NewBlockConfigurationView: View {
                                 Spacer()
                                 
                                 // Sign out button
-                                Button(action: handleSignOut) {
+                                Button(action: { showSignOutAlert = true }) {
                                     Text("Sign out")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color(UIColor.systemGray5))
-                                        .cornerRadius(6)
+                                        .font(.footnote.weight(.semibold))
+                                        .padding(.vertical, 9)
+                                        .padding(.horizontal, 14)
+                                        .background(Color.red.opacity(0.12))
+                                        .foregroundColor(.red)
+                                        .cornerRadius(11)
                                 }
+                                .buttonStyle(.plain)
                             }
                         } else {
                             // Not signed in state
@@ -3662,6 +3664,14 @@ struct NewBlockConfigurationView: View {
             }
         } message: {
             Text("Are you sure you want to reset all settings to defaults? This will erase all your custom block names and preferences.")
+        }
+        .alert("Sign Out", isPresented: $showSignOutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Sign Out", role: .destructive) {
+                handleSignOut()
+            }
+        } message: {
+            Text("Are you sure you want to sign out? Your changes will stay on this device only and won't sync to other devices.")
         }
         .onAppear {
             Task {

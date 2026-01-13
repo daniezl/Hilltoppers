@@ -107,7 +107,7 @@ struct LoginView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
                             
-                            TextField("enter your email", text: $email)
+                            TextField("Enter your email", text: $email)
                                 .textInputAutocapitalization(.never)
                                 .keyboardType(.emailAddress)
                                 .autocorrectionDisabled()
