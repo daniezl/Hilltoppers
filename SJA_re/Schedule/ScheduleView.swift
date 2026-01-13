@@ -1250,8 +1250,8 @@ struct ScheduleView: View {
         // Check if this block should be shown on the current day type (defaults to white-day settings when unknown)
         let shouldTreatAsGreen = isGreenDay
         if blockManager.shouldShow(block: block.name, onGreenDay: shouldTreatAsGreen) {
-            // Show custom name or original name
-            return blockManager.getDisplayName(for: block.name)
+            // Show custom name or original name, passing the current day type
+            return blockManager.getDisplayName(for: block.name, isGreenDay: shouldTreatAsGreen)
         } else {
             // Show as "Free Block" when the day type checkbox is NOT checked
             return "Free Block"

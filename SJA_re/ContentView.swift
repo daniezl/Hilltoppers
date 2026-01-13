@@ -103,7 +103,7 @@ class NotificationManager: ObservableObject {
                         
                         
                         if shouldShow {
-                            nextBlockText = BlockSettingsManager.shared.getDisplayName(for: nextBlock.name)
+                            nextBlockText = BlockSettingsManager.shared.getDisplayName(for: nextBlock.name, isGreenDay: isGreenDay)
                         } else {
                             nextBlockText = "Free Block"
                         }
@@ -1220,14 +1220,22 @@ class BlockSettingsManager: ObservableObject {
         // print("✅ Block settings loaded")
     }
     
-    func getDisplayName(for blockName: String) -> String {
+    func getDisplayName(for blockName: String, isGreenDay: Bool? = nil) -> String {
         // Try to get from new BlockPreferencesManager first
         if let blockKey = getBlockKey(from: blockName) {
             let pref = BlockPreferencesManager.shared.getPreference(for: blockKey)
-            let dayType = getCurrentDayType() // You may need to implement this based on your day type detection
             
             if pref.alternating {
-                let isGreen = dayType?.lowercased().contains("green") ?? true
+                // Use provided isGreenDay, or try to get from getCurrentDayType, or default to true
+                let isGreen: Bool
+                if let provided = isGreenDay {
+                    isGreen = provided
+                } else if let dayType = getCurrentDayType() {
+                    isGreen = dayType.lowercased().contains("green")
+                } else {
+                    isGreen = true // Default to green if unknown
+                }
+                
                 let isFree = isGreen ? pref.freeGreen : pref.freeWhite
                 if isFree {
                     return "Free Block"
