@@ -39,9 +39,9 @@ class NotificationManager: ObservableObject {
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
-                print("✅ Notification permission granted")
+                // print("✅ Notification permission granted")
             } else {
-                print("❌ Notification permission denied")
+                // print("❌ Notification permission denied")
             }
         }
     }
@@ -57,7 +57,7 @@ class NotificationManager: ObservableObject {
         // Check if notifications are enabled
         let notificationSettings = NotificationSettingsManager.shared
         guard notificationSettings.notificationsEnabled else {
-            print("🔔 [NOTIFICATIONS] Notifications are disabled - not scheduling any")
+            // print("🔔 [NOTIFICATIONS] Notifications are disabled - not scheduling any")
             return
         }
         
@@ -70,9 +70,9 @@ class NotificationManager: ObservableObject {
         let minutesBeforeEnd = notificationSettings.notificationMinutes
         let secondsBeforeEnd = TimeInterval(minutesBeforeEnd * 60)
         
-        print("🔔 [NOTIFICATIONS] Scheduling notifications for \(blocks.count) blocks:")
-        print("🔔 [NOTIFICATIONS] User setting: \(minutesBeforeEnd) minute(s) before block ends")
-        print("🔔 [NOTIFICATIONS] User's lunch period: \(notificationSettings.selectedLunchPeriod)")
+        // print("🔔 [NOTIFICATIONS] Scheduling notifications for \(blocks.count) blocks:")
+        // print("🔔 [NOTIFICATIONS] User setting: \(minutesBeforeEnd) minute(s) before block ends")
+        // print("🔔 [NOTIFICATIONS] User's lunch period: \(notificationSettings.selectedLunchPeriod)")
         
         // Create array to store all notifications for sorting
         struct NotificationEvent {
@@ -227,7 +227,7 @@ class NotificationManager: ObservableObject {
         // Sort notifications chronologically
         allNotifications.sort { $0.time < $1.time }
         
-        print("🔔 [NOTIFICATIONS] Found \(allNotifications.count) notifications to schedule in chronological order:")
+        // print("🔔 [NOTIFICATIONS] Found \(allNotifications.count) notifications to schedule in chronological order:")
         
         // Schedule all notifications
         for notification in allNotifications {
@@ -275,15 +275,15 @@ class NotificationManager: ObservableObject {
                 )
             }
 
-            print("\(logIcon) time: \(scheduledTime)")
+            // print("\(logIcon) time: \(scheduledTime)")
             if notification.type != "remove_notification" {
-                print("title: \(titleDescription)")
-                print("message: \(messageDescription)")
+                // print("title: \(titleDescription)")
+                // print("message: \(messageDescription)")
             }
 
             center.add(request) { error in
                 if let error = error {
-                    print("❌ Failed to schedule notification \(notification.identifier): \(error)")
+                    // print("❌ Failed to schedule notification \(notification.identifier): \(error)")
                 }
             }
         }
@@ -295,17 +295,17 @@ class NotificationManager: ObservableObject {
             let blocks = try await ScheduleService.loadBlocks(for: date)
             return await scheduleNotifications(blocks: blocks, on: date, dayType: dayType, clearExisting: clearExisting)
         } catch {
-            print("❌ Failed to determine schedule for notifications on \(date): \(error)")
+            // print("❌ Failed to determine schedule for notifications on \(date): \(error)")
             return NotificationScheduleSummary(date: date, success: false, scheduledCount: 0)
         }
     }
 
     func scheduleNotifications(blocks: [Block], on date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
         let useDayType = dayType.isEmpty ? "Green Day" : dayType
-        print("🔔 [DAY-TYPE] Preparing notifications for \(date) with day type '\(useDayType)' and \(blocks.count) blocks")
+        // print("🔔 [DAY-TYPE] Preparing notifications for \(date) with day type '\(useDayType)' and \(blocks.count) blocks")
 
         guard !blocks.isEmpty else {
-            print("🔔 [DAY-TYPE] No blocks available for \(date) - nothing to schedule")
+            // print("🔔 [DAY-TYPE] No blocks available for \(date) - nothing to schedule")
             return NotificationScheduleSummary(date: date, success: true, scheduledCount: 0)
         }
 
@@ -333,7 +333,7 @@ class NotificationManager: ObservableObject {
             do {
                 let blocks = try await ScheduleService.loadBlocks(for: date)
                 if blocks.isEmpty {
-                    print("🗓️ [NOTIFICATIONS] No blocks for \(date) - moving to next day")
+                    // print("🗓️ [NOTIFICATIONS] No blocks for \(date) - moving to next day")
                 } else {
                     let dayType = await dayTypeProvider(date) ?? ""
                     let summary = await scheduleNotifications(
@@ -345,7 +345,7 @@ class NotificationManager: ObservableObject {
                     results.append(summary)
                 }
             } catch {
-                print("❌ [NOTIFICATIONS] Failed to load schedule for \(date): \(error)")
+                // print("❌ [NOTIFICATIONS] Failed to load schedule for \(date): \(error)")
                 break
             }
 
@@ -359,7 +359,7 @@ class NotificationManager: ObservableObject {
             await MainActor.run {
                 UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
             }
-            print("🔕 [NOTIFICATIONS] Cleared pending notifications - no upcoming school days to schedule")
+            // print("🔕 [NOTIFICATIONS] Cleared pending notifications - no upcoming school days to schedule")
         }
 
         return results
@@ -532,7 +532,7 @@ struct ContentView: View {
                          // Only show DayTypeView when there is school
                         if !isNoSchool {
                                                      DayTypeView(testDate: testDate, isViewingTomorrow: isViewingTomorrow, firebaseError: $firebaseError, onLoadingComplete: { 
-                             print("🎯 [CONTENT] DayTypeView loading completed")
+                             // print("🎯 [CONTENT] DayTypeView loading completed")
                              dayTypeLoaded = true 
                          }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType, currentDayTypeDate: $currentDayTypeDate)
                          .padding(.top, isViewingTomorrow ? 8 : 0)
@@ -543,7 +543,7 @@ struct ContentView: View {
                          get: { isNoSchool },
                          set: { noSchool = $0 }
                      ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                         print("📋 [CONTENT] ScheduleView loading completed")
+                         // print("📋 [CONTENT] ScheduleView loading completed")
                          scheduleLoaded = true 
                      }, onPullRefresh: {
                              Task {
@@ -708,11 +708,11 @@ struct ContentView: View {
                 .onEnded { value in
                     // Only allow pull-to-refresh if balloon is not being dragged
                     if !disablePullToRefreshGesture && value.translation.height > 80 {
-                        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (pull-to-refresh)")
+                        // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (pull-to-refresh)")
                         isRefreshing = true
                         Task {
                             await refreshAll()
-                            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Pull-to-refresh completed")
+                            // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Pull-to-refresh completed")
                             // Don't set isRefreshing = false here, let updateLoadingState handle it
                         }
                     }
@@ -733,7 +733,7 @@ struct ContentView: View {
 
                 let resetToToday = enforceTodayDefaultIfNeeded()
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
-                print("[\(timestamp)] App became active")
+                // print("[\(timestamp)] App became active")
 
                 // Check if this is first active of the day
                 var calendar = Calendar.current
@@ -742,7 +742,7 @@ struct ContentView: View {
                 let isFirstActiveOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
 
                 if isFirstActiveOfDay {
-                    print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
+                    // print("🌅 [FIRST ACTIVE] First active of the day - showing loading screen")
                     isLoading = true
                     lastOpenedDate = Date.currentEST
 
@@ -751,12 +751,12 @@ struct ContentView: View {
                     }
                 } else {
                     if resetToToday {
-                        print("🕒 [RESET] Returning to today's schedule after background - refreshing")
+                        // print("🕒 [RESET] Returning to today's schedule after background - refreshing")
                         Task {
                             await refreshAll()
                         }
                     } else {
-                        print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
+                        // print("📱 [BACKGROUND REFRESH] Not first active - background refresh only")
 
                         // Reschedule notifications for upcoming days with fresh data
                         scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
@@ -779,7 +779,7 @@ struct ContentView: View {
         }
         .onChange(of: timeSettings.useTestDate) { isUsingTestDate in
             let modeDescription = isUsingTestDate ? "test date" : "real time"
-            print("🕒 [TIME-MODE] Switched to \(modeDescription) - rescheduling notifications")
+            // print("🕒 [TIME-MODE] Switched to \(modeDescription) - rescheduling notifications")
             Task {
                 await refreshAll()
             }
@@ -790,7 +790,7 @@ struct ContentView: View {
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
             formatter.timeZone = Date.estTimeZone
-            print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate)) - rescheduling notifications")
+            // print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate)) - rescheduling notifications")
             Task {
                 await refreshAll()
             }
@@ -798,7 +798,7 @@ struct ContentView: View {
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
             // Reschedule notifications when enabled/disabled changes
-            print("🔔 [NOTIFICATION-ENABLED] Notification enabled changed - rescheduling notifications")
+            // print("🔔 [NOTIFICATION-ENABLED] Notification enabled changed - rescheduling notifications")
             if notificationSettings.notificationsEnabled {
                 scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             } else {
@@ -807,23 +807,23 @@ struct ContentView: View {
         }
         .onChange(of: notificationSettings.notificationMinutes) { _ in
             // Reschedule notifications when timing changes
-            print("🔔 [NOTIFICATION-MINUTES] Notification minutes changed - rescheduling notifications")
+            // print("🔔 [NOTIFICATION-MINUTES] Notification minutes changed - rescheduling notifications")
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.selectedLunchPeriod) { _ in
             // Reschedule notifications when lunch period changes
-            print("🔔 [LUNCH-PERIOD] Lunch period changed - rescheduling notifications")
+            // print("🔔 [LUNCH-PERIOD] Lunch period changed - rescheduling notifications")
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
             // Reschedule notifications when block settings change
-            print("🔔 [BLOCK-SETTINGS] Block settings changed - rescheduling notifications")
+            // print("🔔 [BLOCK-SETTINGS] Block settings changed - rescheduling notifications")
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: currentDayType) { newDayType in
             // Schedule notifications when day type becomes available
             if newDayType != "Loading..." && !scheduleLoader.blocks.isEmpty && noSchool != true {
-                print("🔔 [DAY-TYPE-CHANGE] Day type updated to: '\(newDayType)' - scheduling notifications")
+                // print("🔔 [DAY-TYPE-CHANGE] Day type updated to: '\(newDayType)' - scheduling notifications")
                 scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             }
         }
@@ -831,7 +831,7 @@ struct ContentView: View {
             isLoading = true
             enforceTodayDefaultIfNeeded()
             // Reset to actual time on app startup
-            print("🔄 [APP-STARTUP] Using \(timeSettings.useTestDate ? "test date" : "real time") mode")
+            // print("🔄 [APP-STARTUP] Using \(timeSettings.useTestDate ? "test date" : "real time") mode")
 
             // Start timer to update time continuously
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -849,11 +849,11 @@ struct ContentView: View {
             let isFirstOpenOfDay = lastOpenedDate == nil || !calendar.isDate(lastOpenedDate!, inSameDayAs: today)
             
             if isFirstOpenOfDay {
-                print("🌅 [FIRST OPEN] First open of the day - showing loading screen")
+                // print("🌅 [FIRST OPEN] First open of the day - showing loading screen")
                 isLoading = true
                 lastOpenedDate = Date.currentEST
             } else {
-                print("📱 [SUBSEQUENT OPEN] Not first open of day - no loading screen needed")
+                // print("📱 [SUBSEQUENT OPEN] Not first open of day - no loading screen needed")
                 isLoading = false
             }
             
@@ -938,10 +938,10 @@ struct ContentView: View {
         // On no_school days, only scheduleLoaded matters since DayTypeView is hidden
         let shouldFinishLoading = (noSchool == true) ? scheduleLoaded : (scheduleLoaded && dayTypeLoaded)
         
-        print("🔄 [CONTENT] updateLoadingState - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false), shouldFinish: \(shouldFinishLoading)")
+        // print("🔄 [CONTENT] updateLoadingState - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false), shouldFinish: \(shouldFinishLoading)")
         
         if shouldFinishLoading {
-            print("🎉 [CONTENT] *** ALL LOADING COMPLETED *** - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false)")
+            // print("🎉 [CONTENT] *** ALL LOADING COMPLETED *** - dayTypeLoaded: \(dayTypeLoaded), scheduleLoaded: \(scheduleLoaded), noSchool: \(noSchool ?? false)")
             
             // Store current state for future background comparisons
             // Note: This is simplified - you'd need to get the actual dayType from DayTypeView
@@ -953,15 +953,15 @@ struct ContentView: View {
             isLoading = false
             isRefreshing = false // Also hide the refresh spinner when content is ready
             
-            print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
+            // print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
             
             // Schedule notifications for blocks if there's school and day type is ready
             if noSchool != true && !scheduleLoader.blocks.isEmpty && currentDayType != "Loading..." {
-                print("📱 [NOTIFICATIONS] Scheduling notifications for \(scheduleLoader.blocks.count) blocks")
-                print("📱 [NOTIFICATIONS] Current day type: '\(currentDayType)'")
+                // print("📱 [NOTIFICATIONS] Scheduling notifications for \(scheduleLoader.blocks.count) blocks")
+                // print("📱 [NOTIFICATIONS] Current day type: '\(currentDayType)'")
                 scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             } else if currentDayType == "Loading..." {
-                print("📱 [NOTIFICATIONS] Skipping notification scheduling - day type still loading")
+                // print("📱 [NOTIFICATIONS] Skipping notification scheduling - day type still loading")
             }
             
             // Trigger animations immediately when loading completes
@@ -978,7 +978,7 @@ struct ContentView: View {
     // Background refresh function - only updates UI if data changed
     @MainActor
     func backgroundRefresh() async {
-        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Background refresh started - checking for changes")
+        // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Background refresh started - checking for changes")
         
         // Store current state
         let currentDayType = previousDayType
@@ -1032,7 +1032,7 @@ struct ContentView: View {
                 }
             }
         } catch {
-            print("Background refresh error: \(error)")
+            // print("Background refresh error: \(error)")
             return // Don't update if there's an error
         }
         
@@ -1046,7 +1046,7 @@ struct ContentView: View {
                 tempDayType = extractDayTypeFromHTML(html: html)
             }
         } catch {
-            print("Background HTML fetch error: \(error)")
+            // print("Background HTML fetch error: \(error)")
             return // Don't update if there's an error
         }
         
@@ -1055,8 +1055,8 @@ struct ContentView: View {
         let dayTypeChanged = currentDayType != tempDayType
         
         if scheduleChanged || dayTypeChanged {
-            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Data changed - updating UI")
-            print("Schedule changed: \(scheduleChanged), DayType changed: \(dayTypeChanged)")
+            // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Data changed - updating UI")
+            // print("Schedule changed: \(scheduleChanged), DayType changed: \(dayTypeChanged)")
             
             // Show loading screen for data refresh
             isLoading = true
@@ -1070,7 +1070,7 @@ struct ContentView: View {
             // Trigger UI refresh
             await refreshAll()
         } else {
-            print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] No changes detected - keeping current UI")
+            // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] No changes detected - keeping current UI")
         }
     }
 
@@ -1081,7 +1081,7 @@ struct ContentView: View {
         let notificationsEnabled = NotificationSettingsManager.shared.notificationsEnabled
 
         guard notificationsEnabled else {
-            print("🔕 [NOTIFICATIONS] Skipping scheduling - notifications disabled")
+            // print("🔕 [NOTIFICATIONS] Skipping scheduling - notifications disabled")
             return
         }
 
@@ -1149,7 +1149,7 @@ struct ContentView: View {
 
     func refreshAll() async {
         // Reset loading states
-        print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
+        // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
         isLoading = true
         scheduleLoaded = false
         dayTypeLoaded = false
@@ -1198,7 +1198,7 @@ class BlockSettingsManager: ObservableObject {
         
         if let encoded = try? JSONEncoder().encode(settings) {
             UserDefaults.standard.set(encoded, forKey: "BlockSettings")
-            print("✅ Block settings saved")
+            // print("✅ Block settings saved")
             
             // Notify that block settings changed so notifications can be rescheduled
             NotificationCenter.default.post(name: Notification.Name("BlockSettingsChanged"), object: nil)
@@ -1208,7 +1208,7 @@ class BlockSettingsManager: ObservableObject {
     private func loadSettings() {
         guard let data = UserDefaults.standard.data(forKey: "BlockSettings"),
               let settings = try? JSONDecoder().decode([String: BlockSettings].self, from: data) else {
-            print("📱 Using default block settings")
+            // print("📱 Using default block settings")
             return
         }
         
@@ -1217,7 +1217,7 @@ class BlockSettingsManager: ObservableObject {
         blockC = settings["C"] ?? BlockSettings()
         blockD = settings["D"] ?? BlockSettings()
         blockE = settings["E"] ?? BlockSettings()
-        print("✅ Block settings loaded")
+        // print("✅ Block settings loaded")
     }
     
     func getDisplayName(for blockName: String) -> String {
@@ -1656,14 +1656,14 @@ class NotificationSettingsManager: ObservableObject {
         UserDefaults.standard.set(notificationsEnabled, forKey: "NotificationsEnabled")
         UserDefaults.standard.set(notificationMinutes, forKey: "NotificationMinutes")
         UserDefaults.standard.set(selectedLunchPeriod, forKey: "SelectedLunchPeriod")
-        print("✅ Notification settings saved: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
+        // print("✅ Notification settings saved: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
     
     private func loadSettings() {
         notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? false
         notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
         selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 0
-        print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
+        // print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
 }
 
@@ -1858,11 +1858,11 @@ struct NotificationSettingsView: View {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
                 let isAuthorized = settings.authorizationStatus == .authorized
-                print("🔔 [PERMISSION CHECK] Current status: \(settings.authorizationStatus.rawValue), authorized: \(isAuthorized)")
+                // print("🔔 [PERMISSION CHECK] Current status: \(settings.authorizationStatus.rawValue), authorized: \(isAuthorized)")
                 
                 // If system permission is denied but app toggle is on, turn off the app toggle
                 if !isAuthorized && notificationManager.notificationsEnabled {
-                    print("🔔 [PERMISSION CHECK] System permission denied - disabling app notifications")
+                    // print("🔔 [PERMISSION CHECK] System permission denied - disabling app notifications")
                     notificationManager.notificationsEnabled = false
                     notificationManager.saveSettings()
                 }
@@ -1875,11 +1875,11 @@ struct NotificationSettingsView: View {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {
                 if granted {
-                    print("✅ Notification permission granted")
+                    // print("✅ Notification permission granted")
                     notificationManager.notificationsEnabled = true
                     notificationManager.saveSettings()
                 } else {
-                    print("❌ Notification permission denied")
+                    // print("❌ Notification permission denied")
                     showingPermissionDeniedAlert = true
                 }
             }
@@ -2192,9 +2192,6 @@ struct LoginView: View {
     @State private var feedback: LoginFeedback?
     @State private var resendCooldown: Int = 0
     @State private var redirecting: Bool = false
-    @State private var showSavePasswordAlert: Bool = false
-    @State private var savedEmail: String = ""
-    @State private var savedPassword: String = ""
     
     let onDismiss: () -> Void
     
@@ -2332,22 +2329,6 @@ struct LoginView: View {
                     }
                     .padding(.horizontal)
                     .disabled(isBusy)
-                    
-                    // Debug: Show saved accounts (for testing)
-                    if !KeychainManager.shared.getAllSavedAccounts().isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Saved accounts in Keychain:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            ForEach(KeychainManager.shared.getAllSavedAccounts(), id: \.self) { account in
-                                Text("• \(account)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    }
                 }
             }
         }
@@ -2393,25 +2374,6 @@ struct LoginView: View {
                     await checkVerificationStatus()
                 }
             }
-        }
-        .alert("Save Password to Keychain", isPresented: $showSavePasswordAlert) {
-            Button("Save") {
-                if KeychainManager.shared.savePassword(email: savedEmail, password: savedPassword) {
-                    feedback = LoginFeedback(type: .success, message: "Password saved to Keychain")
-                } else {
-                    feedback = LoginFeedback(type: .error, message: "Failed to save password")
-                }
-                Task {
-                    await proceedAfterLogin()
-                }
-            }
-            Button("Don't Save", role: .cancel) {
-                Task {
-                    await proceedAfterLogin()
-                }
-            }
-        } message: {
-            Text("Would you like to save your password to Keychain? This will make it easier to sign in next time.")
         }
     }
     
@@ -2462,18 +2424,27 @@ struct LoginView: View {
                         )
                     } else {
                         feedback = LoginFeedback(type: .success, message: "Signed in successfully.")
-                        // Check if password is already saved
-                        if !KeychainManager.shared.hasPassword(email: trimmedEmail) {
-                            // Ask user if they want to save password
-                            await MainActor.run {
-                                savedEmail = trimmedEmail
-                                savedPassword = trimmedPassword
-                                showSavePasswordAlert = true
+                        
+                        // Save password to system Passwords using Shared Web Credentials
+                        // Note: This requires Associated Domains to be configured in the app
+                        // Without Associated Domains, the API will fail silently
+                        print("🔐 [Login] Attempting to save password to system Passwords...")
+                        SharedWebCredentialsManager.shared.savePassword(
+                            account: trimmedEmail,
+                            password: trimmedPassword
+                        ) { success, error in
+                            if success {
+                                print("✅ [Login] Password saved to system Passwords - user should see system prompt")
+                            } else if let error = error {
+                                let nsError = error as NSError
+                                print("❌ [Login] Failed to save password: \(nsError.localizedDescription)")
+                                print("   Error domain: \(nsError.domain), code: \(nsError.code)")
+                                print("   Note: This may require Associated Domains to be configured")
                             }
-                        } else {
-                            // Password already saved, proceed normally
-                            await proceedAfterLogin()
                         }
+                        
+                        // Proceed to next screen
+                        await proceedAfterLogin()
                     }
                 }
                 password = ""
@@ -2893,9 +2864,9 @@ class BlockPreferencesManager: ObservableObject {
                 self.hasConflict = false
                 self.remotePreferences = nil
             }
-            print("✅ [BlockPreferences] Uploaded local preferences to cloud")
+            // print("✅ [BlockPreferences] Uploaded local preferences to cloud")
         } catch {
-            print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
+            // print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
         }
     }
     
@@ -2915,7 +2886,7 @@ class BlockPreferencesManager: ObservableObject {
         
         // Cache locally
         await saveToLocalStorage(remote)
-        print("✅ [BlockPreferences] Using remote preferences")
+        // print("✅ [BlockPreferences] Using remote preferences")
     }
     
     private func loadFromLocalStorage() -> BlockPreferenceRecord {
@@ -2930,20 +2901,20 @@ class BlockPreferencesManager: ObservableObject {
                let oldSettings = try? JSONDecoder().decode([String: BlockSettingsLegacy].self, from: oldData),
                !oldSettings.isEmpty {
                 // Old format exists - migrate it
-                print("🔄 [BlockPreferences] Old format detected, migrating...")
+                // print("🔄 [BlockPreferences] Old format detected, migrating...")
                 if let migrated = migrateFromOldBlockSettings() {
                     // Mark migration as completed (only set to true after successful migration)
                     UserDefaults.standard.set(true, forKey: migrationKey)
-                    print("✅ [BlockPreferences] Migration completed and marked!")
+                    // print("✅ [BlockPreferences] Migration completed and marked!")
                     return migrated
                 }
             } else {
                 // No old format to migrate, mark as completed anyway
                 UserDefaults.standard.set(true, forKey: migrationKey)
-                print("ℹ️ [BlockPreferences] No old format found, migration marked as completed")
+                // print("ℹ️ [BlockPreferences] No old format found, migration marked as completed")
             }
         } else {
-            print("ℹ️ [BlockPreferences] Migration already completed, skipping")
+            // print("ℹ️ [BlockPreferences] Migration already completed, skipping")
         }
         
         // Load new format if exists
@@ -2965,12 +2936,12 @@ class BlockPreferencesManager: ObservableObject {
         }
         
         guard let oldSettings = try? JSONDecoder().decode([String: BlockSettingsLegacy].self, from: oldData) else {
-            print("⚠️ [BlockPreferences] Failed to decode old format")
+            // print("⚠️ [BlockPreferences] Failed to decode old format")
             return nil
         }
         
-        print("🔄 [BlockPreferences] Migrating from old format...")
-        print("🔄 [BlockPreferences] Old settings: \(oldSettings)")
+        // print("🔄 [BlockPreferences] Migrating from old format...")
+        // print("🔄 [BlockPreferences] Old settings: \(oldSettings)")
         
         // Convert each block from old format to new format
         var newPrefs: BlockPreferenceRecord = [:]
@@ -3015,16 +2986,16 @@ class BlockPreferencesManager: ObservableObject {
             }
             
             newPrefs[key] = newPref
-            print("✅ [BlockPreferences] \(key): '\(oldName)' (G:\(showOnGreen), W:\(showOnWhite)) -> alt:\(newPref.alternating), free:\(newPref.free)")
+            // print("✅ [BlockPreferences] \(key): '\(oldName)' (G:\(showOnGreen), W:\(showOnWhite)) -> alt:\(newPref.alternating), free:\(newPref.free)")
         }
         
         // Save to new format (this overwrites any existing new format)
         if let encoded = try? JSONEncoder().encode(newPrefs) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
-            print("✅ [BlockPreferences] Saved migrated data to '\(storageKey)'")
+            // print("✅ [BlockPreferences] Saved migrated data to '\(storageKey)'")
             return newPrefs
         } else {
-            print("❌ [BlockPreferences] Failed to encode!")
+            // print("❌ [BlockPreferences] Failed to encode!")
             return nil
         }
     }
@@ -3052,7 +3023,7 @@ class BlockPreferencesManager: ObservableObject {
             
             return prefs.isEmpty ? nil : prefs
         } catch {
-            print("❌ [BlockPreferences] Failed to load from remote: \(error)")
+            // print("❌ [BlockPreferences] Failed to load from remote: \(error)")
             return nil
         }
     }
@@ -3105,7 +3076,7 @@ class BlockPreferencesManager: ObservableObject {
     private func saveToLocalStorage(_ preferences: BlockPreferenceRecord) async {
         if let encoded = try? JSONEncoder().encode(preferences) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
-            print("✅ [BlockPreferences] Saved to local storage")
+            // print("✅ [BlockPreferences] Saved to local storage")
         }
     }
     
@@ -3128,7 +3099,7 @@ class BlockPreferencesManager: ObservableObject {
             "updatedAt": FieldValue.serverTimestamp()
         ], merge: true)
         
-        print("✅ [BlockPreferences] Saved to cloud")
+        // print("✅ [BlockPreferences] Saved to cloud")
     }
     
     private func cleanPreferences(_ preferences: BlockPreferenceRecord) -> BlockPreferenceRecord {
@@ -3339,7 +3310,7 @@ class SchedulePreferencesManager: ObservableObject {
             
             return nil
         } catch {
-            print("❌ [SchedulePreferences] Failed to load from remote: \(error)")
+            // print("❌ [SchedulePreferences] Failed to load from remote: \(error)")
             return nil
         }
     }
@@ -3358,9 +3329,9 @@ class SchedulePreferencesManager: ObservableObject {
         if let user = Auth.auth().currentUser, user.isEmailVerified {
             do {
                 try await saveToRemote(userId: user.uid, preferences: prefsToSave)
-                print("✅ [SchedulePreferences] Saved to cloud")
+                // print("✅ [SchedulePreferences] Saved to cloud")
             } catch {
-                print("❌ [SchedulePreferences] Failed to save to cloud: \(error)")
+                // print("❌ [SchedulePreferences] Failed to save to cloud: \(error)")
             }
         }
     }
@@ -3368,7 +3339,7 @@ class SchedulePreferencesManager: ObservableObject {
     private func saveToLocalStorage(_ preferences: SchedulePreferences) async {
         if let encoded = try? JSONEncoder().encode(preferences) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
-            print("✅ [SchedulePreferences] Saved to local storage")
+            // print("✅ [SchedulePreferences] Saved to local storage")
         }
     }
     
@@ -3728,7 +3699,7 @@ extension BlockPreferencesManager {
     static func clearNewFormatForTesting() {
         UserDefaults.standard.removeObject(forKey: "blockPreferences")
         UserDefaults.standard.removeObject(forKey: "BlockPreferences_Migrated_v1")
-        print("🧹 [BlockPreferences] Cleared new format - migration will run on next load")
+        // print("🧹 [BlockPreferences] Cleared new format - migration will run on next load")
     }
 }
 

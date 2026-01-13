@@ -20,44 +20,44 @@ struct CloudflareDataLoader {
     /// 从 Cloudflare 加载 special_days 数据
     static func loadSpecialDays(forceRefresh: Bool = false) async throws -> [String: SpecialDayRecord]? {
         if let cached = cachedSpecialDays, !forceRefresh {
-            print("📦 [CLOUDFLARE] Using cached special_days (\(cached.count) days)")
+            // print("📦 [CLOUDFLARE] Using cached special_days (\(cached.count) days)")
             return cached
         }
         
         guard let url = ScheduleConfig.specialDaysURL else {
-            print("❌ [CLOUDFLARE] specialDaysURL is nil")
+            // print("❌ [CLOUDFLARE] specialDaysURL is nil")
             return nil
         }
         
         do {
-            print("🌐 [CLOUDFLARE] Loading special_days from: \(url.absoluteString)")
+            // print("🌐 [CLOUDFLARE] Loading special_days from: \(url.absoluteString)")
             var request = URLRequest(url: url)
             request.cachePolicy = .reloadIgnoringLocalCacheData // 强制刷新，绕过本地缓存
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200 else {
-                print("❌ [CLOUDFLARE] Failed to load special_days: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
+                // print("❌ [CLOUDFLARE] Failed to load special_days: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
                 return nil
             }
             
             let decoder = JSONDecoder()
             let days = try decoder.decode([String: SpecialDayRecord].self, from: data)
             cachedSpecialDays = days
-            print("✅ [CLOUDFLARE] Successfully loaded \(days.count) special days")
+            // print("✅ [CLOUDFLARE] Successfully loaded \(days.count) special days")
             
             // 打印前几个日期键用于调试
-            let dateKeys = Array(days.keys.prefix(5))
-            print("📋 [CLOUDFLARE] Sample date keys: \(dateKeys)")
-            for (dateKey, dayData) in days.prefix(3) {
-                print("   - \(dateKey): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
-            }
+            // let dateKeys = Array(days.keys.prefix(5))
+            // print("📋 [CLOUDFLARE] Sample date keys: \(dateKeys)")
+            // for (dateKey, dayData) in days.prefix(3) {
+            //     print("   - \(dateKey): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
+            // }
             
             return days
         } catch {
-            print("❌ [CLOUDFLARE] Error loading special_days: \(error.localizedDescription)")
+            // print("❌ [CLOUDFLARE] Error loading special_days: \(error.localizedDescription)")
             if let decodingError = error as? DecodingError {
-                print("❌ [CLOUDFLARE] Decoding error details: \(decodingError)")
+                // print("❌ [CLOUDFLARE] Decoding error details: \(decodingError)")
             }
             return nil
         }
@@ -75,12 +75,12 @@ struct CloudflareDataLoader {
         }
         
         do {
-            print("🌐 [CLOUDFLARE] Loading special_periods from: \(url.absoluteString)")
+            // print("🌐 [CLOUDFLARE] Loading special_periods from: \(url.absoluteString)")
             let (data, response) = try await URLSession.shared.data(from: url)
             
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200 else {
-                print("❌ [CLOUDFLARE] Failed to load special_periods: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
+                // print("❌ [CLOUDFLARE] Failed to load special_periods: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
                 return nil
             }
             
@@ -130,7 +130,7 @@ struct CloudflareDataLoader {
                 // 规范化日期字符串
                 guard let startString = normalizeDateString(period.start),
                       let endString = normalizeDateString(period.end) else {
-                    print("⚠️ [CLOUDFLARE] Failed to parse period dates: start=\(period.start), end=\(period.end)")
+                    // print("⚠️ [CLOUDFLARE] Failed to parse period dates: start=\(period.start), end=\(period.end)")
                     return nil
                 }
                 
@@ -138,10 +138,10 @@ struct CloudflareDataLoader {
             }
             
             cachedSpecialPeriods = datePeriods
-            print("✅ [CLOUDFLARE] Successfully loaded \(datePeriods.count) special periods")
+            // print("✅ [CLOUDFLARE] Successfully loaded \(datePeriods.count) special periods")
             return datePeriods
         } catch {
-            print("❌ [CLOUDFLARE] Error loading special_periods: \(error.localizedDescription)")
+            // print("❌ [CLOUDFLARE] Error loading special_periods: \(error.localizedDescription)")
             return nil
         }
     }

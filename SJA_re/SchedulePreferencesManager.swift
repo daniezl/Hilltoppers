@@ -112,7 +112,7 @@ class SchedulePreferencesManager: ObservableObject {
             
             return nil
         } catch {
-            print("❌ [SchedulePreferences] Failed to load from remote: \(error)")
+            // print("❌ [SchedulePreferences] Failed to load from remote: \(error)")
             return nil
         }
     }
@@ -131,9 +131,9 @@ class SchedulePreferencesManager: ObservableObject {
         if let user = Auth.auth().currentUser, user.isEmailVerified {
             do {
                 try await saveToRemote(userId: user.uid, preferences: prefsToSave)
-                print("✅ [SchedulePreferences] Saved to cloud")
+                // print("✅ [SchedulePreferences] Saved to cloud")
             } catch {
-                print("❌ [SchedulePreferences] Failed to save to cloud: \(error)")
+                // print("❌ [SchedulePreferences] Failed to save to cloud: \(error)")
             }
         }
     }
@@ -141,7 +141,7 @@ class SchedulePreferencesManager: ObservableObject {
     private func saveToLocalStorage(_ preferences: SchedulePreferences) async {
         if let encoded = try? JSONEncoder().encode(preferences) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
-            print("✅ [SchedulePreferences] Saved to local storage")
+            // print("✅ [SchedulePreferences] Saved to local storage")
         }
     }
     

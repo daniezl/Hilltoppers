@@ -37,22 +37,22 @@ struct LottieView: UIViewRepresentable {
         ])
         
         // Load animation and start playback immediately when ready
-        print("🔍 Attempting to load Lottie file: '\(animationName)'")
+        // print("🔍 Attempting to load Lottie file: '\(animationName)'")
         let startTime = Date()
         
         DispatchQueue.main.async {
             // Load JSON animation
             animationView.animation = LottieAnimation.named(animationName)
             let loadTime = Date().timeIntervalSince(startTime)
-            print("🔍 JSON load time: \(loadTime) seconds")
+            // print("🔍 JSON load time: \(loadTime) seconds")
             
             if animationView.animation == nil {
-                print("❌ ERROR: Could not load animation named '\(animationName)'")
-                print("❌ Make sure \(animationName).json is added to your Xcode project target")
+                // print("❌ ERROR: Could not load animation named '\(animationName)'")
+                // print("❌ Make sure \(animationName).json is added to your Xcode project target")
             } else {
-                print("✅ Animation loaded successfully in \(loadTime) seconds")
+                // print("✅ Animation loaded successfully in \(loadTime) seconds")
                 animationView.play { finished in
-                    print("🎊 Confetti animation completed!")
+                    // print("🎊 Confetti animation completed!")
                     completion?()
                 }
             }
@@ -100,7 +100,7 @@ struct SwiftUIConfettiView: View {
     }
     
     private func startAnimation() {
-        print("🎊 Starting FAST SwiftUI confetti!")
+        // print("🎊 Starting FAST SwiftUI confetti!")
         shouldStartAnimation = true
         onAnimationStart()
         createConfetti()
@@ -183,7 +183,7 @@ struct ConfettiAnimationView: View {
         ZStack {
             if shouldStartAnimation && !animationFinished {
                 LottieView(animationName: "confetti_new", loopMode: .playOnce) {
-                    print("Confetti animation completed!")
+                    // print("Confetti animation completed!")
                     animationFinished = true
                     onAnimationComplete()
                 }
@@ -203,7 +203,7 @@ struct ConfettiAnimationView: View {
     }
     
     private func startAnimation() {
-        print("🎊 Starting Lottie confetti animation!")
+        // print("🎊 Starting Lottie confetti animation!")
         shouldStartAnimation = true
         onAnimationStart() // Trigger text animation at the same time
     }
@@ -578,7 +578,7 @@ struct ScheduleView: View {
                                     .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3), value: showDetailsText)
                                     .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
                                     .onAppear {
-                                        print("DEBUG: Displaying no school details: '\(details)'")
+                                        // print("DEBUG: Displaying no school details: '\(details)'")
                                     }
                             }
                         }
@@ -948,7 +948,7 @@ struct ScheduleView: View {
         calendar.timeZone = Date.estTimeZone
         let weekday = calendar.component(.weekday, from: currentTime)
         let weekdayNames = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        print("📅 [WEEKDAY] Loading weekday schedule for \(weekdayNames[weekday]) (weekday=\(weekday))")
+        // print("📅 [WEEKDAY] Loading weekday schedule for \(weekdayNames[weekday]) (weekday=\(weekday))")
         
         let scheduleFile: String?
         switch weekday {
@@ -967,17 +967,17 @@ struct ScheduleView: View {
         }
         
         if let file = scheduleFile {
-            print("📄 [WEEKDAY] Loading schedule from: \(file).json")
+            // print("📄 [WEEKDAY] Loading schedule from: \(file).json")
             loader.loadSchedule(from: file)
-            print("📋 [WEEKDAY] Loaded \(loader.blocks.count) blocks from \(file).json")
+            // print("📋 [WEEKDAY] Loaded \(loader.blocks.count) blocks from \(file).json")
             noSchool = false
             noSchoolDetails = nil
         } else {
-            print("🚫 [WEEKDAY] Weekend - setting no school")
+            // print("🚫 [WEEKDAY] Weekend - setting no school")
             loader.blocks = []
             noSchool = true
             noSchoolDetails = "Weekend" // Show "Weekend" as detail text
-            print("🔍 DEBUG: Set noSchoolDetails to '\(noSchoolDetails ?? "nil")'")
+            // print("🔍 DEBUG: Set noSchoolDetails to '\(noSchoolDetails ?? "nil")'")
         }
     }
 
@@ -990,19 +990,19 @@ struct ScheduleView: View {
         formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: currentTime)
         
-        print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
+        // print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
         
         // 清除缓存以确保获取最新数据
         CloudflareDataLoader.clearCache()
-        print("🗑️ [SCHEDULE] Cleared Cloudflare cache")
+        // print("🗑️ [SCHEDULE] Cleared Cloudflare cache")
         
         var firebaseSucceeded = false
         
         do {
-            print("🔍 [SCHEDULE] Step 1: Checking if in special period...")
+            // print("🔍 [SCHEDULE] Step 1: Checking if in special period...")
             // 1. Check if in break
             if try await ScheduleTypeFetcher.isInSpecialPeriod(date: currentTime) {
-                print("✅ [SCHEDULE] In special period (break) - setting no school")
+                // print("✅ [SCHEDULE] In special period (break) - setting no school")
                 noSchool = true
                 loader.blocks = []
                 
@@ -1011,23 +1011,23 @@ struct ScheduleView: View {
                     scheduleTitle = periodDetails
                     noSchoolDetails = periodDetails
                     showDetailsText = true  // 确保 details 文本显示
-                    print("✅ [SCHEDULE] Special period details: '\(periodDetails)'")
+                    // print("✅ [SCHEDULE] Special period details: '\(periodDetails)'")
                 } else {
                     scheduleTitle = "No School (Break)"
                     noSchoolDetails = "Break"
                     showDetailsText = true  // 确保 details 文本显示
-                    print("⚠️ [SCHEDULE] No special period details found, using default")
+                    // print("⚠️ [SCHEDULE] No special period details found, using default")
                 }
                 firebaseSucceeded = true
             }
             // 2. Try to find special_day and get type with details
             else {
-                print("🔍 [SCHEDULE] Step 2: Checking for special day info...")
+                // print("🔍 [SCHEDULE] Step 2: Checking for special day info...")
                 if let specialDayInfo = try await ScheduleTypeFetcher.fetchSpecialDayInfo(date: currentTime) {
-                    print("✅ [SCHEDULE] Found special day: type='\(specialDayInfo.type)', details='\(specialDayInfo.details ?? "nil")'")
+                    // print("✅ [SCHEDULE] Found special day: type='\(specialDayInfo.type)', details='\(specialDayInfo.details ?? "nil")'")
                     
                     if specialDayInfo.type == "no_school" {
-                        print("📅 [SCHEDULE] Special day is no_school")
+                        // print("📅 [SCHEDULE] Special day is no_school")
                         noSchool = true
                         noSchoolDetails = specialDayInfo.details
                         showDetailsText = true  // 确保 details 文本显示
@@ -1035,42 +1035,42 @@ struct ScheduleView: View {
                         scheduleTitle = "No School"
                         firebaseSucceeded = true
                     } else if specialDayInfo.type == "custom" {
-                        print("🔍 [SCHEDULE] Special day is custom - loading custom schedule...")
+                        // print("🔍 [SCHEDULE] Special day is custom - loading custom schedule...")
                         // 3. If type is custom, read the custom schedule
                         if let blocks = try await ScheduleTypeFetcher.loadCustomSchedule(for: currentTime) {
-                            print("✅ [SCHEDULE] Loaded custom schedule with \(blocks.count) blocks")
+                            // print("✅ [SCHEDULE] Loaded custom schedule with \(blocks.count) blocks")
                             loader.blocks = blocks
                             noSchool = false
                             scheduleTitle = "Custom Schedule"
                             firebaseSucceeded = true
                         } else {
-                            print("❌ [SCHEDULE] Custom schedule returned no blocks")
+                            // print("❌ [SCHEDULE] Custom schedule returned no blocks")
                         }
                     } else {
-                        print("📄 [SCHEDULE] Special day type '\(specialDayInfo.type)' - loading from JSON...")
+                        // print("📄 [SCHEDULE] Special day type '\(specialDayInfo.type)' - loading from JSON...")
                         // try to load (type).json
                         loader.loadSchedule(from: specialDayInfo.type)
                         if !loader.blocks.isEmpty {
-                            print("✅ [SCHEDULE] Loaded \(loader.blocks.count) blocks from \(specialDayInfo.type).json")
+                            // print("✅ [SCHEDULE] Loaded \(loader.blocks.count) blocks from \(specialDayInfo.type).json")
                             noSchool = false
                             noSchoolDetails = nil // Clear details for non-no-school days
                             scheduleTitle = specialDayInfo.type.capitalized.replacingOccurrences(of: "_", with: " ")
                             firebaseSucceeded = true
                         } else {
-                            print("❌ [SCHEDULE] No blocks found in \(specialDayInfo.type).json")
+                            // print("❌ [SCHEDULE] No blocks found in \(specialDayInfo.type).json")
                         }
                     }
                 } else {
-                    print("❌ [SCHEDULE] No special day info found in Firebase")
+                    // print("❌ [SCHEDULE] No special day info found in Firebase")
                 }
             }
             
             // If Firebase calls succeeded, clear stale flag
             if firebaseSucceeded {
-                print("✅ [SCHEDULE] Firebase succeeded - clearing stale flag")
+                // print("✅ [SCHEDULE] Firebase succeeded - clearing stale flag")
                 isStale = false
             } else {
-                print("⚠️ [SCHEDULE] Firebase responded but no data found - falling back to weekday schedule")
+                // print("⚠️ [SCHEDULE] Firebase responded but no data found - falling back to weekday schedule")
                 // Firebase responded but no data found, fall back to local
                 loadWeekdaySchedule()
                 scheduleTitle = getWeekdayTitle()
@@ -1078,8 +1078,8 @@ struct ScheduleView: View {
             }
             
         } catch {
-            print("❌ [SCHEDULE] Firebase calls failed: \(error)")
-            print("⚠️ [SCHEDULE] Falling back to weekday schedule")
+            // print("❌ [SCHEDULE] Firebase calls failed: \(error)")
+            // print("⚠️ [SCHEDULE] Falling back to weekday schedule")
             // Firebase calls failed (network issue, blocked, etc.)
             loadWeekdaySchedule() // Fallback to local data
             scheduleTitle = getWeekdayTitle()
@@ -1087,13 +1087,13 @@ struct ScheduleView: View {
             // Keep isStale = true since Firebase failed
         }
         
-        print("📋 [SCHEDULE] Final result: title='\(scheduleTitle)', noSchool=\(noSchool), blocks=\(loader.blocks.count), isStale=\(isStale)")
+        // print("📋 [SCHEDULE] Final result: title='\(scheduleTitle)', noSchool=\(noSchool), blocks=\(loader.blocks.count), isStale=\(isStale)")
         
         updateCountdownWidget()
 
         // Signal that loading is complete
         onLoadingComplete()
-        print("✅ [SCHEDULE] Loading complete!")
+        // print("✅ [SCHEDULE] Loading complete!")
     }
 
 
@@ -1211,24 +1211,24 @@ struct ScheduleView: View {
     
     func startTextAnimation() {
         // Show "No School" text immediately with smooth animation
-        print("🔍 DEBUG: startTextAnimation called")
-        print("🔍 DEBUG: noSchoolDetails = '\(noSchoolDetails ?? "nil")'")
+        // print("🔍 DEBUG: startTextAnimation called")
+        // print("🔍 DEBUG: noSchoolDetails = '\(noSchoolDetails ?? "nil")'")
         showNoSchoolText = true
         
         // Show details text if available (will be set by refreshSchedule if needed)
         if let details = noSchoolDetails, !details.isEmpty {
-            print("🔍 DEBUG: Setting showDetailsText = true for details: '\(details)'")
+            // print("🔍 DEBUG: Setting showDetailsText = true for details: '\(details)'")
             showDetailsText = true
         } else {
-            print("🔍 DEBUG: noSchoolDetails is nil or empty, not showing details")
+            // print("🔍 DEBUG: noSchoolDetails is nil or empty, not showing details")
         }
     }
     
     // MARK: - Simple Confetti Setup
     
     func checkConfettiAndStartText() {
-        print("🎊 Setting up confetti for no school day")
-        print("🎊 Always showing confetti on no school days!")
+        // print("🎊 Setting up confetti for no school day")
+        // print("🎊 Always showing confetti on no school days!")
         shouldShowConfetti = true
           }
     

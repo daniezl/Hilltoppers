@@ -153,9 +153,9 @@ class BlockPreferencesManager: ObservableObject {
                 self.hasConflict = false
                 self.remotePreferences = nil
             }
-            print("✅ [BlockPreferences] Uploaded local preferences to cloud")
+            // print("✅ [BlockPreferences] Uploaded local preferences to cloud")
         } catch {
-            print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
+            // print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
         }
     }
     
@@ -171,7 +171,7 @@ class BlockPreferencesManager: ObservableObject {
         
         // Cache locally
         await saveToLocalStorage(remote)
-        print("✅ [BlockPreferences] Using remote preferences")
+        // print("✅ [BlockPreferences] Using remote preferences")
     }
     
     private func loadPreferences() {
@@ -213,7 +213,7 @@ class BlockPreferencesManager: ObservableObject {
             
             return prefs.isEmpty ? nil : prefs
         } catch {
-            print("❌ [BlockPreferences] Failed to load from remote: \(error)")
+            // print("❌ [BlockPreferences] Failed to load from remote: \(error)")
             return nil
         }
     }
@@ -266,7 +266,7 @@ class BlockPreferencesManager: ObservableObject {
     private func saveToLocalStorage(_ preferences: BlockPreferenceRecord) async {
         if let encoded = try? JSONEncoder().encode(preferences) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
-            print("✅ [BlockPreferences] Saved to local storage")
+            // print("✅ [BlockPreferences] Saved to local storage")
         }
     }
     
@@ -289,7 +289,7 @@ class BlockPreferencesManager: ObservableObject {
             "updatedAt": FieldValue.serverTimestamp()
         ], merge: true)
         
-        print("✅ [BlockPreferences] Saved to cloud")
+        // print("✅ [BlockPreferences] Saved to cloud")
     }
     
     private func cleanPreferences(_ preferences: BlockPreferenceRecord) -> BlockPreferenceRecord {

@@ -28,26 +28,26 @@ struct ScheduleTypeFetcher {
         formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
-        print("🔍 [SCHEDULE_TYPE] Fetching special day info for date: \(dateString)")
+        // print("🔍 [SCHEDULE_TYPE] Fetching special day info for date: \(dateString)")
         
         // 从 Cloudflare 加载（使用缓存，因为 refreshSchedule 已经清除了缓存）
         if let cloudflareData = try await CloudflareDataLoader.loadSpecialDays() {
-            print("📦 [SCHEDULE_TYPE] Loaded \(cloudflareData.count) special days from Cloudflare")
+            // print("📦 [SCHEDULE_TYPE] Loaded \(cloudflareData.count) special days from Cloudflare")
             
             if let dayData = cloudflareData[dateString] {
-                print("✅ [SCHEDULE_TYPE] Found data for \(dateString): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
+                // print("✅ [SCHEDULE_TYPE] Found data for \(dateString): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
                 
                 if let type = dayData.type {
                     return SpecialDayInfo(type: type, details: dayData.details)
                 } else {
-                    print("⚠️ [SCHEDULE_TYPE] Day data exists but type is nil for \(dateString)")
+                    // print("⚠️ [SCHEDULE_TYPE] Day data exists but type is nil for \(dateString)")
                 }
             } else {
-                print("❌ [SCHEDULE_TYPE] No data found for date \(dateString)")
-                print("📋 [SCHEDULE_TYPE] Available dates: \(Array(cloudflareData.keys.prefix(10)))")
+                // print("❌ [SCHEDULE_TYPE] No data found for date \(dateString)")
+                // print("📋 [SCHEDULE_TYPE] Available dates: \(Array(cloudflareData.keys.prefix(10)))")
             }
         } else {
-            print("❌ [SCHEDULE_TYPE] Failed to load special_days from Cloudflare")
+            // print("❌ [SCHEDULE_TYPE] Failed to load special_days from Cloudflare")
         }
         
         return nil
@@ -65,7 +65,7 @@ struct ScheduleTypeFetcher {
             for period in periods {
                 // 使用日期字符串比较（与 Chrome extension 逻辑一致）
                 if period.start <= dateString && dateString <= period.end {
-                    print("✅ [SPECIAL_PERIOD] Date \(dateString) is in special period: \(period.start) to \(period.end)")
+                    // print("✅ [SPECIAL_PERIOD] Date \(dateString) is in special period: \(period.start) to \(period.end)")
                     return true
                 }
             }
@@ -82,24 +82,24 @@ struct ScheduleTypeFetcher {
         formatter.timeZone = Date.estTimeZone
         let dateString = formatter.string(from: date)
         
-        print("🔍 [SPECIAL_PERIOD] Checking details for date: \(dateString)")
+        // print("🔍 [SPECIAL_PERIOD] Checking details for date: \(dateString)")
         
         // 从 Cloudflare 加载
         if let periods = try await CloudflareDataLoader.loadSpecialPeriods() {
-            print("🔍 [SPECIAL_PERIOD] Loaded \(periods.count) periods")
+            // print("🔍 [SPECIAL_PERIOD] Loaded \(periods.count) periods")
             for period in periods {
-                print("🔍 [SPECIAL_PERIOD] Checking period: \(period.start) to \(period.end), details: '\(period.details ?? "nil")'")
+                // print("🔍 [SPECIAL_PERIOD] Checking period: \(period.start) to \(period.end), details: '\(period.details ?? "nil")'")
                 // 使用日期字符串比较
                 if period.start <= dateString && dateString <= period.end {
-                    print("✅ [SPECIAL_PERIOD] Found matching period, details: '\(period.details ?? "nil")'")
+                    // print("✅ [SPECIAL_PERIOD] Found matching period, details: '\(period.details ?? "nil")'")
                     return period.details
                 }
             }
         } else {
-            print("⚠️ [SPECIAL_PERIOD] No periods loaded")
+            // print("⚠️ [SPECIAL_PERIOD] No periods loaded")
         }
         
-        print("❌ [SPECIAL_PERIOD] No matching period found for date: \(dateString)")
+        // print("❌ [SPECIAL_PERIOD] No matching period found for date: \(dateString)")
         return nil
     }
 
