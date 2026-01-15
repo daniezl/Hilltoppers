@@ -1296,7 +1296,7 @@ class BlockSettingsManager: ObservableObject {
         return onGreenDay ? settings.showOnGreenDay : settings.showOnWhiteDay
     }
     
-    private func getBlockKey(from blockName: String) -> BlockKey? {
+    private func getBlockKey(from blockName: String) -> String? {
         let normalized = blockName.lowercased().trimmingCharacters(in: .whitespaces)
         if normalized.hasPrefix("a") && normalized.contains("block") { return "A" }
         if normalized.hasPrefix("b") && normalized.contains("block") { return "B" }
@@ -1304,6 +1304,10 @@ class BlockSettingsManager: ObservableObject {
         if normalized.hasPrefix("d") && normalized.contains("block") { return "D" }
         if normalized.hasPrefix("e") && normalized.contains("block") { return "E" }
         return nil
+    }
+    
+    private func getBlockKeyType(from blockName: String) -> String? {
+        return getBlockKey(from: blockName)
     }
     
     private func getCurrentDayType() -> String? {
@@ -2200,143 +2204,156 @@ struct LoginView: View {
     @State private var feedback: LoginFeedback?
     @State private var resendCooldown: Int = 0
     @State private var redirecting: Bool = false
+    @State private var showFullScreenSuccess: Bool = false
     
     let onDismiss: () -> Void
     
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Sign in to Hilltoppers")
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    Text("Sync your schedule and class preferences across every device.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .padding(.top, 20)
-                
-                // Feedback Message
-                if let feedback = feedback {
-                    LoginFeedbackView(feedback: feedback)
-                }
-                
-                // Email Verification Notice
-                if authManager.needsEmailVerification {
-                    LoginEmailVerificationNotice(
-                        isBusy: $isBusy,
-                        resendCooldown: $resendCooldown,
-                        onResend: handleResendVerification,
-                        onRefresh: handleRefreshVerification
-                    )
-                }
-                
-                // Authenticated User Notice
-                if authManager.isAuthenticated && !authManager.needsEmailVerification {
-                    LoginAuthenticatedNotice(identity: authManager.userIdentity)
-                }
-                
-                // Login Form (hide when email needs verification)
-                if !authManager.needsEmailVerification {
-                    VStack(spacing: 16) {
-                        // Email Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Email")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+        ZStack {
+            // Full screen success view
+            if showFullScreenSuccess {
+                FullScreenSuccessView(message: feedback?.message ?? "Signed in successfully.")
+                    .transition(.opacity)
+            }
+            
+            // Normal login view (hidden when showing success)
+            if !showFullScreenSuccess {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Header
+                        VStack(spacing: 8) {
+                            Text("Sign in to Hilltoppers")
+                                .font(.title)
+                                .fontWeight(.bold)
                             
-                            TextField("Enter your email", text: $email)
-                                .textInputAutocapitalization(.never)
-                                .keyboardType(.emailAddress)
-                                .autocorrectionDisabled()
-                                .disabled(isBusy)
-                                .padding(12)
-                                .background(Color(UIColor.systemGray6))
-                                .cornerRadius(8)
+                            Text("Sync your schedule and class preferences across every device.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                        .padding(.top, 20)
+                        
+                        // Feedback Message (only show non-success feedback)
+                        if let feedback = feedback, feedback.type != .success {
+                            LoginFeedbackView(feedback: feedback)
                         }
                         
-                        // Password Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Password")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            HStack {
-                                if showPassword {
-                                    TextField("Enter password", text: $password)
+                        // Email Verification Notice
+                        if authManager.needsEmailVerification {
+                            LoginEmailVerificationNotice(
+                                isBusy: $isBusy,
+                                resendCooldown: $resendCooldown,
+                                onResend: handleResendVerification,
+                                onRefresh: handleRefreshVerification
+                            )
+                        }
+                        
+                        // Authenticated User Notice
+                        if authManager.isAuthenticated && !authManager.needsEmailVerification {
+                            LoginAuthenticatedNotice(identity: authManager.userIdentity)
+                        }
+                        
+                        // Login Form (hide when email needs verification)
+                        if !authManager.needsEmailVerification {
+                            VStack(spacing: 24) {
+                                // Email Field
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Email")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    TextField("Enter your email", text: $email)
                                         .textInputAutocapitalization(.never)
+                                        .keyboardType(.emailAddress)
                                         .autocorrectionDisabled()
                                         .disabled(isBusy)
-                                } else {
-                                    SecureField("Enter password", text: $password)
-                                        .textInputAutocapitalization(.never)
-                                        .autocorrectionDisabled()
-                                        .disabled(isBusy)
+                                        .padding(12)
+                                        .background(Color(UIColor.systemGray6))
+                                        .cornerRadius(8)
                                 }
                                 
-                                Button(action: { showPassword.toggle() }) {
-                                    Text(showPassword ? "Hide" : "Show")
-                                        .font(.caption)
+                                // Password Field
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Password")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    HStack {
+                                        if showPassword {
+                                            TextField("Enter password", text: $password)
+                                                .textInputAutocapitalization(.never)
+                                                .autocorrectionDisabled()
+                                                .disabled(isBusy)
+                                        } else {
+                                            SecureField("Enter password", text: $password)
+                                                .textInputAutocapitalization(.never)
+                                                .autocorrectionDisabled()
+                                                .disabled(isBusy)
+                                        }
+                                        
+                                        Button(action: { showPassword.toggle() }) {
+                                            Text(showPassword ? "Hide" : "Show")
+                                                .font(.caption)
+                                                .foregroundColor(accentGreen)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                    .padding(12)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(8)
+                                }
+                                
+                                // Submit Button
+                                Button(action: handleEmailSubmit) {
+                                    HStack {
+                                        if isBusy {
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        } else {
+                                            Text(authMode.submitButtonTitle)
+                                                .fontWeight(.semibold)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(accentGreen)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                                }
+                                .padding(.top, 24) // Compensate for label height + spacing (headline ~17pt + spacing 8pt)
+                                .disabled(isBusy)
+                                
+                                // Toggle Mode Button
+                                Button(action: toggleAuthMode) {
+                                    Text(authMode.togglePrompt)
+                                        .font(.subheadline)
                                         .foregroundColor(accentGreen)
                                 }
-                                .buttonStyle(.plain)
+                                .disabled(isBusy)
                             }
-                            .padding(12)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
-                        }
-                        
-                        // Submit Button
-                        Button(action: handleEmailSubmit) {
-                            HStack {
-                                if isBusy {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text(authMode.submitButtonTitle)
-                                        .fontWeight(.semibold)
+                            .padding(.horizontal)
+                            
+                            Spacer(minLength: 40)
+                            
+                            // Sign Out Button (if authenticated)
+                            if authManager.isAuthenticated {
+                                Button(action: handleSignOut) {
+                                    Text("Sign Out")
+                                        .font(.subheadline)
+                                        .foregroundColor(.red)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color(UIColor.systemGray6))
+                                        .cornerRadius(12)
                                 }
+                                .padding(.horizontal)
+                                .disabled(isBusy)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(accentGreen)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                         }
-                        .disabled(isBusy)
-                        
-                        // Toggle Mode Button
-                        Button(action: toggleAuthMode) {
-                            Text(authMode.togglePrompt)
-                                .font(.subheadline)
-                                .foregroundColor(accentGreen)
-                        }
-                        .disabled(isBusy)
                     }
-                    .padding(.horizontal)
-                }
-                
-                Spacer(minLength: 40)
-                
-                // Sign Out Button (if authenticated)
-                if authManager.isAuthenticated {
-                    Button(action: handleSignOut) {
-                        Text("Sign Out")
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(12)
-                    }
-                    .padding(.horizontal)
-                    .disabled(isBusy)
                 }
             }
         }
@@ -2431,7 +2448,19 @@ struct LoginView: View {
                             message: "Signed in. Please verify your email to finish setting up syncing."
                         )
                     } else {
-                        feedback = LoginFeedback(type: .success, message: "Signed in successfully.")
+                        // Show full screen success
+                        await MainActor.run {
+                            feedback = LoginFeedback(type: .success, message: "Signed in successfully.")
+                            showFullScreenSuccess = true
+                        }
+                        
+                        // Wait for success message to be shown (2 seconds)
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        
+                        // Hide success view
+                        await MainActor.run {
+                            showFullScreenSuccess = false
+                        }
                         
                         // Save password to system Passwords using Shared Web Credentials
                         // Note: This requires Associated Domains to be configured in the app
@@ -2441,18 +2470,22 @@ struct LoginView: View {
                             account: trimmedEmail,
                             password: trimmedPassword
                         ) { success, error in
-                            if success {
-                                print("✅ [Login] Password saved to system Passwords - user should see system prompt")
-                            } else if let error = error {
-                                let nsError = error as NSError
-                                print("❌ [Login] Failed to save password: \(nsError.localizedDescription)")
-                                print("   Error domain: \(nsError.domain), code: \(nsError.code)")
-                                print("   Note: This may require Associated Domains to be configured")
+                            DispatchQueue.main.async {
+                                if success {
+                                    print("✅ [Login] Password saved to system Passwords - user should see system prompt")
+                                } else if let error = error {
+                                    let nsError = error as NSError
+                                    print("❌ [Login] Failed to save password: \(nsError.localizedDescription)")
+                                    print("   Error domain: \(nsError.domain), code: \(nsError.code)")
+                                    print("   Note: This may require Associated Domains to be configured")
+                                }
+                                
+                                // Navigate to courses settings after password save
+                                Task {
+                                    await proceedAfterLogin()
+                                }
                             }
                         }
-                        
-                        // Proceed to next screen
-                        await proceedAfterLogin()
                     }
                 }
                 password = ""
@@ -2534,8 +2567,18 @@ struct LoginView: View {
             let isVerified = try await authManager.reloadUser()
             
             if isVerified {
+                // Show full screen success
                 await MainActor.run {
                     feedback = LoginFeedback(type: .success, message: "Email verified! Opening settings…")
+                    showFullScreenSuccess = true
+                }
+                
+                // Wait for success message to be shown (2 seconds)
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                
+                // Hide success and proceed
+                await MainActor.run {
+                    showFullScreenSuccess = false
                 }
                 await proceedAfterLogin()
             } else {
@@ -2558,7 +2601,9 @@ struct LoginView: View {
         await BlockPreferencesManager.shared.loadPreferences()
         await SchedulePreferencesManager.shared.loadPreferences()
         await MainActor.run {
-            router.push(.settingsCourses)
+            // Ensure we navigate from settings page, not from login page
+            // This ensures the back button returns to settings, not login
+            router.navigateToSettingsThen(.settingsCourses)
         }
     }
     
@@ -2620,7 +2665,32 @@ struct LoginFeedbackView: View {
         .padding()
         .background(feedback.type.color.opacity(0.1))
         .cornerRadius(12)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal)
+    }
+}
+
+struct FullScreenSuccessView: View {
+    let message: String
+    
+    var body: some View {
+        ZStack {
+            Color.white
+                .ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.green)
+                
+                Text(message)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+        }
     }
 }
 
@@ -2647,6 +2717,8 @@ struct LoginEmailVerificationNotice: View {
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                
+                Spacer()
             }
             
             HStack(spacing: 12) {
@@ -2680,6 +2752,7 @@ struct LoginEmailVerificationNotice: View {
                 .disabled(isBusy)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
@@ -2711,509 +2784,14 @@ struct LoginAuthenticatedNotice: View {
         .padding()
         .background(Color.green.opacity(0.1))
         .cornerRadius(12)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal)
     }
 }
 
 // MARK: - Block Preferences Manager (matching Chrome extension)
-
-typealias BlockKey = String // "A", "B", "C", "D", "E"
-
-struct BlockPreference: Codable, Equatable {
-    var name: String = ""
-    var alternating: Bool = false
-    var nameGreen: String = ""
-    var nameWhite: String = ""
-    var freeGreen: Bool = false
-    var freeWhite: Bool = false
-    var free: Bool = false
-    var nameBackup: String = ""
-    var nameGreenBackup: String = ""
-    var nameWhiteBackup: String = ""
-    var migrated: Bool = true
-    
-    // Legacy fields for migration (not saved to cloud)
-    var showOnGreen: Bool?
-    var showOnWhite: Bool?
-    
-    static func == (lhs: BlockPreference, rhs: BlockPreference) -> Bool {
-        return lhs.name == rhs.name &&
-               lhs.alternating == rhs.alternating &&
-               lhs.nameGreen == rhs.nameGreen &&
-               lhs.nameWhite == rhs.nameWhite &&
-               lhs.freeGreen == rhs.freeGreen &&
-               lhs.freeWhite == rhs.freeWhite &&
-               lhs.free == rhs.free
-    }
-}
-
-typealias BlockPreferenceRecord = [BlockKey: BlockPreference]
-
-class BlockPreferencesManager: ObservableObject {
-    static let shared = BlockPreferencesManager()
-    
-    @Published var preferences: BlockPreferenceRecord = [:]
-    @Published var isLoading: Bool = false
-    @Published var saveStatus: SaveStatus = .idle
-    @Published var hasConflict: Bool = false
-    @Published var remotePreferences: BlockPreferenceRecord?
-    
-    enum SaveStatus: Equatable {
-        case idle
-        case saving
-        case success
-        case error(String)
-    }
-    
-    private let db = Firestore.firestore()
-    private let storageKey = "blockPreferences"
-    private let usersCollection = "users"
-    private var authStateListener: AuthStateDidChangeListenerHandle?
-    
-    private init() {
-        setupAuthListener()
-        // Perform initial migration check synchronously on first load
-        _ = loadFromLocalStorage()
-        // Then load async (may reload from cloud if authenticated)
-        loadPreferences()
-    }
-    
-    deinit {
-        if let listener = authStateListener {
-            Auth.auth().removeStateDidChangeListener(listener)
-        }
-    }
-    
-    private func setupAuthListener() {
-        authStateListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            Task { @MainActor in
-                await self?.loadPreferences()
-            }
-        }
-    }
-    
-    // MARK: - Load Preferences
-    
-    func loadPreferences() async {
-        await MainActor.run {
-            isLoading = true
-            hasConflict = false
-            remotePreferences = nil
-        }
-        
-        // Load local preferences first
-        let local = loadFromLocalStorage()
-        
-        // Try to load from cloud if authenticated
-        if let user = Auth.auth().currentUser, user.isEmailVerified {
-            if let remote = await loadFromRemote(userId: user.uid) {
-                // Check for conflict
-                if !arePreferencesEqual(local, remote) {
-                    // Conflict detected - store both and let user choose
-                    await MainActor.run {
-                        self.preferences = local // Keep local as current
-                        self.remotePreferences = remote
-                        self.hasConflict = true
-                        self.isLoading = false
-                    }
-                    return
-                } else {
-                    // No conflict - use remote
-                    await MainActor.run {
-                        self.preferences = remote
-                        self.isLoading = false
-                    }
-                    // Cache locally
-                    await saveToLocalStorage(remote)
-                    return
-                }
-            }
-        }
-        
-        // Fall back to local storage (no remote or not authenticated)
-        await MainActor.run {
-            self.preferences = local
-            self.isLoading = false
-        }
-    }
-    
-    private func loadPreferences() {
-        Task {
-            await loadPreferences()
-        }
-    }
-    
-    // Check if two preference records are equal
-    private func arePreferencesEqual(_ local: BlockPreferenceRecord, _ remote: BlockPreferenceRecord) -> Bool {
-        let allKeys = Set(local.keys).union(Set(remote.keys))
-        for key in allKeys {
-            let localPref = local[key] ?? BlockPreference()
-            let remotePref = remote[key] ?? BlockPreference()
-            if localPref != remotePref {
-                return false
-            }
-        }
-        return true
-    }
-    
-    // Use local preferences and upload to cloud
-    func useLocalPreferences() async {
-        let (remote, prefs, user) = await MainActor.run {
-            (self.remotePreferences, self.preferences, Auth.auth().currentUser)
-        }
-        
-        guard let remote = remote else { return }
-        guard let user = user, user.isEmailVerified else { return }
-        
-        // Save local preferences to cloud
-        do {
-            try await saveToRemote(userId: user.uid, preferences: prefs)
-            await MainActor.run {
-                self.hasConflict = false
-                self.remotePreferences = nil
-            }
-            // print("✅ [BlockPreferences] Uploaded local preferences to cloud")
-        } catch {
-            // print("❌ [BlockPreferences] Failed to upload local preferences: \(error)")
-        }
-    }
-    
-    // Use remote preferences
-    func useRemotePreferences() async {
-        let remote = await MainActor.run {
-            self.remotePreferences
-        }
-        
-        guard let remote = remote else { return }
-        
-        await MainActor.run {
-            self.preferences = remote
-            self.hasConflict = false
-            self.remotePreferences = nil
-        }
-        
-        // Cache locally
-        await saveToLocalStorage(remote)
-        // print("✅ [BlockPreferences] Using remote preferences")
-    }
-    
-    private func loadFromLocalStorage() -> BlockPreferenceRecord {
-        // Check if migration has been completed
-        let migrationKey = "BlockPreferences_Migrated_v1"
-        let hasMigrated = UserDefaults.standard.bool(forKey: migrationKey)
-        
-        // Only migrate if we haven't migrated before
-        if !hasMigrated {
-            // Check if old format exists
-            if let oldData = UserDefaults.standard.data(forKey: "BlockSettings"),
-               let oldSettings = try? JSONDecoder().decode([String: BlockSettingsLegacy].self, from: oldData),
-               !oldSettings.isEmpty {
-                // Old format exists - migrate it
-                // print("🔄 [BlockPreferences] Old format detected, migrating...")
-                if let migrated = migrateFromOldBlockSettings() {
-                    // Mark migration as completed (only set to true after successful migration)
-                    UserDefaults.standard.set(true, forKey: migrationKey)
-                    // print("✅ [BlockPreferences] Migration completed and marked!")
-                    return migrated
-                }
-            } else {
-                // No old format to migrate, mark as completed anyway
-                UserDefaults.standard.set(true, forKey: migrationKey)
-                // print("ℹ️ [BlockPreferences] No old format found, migration marked as completed")
-            }
-        } else {
-            // print("ℹ️ [BlockPreferences] Migration already completed, skipping")
-        }
-        
-        // Load new format if exists
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let decoded = try? JSONDecoder().decode(BlockPreferenceRecord.self, from: data) {
-            return migratePreferences(decoded)
-        }
-        
-        // Return defaults
-        return createDefaultPreferences()
-    }
-    
-    // MARK: - Migration from Old BlockSettings Format
-    
-    private func migrateFromOldBlockSettings() -> BlockPreferenceRecord? {
-        // Read old format
-        guard let oldData = UserDefaults.standard.data(forKey: "BlockSettings") else {
-            return nil
-        }
-        
-        guard let oldSettings = try? JSONDecoder().decode([String: BlockSettingsLegacy].self, from: oldData) else {
-            // print("⚠️ [BlockPreferences] Failed to decode old format")
-            return nil
-        }
-        
-        // print("🔄 [BlockPreferences] Migrating from old format...")
-        // print("🔄 [BlockPreferences] Old settings: \(oldSettings)")
-        
-        // Convert each block from old format to new format
-        var newPrefs: BlockPreferenceRecord = [:]
-        let blockKeys: [BlockKey] = ["A", "B", "C", "D", "E"]
-        
-        for key in blockKeys {
-            let oldSetting = oldSettings[key] ?? BlockSettingsLegacy()
-            
-            var newPref = BlockPreference()
-            newPref.migrated = true
-            
-            let showOnGreen = oldSetting.showOnGreenDay
-            let showOnWhite = oldSetting.showOnWhiteDay
-            let oldName = oldSetting.name
-            
-            // Simple conversion: map old format to new format
-            if !showOnGreen && !showOnWhite {
-                // Free Block: both unchecked
-                newPref.free = true
-                newPref.name = "Free Block"
-                newPref.nameBackup = oldName
-                newPref.alternating = false
-            } else if showOnGreen && !showOnWhite {
-                // Only green day
-                newPref.alternating = true
-                newPref.nameGreen = oldName
-                newPref.nameWhite = ""
-                newPref.freeGreen = false
-                newPref.freeWhite = true
-            } else if !showOnGreen && showOnWhite {
-                // Only white day
-                newPref.alternating = true
-                newPref.nameGreen = ""
-                newPref.nameWhite = oldName
-                newPref.freeGreen = true
-                newPref.freeWhite = false
-            } else {
-                // Both days (normal)
-                newPref.alternating = false
-                newPref.free = false
-                newPref.name = oldName
-            }
-            
-            newPrefs[key] = newPref
-            // print("✅ [BlockPreferences] \(key): '\(oldName)' (G:\(showOnGreen), W:\(showOnWhite)) -> alt:\(newPref.alternating), free:\(newPref.free)")
-        }
-        
-        // Save to new format (this overwrites any existing new format)
-        if let encoded = try? JSONEncoder().encode(newPrefs) {
-            UserDefaults.standard.set(encoded, forKey: storageKey)
-            // print("✅ [BlockPreferences] Saved migrated data to '\(storageKey)'")
-            return newPrefs
-        } else {
-            // print("❌ [BlockPreferences] Failed to encode!")
-            return nil
-        }
-    }
-    
-    private func loadFromRemote(userId: String) async -> BlockPreferenceRecord? {
-        do {
-            let docRef = db.collection(usersCollection).document(userId)
-            let document = try await docRef.getDocument()
-            
-            guard document.exists,
-                  let data = document.data(),
-                  let prefsData = data["blockPreferences"] as? [String: Any] else {
-                return nil
-            }
-            
-            // Convert to BlockPreferenceRecord
-            var prefs: BlockPreferenceRecord = [:]
-            for (key, value) in prefsData {
-                if let dict = value as? [String: Any],
-                   let jsonData = try? JSONSerialization.data(withJSONObject: dict),
-                   let pref = try? JSONDecoder().decode(BlockPreference.self, from: jsonData) {
-                    prefs[key] = pref
-                }
-            }
-            
-            return prefs.isEmpty ? nil : prefs
-        } catch {
-            // print("❌ [BlockPreferences] Failed to load from remote: \(error)")
-            return nil
-        }
-    }
-    
-    // MARK: - Save Preferences
-    
-    func savePreferences() async {
-        let prefsToSave = await MainActor.run {
-            self.preferences
-        }
-        
-        // Save locally first
-        await saveToLocalStorage(prefsToSave)
-        
-        // Save to cloud if authenticated
-        if let user = Auth.auth().currentUser, user.isEmailVerified {
-            await MainActor.run {
-                self.saveStatus = .saving
-            }
-            
-            do {
-                try await saveToRemote(userId: user.uid, preferences: prefsToSave)
-                await MainActor.run {
-                    self.saveStatus = .success
-                    // Reset after 3 seconds
-                    Task {
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
-                        await MainActor.run {
-                            if case .success = self.saveStatus {
-                                self.saveStatus = .idle
-                            }
-                        }
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    self.saveStatus = .error(error.localizedDescription)
-                }
-            }
-        } else {
-            await MainActor.run {
-                self.saveStatus = .idle
-            }
-        }
-        
-        // Notify that block settings changed
-        NotificationCenter.default.post(name: Notification.Name("BlockSettingsChanged"), object: nil)
-    }
-    
-    private func saveToLocalStorage(_ preferences: BlockPreferenceRecord) async {
-        if let encoded = try? JSONEncoder().encode(preferences) {
-            UserDefaults.standard.set(encoded, forKey: storageKey)
-            // print("✅ [BlockPreferences] Saved to local storage")
-        }
-    }
-    
-    private func saveToRemote(userId: String, preferences: BlockPreferenceRecord) async throws {
-        // Clean preferences (remove legacy fields)
-        let cleaned = cleanPreferences(preferences)
-        
-        // Convert to Firestore-compatible format
-        var prefsDict: [String: Any] = [:]
-        for (key, pref) in cleaned {
-            if let jsonData = try? JSONEncoder().encode(pref),
-               let dict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
-                prefsDict[key] = dict
-            }
-        }
-        
-        let docRef = db.collection(usersCollection).document(userId)
-        try await docRef.setData([
-            "blockPreferences": prefsDict,
-            "updatedAt": FieldValue.serverTimestamp()
-        ], merge: true)
-        
-        // print("✅ [BlockPreferences] Saved to cloud")
-    }
-    
-    private func cleanPreferences(_ preferences: BlockPreferenceRecord) -> BlockPreferenceRecord {
-        var cleaned: BlockPreferenceRecord = [:]
-        for (key, pref) in preferences {
-            cleaned[key] = BlockPreference(
-                name: pref.name,
-                alternating: pref.alternating,
-                nameGreen: pref.nameGreen,
-                nameWhite: pref.nameWhite,
-                freeGreen: pref.freeGreen,
-                freeWhite: pref.freeWhite,
-                free: pref.free,
-                nameBackup: pref.nameBackup,
-                nameGreenBackup: pref.nameGreenBackup,
-                nameWhiteBackup: pref.nameWhiteBackup,
-                migrated: true
-            )
-        }
-        return cleaned
-    }
-    
-    // MARK: - Defaults
-    
-    private func createDefaultPreferences() -> BlockPreferenceRecord {
-        return [
-            "A": BlockPreference(),
-            "B": BlockPreference(),
-            "C": BlockPreference(),
-            "D": BlockPreference(),
-            "E": BlockPreference()
-        ]
-    }
-    
-    // MARK: - Migration
-    
-    private func migratePreferences(_ prefs: BlockPreferenceRecord) -> BlockPreferenceRecord {
-        var migrated: BlockPreferenceRecord = [:]
-        
-        for (key, pref) in prefs {
-            if pref.migrated {
-                migrated[key] = pref
-                continue
-            }
-            
-            // Migrate from old format (showOnGreen/showOnWhite)
-            let showOnGreen = pref.showOnGreen ?? true
-            let showOnWhite = pref.showOnWhite ?? true
-            let name = pref.name
-            
-            var newPref = BlockPreference()
-            newPref.name = name
-            
-            if !showOnGreen && !showOnWhite {
-                // Both unchecked -> free block
-                newPref.free = true
-                newPref.name = "Free Block"
-                newPref.nameBackup = name.isEmpty || name == "Free Block" ? "" : name
-                newPref.alternating = false
-            } else if showOnGreen && !showOnWhite {
-                // Only green -> alternating
-                newPref.alternating = true
-                newPref.nameGreen = name
-                newPref.nameWhite = ""
-                newPref.freeGreen = false
-                newPref.freeWhite = true
-            } else if !showOnGreen && showOnWhite {
-                // Only white -> alternating
-                newPref.alternating = true
-                newPref.nameGreen = ""
-                newPref.nameWhite = name
-                newPref.freeGreen = true
-                newPref.freeWhite = false
-            } else {
-                // Both checked -> normal
-                newPref.alternating = false
-                newPref.free = false
-            }
-            
-            newPref.migrated = true
-            migrated[key] = newPref
-        }
-        
-        return migrated
-    }
-    
-    // MARK: - Helper Methods
-    
-    func getPreference(for key: BlockKey) -> BlockPreference {
-        return preferences[key] ?? BlockPreference()
-    }
-    
-    func updatePreference(for key: BlockKey, preference: BlockPreference) {
-        preferences[key] = preference
-        Task {
-            await savePreferences()
-        }
-    }
-    
-    func resetToDefaults() {
-        preferences = createDefaultPreferences()
-        Task {
-            await savePreferences()
-        }
-    }
-}
+// Note: BlockPreferencesManager is defined in BlockPreferencesManager.swift
+// This section is kept for reference but the actual implementation is in the separate file
 
 // MARK: - Schedule Preferences Manager (matching Chrome extension)
 
@@ -3378,6 +2956,9 @@ struct NewBlockConfigurationView: View {
     @State private var showResetAlert = false
     @State private var showSignOutAlert = false
     @State private var showClearDataAlert = false
+    @State private var isVerificationBusy: Bool = false
+    @State private var resendCooldown: Int = 0
+    @State private var cooldownTimer: Timer?
     
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     private let blockKeys: [BlockKey] = ["A", "B", "C", "D", "E"]
@@ -3394,69 +2975,8 @@ struct NewBlockConfigurationView: View {
             // Main Content
             ScrollView {
                 VStack(spacing: 24) {
-                    // Login Card
-                    VStack(alignment: .leading, spacing: 16) {
-                        if authManager.isAuthenticated, let email = authManager.userEmail {
-                            // Signed in state
-                            HStack(spacing: 12) {
-                                // User initial circle
-                                Circle()
-                                    .fill(accentGreen.opacity(0.12))
-                                    .frame(width: 44, height: 44)
-                                    .overlay(
-                                        Text(getUserInitial(from: email))
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .foregroundColor(accentGreen)
-                                    )
-                                
-                                // Email address
-                                Text(email)
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                
-                                Spacer()
-                                
-                                // Sign out button
-                                Button(action: { showSignOutAlert = true }) {
-                                    Text("Sign out")
-                                        .font(.footnote.weight(.semibold))
-                                        .padding(.vertical, 9)
-                                        .padding(.horizontal, 14)
-                                        .background(Color.red.opacity(0.12))
-                                        .foregroundColor(.red)
-                                        .cornerRadius(11)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        } else {
-                            // Not signed in state
-                            HStack {
-                                Text("Sign in to sync your schedule across devices.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                
-                                Spacer()
-                                
-                                // Sign in button
-                                Button(action: {
-                                    router.push(.coursesLogin)
-                                }) {
-                                    Text("Sign in")
-                                        .font(.subheadline)
-                                        .foregroundColor(accentGreen)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(accentGreen.opacity(0.12))
-                                        .cornerRadius(6)
-                                }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(8)
-                    .padding(.horizontal)
-                    .padding(.top)
+                    loginCard
+                        .padding(.top, 16)
                     
                     // Conflict Resolution Banner
                     if prefsManager.hasConflict {
@@ -3464,181 +2984,28 @@ struct NewBlockConfigurationView: View {
                             .padding(.horizontal)
                     }
                     
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Class & Schedule Settings")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                
-                                Text("Rename blocks and control how classes appear on Green and White days. Changes save automatically.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            // Auto-save indicator
-                            if case .saving = prefsManager.saveStatus {
-                                HStack(spacing: 4) {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                    Text("Saving…")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            } else if case .success = prefsManager.saveStatus {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "checkmark")
-                                        .font(.caption)
-                                    Text("Saved")
-                                        .font(.caption)
-                                }
-                                .foregroundColor(.green)
-                            }
-                            
-                            // Reset Button
-                            Button(action: { showResetAlert = true }) {
-                                Text("Reset")
-                                    .font(.footnote.weight(.semibold))
-                                    .padding(.vertical, 9)
-                                    .padding(.horizontal, 14)
-                                    .background(Color.red.opacity(0.12))
-                                    .foregroundColor(.red)
-                                    .cornerRadius(11)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(prefsManager.isLoading || prefsManager.saveStatus == .saving)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top)
-                    
-                    // Error Message
-                    if case .error(let message) = prefsManager.saveStatus {
-                        HStack {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text(message)
-                                .font(.subheadline)
-                                .foregroundColor(.red)
-                            Spacer()
-                        }
-                        .padding()
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(8)
+                    // Email Verification Banner
+                    if authManager.needsEmailVerification {
+                        EmailVerificationBanner(
+                            isBusy: $isVerificationBusy,
+                            resendCooldown: $resendCooldown,
+                            onResend: handleResendVerification,
+                            onRefresh: handleRefreshVerification
+                        )
                         .padding(.horizontal)
                     }
+                    
+                    headerSection
+                        .padding(.top, -8)
+                    
+                    errorMessageSection
                     
                     if prefsManager.isLoading {
                         ProgressView()
                             .padding()
                     } else {
-                        // Display Settings
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Display Settings")
-                                .font(.headline)
-                                .padding(.horizontal)
-                            
-                            VStack(spacing: 12) {
-                                HStack {
-                                    Text("Time format")
-                                        .font(.subheadline)
-                                    
-                                    Spacer()
-                                    
-                                    Picker("Time format", selection: Binding(
-                                        get: { schedulePrefsManager.preferences.timeFormat },
-                                        set: { newValue in
-                                            schedulePrefsManager.preferences.timeFormat = newValue
-                                            Task {
-                                                await schedulePrefsManager.savePreferences()
-                                            }
-                                        }
-                                    )) {
-                                        Text("12-hour").tag(TimeFormat.hour12)
-                                        Text("24-hour").tag(TimeFormat.hour24)
-                                    }
-                                    .pickerStyle(.segmented)
-                                    .frame(width: 150)
-                                }
-                                .padding()
-                                .background(Color(UIColor.secondarySystemBackground))
-                                .cornerRadius(8)
-                            }
-                            .padding(.horizontal)
-                        }
-                        
-                        // Class Blocks
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Class Blocks")
-                                .font(.headline)
-                                .padding(.horizontal)
-                            
-                            VStack(spacing: 0) {
-                                // Table Header
-                                HStack(spacing: 0) {
-                                    Text("Block")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .frame(width: 50, alignment: .leading)
-                                        .padding(.leading, 12)
-                                    
-                                    Rectangle()
-                                        .fill(Color(UIColor.separator))
-                                        .frame(width: 1)
-                                    
-                                    Text("Course name")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.leading, 12)
-                                    
-                                    Rectangle()
-                                        .fill(Color(UIColor.separator))
-                                        .frame(width: 1)
-                                    
-                                    Text("Free")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .frame(width: 50, alignment: .center)
-                                    
-                                    Rectangle()
-                                        .fill(Color(UIColor.separator))
-                                        .frame(width: 1)
-                                    
-                                    Text("Alternating")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .frame(width: 80, alignment: .center)
-                                }
-                                .padding(.vertical, 12)
-                                .background(Color(UIColor.secondarySystemBackground))
-                                
-                                Divider()
-                                
-                                // Table Rows
-                                ForEach(blockKeys, id: \.self) { key in
-                                    BlockPreferenceRow(
-                                        blockKey: key,
-                                        preference: Binding(
-                                            get: { prefsManager.getPreference(for: key) },
-                                            set: { newValue in
-                                                prefsManager.updatePreference(for: key, preference: newValue)
-                                            }
-                                        )
-                                    )
-                                    
-                                    if key != blockKeys.last {
-                                        Divider()
-                                    }
-                                }
-                            }
-                            .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
-                            .padding(.horizontal)
-                        }
+                        displaySettingsSection
+                        classBlocksSection
                     }
                 }
                 .padding(.bottom)
@@ -3649,6 +3016,10 @@ struct NewBlockConfigurationView: View {
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .onDisappear {
+            cooldownTimer?.invalidate()
+            cooldownTimer = nil
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
@@ -3681,6 +3052,250 @@ struct NewBlockConfigurationView: View {
         }
     }
     
+    // MARK: - View Components
+    
+    private var loginCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if authManager.isAuthenticated, let email = authManager.userEmail {
+                // Signed in state
+                HStack(spacing: 12) {
+                    // User initial circle
+                    Circle()
+                        .fill(accentGreen.opacity(0.12))
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Text(getUserInitial(from: email))
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(accentGreen)
+                        )
+                    
+                    // Email address
+                    Text(email)
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    // Sign out button
+                    Button(action: { showSignOutAlert = true }) {
+                        Text("Sign out")
+                            .font(.footnote.weight(.semibold))
+                            .padding(.vertical, 9)
+                            .padding(.horizontal, 14)
+                            .background(Color.red.opacity(0.12))
+                            .foregroundColor(.red)
+                            .cornerRadius(11)
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else {
+                // Not signed in state
+                HStack {
+                    Text("Sign in to sync your schedule across devices.")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    // Sign in button
+                    Button(action: {
+                        router.push(.coursesLogin)
+                    }) {
+                        Text("Sign in")
+                            .font(.subheadline)
+                            .foregroundColor(accentGreen)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(accentGreen.opacity(0.12))
+                            .cornerRadius(6)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(8)
+        .padding(.horizontal)
+        .padding(.top)
+    }
+    
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Class & Schedule Settings")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Rename blocks and control how classes appear on Green and White days. Changes save automatically.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // Auto-save indicator
+                if case .saving = prefsManager.saveStatus {
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Saving…")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } else if case .success = prefsManager.saveStatus {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark")
+                            .font(.caption)
+                        Text("Saved")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.green)
+                }
+                
+                // Reset Button
+                Button(action: { showResetAlert = true }) {
+                    Text("Reset")
+                        .font(.footnote.weight(.semibold))
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 14)
+                        .background(Color.red.opacity(0.12))
+                        .foregroundColor(.red)
+                        .cornerRadius(11)
+                }
+                .buttonStyle(.plain)
+                .disabled(prefsManager.isLoading || prefsManager.saveStatus == .saving)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top)
+    }
+    
+    @ViewBuilder
+    private var errorMessageSection: some View {
+        if case .error(let message) = prefsManager.saveStatus {
+            HStack {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .foregroundColor(.red)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(.red)
+                Spacer()
+            }
+            .padding()
+            .background(Color.red.opacity(0.1))
+            .cornerRadius(8)
+            .padding(.horizontal)
+        }
+    }
+    
+    private var displaySettingsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Display Settings")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Time format")
+                        .font(.subheadline)
+                    
+                    Spacer()
+                    
+                    Picker("Time format", selection: Binding(
+                        get: { schedulePrefsManager.preferences.timeFormat },
+                        set: { newValue in
+                            schedulePrefsManager.preferences.timeFormat = newValue
+                            Task {
+                                await schedulePrefsManager.savePreferences()
+                            }
+                        }
+                    )) {
+                        Text("12-hour").tag(TimeFormat.hour12)
+                        Text("24-hour").tag(TimeFormat.hour24)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 150)
+                }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    private var classBlocksSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Class Blocks")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            VStack(spacing: 0) {
+                // Table Header
+                HStack(spacing: 0) {
+                    Text("Block")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(width: 50, alignment: .leading)
+                        .padding(.leading, 12)
+                    
+                    Rectangle()
+                        .fill(Color(UIColor.separator))
+                        .frame(width: 1)
+                    
+                    Text("Course name")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 12)
+                    
+                    Rectangle()
+                        .fill(Color(UIColor.separator))
+                        .frame(width: 1)
+                    
+                    Text("Free")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(width: 50, alignment: .center)
+                    
+                    Rectangle()
+                        .fill(Color(UIColor.separator))
+                        .frame(width: 1)
+                    
+                    Text("Alternating")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(width: 80, alignment: .center)
+                }
+                .padding(.vertical, 12)
+                .background(Color(UIColor.secondarySystemBackground))
+                
+                Divider()
+                
+                // Table Rows
+                ForEach(blockKeys, id: \.self) { key in
+                    BlockPreferenceRow(
+                        blockKey: key,
+                        preference: Binding(
+                            get: { prefsManager.getPreference(for: key) },
+                            set: { newValue in
+                                prefsManager.updatePreference(for: key, preference: newValue)
+                            }
+                        )
+                    )
+                    
+                    if key != blockKeys.last {
+                        Divider()
+                    }
+                }
+            }
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(8)
+            .padding(.horizontal)
+        }
+    }
+    
     private func handleSignOut() {
         Task {
             do {
@@ -3706,6 +3321,97 @@ struct NewBlockConfigurationView: View {
         guard !email.isEmpty else { return "?" }
         let firstChar = email.prefix(1).uppercased()
         return firstChar
+    }
+    
+    // MARK: - Email Verification Handlers
+    
+    private func handleResendVerification() {
+        guard !isVerificationBusy, resendCooldown == 0 else {
+            if resendCooldown > 0 {
+                feedback = LoginFeedback(
+                    type: .info,
+                    message: "Please wait \(resendCooldown) seconds before sending another verification email."
+                )
+            }
+            return
+        }
+        
+        isVerificationBusy = true
+        feedback = nil
+        
+        Task {
+            do {
+                try await authManager.sendVerificationEmail()
+                feedback = LoginFeedback(
+                    type: .info,
+                    message: "Verification email sent. Please check your inbox (including spam or junk folders)."
+                )
+                resendCooldown = 60
+                startCooldownTimer()
+            } catch let error as AuthError {
+                if case .tooManyRequests = error {
+                    feedback = LoginFeedback(
+                        type: .error,
+                        message: "Too many attempts. Please wait one minute before trying again."
+                    )
+                    resendCooldown = 60
+                    startCooldownTimer()
+                } else {
+                    feedback = LoginFeedback(type: .error, message: error.localizedDescription)
+                }
+            } catch {
+                feedback = LoginFeedback(type: .error, message: error.localizedDescription)
+            }
+            
+            isVerificationBusy = false
+        }
+    }
+    
+    private func handleRefreshVerification() {
+        guard !isVerificationBusy else { return }
+        
+        isVerificationBusy = true
+        feedback = nil
+        
+        Task {
+            await checkVerificationStatus()
+            isVerificationBusy = false
+        }
+    }
+    
+    private func checkVerificationStatus() async {
+        do {
+            let isVerified = try await authManager.reloadUser()
+            
+            if isVerified {
+                await MainActor.run {
+                    feedback = LoginFeedback(type: .success, message: "Email verified successfully!")
+                }
+            } else {
+                await MainActor.run {
+                    feedback = LoginFeedback(
+                        type: .warning,
+                        message: "We still cannot confirm the verification. Click the link in your email, then try again."
+                    )
+                }
+            }
+        } catch {
+            await MainActor.run {
+                feedback = LoginFeedback(type: .error, message: "Failed to check verification status.")
+            }
+        }
+    }
+    
+    private func startCooldownTimer() {
+        cooldownTimer?.invalidate()
+        cooldownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            if self.resendCooldown > 0 {
+                self.resendCooldown -= 1
+            } else {
+                timer.invalidate()
+                self.cooldownTimer = nil
+            }
+        }
     }
 }
 
@@ -3826,25 +3532,6 @@ struct FeedbackBanner: View {
     }
 }
 
-struct EmailVerificationBanner: View {
-    let onOpenLogin: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Your email is not verified. Open the sign-in page to resend the verification email or confirm the link in your inbox.")
-                .font(.subheadline)
-                .foregroundColor(.primary)
-            
-            Button(action: onOpenLogin) {
-                Text("Manage verification")
-                    .font(.subheadline)
-                    .foregroundColor(Color(red: 20/255, green: 54/255, blue: 27/255))
-            }
-        }
-        .padding()
-        .background(Color.orange.opacity(0.1))
-    }
-}
 
 struct NotSignedInBanner: View {
     var body: some View {
@@ -4077,63 +3764,144 @@ struct CourseNameTextField: View {
 
 // MARK: - Conflict Resolution Banner
 
-struct ConflictResolutionBanner: View {
-    @StateObject private var prefsManager = BlockPreferencesManager.shared
-    @State private var isResolving = false
+struct EmailVerificationBanner: View {
+    @Binding var isBusy: Bool
+    @Binding var resendCooldown: Int
+    let onResend: () -> Void
+    let onRefresh: () -> Void
     
     private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Settings Conflict")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            Text("Your local settings differ from your account settings. Choose which settings to use.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "envelope.badge")
+                    .foregroundColor(.orange)
+                    .font(.title3)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Verify your email")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text("Check your inbox (including spam or junk folders) and click the verification link.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                Spacer()
+            }
             
             HStack(spacing: 12) {
-                // Use Local Button
-                Button(action: {
-                    isResolving = true
-                    Task {
-                        await BlockPreferencesManager.shared.useLocalPreferences()
-                        isResolving = false
+                Button(action: onResend) {
+                    HStack {
+                        if isBusy {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                        } else {
+                            Text(resendCooldown > 0 ? "Resend (\(resendCooldown)s)" : "Resend email")
+                        }
                     }
-                }) {
-                    Text("Use Local")
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(accentGreen)
-                        .cornerRadius(8)
+                    .font(.subheadline)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color(UIColor.systemGray5))
+                    .foregroundColor(.primary)
+                    .cornerRadius(8)
                 }
-                .disabled(isResolving)
+                .disabled(isBusy || resendCooldown > 0)
                 
-                // Use Account Button
-                Button(action: {
-                    isResolving = true
-                    Task {
-                        await BlockPreferencesManager.shared.useRemotePreferences()
-                        isResolving = false
-                    }
-                }) {
-                    Text("Use Account")
+                Button(action: onRefresh) {
+                    Text("I've verified")
                         .font(.subheadline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .background(accentGreen)
+                        .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                .disabled(isResolving)
+                .disabled(isBusy)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.orange.opacity(0.1))
-        .cornerRadius(8)
+        .cornerRadius(12)
+    }
+}
+
+struct ConflictResolutionBanner: View {
+    @StateObject private var prefsManager = BlockPreferencesManager.shared
+    @State private var isResolving = false
+    @State private var isVisible = true
+    
+    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
+    
+    var body: some View {
+        if isVisible {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Settings Conflict")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Text("Your local settings differ from your account settings. Choose which settings to use.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                HStack(spacing: 12) {
+                    // Use Local Button
+                    Button(action: {
+                        isResolving = true
+                        Task {
+                            await BlockPreferencesManager.shared.useLocalPreferences()
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                isVisible = false
+                            }
+                            // Wait for animation to complete before resetting
+                            try? await Task.sleep(nanoseconds: 300_000_000)
+                            isResolving = false
+                        }
+                    }) {
+                        Text("Use Local")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(accentGreen)
+                            .cornerRadius(8)
+                    }
+                    .disabled(isResolving)
+                    
+                    // Use Account Button
+                    Button(action: {
+                        isResolving = true
+                        Task {
+                            await BlockPreferencesManager.shared.useRemotePreferences()
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                isVisible = false
+                            }
+                            // Wait for animation to complete before resetting
+                            try? await Task.sleep(nanoseconds: 300_000_000)
+                            isResolving = false
+                        }
+                    }) {
+                        Text("Use Account")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(accentGreen)
+                            .cornerRadius(8)
+                    }
+                    .disabled(isResolving)
+                }
+            }
+            .padding()
+            .background(Color.orange.opacity(0.1))
+            .cornerRadius(8)
+            .opacity(isVisible ? 1 : 0)
+        }
     }
 }
 

@@ -52,7 +52,7 @@ class BlockPreferencesManager: ObservableObject {
     @Published var hasConflict: Bool = false
     @Published var remotePreferences: BlockPreferenceRecord?
     
-    enum SaveStatus {
+    enum SaveStatus: Equatable {
         case idle
         case saving
         case success

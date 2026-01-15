@@ -26,4 +26,23 @@ final class NavigationRouter: ObservableObject {
     func popToRoot() {
         path.removeAll()
     }
+    
+    func popToSettings() {
+        // Remove all routes until we find .settings, or remove all if .settings not found
+        if let settingsIndex = path.firstIndex(of: .settings) {
+            path.removeSubrange((settingsIndex + 1)..<path.count)
+        } else {
+            // If .settings is not in the path, ensure it's at the root
+            path.removeAll()
+        }
+    }
+    
+    func navigateToSettingsThen(_ route: AppRoute) {
+        // Ensure we're at settings first, then navigate to the target route
+        popToSettings()
+        if !path.contains(.settings) {
+            path.append(.settings)
+        }
+        path.append(route)
+    }
 }
