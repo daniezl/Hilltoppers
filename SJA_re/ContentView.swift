@@ -1659,6 +1659,8 @@ class NotificationSettingsManager: ObservableObject {
     @Published var notificationsEnabled: Bool = false // Default disabled
     @Published var notificationMinutes: Int = 2 // Default 2 minutes before block ends
     @Published var selectedLunchPeriod: Int = 0 // Default Off
+    @Published var attendanceNotificationsEnabled: Bool = false // Default disabled
+    @Published var attendanceNotificationMinutes: Int = 5 // Default 5 minutes after block starts
     
     private init() {
         loadSettings()
@@ -1668,6 +1670,8 @@ class NotificationSettingsManager: ObservableObject {
         UserDefaults.standard.set(notificationsEnabled, forKey: "NotificationsEnabled")
         UserDefaults.standard.set(notificationMinutes, forKey: "NotificationMinutes")
         UserDefaults.standard.set(selectedLunchPeriod, forKey: "SelectedLunchPeriod")
+        UserDefaults.standard.set(attendanceNotificationsEnabled, forKey: "AttendanceNotificationsEnabled")
+        UserDefaults.standard.set(attendanceNotificationMinutes, forKey: "AttendanceNotificationMinutes")
         // print("✅ Notification settings saved: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
     
@@ -1675,6 +1679,8 @@ class NotificationSettingsManager: ObservableObject {
         notificationsEnabled = UserDefaults.standard.object(forKey: "NotificationsEnabled") as? Bool ?? false
         notificationMinutes = UserDefaults.standard.object(forKey: "NotificationMinutes") as? Int ?? 2
         selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 0
+        attendanceNotificationsEnabled = UserDefaults.standard.object(forKey: "AttendanceNotificationsEnabled") as? Bool ?? false
+        attendanceNotificationMinutes = UserDefaults.standard.object(forKey: "AttendanceNotificationMinutes") as? Int ?? 5
         // print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
 }
@@ -1687,48 +1693,34 @@ struct NotificationSettingsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header section
-            VStack(spacing: 8) {
-                Text("Block End Notifications")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+            // Toggle section
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Toggle("Enable Block End Notifications", isOn: Binding(
+                        get: { notificationManager.notificationsEnabled },
+                        set: { newValue in
+                            if newValue {
+                                // User wants to enable notifications - request permission first
+                                requestNotificationPermission(forAttendance: false)
+                            } else {
+                                // User wants to disable notifications - no permission needed
+                                notificationManager.notificationsEnabled = false
+                                notificationManager.saveSettings()
+                            }
+                        }
+                    ))
+                    .font(.headline)
+                }
                 
                 Text("Get notified before each block ends")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top, 40)
-            .padding(.bottom, 20)
-            
-            // Toggle section
-            HStack {
-                Toggle("Enable Notifications", isOn: Binding(
-                    get: { notificationManager.notificationsEnabled },
-                    set: { newValue in
-                        if newValue {
-                            // User wants to enable notifications - request permission first
-                            requestNotificationPermission()
-                        } else {
-                            // User wants to disable notifications - no permission needed
-                            notificationManager.notificationsEnabled = false
-                            notificationManager.saveSettings()
-                        }
-                    }
-                ))
-                .font(.headline)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, notificationManager.notificationsEnabled ? 8 : 0)
-            
-            // Explanatory text - only show when notifications are enabled
-            if notificationManager.notificationsEnabled {
-                Text("The app refreshes the next two school days in the background, so you shouldn't need to open it daily.")
                     .font(.footnote)
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, notificationManager.notificationsEnabled ? 8 : 0)
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 40)
+            .padding(.bottom, 0)
             
             // Picker section - only show when notifications are enabled
             if notificationManager.notificationsEnabled {
@@ -1762,7 +1754,7 @@ struct NotificationSettingsView: View {
                         .fill(Color(UIColor.systemGroupedBackground))
                 )
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 4)
                 .transition(.opacity.combined(with: .scale))
                 
                 // Lunch period selection
@@ -1821,6 +1813,72 @@ struct NotificationSettingsView: View {
                 .transition(.opacity.combined(with: .scale))
             }
             
+            // Attendance Notifications Section
+            VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Toggle("Enable Attendance Notifications", isOn: Binding(
+                            get: { notificationManager.attendanceNotificationsEnabled },
+                            set: { newValue in
+                                if newValue {
+                                    // User wants to enable notifications - request permission first
+                                    requestNotificationPermission(forAttendance: true)
+                                } else {
+                                    // User wants to disable notifications - no permission needed
+                                    notificationManager.attendanceNotificationsEnabled = false
+                                    notificationManager.saveSettings()
+                                }
+                            }
+                        ))
+                        .font(.headline)
+                    }
+                    
+                    Text("Designed for teachers to remind them to submit attendance")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 40)
+                .padding(.bottom, notificationManager.attendanceNotificationsEnabled ? 0 : 0)
+                
+                // Attendance notification minutes picker - only show when enabled
+                if notificationManager.attendanceNotificationsEnabled {
+                    VStack(spacing: 10) {
+                        // Single line with embedded picker
+                        HStack(spacing: 4) {
+                            Text("Notify me")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Picker("Minutes", selection: $notificationManager.attendanceNotificationMinutes) {
+                                ForEach(1...10, id: \.self) { minutes in
+                                    Text("\(minutes)").tag(minutes)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 60, height: 80)
+                            .clipped()
+                            
+                            Text("minute\(notificationManager.attendanceNotificationMinutes == 1 ? "" : "s") after block starts")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(UIColor.systemGroupedBackground))
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .transition(.opacity.combined(with: .scale))
+                }
+            }
+            
             Spacer()
         }
         .background(Color(UIColor.systemBackground))
@@ -1838,6 +1896,7 @@ struct NotificationSettingsView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: notificationManager.notificationsEnabled)
+        .animation(.easeInOut(duration: 0.3), value: notificationManager.attendanceNotificationsEnabled)
         .onChange(of: notificationManager.notificationMinutes) { _ in
             // Auto-save when picker value changes
             notificationManager.saveSettings()
@@ -1848,6 +1907,14 @@ struct NotificationSettingsView: View {
         }
         .onChange(of: notificationManager.selectedLunchPeriod) { _ in
             // Auto-save when lunch period changes
+            notificationManager.saveSettings()
+        }
+        .onChange(of: notificationManager.attendanceNotificationsEnabled) { _ in
+            // Auto-save when attendance notifications toggle changes
+            notificationManager.saveSettings()
+        }
+        .onChange(of: notificationManager.attendanceNotificationMinutes) { _ in
+            // Auto-save when attendance notification minutes change
             notificationManager.saveSettings()
         }
         .alert("Notification Permission Required", isPresented: $showingPermissionDeniedAlert) {
@@ -1883,12 +1950,16 @@ struct NotificationSettingsView: View {
     }
     
     // Request notification permission when user tries to enable notifications
-    private func requestNotificationPermission() {
+    private func requestNotificationPermission(forAttendance: Bool) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {
                 if granted {
                     // print("✅ Notification permission granted")
-                    notificationManager.notificationsEnabled = true
+                    if forAttendance {
+                        notificationManager.attendanceNotificationsEnabled = true
+                    } else {
+                        notificationManager.notificationsEnabled = true
+                    }
                     notificationManager.saveSettings()
                 } else {
                     // print("❌ Notification permission denied")
