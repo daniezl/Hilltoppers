@@ -352,36 +352,53 @@ class NotificationManager: ObservableObject {
         let lower = dayType.lowercased()
         let isGreenDay = dayType.isEmpty ? true : (lower.contains("green day") && !lower.contains("white"))
         
+        // Get notification preferences (can have both enabled)
+        let forTeacher = notificationSettings.attendanceNotificationForTeacher
+        let forAdvisor = notificationSettings.attendanceNotificationForAdvisor
+        
         // print("🔔 [ATTENDANCE] Scheduling attendance notifications for \(blocks.count) blocks:")
         // print("🔔 [ATTENDANCE] User setting: \(minutesAfterStart) minute(s) after block starts")
         // print("🔔 [ATTENDANCE] Day type: \(dayType), isGreenDay: \(isGreenDay)")
+        // print("🔔 [ATTENDANCE] For teacher: \(forTeacher), For advisor: \(forAdvisor)")
         
         for block in blocks {
-            // Check if this is a valid course block (ABCDE) and not a free block
-            let blockSettingsManager = BlockSettingsManager.shared
-            
-            // Strictly check if it's an ABCDE block - must match "A Block", "B Block", etc. (case-insensitive)
             let normalizedBlockName = block.name.lowercased().trimmingCharacters(in: .whitespaces)
-            // Match exactly "a block", "b block", "c block", "d block", or "e block"
-            // This excludes "Advisory", "CP", "Chapel", etc.
-            let isABCDEBlock = normalizedBlockName == "a block" ||
-                              normalizedBlockName == "b block" ||
-                              normalizedBlockName == "c block" ||
-                              normalizedBlockName == "d block" ||
-                              normalizedBlockName == "e block"
+            var shouldSchedule = false
             
-            if !isABCDEBlock {
-                // Not an ABCDE block (e.g., Advisory, Chapel, CP), skip it
-                // print("🔔 [ATTENDANCE] Skipping \(block.name) - not an ABCDE block")
-                continue
+            // Check if should schedule for teacher (ABCDE blocks that are not free)
+            if forTeacher {
+                let blockSettingsManager = BlockSettingsManager.shared
+                
+                // Strictly check if it's an ABCDE block - must match "A Block", "B Block", etc. (case-insensitive)
+                // Match exactly "a block", "b block", "c block", "d block", or "e block"
+                // This excludes "Advisory", "CP", "Chapel", etc.
+                let isABCDEBlock = normalizedBlockName == "a block" ||
+                                  normalizedBlockName == "b block" ||
+                                  normalizedBlockName == "c block" ||
+                                  normalizedBlockName == "d block" ||
+                                  normalizedBlockName == "e block"
+                
+                if isABCDEBlock {
+                    // It's an ABCDE block, check if it should be shown (not free)
+                    let shouldShow = blockSettingsManager.shouldShow(block: block.name, onGreenDay: isGreenDay)
+                    
+                    if shouldShow {
+                        // This is a valid class block (not free), schedule it
+                        shouldSchedule = true
+                    }
+                }
             }
             
-            // It's an ABCDE block, check if it should be shown (not free)
-            let shouldShow = blockSettingsManager.shouldShow(block: block.name, onGreenDay: isGreenDay)
+            // Check if should schedule for advisor (Chapel and Advisory)
+            if forAdvisor {
+                let isChapelOrAdvisory = normalizedBlockName == "chapel" || normalizedBlockName == "advisory"
+                
+                if isChapelOrAdvisory {
+                    shouldSchedule = true
+                }
+            }
             
-            if !shouldShow {
-                // This is a free block, skip it
-                // print("🔔 [ATTENDANCE] Skipping \(block.name) - it's a free block")
+            if !shouldSchedule {
                 continue
             }
             
@@ -470,7 +487,7 @@ class NotificationManager: ObservableObject {
             }
         }
     }
-    
+
     func scheduleNotifications(blocks: [Block], on date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
         // Use a serial queue to prevent concurrent scheduling for the same date
         return await withCheckedContinuation { continuation in
@@ -1134,6 +1151,10 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
             // Reschedule notifications when block settings change
             // print("🔔 [BLOCK-SETTINGS] Block settings changed - rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("AttendanceNotificationTypeChanged"))) { _ in
+            // Reschedule notifications when attendance notification type changes
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: currentDayType) { newDayType in
@@ -2002,6 +2023,8 @@ class NotificationSettingsManager: ObservableObject {
     @Published var selectedLunchPeriod: Int = 0 // Default Off
     @Published var attendanceNotificationsEnabled: Bool = false // Default disabled
     @Published var attendanceNotificationMinutes: Int = 5 // Default 5 minutes after block starts
+    @Published var attendanceNotificationForTeacher: Bool = true // Default enabled for teachers
+    @Published var attendanceNotificationForAdvisor: Bool = false // Default disabled for advisors
     
     private init() {
         loadSettings()
@@ -2013,6 +2036,8 @@ class NotificationSettingsManager: ObservableObject {
         UserDefaults.standard.set(selectedLunchPeriod, forKey: "SelectedLunchPeriod")
         UserDefaults.standard.set(attendanceNotificationsEnabled, forKey: "AttendanceNotificationsEnabled")
         UserDefaults.standard.set(attendanceNotificationMinutes, forKey: "AttendanceNotificationMinutes")
+        UserDefaults.standard.set(attendanceNotificationForTeacher, forKey: "AttendanceNotificationForTeacher")
+        UserDefaults.standard.set(attendanceNotificationForAdvisor, forKey: "AttendanceNotificationForAdvisor")
         // print("✅ Notification settings saved: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
     
@@ -2022,6 +2047,8 @@ class NotificationSettingsManager: ObservableObject {
         selectedLunchPeriod = UserDefaults.standard.object(forKey: "SelectedLunchPeriod") as? Int ?? 0
         attendanceNotificationsEnabled = UserDefaults.standard.object(forKey: "AttendanceNotificationsEnabled") as? Bool ?? false
         attendanceNotificationMinutes = UserDefaults.standard.object(forKey: "AttendanceNotificationMinutes") as? Int ?? 5
+        attendanceNotificationForTeacher = UserDefaults.standard.object(forKey: "AttendanceNotificationForTeacher") as? Bool ?? true
+        attendanceNotificationForAdvisor = UserDefaults.standard.object(forKey: "AttendanceNotificationForAdvisor") as? Bool ?? false
         // print("✅ Notification settings loaded: enabled=\(notificationsEnabled), minutes=\(notificationMinutes), lunch=\(selectedLunchPeriod)")
     }
 }
@@ -2036,23 +2063,23 @@ struct NotificationSettingsView: View {
         VStack(spacing: 0) {
             // Toggle section
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
+            HStack {
                     Toggle("Enable Block End Notifications", isOn: Binding(
-                        get: { notificationManager.notificationsEnabled },
-                        set: { newValue in
-                            if newValue {
-                                // User wants to enable notifications - request permission first
+                    get: { notificationManager.notificationsEnabled },
+                    set: { newValue in
+                        if newValue {
+                            // User wants to enable notifications - request permission first
                                 requestNotificationPermission(forAttendance: false)
-                            } else {
-                                // User wants to disable notifications - no permission needed
-                                notificationManager.notificationsEnabled = false
-                                notificationManager.saveSettings()
-                            }
+                        } else {
+                            // User wants to disable notifications - no permission needed
+                            notificationManager.notificationsEnabled = false
+                            notificationManager.saveSettings()
                         }
-                    ))
-                    .font(.headline)
-                }
-                
+                    }
+                ))
+                .font(.headline)
+            }
+            
                 Text("Get notified before each block ends")
                     .font(.footnote)
                     .foregroundColor(.secondary)
@@ -2218,6 +2245,43 @@ struct NotificationSettingsView: View {
                     .padding(.top, 4)
                     .transition(.opacity.combined(with: .scale))
                 }
+                
+                // Attendance notification type selection - only show when enabled
+                if notificationManager.attendanceNotificationsEnabled {
+                    VStack(spacing: 10) {
+                        // Role selection buttons - can select both
+                        HStack(spacing: 8) {
+                            roleSelectionButton(
+                                title: "I teach classes",
+                                subtitle: "Reminder for attendance according to your schedule",
+                                isSelected: notificationManager.attendanceNotificationForTeacher,
+                                action: {
+                                    notificationManager.attendanceNotificationForTeacher.toggle()
+                                    notificationManager.saveSettings()
+                                }
+                            )
+                            
+                            roleSelectionButton(
+                                title: "I am an advisor",
+                                subtitle: "Reminder for attendance for Chapel and Advisory",
+                                isSelected: notificationManager.attendanceNotificationForAdvisor,
+                                action: {
+                                    notificationManager.attendanceNotificationForAdvisor.toggle()
+                                    notificationManager.saveSettings()
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(UIColor.systemGroupedBackground))
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .transition(.opacity.combined(with: .scale))
+                }
             }
             
             Spacer()
@@ -2257,6 +2321,18 @@ struct NotificationSettingsView: View {
         .onChange(of: notificationManager.attendanceNotificationMinutes) { _ in
             // Auto-save when attendance notification minutes change
             notificationManager.saveSettings()
+        }
+        .onChange(of: notificationManager.attendanceNotificationForTeacher) { _ in
+            // Auto-save when attendance notification for teacher changes
+            notificationManager.saveSettings()
+            // Notify that attendance notification type changed so notifications can be rescheduled
+            NotificationCenter.default.post(name: Notification.Name("AttendanceNotificationTypeChanged"), object: nil)
+        }
+        .onChange(of: notificationManager.attendanceNotificationForAdvisor) { _ in
+            // Auto-save when attendance notification for advisor changes
+            notificationManager.saveSettings()
+            // Notify that attendance notification type changed so notifications can be rescheduled
+            NotificationCenter.default.post(name: Notification.Name("AttendanceNotificationTypeChanged"), object: nil)
         }
         .alert("Notification Permission Required", isPresented: $showingPermissionDeniedAlert) {
             Button("Go to Settings") {
@@ -2299,7 +2375,7 @@ struct NotificationSettingsView: View {
                     if forAttendance {
                         notificationManager.attendanceNotificationsEnabled = true
                     } else {
-                        notificationManager.notificationsEnabled = true
+                    notificationManager.notificationsEnabled = true
                     }
                     notificationManager.saveSettings()
                 } else {
@@ -2318,6 +2394,29 @@ struct NotificationSettingsView: View {
         case 3: return "rd"
         default: return "th"
         }
+    }
+    
+    // Helper function for role selection button
+    @ViewBuilder
+    private func roleSelectionButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(isSelected ? .white : .primary)
+                Text(subtitle)
+                    .font(.system(size: 12))
+                    .foregroundColor(isSelected ? .white.opacity(0.9) : .secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? Color.green : Color(UIColor.systemGray5))
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
