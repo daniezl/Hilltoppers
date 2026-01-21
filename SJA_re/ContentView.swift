@@ -34,6 +34,9 @@ struct NotificationScheduleSummary {
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
+    private var schedulingDates: Set<String> = []
+    private let schedulingQueue = DispatchQueue(label: "notificationScheduling")
+    
     private init() {}
     
     func requestPermission() {
@@ -49,9 +52,25 @@ class NotificationManager: ObservableObject {
     func scheduleBlockEndingNotifications(for blocks: [Block], testDate: Date?, dayType: String = "", clearExisting: Bool = true) {
         let center = UNUserNotificationCenter.current()
         
+        // Generate a unique date string for identifier
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        dateFormatter.timeZone = Date.estTimeZone
+        let dateKey = dateFormatter.string(from: testDate ?? Date.currentEST)
+        
         if clearExisting {
-            // Remove existing notifications before scheduling new ones
-            center.removeAllPendingNotificationRequests()
+            // Remove ALL existing block end notifications before scheduling new ones
+            // Keep attendance notifications (they have "attendance-" prefix)
+            // Use synchronous removal for all block end notifications
+            center.getPendingNotificationRequests { requests in
+                let blockEndIdentifiers = requests.filter { request in
+                    let id = request.identifier
+                    return id.hasPrefix("block-") || id.hasPrefix("lunch-") || id.hasPrefix("remove-")
+                }.map { $0.identifier }
+                if !blockEndIdentifiers.isEmpty {
+                    center.removePendingNotificationRequests(withIdentifiers: blockEndIdentifiers)
+                }
+            }
         }
         
         // Check if notifications are enabled
@@ -116,11 +135,19 @@ class NotificationManager: ObservableObject {
                     
                     
                     if blockEndWarning > Date.currentEST {
+                        // Use date + block name + time for unique identifier
+                        let timeFormatter = DateFormatter()
+                        timeFormatter.dateFormat = "HHmm"
+                        timeFormatter.timeZone = Date.estTimeZone
+                        let timeKey = timeFormatter.string(from: blockEndWarning)
+                        let blockNameKey = block.name.replacingOccurrences(of: " ", with: "-").lowercased()
+                        let uniqueId = "block-\(dateKey)-\(blockNameKey)-\(timeKey)"
+                        
                         allNotifications.append(NotificationEvent(
                             time: blockEndWarning,
                             title: blockTitle,
                             body: blockBody,
-                            identifier: "block-\(block.id)",
+                            identifier: uniqueId,
                             type: "block_ending"
                         ))
                         
@@ -229,6 +256,8 @@ class NotificationManager: ObservableObject {
         
         // print("🔔 [NOTIFICATIONS] Found \(allNotifications.count) notifications to schedule in chronological order:")
         
+        print("🔔 [BLOCK-END] Scheduling \(allNotifications.count) notifications for \(blocks.count) blocks")
+        
         // Schedule all notifications
         for notification in allNotifications {
             let scheduledTime = scheduleFormatter.string(from: notification.time)
@@ -283,11 +312,124 @@ class NotificationManager: ObservableObject {
 
             center.add(request) { error in
                 if let error = error {
-                    // print("❌ Failed to schedule notification \(notification.identifier): \(error)")
+                    print("❌ [BLOCK-END] Failed to schedule notification \(notification.identifier): \(error)")
+                } else if notification.type != "remove_notification" {
+                    print("✅ [BLOCK-END] Scheduled: \(notification.identifier) - \(titleDescription) at \(scheduledTime)")
                 }
             }
         }
         
+    }
+    
+    func scheduleAttendanceNotifications(for blocks: [Block], testDate: Date?, dayType: String = "") {
+        let center = UNUserNotificationCenter.current()
+        
+        // Check if attendance notifications are enabled
+        let notificationSettings = NotificationSettingsManager.shared
+        guard notificationSettings.attendanceNotificationsEnabled else {
+            // Remove existing attendance notifications if disabled
+            center.getPendingNotificationRequests { requests in
+                let attendanceIdentifiers = requests.filter { $0.identifier.hasPrefix("attendance-") }.map { $0.identifier }
+                if !attendanceIdentifiers.isEmpty {
+                    center.removePendingNotificationRequests(withIdentifiers: attendanceIdentifiers)
+                }
+            }
+            return
+        }
+        
+        // Note: Clearing is now handled in scheduleNotifications before calling this function
+        
+        let currentDate = testDate ?? Date.currentEST
+        let scheduleFormatter = DateFormatter()
+        scheduleFormatter.dateFormat = "MM/dd, HH:mm"
+        scheduleFormatter.timeZone = Date.estTimeZone
+        
+        // Get user's preferred notification timing (minutes after block starts)
+        let minutesAfterStart = notificationSettings.attendanceNotificationMinutes
+        let secondsAfterStart = TimeInterval(minutesAfterStart * 60)
+        
+        // Determine if it's a green day or white day
+        let lower = dayType.lowercased()
+        let isGreenDay = dayType.isEmpty ? true : (lower.contains("green day") && !lower.contains("white"))
+        
+        // print("🔔 [ATTENDANCE] Scheduling attendance notifications for \(blocks.count) blocks:")
+        // print("🔔 [ATTENDANCE] User setting: \(minutesAfterStart) minute(s) after block starts")
+        // print("🔔 [ATTENDANCE] Day type: \(dayType), isGreenDay: \(isGreenDay)")
+        
+        for block in blocks {
+            // Check if this is a valid course block (ABCDE) and not a free block
+            let blockSettingsManager = BlockSettingsManager.shared
+            
+            // Strictly check if it's an ABCDE block - must match "A Block", "B Block", etc. (case-insensitive)
+            let normalizedBlockName = block.name.lowercased().trimmingCharacters(in: .whitespaces)
+            // Match exactly "a block", "b block", "c block", "d block", or "e block"
+            // This excludes "Advisory", "CP", "Chapel", etc.
+            let isABCDEBlock = normalizedBlockName == "a block" ||
+                              normalizedBlockName == "b block" ||
+                              normalizedBlockName == "c block" ||
+                              normalizedBlockName == "d block" ||
+                              normalizedBlockName == "e block"
+            
+            if !isABCDEBlock {
+                // Not an ABCDE block (e.g., Advisory, Chapel, CP), skip it
+                // print("🔔 [ATTENDANCE] Skipping \(block.name) - not an ABCDE block")
+                continue
+            }
+            
+            // It's an ABCDE block, check if it should be shown (not free)
+            let shouldShow = blockSettingsManager.shouldShow(block: block.name, onGreenDay: isGreenDay)
+            
+            if !shouldShow {
+                // This is a free block, skip it
+                // print("🔔 [ATTENDANCE] Skipping \(block.name) - it's a free block")
+                continue
+            }
+            
+            // This is a valid course block, schedule the notification
+            if let startTime = parseTime(block.start, for: currentDate) {
+                // Calculate notification time (block start + X minutes)
+                let notificationTime = startTime.addingTimeInterval(secondsAfterStart)
+                
+                // Only schedule if the notification time is in the future
+                if notificationTime > Date.currentEST {
+                    let content = UNMutableNotificationContent()
+                    content.title = "Submit Attendance"
+                    content.body = "Don't forget to submit attendance for \(block.name)"
+                    content.sound = .default
+                    
+                    let trigger = UNTimeIntervalNotificationTrigger(
+                        timeInterval: notificationTime.timeIntervalSinceNow,
+                        repeats: false
+                    )
+                    
+                    // Use date + block name + time for unique identifier
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyyMMdd"
+                    dateFormatter.timeZone = Date.estTimeZone
+                    let dateKey = dateFormatter.string(from: currentDate)
+                    let timeFormatter = DateFormatter()
+                    timeFormatter.dateFormat = "HHmm"
+                    timeFormatter.timeZone = Date.estTimeZone
+                    let timeKey = timeFormatter.string(from: notificationTime)
+                    let blockNameKey = block.name.replacingOccurrences(of: " ", with: "-").lowercased()
+                    let uniqueId = "attendance-\(dateKey)-\(blockNameKey)-\(timeKey)"
+                    
+                    let request = UNNotificationRequest(
+                        identifier: uniqueId,
+                        content: content,
+                        trigger: trigger
+                    )
+                    
+                    center.add(request) { error in
+                        if let error = error {
+                            // print("❌ Failed to schedule attendance notification for \(block.name): \(error)")
+                        } else {
+                            // print("✅ Scheduled attendance notification for \(block.name) at \(scheduleFormatter.string(from: notificationTime))")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     func scheduleNotifications(for date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
@@ -300,19 +442,156 @@ class NotificationManager: ObservableObject {
         }
     }
 
+    func clearNotificationsForDate(_ date: Date) async {
+        let center = UNUserNotificationCenter.current()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.timeZone = Date.estTimeZone
+        let dateString = dateFormatter.string(from: date)
+        
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            center.getPendingNotificationRequests { requests in
+                // Remove all notifications (block end and attendance) that match this date
+                let identifiersToRemove = requests.filter { request in
+                    let id = request.identifier
+                    let isRelevant = id.hasPrefix("block-") || id.hasPrefix("lunch-") || id.hasPrefix("remove-") || id.hasPrefix("attendance-")
+                    if isRelevant, let trigger = request.trigger as? UNTimeIntervalNotificationTrigger {
+                        let fireDate = Date().addingTimeInterval(trigger.timeInterval)
+                        let fireDateString = dateFormatter.string(from: fireDate)
+                        return fireDateString == dateString
+                    }
+                    return false
+                }.map { $0.identifier }
+                
+                if !identifiersToRemove.isEmpty {
+                    center.removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+                }
+                continuation.resume()
+            }
+        }
+    }
+    
     func scheduleNotifications(blocks: [Block], on date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
+        // Use a serial queue to prevent concurrent scheduling for the same date
+        return await withCheckedContinuation { continuation in
+            schedulingQueue.async {
+                Task {
+                    let result = await self._scheduleNotifications(blocks: blocks, on: date, dayType: dayType, clearExisting: clearExisting)
+                    continuation.resume(returning: result)
+                }
+            }
+        }
+    }
+    
+    private func _scheduleNotifications(blocks: [Block], on date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
         let useDayType = dayType.isEmpty ? "Green Day" : dayType
-        // print("🔔 [DAY-TYPE] Preparing notifications for \(date) with day type '\(useDayType)' and \(blocks.count) blocks")
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yyyy"
+        formatter.timeZone = Date.estTimeZone
+        let dateString = formatter.string(from: date)
+        
+        // Use date string as key to track scheduling per date
+        let dateKey = formatter.string(from: date)
+        
+        // Check if already scheduling for this date
+        if schedulingDates.contains(dateKey) {
+            print("🔔 [SCHEDULE-DAY] Already scheduling for \(dateString) - skipping duplicate call")
+            return NotificationScheduleSummary(date: date, success: true, scheduledCount: 0)
+        }
+        
+        schedulingDates.insert(dateKey)
+        defer { 
+            schedulingQueue.async {
+                self.schedulingDates.remove(dateKey)
+            }
+        }
+        
+        print("🔔 [SCHEDULE-DAY] Scheduling notifications for \(dateString) with day type '\(useDayType)' and \(blocks.count) blocks")
 
         guard !blocks.isEmpty else {
-            // print("🔔 [DAY-TYPE] No blocks available for \(date) - nothing to schedule")
+            print("🔔 [SCHEDULE-DAY] No blocks available for \(dateString) - nothing to schedule")
             return NotificationScheduleSummary(date: date, success: true, scheduledCount: 0)
         }
 
+        // Clear notifications for this date first, then schedule new ones
+        print("🔔 [SCHEDULE-DAY] Clearing existing notifications for \(dateString)")
+        await clearNotificationsForDate(date)
+        
+        // Use MainActor.run once to schedule both types of notifications
         await MainActor.run {
-            self.scheduleBlockEndingNotifications(for: blocks, testDate: date, dayType: useDayType, clearExisting: clearExisting)
+            print("🔔 [SCHEDULE-DAY] Scheduling block end notifications for \(dateString)")
+            self.scheduleBlockEndingNotifications(for: blocks, testDate: date, dayType: useDayType, clearExisting: false)
         }
+        
+        await MainActor.run {
+            print("🔔 [SCHEDULE-DAY] Scheduling attendance notifications for \(dateString)")
+            self.scheduleAttendanceNotifications(for: blocks, testDate: date, dayType: useDayType)
+        }
+        
+        // Wait a bit for notifications to be added, then log all scheduled notifications
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        await logAllScheduledNotifications()
+        
         return NotificationScheduleSummary(date: date, success: true, scheduledCount: blocks.count)
+    }
+    
+    func logAllScheduledNotifications() async {
+        let center = UNUserNotificationCenter.current()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            center.getPendingNotificationRequests { requests in
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "MM/dd/yyyy HH:mm:ss"
+                dateFormatter.timeZone = Date.estTimeZone
+                
+                print("📋 [NOTIFICATIONS] All Scheduled Notifications (\(requests.count) total):")
+                print(String(repeating: "=", count: 80))
+                
+                if requests.isEmpty {
+                    print("   No notifications scheduled")
+                } else {
+                    // Sort by trigger date
+                    let sortedRequests = requests.sorted { request1, request2 in
+                        guard let trigger1 = request1.trigger as? UNTimeIntervalNotificationTrigger,
+                              let trigger2 = request2.trigger as? UNTimeIntervalNotificationTrigger else {
+                            return false
+                        }
+                        let date1 = Date().addingTimeInterval(trigger1.timeInterval)
+                        let date2 = Date().addingTimeInterval(trigger2.timeInterval)
+                        return date1 < date2
+                    }
+                    
+                    for (index, request) in sortedRequests.enumerated() {
+                        let identifier = request.identifier
+                        let title = request.content.title.isEmpty ? "(no title)" : request.content.title
+                        let body = request.content.body.isEmpty ? "(no body)" : request.content.body
+                        
+                        var triggerDate = "Unknown"
+                        if let timeIntervalTrigger = request.trigger as? UNTimeIntervalNotificationTrigger {
+                            let fireDate = Date().addingTimeInterval(timeIntervalTrigger.timeInterval)
+                            triggerDate = dateFormatter.string(from: fireDate)
+                        } else if let calendarTrigger = request.trigger as? UNCalendarNotificationTrigger {
+                            if let date = calendarTrigger.nextTriggerDate() {
+                                triggerDate = dateFormatter.string(from: date)
+                            }
+                        }
+                        
+                        let type = identifier.hasPrefix("attendance-") ? "ATTENDANCE" :
+                                   identifier.hasPrefix("block-") ? "BLOCK_END" :
+                                   identifier.hasPrefix("lunch-") ? "LUNCH" :
+                                   identifier.hasPrefix("remove-") ? "REMOVE" : "OTHER"
+                        
+                        print("\(index + 1). [\(type)] \(identifier)")
+                        print("   Title: \(title)")
+                        print("   Body: \(body)")
+                        print("   Scheduled for: \(triggerDate)")
+                        print("")
+                    }
+                }
+                
+                print(String(repeating: "=", count: 80))
+                continuation.resume()
+            }
+        }
     }
 
     func scheduleUpcomingSchoolDays(
@@ -397,6 +676,7 @@ struct ContentView: View {
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
     @State private var isLoading: Bool = true
+    @State private var isTogglingTomorrowView: Bool = false
     
     // Background refresh state
     @State private var previousDayType: String = ""
@@ -779,22 +1059,38 @@ struct ContentView: View {
         }
         .onChange(of: timeSettings.useTestDate) { isUsingTestDate in
             let modeDescription = isUsingTestDate ? "test date" : "real time"
-            // print("🕒 [TIME-MODE] Switched to \(modeDescription) - rescheduling notifications")
+            print("🕒 [TIME-MODE] Switched to \(modeDescription)")
+            
+            // Don't schedule notifications if we're toggling tomorrow view
+            if isTogglingTomorrowView {
+                print("🔄 [VIEW-NEXT-DAY] Skipping notification scheduling - toggling view")
+            } else {
+                print("🕒 [TIME-MODE] Rescheduling notifications")
+                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+            }
+            
             Task {
                 await refreshAll()
             }
-            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: timeSettings.testDateOverride) { newDate in
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
             formatter.timeZone = Date.estTimeZone
-            // print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate)) - rescheduling notifications")
+            print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate))")
+            
+            // Don't schedule notifications if we're toggling tomorrow view
+            if isTogglingTomorrowView {
+                print("🔄 [VIEW-NEXT-DAY] Skipping notification scheduling - toggling view")
+            } else {
+                print("🕒 [TEST-DATE] Rescheduling notifications")
+                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+            }
+            
             Task {
                 await refreshAll()
             }
-            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onChange(of: notificationSettings.notificationsEnabled) { _ in
             // Reschedule notifications when enabled/disabled changes
@@ -802,7 +1098,17 @@ struct ContentView: View {
             if notificationSettings.notificationsEnabled {
                 scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             } else {
-                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                // Only remove block end notifications, keep attendance notifications
+                let center = UNUserNotificationCenter.current()
+                center.getPendingNotificationRequests { requests in
+                    let blockEndIdentifiers = requests.filter { request in
+                        let id = request.identifier
+                        return id.hasPrefix("block-") || id.hasPrefix("lunch-") || id.hasPrefix("remove-")
+                    }.map { $0.identifier }
+                    if !blockEndIdentifiers.isEmpty {
+                        center.removePendingNotificationRequests(withIdentifiers: blockEndIdentifiers)
+                    }
+                }
             }
         }
         .onChange(of: notificationSettings.notificationMinutes) { _ in
@@ -813,6 +1119,16 @@ struct ContentView: View {
         .onChange(of: notificationSettings.selectedLunchPeriod) { _ in
             // Reschedule notifications when lunch period changes
             // print("🔔 [LUNCH-PERIOD] Lunch period changed - rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+        }
+        .onChange(of: notificationSettings.attendanceNotificationsEnabled) { _ in
+            // Reschedule notifications when attendance notifications enabled/disabled changes
+            // print("🔔 [ATTENDANCE-ENABLED] Attendance notifications enabled changed - rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
+        }
+        .onChange(of: notificationSettings.attendanceNotificationMinutes) { _ in
+            // Reschedule notifications when attendance notification timing changes
+            // print("🔔 [ATTENDANCE-MINUTES] Attendance notification minutes changed - rescheduling notifications")
             scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BlockSettingsChanged"))) { _ in
@@ -1078,15 +1394,23 @@ struct ContentView: View {
         let referenceDate = startDate ?? Date.currentEST
         let snapshotDayType = currentDayType
         let snapshotTime = effectiveCurrentTime
-        let notificationsEnabled = NotificationSettingsManager.shared.notificationsEnabled
+        let notificationSettings = NotificationSettingsManager.shared
+        let notificationsEnabled = notificationSettings.notificationsEnabled
+        let attendanceNotificationsEnabled = notificationSettings.attendanceNotificationsEnabled
 
-        guard notificationsEnabled else {
-            // print("🔕 [NOTIFICATIONS] Skipping scheduling - notifications disabled")
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yyyy HH:mm:ss"
+        formatter.timeZone = Date.estTimeZone
+        print("🔔 [SCHEDULE-NOTIFICATIONS] Called - startDate: \(formatter.string(from: referenceDate)), blockEnd: \(notificationsEnabled), attendance: \(attendanceNotificationsEnabled)")
+
+        // Schedule if either block end or attendance notifications are enabled
+        guard notificationsEnabled || attendanceNotificationsEnabled else {
+            print("🔕 [NOTIFICATIONS] Skipping scheduling - all notifications disabled")
             return
         }
 
         Task {
-            let _ = await notificationManager.scheduleUpcomingSchoolDays(
+            let summaries = await notificationManager.scheduleUpcomingSchoolDays(
                 startingFrom: referenceDate,
                 dayTypeProvider: { targetDate in
                     var calendar = Calendar.current
@@ -1098,6 +1422,7 @@ struct ContentView: View {
                     return await DayTypeCache.predictedDayType(for: targetDate)
                 }
             )
+            print("🔔 [SCHEDULE-NOTIFICATIONS] Completed - scheduled \(summaries.count) day(s)")
         }
     }
     
@@ -1126,6 +1451,16 @@ struct ContentView: View {
     // Centralized refresh function
     @MainActor
     private func toggleTomorrowView() {
+        let action = isViewingTomorrow ? "Back to Today" : "View Tomorrow"
+        let targetDate = isViewingTomorrow ? Date.currentEST : tomorrowReferenceDate
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yyyy HH:mm:ss"
+        formatter.timeZone = Date.estTimeZone
+        print("🔄 [VIEW-NEXT-DAY] User clicked '\(action)' - target date: \(formatter.string(from: targetDate))")
+        
+        // Set flag to prevent notification scheduling during view toggle
+        isTogglingTomorrowView = true
+        
         if isViewingTomorrow {
             timeSettings.useTestDate = false
             timeSettings.testDateOverride = Date.currentEST
@@ -1144,6 +1479,12 @@ struct ContentView: View {
 
         Task {
             await refreshAll()
+            // Reset flag after a short delay to allow onChange handlers to complete
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            await MainActor.run {
+                isTogglingTomorrowView = false
+                print("🔄 [VIEW-NEXT-DAY] View toggle completed, flag reset")
+            }
         }
     }
 
