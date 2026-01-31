@@ -18,6 +18,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     Analytics.setAnalyticsCollectionEnabled(true)
     BackgroundRefreshManager.shared.register()
     BackgroundRefreshManager.shared.scheduleAppRefresh()
+    BackgroundRefreshManager.shared.scheduleDailyRefresh()
     
     // Set notification delegate
     UNUserNotificationCenter.current().delegate = self
@@ -84,6 +85,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
   func applicationDidEnterBackground(_ application: UIApplication) {
     BackgroundRefreshManager.shared.scheduleAppRefresh()
+    BackgroundRefreshManager.shared.scheduleDailyRefresh()
   }
 }
 

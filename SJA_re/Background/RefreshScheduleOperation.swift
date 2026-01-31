@@ -29,6 +29,7 @@ final class RefreshScheduleOperation: Operation {
                     )
                 }
 
+                // Refresh widget (always)
                 await MainActor.run {
                     WidgetSyncManager.shared.updateSchedule(
                         scheduleDate: calendar.startOfDay(for: referenceDate),
@@ -36,9 +37,27 @@ final class RefreshScheduleOperation: Operation {
                         noSchoolReason: noSchoolReason,
                         dayTypeDisplay: dayTypeDisplay
                     )
+                    WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+                }
+                
+                // Refresh notifications (if enabled)
+                let notificationsEnabled = await MainActor.run {
+                    NotificationSettingsManager.shared.notificationsEnabled
+                }
+                
+                if notificationsEnabled {
+                    let notificationResults = await NotificationManager.shared.scheduleUpcomingSchoolDays(
+                        startingFrom: Date.currentEST,
+                        dayTypeProvider: { date in
+                            await DayTypeCache.predictedDayType(for: date)
+                        }
+                    )
+                    print("✅ [BG-SCHEDULE] Widget and notifications refreshed - scheduled \(notificationResults.count) day(s)")
+                } else {
+                    print("✅ [BG-SCHEDULE] Widget refreshed (notifications disabled)")
                 }
             } catch {
-                print("❌ BG refresh failed: \(error)")
+                print("❌ [BG-SCHEDULE] Refresh failed: \(error)")
             }
 
             semaphore.signal()

@@ -23,7 +23,7 @@ final class AppRefreshScheduler {
 
         do {
             try BGTaskScheduler.shared.submit(request)
-            print("🕒 [BG-SCHEDULE] Scheduled widget refresh in \(interval / 60) minutes")
+            print("🕒 [BG-SCHEDULE] Scheduled widget and notification refresh in \(interval / 60) minutes")
         } catch {
             print("❌ [BG-SCHEDULE] Failed to submit request: \(error)")
         }

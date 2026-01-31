@@ -5,6 +5,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.danielzhang.SJA_re.refresh</string>
+		<string>com.danielzhang.SJA_re.dailyRefresh</string>
 		<string>danielzhang.Hilltoppers.scheduleRefresh</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
