@@ -73,14 +73,16 @@ struct ClassCountdownProvider: TimelineProvider {
 
     private func buildEntries(from payload: ClassCountdownWidgetPayload, referenceDate: Date) -> [ClassCountdownEntry] {
         let dayType = payload.dayTypeDisplay
-
-        if let reason = payload.noSchoolReason, !reason.isEmpty {
-            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType)]
-        }
-
         let calendar = Calendar.sja
+        
+        // First check if the date matches - if not, show stale regardless of noSchoolReason
         guard calendar.isDate(payload.scheduleDate, inSameDayAs: referenceDate) else {
             return [ClassCountdownEntry(date: referenceDate, phase: .stale, dayType: dayType)]
+        }
+
+        // Only show noSchoolReason if the date matches today
+        if let reason = payload.noSchoolReason, !reason.isEmpty {
+            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType)]
         }
 
         let events = payload.events.sorted { $0.startDate < $1.startDate }

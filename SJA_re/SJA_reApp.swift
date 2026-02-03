@@ -17,8 +17,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     FirebaseApp.configure()
     Analytics.setAnalyticsCollectionEnabled(true)
     BackgroundRefreshManager.shared.register()
-    BackgroundRefreshManager.shared.scheduleAppRefresh()
     BackgroundRefreshManager.shared.scheduleDailyRefresh()
+    AppRefreshScheduler.shared.register()
+    AppRefreshScheduler.shared.schedule()
     
     // Set notification delegate
     UNUserNotificationCenter.current().delegate = self
@@ -84,8 +85,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
   }
 
   func applicationDidEnterBackground(_ application: UIApplication) {
-    BackgroundRefreshManager.shared.scheduleAppRefresh()
     BackgroundRefreshManager.shared.scheduleDailyRefresh()
+    AppRefreshScheduler.shared.schedule()
   }
 }
 
