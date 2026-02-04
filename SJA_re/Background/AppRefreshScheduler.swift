@@ -41,21 +41,53 @@ final class AppRefreshScheduler {
         let now = Date()
         let nowInEST = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: now)
         let currentHour = nowInEST.hour ?? 0
+        let currentMinute = nowInEST.minute ?? 0
         
         // School hours: 6am (6) to 4pm (16)
         let schoolStartHour = 6
         let schoolEndHour = 16
+        let noonHour = 12
         
         if currentHour >= schoolStartHour && currentHour < schoolEndHour {
-            // Within school hours: schedule for next hour (on the hour)
-            let nextHour = currentHour + 1
-            var components = nowInEST
-            components.hour = nextHour
-            components.minute = 0
-            components.second = 0
-            
-            if let nextDate = calendar.date(from: components) {
-                return nextDate
+            // Within school hours
+            if currentHour < noonHour {
+                // 6am-12pm: 30 minutes refresh
+                let nextMinute: Int
+                if currentMinute < 30 {
+                    nextMinute = 30
+                } else {
+                    // Next hour at :00
+                    let nextHour = currentHour + 1
+                    var components = nowInEST
+                    components.hour = nextHour
+                    components.minute = 0
+                    components.second = 0
+                    
+                    if let nextDate = calendar.date(from: components) {
+                        return nextDate
+                    }
+                    // Fallback
+                    return Date(timeIntervalSinceNow: 60 * 30)
+                }
+                
+                var components = nowInEST
+                components.minute = nextMinute
+                components.second = 0
+                
+                if let nextDate = calendar.date(from: components), nextDate > now {
+                    return nextDate
+                }
+            } else {
+                // 12pm-4pm: 1 hour refresh (on the hour)
+                let nextHour = currentHour + 1
+                var components = nowInEST
+                components.hour = nextHour
+                components.minute = 0
+                components.second = 0
+                
+                if let nextDate = calendar.date(from: components) {
+                    return nextDate
+                }
             }
         } else if currentHour >= schoolEndHour {
             // After 4pm: schedule for next day 6am
@@ -69,7 +101,7 @@ final class AppRefreshScheduler {
                 return nextDate
             }
         } else {
-            // Before 6am: schedule for today 6am (if not past) or next hour
+            // Before 6am: schedule for today 6am
             if currentHour < schoolStartHour {
                 var components = nowInEST
                 components.hour = schoolStartHour
@@ -82,8 +114,8 @@ final class AppRefreshScheduler {
             }
         }
         
-        // Fallback: schedule for 1 hour from now
-        return Date(timeIntervalSinceNow: 60 * 60)
+        // Fallback: schedule for 30 minutes from now
+        return Date(timeIntervalSinceNow: 60 * 30)
     }
 
     func cancelPending() {
