@@ -5,6 +5,7 @@
 //  Created by Daniel Zhang on 9/6/25.
 //
 
+#if os(iOS)
 import ActivityKit
 import WidgetKit
 import SwiftUI
@@ -83,4 +84,5 @@ struct ClassCountdownWidgetLiveActivity_Previews: PreviewProvider {
         Text("Live Activity Preview")
     }
 }
+#endif
 #endif

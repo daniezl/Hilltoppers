@@ -13,11 +13,13 @@ struct ClassCountdownWidgetBundle: WidgetBundle {
     @WidgetBundleBuilder
     var body: some Widget {
         ClassCountdownWidget()
+        #if os(iOS)
         if #available(iOS 18.0, *) {
             ClassCountdownWidgetControl()
         }
         if #available(iOS 16.2, *) {
             ClassCountdownWidgetLiveActivity()
         }
+        #endif
     }
 }

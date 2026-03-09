@@ -174,23 +174,27 @@ struct ClassCountdownWidgetEntryView: View {
     @ViewBuilder
     var body: some View {
         let base = Group {
+            #if os(watchOS)
+            rectangularBody
+            #else
             switch family {
             case .systemSmall:
                 smallWidgetBody
             default:
                 rectangularBody
             }
+            #endif
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        if family == .systemSmall {
-            if #available(iOSApplicationExtension 17.0, *) {
+        if isSystemSmallFamily {
+            if #available(iOS 17.0, watchOS 10.0, *) {
                 base.containerBackground(widgetBackgroundColor, for: .widget)
             } else {
                 base.background(widgetBackgroundColor)
             }
         } else {
-            if #available(iOSApplicationExtension 17.0, *) {
+            if #available(iOS 17.0, watchOS 10.0, *) {
                 base.containerBackground(.fill, for: .widget)
             } else {
                 base
@@ -199,7 +203,8 @@ struct ClassCountdownWidgetEntryView: View {
     }
 
     private var rectangularBody: some View {
-        contentView()
+        // Smart Stack / accessory layout: left = course name + day type, right = verb + countdown
+        accessoryRectangularLayout
     }
 
     private var smallWidgetBody: some View {
@@ -245,6 +250,90 @@ struct ClassCountdownWidgetEntryView: View {
         }
     }
 
+    /// Layout for accessoryRectangular / Smart Stack: left = course name + day type, right = ends/starts in + countdown
+    private var accessoryRectangularLayout: some View {
+        HStack(alignment: .center) {
+            // Left: day type (small) + course name (bold)
+            VStack(alignment: .leading, spacing: 2) {
+                if let dayType = entry.dayType?.trimmingCharacters(in: .whitespacesAndNewlines), !dayType.isEmpty, isCountdownPhase {
+                    Text(dayType)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(secondaryTextColor)
+                        .lineLimit(1)
+                }
+                accessoryRectangularLeftTitle
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 8)
+
+            // Right: "ends in" / "starts in" + countdown
+            accessoryRectangularRightCountdown
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    @ViewBuilder
+    private var accessoryRectangularLeftTitle: some View {
+        switch entry.phase {
+        case .blockStarts(let event), .blockEnds(let event):
+            Text(event.displayName)
+                .font(.system(size: 13, weight: .bold))
+                .lineLimit(1)
+                .foregroundColor(primaryTextColor)
+        case .finished:
+            Text("School Ended")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(primaryTextColor)
+        case .noSchool(let reason):
+            Text("No School")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(primaryTextColor)
+        case .stale:
+            Text("Open App")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(primaryTextColor)
+        case .empty:
+            Text("Schedule")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(primaryTextColor)
+        }
+    }
+
+    @ViewBuilder
+    private var accessoryRectangularRightCountdown: some View {
+        switch entry.phase {
+        case .blockStarts(let event):
+            VStack(alignment: .trailing, spacing: 0) {
+                Text("starts in")
+                    .font(.system(size: 9, weight: .regular))
+                    .foregroundColor(secondaryTextColor)
+                accessoryTimerText(to: event.startDate, fontSize: 14)
+            }
+        case .blockEnds(let event):
+            VStack(alignment: .trailing, spacing: 0) {
+                Text("ends in")
+                    .font(.system(size: 9, weight: .regular))
+                    .foregroundColor(secondaryTextColor)
+                accessoryTimerText(to: event.endDate, fontSize: 14)
+            }
+        case .finished, .noSchool(_), .stale, .empty:
+            EmptyView()
+        }
+    }
+
+    private func accessoryTimerText(to target: Date, fontSize: CGFloat) -> some View {
+        let clampedTarget = target > entry.date ? target : entry.date
+        let remaining = max(clampedTarget.timeIntervalSince(entry.date), 0)
+        let totalSeconds = Int(remaining)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        let timeString = String(format: "%d:%02d", minutes, seconds)
+        return Text(timeString)
+            .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+            .foregroundColor(primaryTextColor)
+    }
+
     private func countdownView(title: String, verb: String, target: Date) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
@@ -285,17 +374,17 @@ struct ClassCountdownWidgetEntryView: View {
     private func timerText(to target: Date) -> some View {
         let clampedTarget = target > entry.date ? target : entry.date
         let range = entry.date...clampedTarget
-        let fontSize: CGFloat = family == .systemSmall ? 32 : 18
+        let fontSize: CGFloat = isSystemSmallFamily ? 32 : 18
         let remaining = max(clampedTarget.timeIntervalSince(entry.date), 0)
 
-        if family == .systemSmall, remaining >= 3600 {
+        if isSystemSmallFamily, remaining >= 3600 {
             Text(hourMinuteString(for: remaining))
                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
                 .foregroundColor(primaryTextColor)
         } else {
             Text(timerInterval: range, countsDown: true)
                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                .foregroundColor(family == .systemSmall ? primaryTextColor : .primary)
+                .foregroundColor(isSystemSmallFamily ? primaryTextColor : .primary)
         }
     }
 
@@ -320,16 +409,27 @@ struct ClassCountdownWidget: Widget {
     let kind: String = "ClassCountdownWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: ClassCountdownProvider()) { entry in
+        #if os(watchOS)
+        let families: [WidgetFamily] = [.accessoryRectangular]
+        #else
+        let families: [WidgetFamily] = [.systemSmall, .accessoryRectangular]
+        #endif
+        return StaticConfiguration(kind: kind, provider: ClassCountdownProvider()) { entry in
             ClassCountdownWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Class Countdown")
         .description("Shows the remaining time for today's classes.")
-        .supportedFamilies([.systemSmall, .accessoryRectangular])
+        .supportedFamilies(families)
     }
 }
 
 private extension ClassCountdownWidgetEntryView {
+    #if os(watchOS)
+    var isSystemSmallFamily: Bool { false }
+    #else
+    var isSystemSmallFamily: Bool { family == .systemSmall }
+    #endif
+
     var isCountdownPhase: Bool {
         switch entry.phase {
         case .blockStarts(_), .blockEnds(_):
@@ -340,17 +440,23 @@ private extension ClassCountdownWidgetEntryView {
     }
 
     var shouldCenterSummaryContent: Bool {
-        family == .systemSmall && !isCountdownPhase
+        isSystemSmallFamily && !isCountdownPhase
     }
 
-    var usesCustomPalette: Bool { family == .systemSmall }
+    var usesCustomPalette: Bool { isSystemSmallFamily || family == .accessoryRectangular }
 
     var accentGreen: Color {
         Color(red: 20/255, green: 54/255, blue: 27/255)
     }
 
     var widgetBackgroundColor: Color {
-        guard usesCustomPalette else { return Color(.systemBackground) }
+        guard usesCustomPalette else {
+            #if os(iOS)
+            return Color(.systemBackground)
+            #else
+            return Color.clear
+            #endif
+        }
         return colorScheme == .dark ? accentGreen : .white
     }
 
@@ -371,9 +477,11 @@ private extension ClassCountdownWidgetEntryView {
 struct ClassCountdownWidget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
+            #if os(iOS)
             ClassCountdownWidgetEntryView(entry: previewEntryEnding)
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
                 .previewDisplayName("Small – Ending")
+            #endif
 
             ClassCountdownWidgetEntryView(entry: previewEntryStarting)
                 .previewContext(WidgetPreviewContext(family: .accessoryRectangular))

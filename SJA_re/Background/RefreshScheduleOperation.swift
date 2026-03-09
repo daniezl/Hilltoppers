@@ -9,6 +9,7 @@ final class RefreshScheduleOperation: Operation {
 
         Task {
             do {
+                await CloudflareDataLoader.refreshSpecialDataCache()
                 let calendar = Calendar.sja
                 let referenceDate = Date.currentESTNoon
                 let blocks = try await ScheduleService.loadBlocks(for: referenceDate)
