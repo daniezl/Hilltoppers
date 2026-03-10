@@ -33,27 +33,29 @@ struct ClassCountdownProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (ClassCountdownEntry) -> Void) {
         let now = Date()
-        if let payload = loadPayload() {
+        let calendar = Calendar.sja
+        if let payload = loadPayload(), calendar.isDate(payload.scheduleDate, inSameDayAs: now) {
             let entries = buildEntries(from: payload, referenceDate: now)
             completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay))
         } else {
-            completion(placeholder(in: context))
+            let entries = buildEntriesFromCache(referenceDate: now)
+            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday()))
         }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ClassCountdownEntry>) -> Void) {
         let now = Date()
+        let calendar = Calendar.sja
 
-        guard let payload = loadPayload() else {
-            let entry = ClassCountdownEntry(date: now, phase: .empty, dayType: nil)
-            let timeline = Timeline(entries: [entry], policy: .after(now.addingTimeInterval(1800)))
-            completion(timeline)
-            return
+        var entries: [ClassCountdownEntry]
+        if let payload = loadPayload(), calendar.isDate(payload.scheduleDate, inSameDayAs: now) {
+            entries = buildEntries(from: payload, referenceDate: now)
+        } else {
+            entries = buildEntriesFromCache(referenceDate: now)
         }
 
-        var entries = buildEntries(from: payload, referenceDate: now)
         if entries.isEmpty {
-            entries = [ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay)]
+            entries = [ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday())]
         }
 
         let policy: TimelineReloadPolicy
@@ -73,46 +75,42 @@ struct ClassCountdownProvider: TimelineProvider {
 
     private func buildEntries(from payload: ClassCountdownWidgetPayload, referenceDate: Date) -> [ClassCountdownEntry] {
         let dayType = payload.dayTypeDisplay
-        let calendar = Calendar.sja
-        
-        // First check if the date matches - if not, show stale regardless of noSchoolReason
-        guard calendar.isDate(payload.scheduleDate, inSameDayAs: referenceDate) else {
-            return [ClassCountdownEntry(date: referenceDate, phase: .stale, dayType: dayType)]
-        }
-
-        // Only show noSchoolReason if the date matches today
         if let reason = payload.noSchoolReason, !reason.isEmpty {
             return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType)]
         }
-
         let events = payload.events.sorted { $0.startDate < $1.startDate }
         guard !events.isEmpty else {
             return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
         }
+        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate)
+    }
 
+    /// 无 payload 或 payload 非今日时，完全用缓存构建 timeline，不再显示 Open App。
+    private func buildEntriesFromCache(referenceDate: Date) -> [ClassCountdownEntry] {
+        let result = WidgetScheduleFromCache.scheduleForToday()
+        let dayType = WidgetDayTypeFallback.dayTypeForToday()
+        if result.noSchool {
+            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(result.reason ?? "No School"), dayType: dayType)]
+        }
+        let events = result.events.sorted { $0.startDate < $1.startDate }
+        guard !events.isEmpty else {
+            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
+        }
+        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate)
+    }
+
+    private func buildEntriesWithEvents(_ events: [WidgetClassEvent], dayType: String?, referenceDate: Date) -> [ClassCountdownEntry] {
         var entries: [ClassCountdownEntry] = []
         var visited: Set<Date> = []
         var cursor = referenceDate
-
-        // Step through upcoming events, adding minute-level entries when the countdown spans an hour so
-        // the custom hour/minute display keeps updating smoothly.
         while !visited.contains(cursor) {
             visited.insert(cursor)
-
             let phase = phase(at: cursor, events: events)
             entries.append(ClassCountdownEntry(date: cursor, phase: phase, dayType: dayType))
-
-            guard let nextDate = nextTimelineDate(after: cursor, phase: phase, events: events) else {
-                break
-            }
-
-            if nextDate <= cursor {
-                break
-            }
-
+            guard let nextDate = nextTimelineDate(after: cursor, phase: phase, events: events) else { break }
+            if nextDate <= cursor { break }
             cursor = nextDate
         }
-
         return entries
     }
 

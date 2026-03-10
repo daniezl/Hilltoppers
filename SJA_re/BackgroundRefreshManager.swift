@@ -147,6 +147,8 @@ final class BackgroundRefreshManager {
     private func performWidgetRefresh() async -> Bool {
         do {
             await CloudflareDataLoader.refreshSpecialDataCache()
+            await DayTypeCache.refreshDayTypeCache()
+            ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
             // Calculate current EST noon (same logic as RefreshScheduleOperation)
             var calendar = Calendar.current
             calendar.timeZone = Date.estTimeZone

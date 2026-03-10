@@ -1041,21 +1041,17 @@ struct DayTypeView: View {
         print("✅ [DAYTYPE] Final prediction: '\(self.predicted)'")
         print("✅ [DAYTYPE] Is today: \(self.isDateToday ?? false)")
         
-        let defaults = UserDefaults.standard
         let referenceDate = self.testDate ?? Date()
         let effectiveType = self.effectiveDayType
         self.currentDayTypeDate = referenceDate
-        defaults.set(effectiveType, forKey: "LastEffectiveDayType")
-        defaults.set(referenceDate, forKey: "LastEffectiveDayDate")
-        defaults.set(self.predicted, forKey: "LastPredictedDayType")
-        defaults.set(referenceDate, forKey: "LastPredictedDayDate")
-        if let dbDate = self.dbDate {
-            defaults.set(dbDate, forKey: "LastBulletinDate")
-            defaults.set(self.dayType, forKey: "LastBulletinDayType")
-        } else {
-            defaults.removeObject(forKey: "LastBulletinDate")
-            defaults.removeObject(forKey: "LastBulletinDayType")
-        }
+        DayTypeCache.setCachedDayType(
+            bulletinType: self.dbDate != nil ? self.dayType : nil,
+            bulletinDate: self.dbDate,
+            predictedType: self.predicted,
+            predictedDate: referenceDate,
+            effectiveType: effectiveType,
+            effectiveDate: referenceDate
+        )
         print("💾 [DAYTYPE] Cached effective day type '\(effectiveType)' for \(referenceDate)")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

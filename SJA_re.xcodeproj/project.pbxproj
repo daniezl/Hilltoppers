@@ -38,6 +38,8 @@
 		A2DB29D32EF9D0A400006E68 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 43C2CA118D4F0525E716EF03 /* FirebaseAuth */; };
 		A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */; };
 		A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */; };
+		A2SC00012F00B2C000000001 /* ScheduleCacheForWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2SC00002F00B2C000000001 /* ScheduleCacheForWidget.swift */; };
+		A2DT00012F00A1B000000001 /* DayTypeBulletinParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DT00002F00A1B000000001 /* DayTypeBulletinParser.swift */; };
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
@@ -123,6 +125,8 @@
 		A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreInfoView.swift; sourceTree = "<group>"; };
 		A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareDataLoader.swift; sourceTree = "<group>"; };
 		A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleConfig.swift; sourceTree = "<group>"; };
+		A2SC00002F00B2C000000001 /* ScheduleCacheForWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCacheForWidget.swift; sourceTree = "<group>"; };
+		A2DT00002F00A1B000000001 /* DayTypeBulletinParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTypeBulletinParser.swift; sourceTree = "<group>"; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
 		B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedTypes.swift; sourceTree = "<group>"; };
@@ -254,6 +258,7 @@
 				A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */,
 				A280A0E92DDCE7E300F98F3F /* ScheduleView.swift */,
 				A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */,
+				A2SC00002F00B2C000000001 /* ScheduleCacheForWidget.swift */,
 				A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */,
 			);
 			path = Schedule;
@@ -307,6 +312,7 @@
 		A280A0F82DDD54E400F98F3F /* DayType */ = {
 			isa = PBXGroup;
 			children = (
+				A2DT00002F00A1B000000001 /* DayTypeBulletinParser.swift */,
 				A280A0F92DDD557D00F98F3F /* DayTypeView 2.swift */,
 			);
 			path = DayType;
@@ -532,6 +538,7 @@
 				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
 				A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */,
+				A2DT00012F00A1B000000001 /* DayTypeBulletinParser.swift in Sources */,
 				A280A0F52DDCE7E300F98F3F /* ContentView.swift in Sources */,
 				EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */,
 				C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */,
@@ -546,6 +553,7 @@
 				B1A2C3D4E5F6A7B8C9D0E1F2 /* BlockPreferencesManager.swift in Sources */,
 				3EF61A31BB99AF1DC47A45D8 /* SharedWebCredentialsManager.swift in Sources */,
 				A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */,
+				A2SC00012F00B2C000000001 /* ScheduleCacheForWidget.swift in Sources */,
 				A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -710,7 +718,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
@@ -732,7 +740,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.1;
+				MARKETING_VERSION = 2.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -753,7 +761,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
@@ -775,7 +783,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.1;
+				MARKETING_VERSION = 2.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

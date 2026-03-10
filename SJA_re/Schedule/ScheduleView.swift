@@ -992,8 +992,10 @@ struct ScheduleView: View {
         
         // print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
         
-        // 刷新时只重新拉取并缓存 special_days / special_periods 两个 JSON，后续展示都基于缓存
+        // 刷新时重新拉取并缓存 special_days / special_periods、day type 与默认课表，供 Widget 用缓存展示
         await CloudflareDataLoader.refreshSpecialDataCache()
+        await DayTypeCache.refreshDayTypeCache()
+        ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
         
         var firebaseSucceeded = false
         
