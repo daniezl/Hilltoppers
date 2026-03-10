@@ -1,155 +1,188 @@
 import Foundation
 
 struct CloudflareDataLoader {
-    // 缓存 special_days 和 special_periods 数据
+    // 内存缓存（进程内有效）
     private static var cachedSpecialDays: [String: SpecialDayRecord]?
     private static var cachedSpecialPeriods: [(start: String, end: String, details: String?)]?
-    
+
+    // 持久化缓存使用 App Group，与 Widget 共享；日常显示只读缓存，刷新时才重新拉取并写入
+    private static let specialDataSuiteName = "group.danielzhang.Hilltoppers2"
+    private static let cachedSpecialDaysKey = "CachedSpecialDaysData"
+    private static let cachedSpecialPeriodsKey = "CachedSpecialPeriodsData"
+
+    private static var specialDataDefaults: UserDefaults? {
+        UserDefaults(suiteName: specialDataSuiteName)
+    }
+
     struct SpecialDayRecord: Codable {
         let type: String?
         let details: String?
         let schedule: [Block]?
         let color: String?
         let banner: String?
-        
+
         enum CodingKeys: String, CodingKey {
             case type, details, schedule, color, banner
         }
     }
-    
-    /// 从 Cloudflare 加载 special_days 数据
+
+    private static func normalizeDateString(_ dateStr: String) -> String? {
+        let dateFormatRegex = #"^\d{4}-\d{2}-\d{2}$"#
+        if dateStr.range(of: dateFormatRegex, options: .regularExpression) != nil {
+            return dateStr
+        }
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-M-d"
+        inputFormatter.timeZone = Date.estTimeZone
+        if let date = inputFormatter.date(from: dateStr) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "yyyy-MM-dd"
+            outputFormatter.timeZone = Date.estTimeZone
+            return outputFormatter.string(from: date)
+        }
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoFormatter.date(from: dateStr) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "yyyy-MM-dd"
+            outputFormatter.timeZone = Date.estTimeZone
+            return outputFormatter.string(from: date)
+        }
+        return nil
+    }
+
+    // MARK: - Persisted cache (read/write)
+
+    private static func readCachedSpecialDaysFromStorage() -> [String: SpecialDayRecord]? {
+        guard let defaults = specialDataDefaults,
+              let data = defaults.data(forKey: cachedSpecialDaysKey) else { return nil }
+        return try? JSONDecoder().decode([String: SpecialDayRecord].self, from: data)
+    }
+
+    private static func writeCachedSpecialDaysToStorage(_ days: [String: SpecialDayRecord]) {
+        guard let defaults = specialDataDefaults,
+              let data = try? JSONEncoder().encode(days) else { return }
+        defaults.set(data, forKey: cachedSpecialDaysKey)
+    }
+
+    private struct StoredPeriod: Codable {
+        let start: String
+        let end: String
+        let details: String?
+    }
+
+    private static func readCachedSpecialPeriodsFromStorage() -> [(start: String, end: String, details: String?)]? {
+        guard let defaults = specialDataDefaults,
+              let data = defaults.data(forKey: cachedSpecialPeriodsKey),
+              let stored = try? JSONDecoder().decode([StoredPeriod].self, from: data) else { return nil }
+        return stored.map { (start: $0.start, end: $0.end, details: $0.details) }
+    }
+
+    private static func writeCachedSpecialPeriodsToStorage(_ periods: [(start: String, end: String, details: String?)]) {
+        guard let defaults = specialDataDefaults else { return }
+        let stored = periods.map { StoredPeriod(start: $0.start, end: $0.end, details: $0.details) }
+        guard let data = try? JSONEncoder().encode(stored) else { return }
+        defaults.set(data, forKey: cachedSpecialPeriodsKey)
+    }
+
+    // MARK: - Load special_days
+
+    /// 从 Cloudflare 加载 special_days：非刷新时优先用持久化缓存，刷新时拉取网络并更新缓存。
     static func loadSpecialDays(forceRefresh: Bool = false) async throws -> [String: SpecialDayRecord]? {
-        if let cached = cachedSpecialDays, !forceRefresh {
-            // print("📦 [CLOUDFLARE] Using cached special_days (\(cached.count) days)")
+        if !forceRefresh, let cached = cachedSpecialDays {
             return cached
         }
-        
-        guard let url = ScheduleConfig.specialDaysURL else {
-            // print("❌ [CLOUDFLARE] specialDaysURL is nil")
-            return nil
+        if !forceRefresh, let stored = readCachedSpecialDaysFromStorage() {
+            cachedSpecialDays = stored
+            return stored
         }
-        
+
+        guard let url = ScheduleConfig.specialDaysURL else { return nil }
+
         do {
-            // print("🌐 [CLOUDFLARE] Loading special_days from: \(url.absoluteString)")
             var request = URLRequest(url: url)
-            request.cachePolicy = .reloadIgnoringLocalCacheData // 强制刷新，绕过本地缓存
+            request.cachePolicy = .reloadIgnoringLocalCacheData
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
-                // print("❌ [CLOUDFLARE] Failed to load special_days: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                if let fallback = readCachedSpecialDaysFromStorage() {
+                    cachedSpecialDays = fallback
+                    return fallback
+                }
                 return nil
             }
-            
             let decoder = JSONDecoder()
             let days = try decoder.decode([String: SpecialDayRecord].self, from: data)
             cachedSpecialDays = days
-            // print("✅ [CLOUDFLARE] Successfully loaded \(days.count) special days")
-            
-            // 打印前几个日期键用于调试
-            // let dateKeys = Array(days.keys.prefix(5))
-            // print("📋 [CLOUDFLARE] Sample date keys: \(dateKeys)")
-            // for (dateKey, dayData) in days.prefix(3) {
-            //     print("   - \(dateKey): type=\(dayData.type ?? "nil"), details=\(dayData.details ?? "nil")")
-            // }
-            
+            writeCachedSpecialDaysToStorage(days)
             return days
         } catch {
-            // print("❌ [CLOUDFLARE] Error loading special_days: \(error.localizedDescription)")
-            if let decodingError = error as? DecodingError {
-                // print("❌ [CLOUDFLARE] Decoding error details: \(decodingError)")
+            if let fallback = readCachedSpecialDaysFromStorage() {
+                cachedSpecialDays = fallback
+                return fallback
             }
             return nil
         }
     }
-    
-    /// 从 Cloudflare 加载 special_periods 数据
-    /// 返回日期字符串格式 (start: "yyyy-MM-dd", end: "yyyy-MM-dd", details: String?)
-    static func loadSpecialPeriods() async throws -> [(start: String, end: String, details: String?)]? {
-        if let cached = cachedSpecialPeriods {
+
+    // MARK: - Load special_periods
+
+    /// 从 Cloudflare 加载 special_periods：非刷新时优先用持久化缓存，刷新时拉取网络并更新缓存。
+    static func loadSpecialPeriods(forceRefresh: Bool = false) async throws -> [(start: String, end: String, details: String?)]? {
+        if !forceRefresh, let cached = cachedSpecialPeriods {
             return cached
         }
-        
-        guard let url = ScheduleConfig.specialPeriodsURL else {
-            return nil
+        if !forceRefresh, let stored = readCachedSpecialPeriodsFromStorage() {
+            cachedSpecialPeriods = stored
+            return stored
         }
-        
+
+        guard let url = ScheduleConfig.specialPeriodsURL else { return nil }
+
+        struct PeriodRecord: Codable {
+            let start: String
+            let end: String
+            let details: String?
+        }
+
         do {
-            // print("🌐 [CLOUDFLARE] Loading special_periods from: \(url.absoluteString)")
-            let (data, response) = try await URLSession.shared.data(from: url)
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
-                // print("❌ [CLOUDFLARE] Failed to load special_periods: HTTP \(((response as? HTTPURLResponse)?.statusCode ?? 0))")
+            var request = URLRequest(url: url)
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                if let fallback = readCachedSpecialPeriodsFromStorage() {
+                    cachedSpecialPeriods = fallback
+                    return fallback
+                }
                 return nil
             }
-            
-            struct PeriodRecord: Codable {
-                let start: String
-                let end: String
-                let details: String?
-            }
-            
             let decoder = JSONDecoder()
             let periods = try decoder.decode([PeriodRecord].self, from: data)
-            
-            // 日期格式验证和规范化函数
-            func normalizeDateString(_ dateStr: String) -> String? {
-                // 检查是否已经是 "yyyy-MM-dd" 格式
-                let dateFormatRegex = #"^\d{4}-\d{2}-\d{2}$"#
-                if dateStr.range(of: dateFormatRegex, options: .regularExpression) != nil {
-                    return dateStr
-                }
-                
-                // 尝试解析并规范化格式（处理 "2026-1-6" -> "2026-01-06"）
-                let inputFormatter = DateFormatter()
-                inputFormatter.dateFormat = "yyyy-M-d"
-                inputFormatter.timeZone = Date.estTimeZone
-                
-                if let date = inputFormatter.date(from: dateStr) {
-                    let outputFormatter = DateFormatter()
-                    outputFormatter.dateFormat = "yyyy-MM-dd"
-                    outputFormatter.timeZone = Date.estTimeZone
-                    return outputFormatter.string(from: date)
-                }
-                
-                // 尝试 ISO8601 格式
-                let isoFormatter = ISO8601DateFormatter()
-                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                if let date = isoFormatter.date(from: dateStr) {
-                    let outputFormatter = DateFormatter()
-                    outputFormatter.dateFormat = "yyyy-MM-dd"
-                    outputFormatter.timeZone = Date.estTimeZone
-                    return outputFormatter.string(from: date)
-                }
-                
-                return nil
-            }
-            
             let datePeriods = periods.compactMap { period -> (start: String, end: String, details: String?)? in
-                // 规范化日期字符串
                 guard let startString = normalizeDateString(period.start),
-                      let endString = normalizeDateString(period.end) else {
-                    // print("⚠️ [CLOUDFLARE] Failed to parse period dates: start=\(period.start), end=\(period.end)")
-                    return nil
-                }
-                
+                      let endString = normalizeDateString(period.end) else { return nil }
                 return (start: startString, end: endString, details: period.details)
             }
-            
             cachedSpecialPeriods = datePeriods
-            // print("✅ [CLOUDFLARE] Successfully loaded \(datePeriods.count) special periods")
+            writeCachedSpecialPeriodsToStorage(datePeriods)
             return datePeriods
         } catch {
-            // print("❌ [CLOUDFLARE] Error loading special_periods: \(error.localizedDescription)")
+            if let fallback = readCachedSpecialPeriodsFromStorage() {
+                cachedSpecialPeriods = fallback
+                return fallback
+            }
             return nil
         }
     }
-    
-    /// 清除缓存（用于测试或强制刷新）
+
+    /// 仅刷新并缓存两个 JSON 文件（用于手动/后台刷新时调用，之后再读会走缓存）
+    static func refreshSpecialDataCache() async {
+        _ = try? await loadSpecialDays(forceRefresh: true)
+        _ = try? await loadSpecialPeriods(forceRefresh: true)
+    }
+
+    /// 只清除内存缓存；持久化缓存保留，日常显示继续用缓存
     static func clearCache() {
         cachedSpecialDays = nil
         cachedSpecialPeriods = nil
     }
 }
-
