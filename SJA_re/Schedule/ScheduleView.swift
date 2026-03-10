@@ -992,8 +992,9 @@ struct ScheduleView: View {
         
         // print("🔄 [SCHEDULE] Starting refreshSchedule for date: \(dateString)")
         
-        // 刷新时只重新拉取并缓存 special_days / special_periods 两个 JSON，后续展示都基于缓存
-        await CloudflareDataLoader.refreshSpecialDataCache()
+        // 清除缓存以确保获取最新数据
+        CloudflareDataLoader.clearCache()
+        // print("🗑️ [SCHEDULE] Cleared Cloudflare cache")
         
         var firebaseSucceeded = false
         

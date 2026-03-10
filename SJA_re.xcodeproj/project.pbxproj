@@ -38,11 +38,6 @@
 		A2DB29D32EF9D0A400006E68 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 43C2CA118D4F0525E716EF03 /* FirebaseAuth */; };
 		A2DB29E92EF9D1B300006E68 /* CloudflareDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */; };
 		A2DB29EB2EF9D1B300006E69 /* ScheduleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */; };
-		A2EE61A92F5CB52800980AE8 /* Hilltoppers Watch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A2EE61892F5CB52700980AE8 /* Hilltoppers Watch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A2EE61D32F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A2EE61D02F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A2EE61E32F5CB52800980AE8 /* WidgetSharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */; };
-		A2EE61E42F5CB52800980AE8 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3AF2DC018000037D8D9 /* WidgetKit.framework */; };
-		A2EE61E52F5CB52800980AE8 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A25EA3B12DC018000037D8D9 /* SwiftUI.framework */; };
 		A2F8BEA12E19100200EAD8F9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A2F8BEA02E19100200EAD8F9 /* Lottie */; };
 		A2F8BEAB2E1A7ABE00EAD8F9 /* confetti.lottie in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */; };
 		A2F8BEAD2E1AAD7600EAD8F9 /* confetti_new.json in Resources */ = {isa = PBXBuildFile; fileRef = A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */; };
@@ -76,66 +71,9 @@
 			remoteGlobalIDString = A25EA2CE2DB9E0770037D8D9;
 			remoteInfo = SJA_re;
 		};
-		A2EE61962F5CB52800980AE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A2EE61882F5CB52700980AE8;
-			remoteInfo = "Hilltoppers Watch Watch App";
-		};
-		A2EE61A02F5CB52800980AE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A2EE61882F5CB52700980AE8;
-			remoteInfo = "Hilltoppers Watch Watch App";
-		};
-		A2EE61A72F5CB52800980AE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A2EE61882F5CB52700980AE8;
-			remoteInfo = "Hilltoppers Watch Watch App";
-		};
-		A2EE61D42F5CB52800980AE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A2EE61D52F5CB52800980AE8;
-			remoteInfo = ClassCountdownWatchWidgetExtension;
-		};
-		A287C2EB2E6CA9E3005129F0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A25EA2C72DB9E0770037D8D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A287C2E42E6CA9E3005129F0;
-			remoteInfo = ClassCountdownWidgetExtension;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A2EE61AD2F5CB52800980AE8 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				A2EE61A92F5CB52800980AE8 /* Hilltoppers Watch Watch App.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61D62F5CB52800980AE8 /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/PlugIns";
-			dstSubfolderSpec = 13;
-			files = (
-				A2EE61D32F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		B99C9D742F0002B20000000B /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -185,10 +123,6 @@
 		A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreInfoView.swift; sourceTree = "<group>"; };
 		A2DB29E82EF9D1B300006E68 /* CloudflareDataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareDataLoader.swift; sourceTree = "<group>"; };
 		A2DB29EC2EF9D1B300006E69 /* ScheduleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleConfig.swift; sourceTree = "<group>"; };
-		A2EE61892F5CB52700980AE8 /* Hilltoppers Watch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hilltoppers Watch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A2EE61952F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Hilltoppers Watch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A2EE619F2F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Hilltoppers Watch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A2EE61D02F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClassCountdownWatchWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2F8BEAA2E1A7ABE00EAD8F9 /* confetti.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = confetti.lottie; sourceTree = "<group>"; };
 		A2F8BEAC2E1AAD7600EAD8F9 /* confetti_new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = confetti_new.json; sourceTree = "<group>"; };
 		B99C9D6B2F00000100000002 /* WidgetSharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedTypes.swift; sourceTree = "<group>"; };
@@ -208,14 +142,6 @@
 				Info.plist,
 			);
 			target = A287C2E42E6CA9E3005129F0 /* ClassCountdownWidgetExtension */;
-		};
-		A2EE61E62F5CB52800980AE8 /* Exceptions for "ClassCountdownWidget" folder in "ClassCountdownWatchWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-				Info-watchOS.plist,
-			);
-			target = A2EE61D52F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -239,29 +165,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A287C2F92E6CA9E4005129F0 /* Exceptions for "ClassCountdownWidget" folder in "ClassCountdownWidgetExtension" target */,
-			);
-			path = ClassCountdownWidget;
-			sourceTree = "<group>";
-		};
-		A2EE618A2F5CB52700980AE8 /* Hilltoppers Watch Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Hilltoppers Watch Watch App";
-			sourceTree = "<group>";
-		};
-		A2EE61982F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Hilltoppers Watch Watch AppTests";
-			sourceTree = "<group>";
-		};
-		A2EE61A22F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Hilltoppers Watch Watch AppUITests";
-			sourceTree = "<group>";
-		};
-		A2EE61D82F5CB52800980AE8 /* ClassCountdownWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A2EE61E62F5CB52800980AE8 /* Exceptions for "ClassCountdownWidget" folder in "ClassCountdownWatchWidgetExtension" target */,
 			);
 			path = ClassCountdownWidget;
 			sourceTree = "<group>";
@@ -305,36 +208,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A2EE61862F5CB52700980AE8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61922F5CB52800980AE8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE619C2F5CB52800980AE8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61E12F5CB52800980AE8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A2EE61E42F5CB52800980AE8 /* WidgetKit.framework in Frameworks */,
-				A2EE61E52F5CB52800980AE8 /* SwiftUI.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -347,12 +220,8 @@
 				A25EA3B32DC018000037D8D9 /* DayTypeWidget */,
 				A287C2E82E6CA9E3005129F0 /* ClassCountdownWidget */,
 				B99C9D6E2F00000100000005 /* Shared */,
-				A2EE618A2F5CB52700980AE8 /* Hilltoppers Watch Watch App */,
-				A2EE61982F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests */,
-				A2EE61A22F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests */,
 				A25EA3AE2DC018000037D8D9 /* Frameworks */,
 				A25EA2D02DB9E0770037D8D9 /* Products */,
-				A2EE63A62F5CB89D00980AE8 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -363,10 +232,6 @@
 				A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */,
 				A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */,
 				A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */,
-				A2EE61D02F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex */,
-				A2EE61892F5CB52700980AE8 /* Hilltoppers Watch Watch App.app */,
-				A2EE61952F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests.xctest */,
-				A2EE619F2F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -447,14 +312,6 @@
 			path = DayType;
 			sourceTree = "<group>";
 		};
-		A2EE63A62F5CB89D00980AE8 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				A2EE61D82F5CB52800980AE8 /* ClassCountdownWidget */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		B99C9D6E2F00000100000005 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -484,13 +341,10 @@
 				A25EA2CC2DB9E0770037D8D9 /* Frameworks */,
 				A25EA2CD2DB9E0770037D8D9 /* Resources */,
 				B99C9D742F0002B20000000B /* Embed App Extensions */,
-				A2EE61AD2F5CB52800980AE8 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A287C2EC2E6CA9E3005129F0 /* PBXTargetDependency */,
-				A2EE61A82F5CB52800980AE8 /* PBXTargetDependency */,
 			);
 			name = SJA_re;
 			packageProductDependencies = (
@@ -567,96 +421,6 @@
 			productReference = A287C2E52E6CA9E3005129F0 /* ClassCountdownWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		A2EE61882F5CB52700980AE8 /* Hilltoppers Watch Watch App */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A2EE61AA2F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch App" */;
-			buildPhases = (
-				A2EE61852F5CB52700980AE8 /* Sources */,
-				A2EE61862F5CB52700980AE8 /* Frameworks */,
-				A2EE61872F5CB52700980AE8 /* Resources */,
-				A2EE61D62F5CB52800980AE8 /* Embed App Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A2EE61D92F5CB52800980AE8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A2EE618A2F5CB52700980AE8 /* Hilltoppers Watch Watch App */,
-			);
-			name = "Hilltoppers Watch Watch App";
-			packageProductDependencies = (
-			);
-			productName = "Hilltoppers Watch Watch App";
-			productReference = A2EE61892F5CB52700980AE8 /* Hilltoppers Watch Watch App.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A2EE61942F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A2EE61AE2F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch AppTests" */;
-			buildPhases = (
-				A2EE61912F5CB52800980AE8 /* Sources */,
-				A2EE61922F5CB52800980AE8 /* Frameworks */,
-				A2EE61932F5CB52800980AE8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A2EE61972F5CB52800980AE8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A2EE61982F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests */,
-			);
-			name = "Hilltoppers Watch Watch AppTests";
-			packageProductDependencies = (
-			);
-			productName = "Hilltoppers Watch Watch AppTests";
-			productReference = A2EE61952F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		A2EE619E2F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A2EE61B12F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch AppUITests" */;
-			buildPhases = (
-				A2EE619B2F5CB52800980AE8 /* Sources */,
-				A2EE619C2F5CB52800980AE8 /* Frameworks */,
-				A2EE619D2F5CB52800980AE8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A2EE61A12F5CB52800980AE8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A2EE61A22F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests */,
-			);
-			name = "Hilltoppers Watch Watch AppUITests";
-			packageProductDependencies = (
-			);
-			productName = "Hilltoppers Watch Watch AppUITests";
-			productReference = A2EE619F2F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
-		A2EE61D52F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A2EE62DB2F5CB77400980AE8 /* Build configuration list for PBXNativeTarget "ClassCountdownWatchWidgetExtension" */;
-			buildPhases = (
-				A2EE61E02F5CB52800980AE8 /* Sources */,
-				A2EE61E12F5CB52800980AE8 /* Frameworks */,
-				A2EE61E22F5CB52800980AE8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A2EE61D82F5CB52800980AE8 /* ClassCountdownWidget */,
-			);
-			name = ClassCountdownWatchWidgetExtension;
-			productName = ClassCountdownWatchWidgetExtension;
-			productReference = A2EE61D02F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -664,7 +428,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					A25EA2CE2DB9E0770037D8D9 = {
@@ -680,17 +444,6 @@
 					};
 					A287C2E42E6CA9E3005129F0 = {
 						CreatedOnToolsVersion = 16.3;
-					};
-					A2EE61882F5CB52700980AE8 = {
-						CreatedOnToolsVersion = 26.0.1;
-					};
-					A2EE61942F5CB52800980AE8 = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = A2EE61882F5CB52700980AE8;
-					};
-					A2EE619E2F5CB52800980AE8 = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = A2EE61882F5CB52700980AE8;
 					};
 				};
 			};
@@ -717,10 +470,6 @@
 				A25EA2DC2DB9E0780037D8D9 /* SJA_reTests */,
 				A25EA2E62DB9E0780037D8D9 /* SJA_reUITests */,
 				A287C2E42E6CA9E3005129F0 /* ClassCountdownWidgetExtension */,
-				A2EE61D52F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension */,
-				A2EE61882F5CB52700980AE8 /* Hilltoppers Watch Watch App */,
-				A2EE61942F5CB52800980AE8 /* Hilltoppers Watch Watch AppTests */,
-				A2EE619E2F5CB52800980AE8 /* Hilltoppers Watch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -758,34 +507,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A287C2E32E6CA9E3005129F0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61872F5CB52700980AE8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61932F5CB52800980AE8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE619D2F5CB52800980AE8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61E22F5CB52800980AE8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -851,35 +572,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A2EE61852F5CB52700980AE8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61912F5CB52800980AE8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE619B2F5CB52800980AE8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2EE61E02F5CB52800980AE8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A2EE61E32F5CB52800980AE8 /* WidgetSharedTypes.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -892,31 +584,6 @@
 			isa = PBXTargetDependency;
 			target = A25EA2CE2DB9E0770037D8D9 /* SJA_re */;
 			targetProxy = A25EA2E82DB9E0780037D8D9 /* PBXContainerItemProxy */;
-		};
-		A2EE61972F5CB52800980AE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A2EE61882F5CB52700980AE8 /* Hilltoppers Watch Watch App */;
-			targetProxy = A2EE61962F5CB52800980AE8 /* PBXContainerItemProxy */;
-		};
-		A2EE61A12F5CB52800980AE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A2EE61882F5CB52700980AE8 /* Hilltoppers Watch Watch App */;
-			targetProxy = A2EE61A02F5CB52800980AE8 /* PBXContainerItemProxy */;
-		};
-		A2EE61A82F5CB52800980AE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A2EE61882F5CB52700980AE8 /* Hilltoppers Watch Watch App */;
-			targetProxy = A2EE61A72F5CB52800980AE8 /* PBXContainerItemProxy */;
-		};
-		A287C2EC2E6CA9E3005129F0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A287C2E42E6CA9E3005129F0 /* ClassCountdownWidgetExtension */;
-			targetProxy = A287C2EB2E6CA9E3005129F0 /* PBXContainerItemProxy */;
-		};
-		A2EE61D92F5CB52800980AE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A2EE61D52F5CB52800980AE8 /* ClassCountdownWatchWidgetExtension */;
-			targetProxy = A2EE61D42F5CB52800980AE8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1065,7 +732,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.2;
+				MARKETING_VERSION = 2.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1108,7 +775,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.2;
+				MARKETING_VERSION = 2.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1231,11 +898,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator watchos watchsimulator";
-				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,4";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Debug;
@@ -1264,227 +929,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator watchos watchsimulator";
-				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,4";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		A2EE61AB2F5CB52800980AE8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hilltoppers Watch";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = danielzhang.Hilltoppers2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		A2EE61AC2F5CB52800980AE8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hilltoppers Watch";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = danielzhang.Hilltoppers2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
-		A2EE61AF2F5CB52800980AE8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YDRBRK389D;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.Hilltoppers-Watch-Watch-AppTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hilltoppers Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hilltoppers Watch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		A2EE61B02F5CB52800980AE8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YDRBRK389D;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.Hilltoppers-Watch-Watch-AppTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hilltoppers Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hilltoppers Watch Watch App";
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
-		A2EE61B22F5CB52800980AE8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YDRBRK389D;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.Hilltoppers-Watch-Watch-AppUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_TARGET_NAME = "Hilltoppers Watch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		A2EE61B32F5CB52800980AE8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YDRBRK389D;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "danielzhang.Hilltoppers-Watch-Watch-AppUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_TARGET_NAME = "Hilltoppers Watch Watch App";
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
-		A2EE62DC2F5CB77400980AE8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ClassCountdownWidget/ClassCountdownWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ClassCountdownWidget/Info-watchOS.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2.watchkitapp.Widget;
-				PRODUCT_NAME = ClassCountdownWatchWidgetExtension;
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
-			};
-			name = Debug;
-		};
-		A2EE62DD2F5CB77400980AE8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ClassCountdownWidget/ClassCountdownWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 997U33SWRW;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ClassCountdownWidget/Info-watchOS.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2.watchkitapp.Widget;
-				PRODUCT_NAME = ClassCountdownWatchWidgetExtension;
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Release;
 		};
@@ -1532,42 +980,6 @@
 			buildConfigurations = (
 				A287C2F72E6CA9E4005129F0 /* Debug */,
 				A287C2F82E6CA9E4005129F0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A2EE61AA2F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch App" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A2EE61AB2F5CB52800980AE8 /* Debug */,
-				A2EE61AC2F5CB52800980AE8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A2EE61AE2F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch AppTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A2EE61AF2F5CB52800980AE8 /* Debug */,
-				A2EE61B02F5CB52800980AE8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A2EE61B12F5CB52800980AE8 /* Build configuration list for PBXNativeTarget "Hilltoppers Watch Watch AppUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A2EE61B22F5CB52800980AE8 /* Debug */,
-				A2EE61B32F5CB52800980AE8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A2EE62DB2F5CB77400980AE8 /* Build configuration list for PBXNativeTarget "ClassCountdownWatchWidgetExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A2EE62DC2F5CB77400980AE8 /* Debug */,
-				A2EE62DD2F5CB77400980AE8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

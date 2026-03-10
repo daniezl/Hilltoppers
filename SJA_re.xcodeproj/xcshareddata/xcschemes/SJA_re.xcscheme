@@ -15,20 +15,6 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A287C2E42E6CA9E3005129F0"
-               BuildableName = "ClassCountdownWidgetExtension.appex"
-               BlueprintName = "ClassCountdownWidgetExtension"
-               ReferencedContainer = "container:SJA_re.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "A25EA2CE2DB9E0770037D8D9"
                BuildableName = "SJA_re.app"
                BlueprintName = "SJA_re"
@@ -43,6 +29,20 @@
             buildForAnalyzing = "NO">
             <AutocreatedTestPlanReference>
             </AutocreatedTestPlanReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A287C2E42E6CA9E3005129F0"
+               BuildableName = "ClassCountdownWidgetExtension.appex"
+               BlueprintName = "ClassCountdownWidgetExtension"
+               ReferencedContainer = "container:SJA_re.xcodeproj">
+            </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>

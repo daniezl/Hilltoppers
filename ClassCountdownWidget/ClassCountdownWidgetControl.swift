@@ -5,7 +5,7 @@
 //  Created by Daniel Zhang on 9/6/25.
 //
 
-#if os(iOS) && canImport(WidgetKit)
+#if canImport(WidgetKit)
 import AppIntents
 import SwiftUI
 import WidgetKit
