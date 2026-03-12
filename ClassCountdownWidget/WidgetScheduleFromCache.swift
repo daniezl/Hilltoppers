@@ -34,6 +34,7 @@ enum WidgetScheduleFromCache {
         }
         let today = estCalendar.startOfDay(for: Date())
         let dateString = dateString(from: today)
+        let dayType = WidgetDayTypeFallback.dayTypeForToday()
 
         // 1. special_periods
         if let periods = loadCachedSpecialPeriods(def),
@@ -48,13 +49,13 @@ enum WidgetScheduleFromCache {
                 return ScheduleResult(noSchool: true, reason: dayRecord.details ?? "No School", events: [])
             }
             if dayRecord.type == "custom", let blocks = dayRecord.schedule, !blocks.isEmpty {
-                let events = blocksToEvents(blocks, on: today)
+                let events = blocksToEvents(blocks, on: today, dayType: dayType)
                 return ScheduleResult(noSchool: false, reason: nil, events: events)
             }
             if let type = dayRecord.type, type != "no_school", type != "custom" {
                 let cacheKey = defaultScheduleCacheKey(for: type)
                 if let blocks = loadCachedDefaultSchedule(def, scheduleKey: cacheKey) {
-                    let events = blocksToEvents(blocks, on: today)
+                    let events = blocksToEvents(blocks, on: today, dayType: dayType)
                     return ScheduleResult(noSchool: false, reason: nil, events: events)
                 }
             }
@@ -70,7 +71,7 @@ enum WidgetScheduleFromCache {
         default: key = nil
         }
         if let cacheKey = key, let blocks = loadCachedDefaultSchedule(def, scheduleKey: cacheKey) {
-            let events = blocksToEvents(blocks, on: today)
+            let events = blocksToEvents(blocks, on: today, dayType: dayType)
             return ScheduleResult(noSchool: false, reason: nil, events: events)
         }
 
@@ -129,6 +130,8 @@ enum WidgetScheduleFromCache {
         case "schedule_mon_thu": return "CachedScheduleMonThu"
         case "schedule_wed": return "CachedScheduleWed"
         case "schedule_fri": return "CachedScheduleFri"
+        case "late_start": return "CachedScheduleLateStart"
+        case "abdec": return "CachedScheduleAbdec"
         default: return type
         }
     }
@@ -138,7 +141,7 @@ enum WidgetScheduleFromCache {
         return try? JSONDecoder().decode([BlockMinimal].self, from: data)
     }
 
-    private static func blocksToEvents(_ blocks: [BlockMinimal], on baseDate: Date) -> [WidgetClassEvent] {
+    private static func blocksToEvents(_ blocks: [BlockMinimal], on baseDate: Date, dayType: String?) -> [WidgetClassEvent] {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         formatter.timeZone = estTimeZone
@@ -154,9 +157,10 @@ enum WidgetScheduleFromCache {
             let endMin = estCalendar.component(.minute, from: endTime)
             guard let startDate = estCalendar.date(bySettingHour: startHour, minute: startMin, second: 0, of: dayStart),
                   let endDate = estCalendar.date(bySettingHour: endHour, minute: endMin, second: 0, of: dayStart) else { continue }
+            let displayName = WidgetBlockDisplayNameResolver.displayName(for: block.name, dayType: dayType)
             events.append(WidgetClassEvent(
                 blockName: block.name,
-                displayName: block.name,
+                displayName: displayName,
                 startDate: startDate,
                 endDate: endDate
             ))

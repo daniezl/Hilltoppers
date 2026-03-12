@@ -1027,11 +1027,12 @@ struct ContentView: View {
                 Task {
                     await performUpdateCheck()
                 }
-                // 进入 app 时在后台静默刷新 special_days / special_periods、day type 与默认课表缓存，供 Widget 用缓存展示
+                // 进入 app 时在后台静默刷新 special_days / special_periods、day type、默认课表与 block 显示名，供 Widget 用缓存展示
                 Task {
                     await CloudflareDataLoader.refreshSpecialDataCache()
                     await DayTypeCache.refreshDayTypeCache()
                     ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
+                    WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
                 }
 
                 let resetToToday = enforceTodayDefaultIfNeeded()

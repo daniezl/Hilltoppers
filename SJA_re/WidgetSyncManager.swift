@@ -25,6 +25,7 @@ final class WidgetSyncManager {
         )
 
         writePayloadIfNeeded(payload)
+        syncBlockPreferencesToAppGroup()
     }
 
     func clearSchedule(reason: String?) {
@@ -55,5 +56,13 @@ final class WidgetSyncManager {
         guard let encoded = try? encoder.encode(payload) else { return }
         defaults.set(encoded, forKey: widgetPayloadKey)
         WidgetCenter.shared.reloadTimelines(ofKind: "ClassCountdownWidget")
+    }
+
+    /// 将 block 显示名设置写入 App Group，供 Widget 用缓存建课表时显示用户设置的课程名。
+    func syncBlockPreferencesToAppGroup() {
+        guard let defaults else { return }
+        let prefs = BlockPreferencesManager.shared.preferences
+        guard let data = try? encoder.encode(prefs) else { return }
+        defaults.set(data, forKey: "BlockPreferences")
     }
 }
