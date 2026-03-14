@@ -13,6 +13,8 @@ struct ClassCountdownWidgetPayload: Codable, Equatable {
     let events: [WidgetClassEvent]
     let noSchoolReason: String?
     let dayTypeDisplay: String?
+    /// 特殊课表时显示（Late Start、ABDEC、Custom 等）；普通课表为 nil。
+    let scheduleTitle: String?
 }
 
 enum ClassCountdownPhase: Equatable {

@@ -25,12 +25,14 @@ enum WidgetScheduleFromCache {
         let noSchool: Bool
         let reason: String?
         let events: [WidgetClassEvent]
+        /// 特殊课表时显示（late_start、ABDEC、Custom 或 details）；普通课表为 nil。
+        let scheduleTitle: String?
     }
 
     /// 仅从缓存算出今日课表；无缓存或周末等返回 noSchool 或空 events。
     static func scheduleForToday() -> ScheduleResult {
         guard let def = defaults else {
-            return ScheduleResult(noSchool: true, reason: "Schedule unavailable", events: [])
+            return ScheduleResult(noSchool: true, reason: "Schedule unavailable", events: [], scheduleTitle: nil)
         }
         let today = estCalendar.startOfDay(for: Date())
         let dateString = dateString(from: today)
@@ -39,29 +41,34 @@ enum WidgetScheduleFromCache {
         // 1. special_periods
         if let periods = loadCachedSpecialPeriods(def),
            let (_, details) = todayInPeriods(dateString, periods: periods) {
-            return ScheduleResult(noSchool: true, reason: details ?? "Break", events: [])
+            return ScheduleResult(noSchool: true, reason: details ?? "Break", events: [], scheduleTitle: nil)
         }
 
         // 2. special_days
         if let specialDays = loadCachedSpecialDays(def),
            let dayRecord = specialDays[dateString] {
             if dayRecord.type == "no_school" {
-                return ScheduleResult(noSchool: true, reason: dayRecord.details ?? "No School", events: [])
+                return ScheduleResult(noSchool: true, reason: dayRecord.details ?? "No School", events: [], scheduleTitle: nil)
             }
             if dayRecord.type == "custom", let blocks = dayRecord.schedule, !blocks.isEmpty {
                 let events = blocksToEvents(blocks, on: today, dayType: dayType)
-                return ScheduleResult(noSchool: false, reason: nil, events: events)
+                let title: String? = {
+                    let d = dayRecord.details?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return (d != nil && !d!.isEmpty) ? d : "Custom Schedule"
+                }()
+                return ScheduleResult(noSchool: false, reason: nil, events: events, scheduleTitle: title)
             }
             if let type = dayRecord.type, type != "no_school", type != "custom" {
                 let cacheKey = defaultScheduleCacheKey(for: type)
                 if let blocks = loadCachedDefaultSchedule(def, scheduleKey: cacheKey) {
                     let events = blocksToEvents(blocks, on: today, dayType: dayType)
-                    return ScheduleResult(noSchool: false, reason: nil, events: events)
+                    let title = formatScheduleTitle(for: type)
+                    return ScheduleResult(noSchool: false, reason: nil, events: events, scheduleTitle: title)
                 }
             }
         }
 
-        // 3. 默认按星期
+        // 3. 默认按星期（不显示课表标题）
         let weekday = estCalendar.component(.weekday, from: today)
         let key: String?
         switch weekday {
@@ -72,13 +79,13 @@ enum WidgetScheduleFromCache {
         }
         if let cacheKey = key, let blocks = loadCachedDefaultSchedule(def, scheduleKey: cacheKey) {
             let events = blocksToEvents(blocks, on: today, dayType: dayType)
-            return ScheduleResult(noSchool: false, reason: nil, events: events)
+            return ScheduleResult(noSchool: false, reason: nil, events: events, scheduleTitle: nil)
         }
 
         if key == nil {
-            return ScheduleResult(noSchool: true, reason: "No school (weekend)", events: [])
+            return ScheduleResult(noSchool: true, reason: "No school (weekend)", events: [], scheduleTitle: nil)
         }
-        return ScheduleResult(noSchool: true, reason: "Schedule unavailable", events: [])
+        return ScheduleResult(noSchool: true, reason: "Schedule unavailable", events: [], scheduleTitle: nil)
     }
 
     private static func dateString(from date: Date) -> String {
@@ -123,6 +130,12 @@ enum WidgetScheduleFromCache {
             }
         }
         return nil
+    }
+
+    /// 与 app 课表上方标题一致：abdec → ABDEC，其余 type → 首字母大写、下划线变空格。
+    private static func formatScheduleTitle(for type: String) -> String {
+        if type.lowercased() == "abdec" { return "ABDEC" }
+        return type.capitalized.replacingOccurrences(of: "_", with: " ")
     }
 
     private static func defaultScheduleCacheKey(for type: String) -> String {

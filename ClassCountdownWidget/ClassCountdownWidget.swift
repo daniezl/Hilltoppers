@@ -12,6 +12,8 @@ struct ClassCountdownEntry: TimelineEntry {
     let date: Date
     let phase: ClassCountdownPhase
     let dayType: String?
+    /// 特殊课表时显示（Late Start、ABDEC、Custom 等）；普通课表为 nil。
+    let scheduleTitle: String?
 }
 
 struct ClassCountdownProvider: TimelineProvider {
@@ -28,7 +30,7 @@ struct ClassCountdownProvider: TimelineProvider {
             startDate: Date().addingTimeInterval(-600),
             endDate: Date().addingTimeInterval(1800)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockEnds(sampleEvent), dayType: "Green Day")
+        return ClassCountdownEntry(date: Date(), phase: .blockEnds(sampleEvent), dayType: "Green Day", scheduleTitle: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ClassCountdownEntry) -> Void) {
@@ -36,10 +38,10 @@ struct ClassCountdownProvider: TimelineProvider {
         let calendar = Calendar.sja
         if let payload = loadPayload(), calendar.isDate(payload.scheduleDate, inSameDayAs: now) {
             let entries = buildEntries(from: payload, referenceDate: now)
-            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay))
+            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: payload.dayTypeDisplay, scheduleTitle: nil))
         } else {
             let entries = buildEntriesFromCache(referenceDate: now)
-            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday()))
+            completion(entries.first ?? ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday(), scheduleTitle: nil))
         }
     }
 
@@ -55,7 +57,7 @@ struct ClassCountdownProvider: TimelineProvider {
         }
 
         if entries.isEmpty {
-            entries = [ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday())]
+            entries = [ClassCountdownEntry(date: now, phase: .empty, dayType: WidgetDayTypeFallback.dayTypeForToday(), scheduleTitle: nil)]
         }
 
         let policy: TimelineReloadPolicy
@@ -75,14 +77,15 @@ struct ClassCountdownProvider: TimelineProvider {
 
     private func buildEntries(from payload: ClassCountdownWidgetPayload, referenceDate: Date) -> [ClassCountdownEntry] {
         let dayType = payload.dayTypeDisplay
+        let scheduleTitle = payload.scheduleTitle
         if let reason = payload.noSchoolReason, !reason.isEmpty {
-            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(reason), dayType: dayType, scheduleTitle: nil)]
         }
         let events = payload.events.sorted { $0.startDate < $1.startDate }
         guard !events.isEmpty else {
-            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType, scheduleTitle: scheduleTitle)]
         }
-        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate)
+        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate, scheduleTitle: scheduleTitle)
     }
 
     /// 无 payload 或 payload 非今日时，完全用缓存构建 timeline，不再显示 Open App。
@@ -90,23 +93,23 @@ struct ClassCountdownProvider: TimelineProvider {
         let result = WidgetScheduleFromCache.scheduleForToday()
         let dayType = WidgetDayTypeFallback.dayTypeForToday()
         if result.noSchool {
-            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(result.reason ?? "No School"), dayType: dayType)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .noSchool(result.reason ?? "No School"), dayType: dayType, scheduleTitle: nil)]
         }
         let events = result.events.sorted { $0.startDate < $1.startDate }
         guard !events.isEmpty else {
-            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType)]
+            return [ClassCountdownEntry(date: referenceDate, phase: .finished, dayType: dayType, scheduleTitle: result.scheduleTitle)]
         }
-        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate)
+        return buildEntriesWithEvents(events, dayType: dayType, referenceDate: referenceDate, scheduleTitle: result.scheduleTitle)
     }
 
-    private func buildEntriesWithEvents(_ events: [WidgetClassEvent], dayType: String?, referenceDate: Date) -> [ClassCountdownEntry] {
+    private func buildEntriesWithEvents(_ events: [WidgetClassEvent], dayType: String?, referenceDate: Date, scheduleTitle: String? = nil) -> [ClassCountdownEntry] {
         var entries: [ClassCountdownEntry] = []
         var visited: Set<Date> = []
         var cursor = referenceDate
         while !visited.contains(cursor) {
             visited.insert(cursor)
             let phase = phase(at: cursor, events: events)
-            entries.append(ClassCountdownEntry(date: cursor, phase: phase, dayType: dayType))
+            entries.append(ClassCountdownEntry(date: cursor, phase: phase, dayType: dayType, scheduleTitle: scheduleTitle))
             guard let nextDate = nextTimelineDate(after: cursor, phase: phase, events: events) else { break }
             if nextDate <= cursor { break }
             cursor = nextDate
@@ -198,6 +201,7 @@ struct ClassCountdownWidgetEntryView: View {
 
     private var rectangularBody: some View {
         contentView()
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var smallWidgetBody: some View {
@@ -211,6 +215,12 @@ struct ClassCountdownWidgetEntryView: View {
                         .foregroundColor(secondaryTextColor)
                         .lineLimit(1)
                         .padding(.top, 4)
+                }
+                if shouldShowDayType, let title = entry.scheduleTitle?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+                    Text(title)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(secondaryTextColor)
+                        .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: isCountdownPhase ? .leading : .center)
@@ -386,7 +396,7 @@ struct ClassCountdownWidget_Previews: PreviewProvider {
             startDate: Date().addingTimeInterval(-20 * 60),
             endDate: Date().addingTimeInterval(10 * 60)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockEnds(event), dayType: "Green Day")
+        return ClassCountdownEntry(date: Date(), phase: .blockEnds(event), dayType: "Green Day", scheduleTitle: nil)
     }
 
     private static var previewEntryStarting: ClassCountdownEntry {
@@ -396,7 +406,7 @@ struct ClassCountdownWidget_Previews: PreviewProvider {
             startDate: Date().addingTimeInterval(15 * 60),
             endDate: Date().addingTimeInterval(75 * 60)
         )
-        return ClassCountdownEntry(date: Date(), phase: .blockStarts(event), dayType: "White Day")
+        return ClassCountdownEntry(date: Date(), phase: .blockStarts(event), dayType: "White Day", scheduleTitle: nil)
     }
 }
 #endif

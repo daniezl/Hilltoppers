@@ -15,13 +15,14 @@ final class WidgetSyncManager {
         decoder = JSONDecoder()
     }
 
-    func updateSchedule(scheduleDate: Date, events: [WidgetClassEvent], noSchoolReason: String?, dayTypeDisplay: String?) {
+    func updateSchedule(scheduleDate: Date, events: [WidgetClassEvent], noSchoolReason: String?, dayTypeDisplay: String?, scheduleTitle: String? = nil) {
         let payload = ClassCountdownWidgetPayload(
             scheduleDate: scheduleDate,
             lastUpdated: Date(),
             events: events,
             noSchoolReason: noSchoolReason,
-            dayTypeDisplay: dayTypeDisplay
+            dayTypeDisplay: dayTypeDisplay,
+            scheduleTitle: scheduleTitle
         )
 
         writePayloadIfNeeded(payload)
@@ -35,7 +36,8 @@ final class WidgetSyncManager {
             lastUpdated: Date(),
             events: [],
             noSchoolReason: reason,
-            dayTypeDisplay: nil
+            dayTypeDisplay: nil,
+            scheduleTitle: nil
         )
 
         writePayloadIfNeeded(payload)
@@ -49,7 +51,8 @@ final class WidgetSyncManager {
            existingPayload.scheduleDate == payload.scheduleDate,
            existingPayload.events == payload.events,
            existingPayload.noSchoolReason == payload.noSchoolReason,
-           existingPayload.dayTypeDisplay == payload.dayTypeDisplay {
+           existingPayload.dayTypeDisplay == payload.dayTypeDisplay,
+           existingPayload.scheduleTitle == payload.scheduleTitle {
             return
         }
 

@@ -1124,11 +1124,16 @@ struct ScheduleView: View {
             WidgetSyncManager.shared.clearSchedule(reason: reason)
         } else {
             let displayDayType = resolveDayTypeDisplay(for: scheduleDate)
+            let titleForWidget: String? = {
+                guard scheduleTitle != "Loading..." else { return nil }
+                return scheduleTitle != getWeekdayTitle() ? scheduleTitle : nil
+            }()
             WidgetSyncManager.shared.updateSchedule(
                 scheduleDate: scheduleDate,
                 events: events,
                 noSchoolReason: nil,
-                dayTypeDisplay: displayDayType
+                dayTypeDisplay: displayDayType,
+                scheduleTitle: titleForWidget
             )
         }
     }
