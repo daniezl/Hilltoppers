@@ -245,7 +245,8 @@ struct ClassCountdownWidgetEntryView: View {
         case .finished:
             summaryView(title: "School Ended", subtitle: "Have a good day", centered: shouldCenterSummaryContent)
         case .noSchool(let reason):
-            summaryView(title: "No School", subtitle: reason, centered: shouldCenterSummaryContent)
+            let subtitle = Self.noSchoolSubtitle(for: reason)
+            summaryView(title: "No School", subtitle: subtitle, centered: shouldCenterSummaryContent)
         case .stale:
             summaryView(title: "Open App", subtitle: "Refresh schedule", centered: shouldCenterSummaryContent)
         case .empty:
@@ -266,25 +267,28 @@ struct ClassCountdownWidgetEntryView: View {
         }
     }
 
+    @ViewBuilder
     private func summaryView(title: String, subtitle: String, centered: Bool) -> some View {
         let titleFontSize: CGFloat = centered ? 24 : 12
         let subtitleFontSize: CGFloat = centered ? 12 : 10
         let titleWeight: Font.Weight = centered ? .bold : .semibold
         let subtitleWeight: Font.Weight = centered ? .semibold : .regular
-        return VStack(alignment: centered ? .center : .leading, spacing: 2) {
+        VStack(alignment: centered ? .center : .leading, spacing: 2) {
             Text(title)
                 .font(.system(size: titleFontSize, weight: titleWeight))
                 .lineLimit(centered ? 2 : 1)
                 .multilineTextAlignment(centered ? .center : .leading)
                 .foregroundColor(primaryTextColor)
                 .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
-            Text(subtitle)
-                .font(.system(size: subtitleFontSize, weight: subtitleWeight))
-                .foregroundColor(secondaryTextColor)
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-                .multilineTextAlignment(centered ? .center : .leading)
-                .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
+            if !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(.system(size: subtitleFontSize, weight: subtitleWeight))
+                    .foregroundColor(secondaryTextColor)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+                    .multilineTextAlignment(centered ? .center : .leading)
+                    .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
+            }
         }
         .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
     }
@@ -338,6 +342,18 @@ struct ClassCountdownWidget: Widget {
 }
 
 private extension ClassCountdownWidgetEntryView {
+    /// 标题已是 "No School" 时，小字只显示原因，不重复 "No school (…)"。
+    static func noSchoolSubtitle(for reason: String) -> String {
+        if reason == "No school (weekend)" { return "Weekend" }
+        if reason == "No school (special day)" { return "Special day" }
+        if reason == "No School" { return "" }
+        if reason.hasPrefix("No school ("), reason.hasSuffix(")") {
+            let mid = reason.dropFirst(11).dropLast(1)
+            if !mid.isEmpty { return String(mid) }
+        }
+        return reason
+    }
+
     var isCountdownPhase: Bool {
         switch entry.phase {
         case .blockStarts(_), .blockEnds(_):
