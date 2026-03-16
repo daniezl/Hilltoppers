@@ -618,6 +618,11 @@ struct ScheduleView: View {
                     }
                     updateCountdownWidget()
                 }
+                .onChange(of: noSchoolDetails) { _ in
+                    if noSchool, let details = noSchoolDetails, !details.isEmpty {
+                        showDetailsText = true
+                    }
+                }
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
@@ -977,6 +982,7 @@ struct ScheduleView: View {
             loader.blocks = []
             noSchool = true
             noSchoolDetails = "Weekend" // Show "Weekend" as detail text
+            showDetailsText = true  // 与 noSchoolDetails 同时设置，避免进入 app 时依赖 confetti 时序导致不显示
             // print("🔍 DEBUG: Set noSchoolDetails to '\(noSchoolDetails ?? "nil")'")
         }
     }
