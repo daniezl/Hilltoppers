@@ -37,6 +37,21 @@ struct MoreInfoView: View {
 
             Divider()
 
+            NavigationLink {
+                DebugRefreshTimelineView()
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "clock.arrow.2.circlepath")
+                    Text("Debug Refresh Timeline")
+                        .font(.callout.weight(.semibold))
+                }
+                .foregroundColor(.primary)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .background(accentGreen.opacity(0.12))
+                .cornerRadius(12)
+            }
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Developer")
                     .font(.callout.weight(.semibold))

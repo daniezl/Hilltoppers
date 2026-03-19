@@ -22,6 +22,7 @@
 		A267CD022DF008BE00F904F1 /* abdec.json in Resources */ = {isa = PBXBuildFile; fileRef = A267CCFF2DF008BE00F904F1 /* abdec.json */; };
 		A271E7DD2DFD271F0063C9C0 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */; };
 		A271E7DF2DFD2C880063C9C0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */; };
+		A27B523C2F6C60220012A61C /* DebugRefreshTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A27B523B2F6C60220012A61C /* DebugRefreshTimelineView.swift */; };
 		A280A0F02DDCE7E300F98F3F /* schedule_mon_thu.json in Resources */ = {isa = PBXBuildFile; fileRef = A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */; };
 		A280A0F12DDCE7E300F98F3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */; };
 		A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */; };
@@ -109,6 +110,7 @@
 		A267CD002DF008BE00F904F1 /* late_start.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = late_start.json; sourceTree = "<group>"; };
 		A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		A271E7DE2DFD2C880063C9C0 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A27B523B2F6C60220012A61C /* DebugRefreshTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRefreshTimelineView.swift; sourceTree = "<group>"; };
 		A280A0E62DDCE7E300F98F3F /* schedule_mon_thu.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = schedule_mon_thu.json; sourceTree = "<group>"; };
 		A280A0E72DDCE7E300F98F3F /* ScheduleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleLoader.swift; sourceTree = "<group>"; };
 		A280A0E82DDCE7E300F98F3F /* ScheduleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleModels.swift; sourceTree = "<group>"; };
@@ -281,6 +283,7 @@
 				B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */,
 				A228825B2E935CE500774386 /* FeatureShowcaseView.swift */,
 				A2B4D9A92FCBC8C400EEA00C /* MoreInfoView.swift */,
+				A27B523B2F6C60220012A61C /* DebugRefreshTimelineView.swift */,
 				B99C9DA62F0056D00000001B /* Background */,
 				602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */,
 				845FCFE81465410FA49CF218 /* DayTypeCache.swift */,
@@ -543,6 +546,7 @@
 				EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */,
 				C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */,
 				A228825C2E935CE500774386 /* FeatureShowcaseView.swift in Sources */,
+				A27B523C2F6C60220012A61C /* DebugRefreshTimelineView.swift in Sources */,
 				A2B4D9AA2FCBC8C400EEA00C /* MoreInfoView.swift in Sources */,
 				921C56449A714013AB99266A /* ScheduleService.swift in Sources */,
 				A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */,
@@ -718,7 +722,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
@@ -740,7 +744,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.2;
+				MARKETING_VERSION = 2.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -761,7 +765,7 @@
 				CODE_SIGN_ENTITLEMENTS = SJA_re/SJA_re.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = ClassCountdownWidget;
 				DEVELOPMENT_TEAM = 997U33SWRW;
 				ENABLE_PREVIEWS = YES;
@@ -783,7 +787,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.4.2;
+				MARKETING_VERSION = 2.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

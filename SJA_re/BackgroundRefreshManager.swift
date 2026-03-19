@@ -146,9 +146,17 @@ final class BackgroundRefreshManager {
     
     private func performWidgetRefresh() async -> Bool {
         do {
+            RefreshTimelineStore.append(kind: .widgetDailyRefreshStart, details: "BackgroundRefreshManager.performWidgetRefresh()")
             await CloudflareDataLoader.refreshSpecialDataCache()
+            RefreshTimelineStore.append(kind: .widgetDailyStageSpecialCacheRefreshed, details: "special_days/special_periods refreshed")
             await DayTypeCache.refreshDayTypeCache()
+            RefreshTimelineStore.append(kind: .widgetDailyStageDayTypeRefreshed, details: "day type refreshed")
             ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
+            RefreshTimelineStore.append(kind: .widgetDailyStageDefaultSchedulesCached, details: "default schedules cached (App Group)")
+            await MainActor.run {
+                WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
+                RefreshTimelineStore.append(kind: .widgetDailyStageBlockPrefsSynced, details: "BlockPreferences synced (App Group)")
+            }
             // Calculate current EST noon (same logic as RefreshScheduleOperation)
             var calendar = Calendar.current
             calendar.timeZone = Date.estTimeZone
@@ -159,8 +167,9 @@ final class BackgroundRefreshManager {
             let blocks = try await ScheduleService.loadBlocks(for: referenceDate)
             let noSchoolReason = blocks.isEmpty ? "Schedule unavailable" : nil
             let dayTypeDisplay = await DayTypeCache.predictedDayType(for: referenceDate)
+            let scheduleTitle = widgetScheduleTitle(for: calendar.startOfDay(for: referenceDate))
             
-            let events: [WidgetClassEvent] = blocks.compactMap { block in
+            let events: [WidgetClassEvent] = blocks.compactMap { (block) -> WidgetClassEvent? in
                 guard let start = parseTime(block.start, on: referenceDate),
                       let end = parseTime(block.end, on: referenceDate) else {
                     return nil
@@ -168,7 +177,7 @@ final class BackgroundRefreshManager {
                 
                 return WidgetClassEvent(
                     blockName: block.name,
-                    displayName: block.name,
+                    displayName: widgetDisplayName(for: block.name, dayTypeDisplay: dayTypeDisplay),
                     startDate: start,
                     endDate: end
                 )
@@ -179,7 +188,8 @@ final class BackgroundRefreshManager {
                     scheduleDate: calendar.startOfDay(for: referenceDate),
                     events: events,
                     noSchoolReason: noSchoolReason,
-                    dayTypeDisplay: dayTypeDisplay
+                    dayTypeDisplay: dayTypeDisplay,
+                    scheduleTitle: scheduleTitle
                 )
                 WidgetKit.WidgetCenter.shared.reloadAllTimelines()
             }
@@ -190,6 +200,88 @@ final class BackgroundRefreshManager {
             print("❌ [DAILY-REFRESH] Widget refresh failed: \(error)")
             return false
         }
+    }
+
+    // MARK: - Widget payload helpers (App target)
+
+    private var appGroupDefaults: UserDefaults? {
+        UserDefaults(suiteName: "group.danielzhang.Hilltoppers2")
+    }
+
+    private struct BlockPreferenceMinimal: Codable {
+        var name: String = ""
+        var alternating: Bool = false
+        var nameGreen: String = ""
+        var nameWhite: String = ""
+        var freeGreen: Bool = false
+        var freeWhite: Bool = false
+        var free: Bool = false
+    }
+
+    private func widgetDisplayName(for blockName: String, dayTypeDisplay: String?) -> String {
+        guard let def = appGroupDefaults,
+              let data = def.data(forKey: "BlockPreferences"),
+              let prefs = try? JSONDecoder().decode([String: BlockPreferenceMinimal].self, from: data),
+              let key = widgetBlockKey(from: blockName),
+              let pref = prefs[key] else {
+            return blockName
+        }
+
+        let lower = (dayTypeDisplay ?? "").lowercased()
+        let isGreenDay = lower.contains("green") && !lower.contains("white")
+        if pref.alternating {
+            let isFree = isGreenDay ? pref.freeGreen : pref.freeWhite
+            if isFree { return "Free Block" }
+            let custom = isGreenDay ? pref.nameGreen : pref.nameWhite
+            return custom.isEmpty ? blockName : custom
+        }
+
+        if pref.free { return "Free Block" }
+        return pref.name.isEmpty ? blockName : pref.name
+    }
+
+    private func widgetBlockKey(from blockName: String) -> String? {
+        let n = blockName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if n.hasPrefix("a") && n.contains("block") { return "A" }
+        if n.hasPrefix("b") && n.contains("block") { return "B" }
+        if n.hasPrefix("c") && n.contains("block") { return "C" }
+        if n.hasPrefix("d") && n.contains("block") { return "D" }
+        if n.hasPrefix("e") && n.contains("block") { return "E" }
+        return nil
+    }
+
+    private struct SpecialDayRecord: Codable {
+        let type: String?
+        let details: String?
+    }
+
+    private func widgetScheduleTitle(for date: Date) -> String? {
+        guard let def = appGroupDefaults,
+              let data = def.data(forKey: "CachedSpecialDaysData"),
+              let specialDays = try? JSONDecoder().decode([String: SpecialDayRecord].self, from: data) else {
+            return nil
+        }
+
+        let key = widgetDateString(from: date)
+        guard let rec = specialDays[key], let type = rec.type else { return nil }
+        if type == "no_school" { return nil }
+        if type == "custom" {
+            let d = rec.details?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return (d != nil && !d!.isEmpty) ? d : "Custom Schedule"
+        }
+        return widgetFormatScheduleTitle(for: type)
+    }
+
+    private func widgetFormatScheduleTitle(for type: String) -> String {
+        if type.lowercased() == "abdec" { return "ABDEC" }
+        return type.capitalized.replacingOccurrences(of: "_", with: " ")
+    }
+
+    private func widgetDateString(from date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = Date.estTimeZone
+        return f.string(from: date)
     }
     
     private func parseTime(_ timeString: String, on base: Date) -> Date? {

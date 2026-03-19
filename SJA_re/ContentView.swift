@@ -1028,12 +1028,7 @@ struct ContentView: View {
                     await performUpdateCheck()
                 }
                 // 进入 app 时在后台静默刷新 special_days / special_periods、day type、默认课表与 block 显示名，供 Widget 用缓存展示
-                Task {
-                    await CloudflareDataLoader.refreshSpecialDataCache()
-                    await DayTypeCache.refreshDayTypeCache()
-                    ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
-                    WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
-                }
+                Task { await handleSilentWidgetCacheRefresh() }
 
                 let resetToToday = enforceTodayDefaultIfNeeded()
                 let timestamp = String(format: "%.3f", Date().timeIntervalSince1970)
@@ -1265,6 +1260,19 @@ struct ContentView: View {
         Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
     }
 
+    /// scenePhase == .active 时的 silent widget cache refresh（用于 Widget 无 payload/无运行时也能正常显示）。
+    private func handleSilentWidgetCacheRefresh() async {
+        RefreshTimelineStore.append(kind: .appActiveStart, details: "scenePhase=.active silent refresh")
+        await CloudflareDataLoader.refreshSpecialDataCache()
+        RefreshTimelineStore.append(kind: .appActiveStageSpecialCacheRefreshed, details: "special_days/special_periods refreshed")
+        await DayTypeCache.refreshDayTypeCache()
+        RefreshTimelineStore.append(kind: .appActiveStageDayTypeRefreshed, details: "day type refreshed")
+        ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
+        RefreshTimelineStore.append(kind: .appActiveStageDefaultSchedulesCached, details: "default schedules cached (App Group)")
+        WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
+        RefreshTimelineStore.append(kind: .appActiveStageBlockPrefsSynced, details: "block preferences synced (App Group)")
+    }
+
     private static let cachedBlocksKey = "LastScheduleBlocks"
 
     private static func loadCachedBlocks() -> [Block] {
@@ -1296,6 +1304,11 @@ struct ContentView: View {
             
             isLoading = false
             isRefreshing = false // Also hide the refresh spinner when content is ready
+
+            RefreshTimelineStore.append(
+                kind: .appManualRefreshScheduleCompleted,
+                details: "content load finished (noSchool=\(noSchool ?? false), blocks=\(scheduleLoader.blocks.count), dayType='\(currentDayType)')"
+            )
             
             // print("🚀 [CONTENT] Setting isLoading = false, will trigger schedule animations")
             
@@ -1322,6 +1335,7 @@ struct ContentView: View {
     // Background refresh function - only updates UI if data changed
     @MainActor
     func backgroundRefresh() async {
+        RefreshTimelineStore.append(kind: .appManualRefreshScheduleStart, details: "backgroundRefresh()")
         // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Background refresh started - checking for changes")
         
         // Store current state
@@ -1519,6 +1533,7 @@ struct ContentView: View {
     func refreshAll() async {
         // Reset loading states
         // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
+        RefreshTimelineStore.append(kind: .appManualRefreshScheduleStart, details: "refreshAll()")
         isLoading = true
         scheduleLoaded = false
         dayTypeLoaded = false
