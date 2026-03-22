@@ -1269,7 +1269,7 @@ struct ContentView: View {
         RefreshTimelineStore.append(kind: .appActiveStageDayTypeRefreshed, details: "day type refreshed")
         ScheduleCacheForWidget.cacheDefaultSchedulesToAppGroup()
         RefreshTimelineStore.append(kind: .appActiveStageDefaultSchedulesCached, details: "default schedules cached (App Group)")
-        WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
+        WidgetSyncManager.shared.syncBlockPreferencesToAppGroup(reloadTimelines: true)
         RefreshTimelineStore.append(kind: .appActiveStageBlockPrefsSynced, details: "block preferences synced (App Group)")
     }
 

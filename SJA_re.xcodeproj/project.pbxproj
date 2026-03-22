@@ -15,6 +15,7 @@
 		A24509CD2DEEB14500BCDAB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CC2DEEB14500BCDAB5 /* FirebaseAnalytics */; };
 		A24509CF2DEEB14500BCDAB5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509CE2DEEB14500BCDAB5 /* FirebaseCore */; };
 		A24509D12DEEB14500BCDAB5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A24509D02DEEB14500BCDAB5 /* FirebaseFirestore */; };
+		A25BDEF32F6CDEC200238690 /* DebugEedcf6Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25BDEF22F6CDEC200238690 /* DebugEedcf6Logger.swift */; };
 		A25EA3412DBA0B530037D8D9 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A25EA3402DBA0B530037D8D9 /* SwiftSoup */; };
 		A25EDD822DEFD6D600F71034 /* ScheduleTypeFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25EDD812DEFD6D600F71034 /* ScheduleTypeFetcher.swift */; };
 		A25EDD842DEFD9BE00F71034 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A25EDD832DEFD9BE00F71034 /* GoogleService-Info.plist */; };
@@ -99,6 +100,7 @@
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* BlockPreferencesManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockPreferencesManager.swift; sourceTree = "<group>"; };
 		A228825B2E935CE500774386 /* FeatureShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureShowcaseView.swift; sourceTree = "<group>"; };
 		A228825D2E937DC800774386 /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
+		A25BDEF22F6CDEC200238690 /* DebugEedcf6Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugEedcf6Logger.swift; sourceTree = "<group>"; };
 		A25EA2CF2DB9E0770037D8D9 /* SJA_re.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SJA_re.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2DD2DB9E0780037D8D9 /* SJA_reTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A25EA2E72DB9E0780037D8D9 /* SJA_reUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SJA_reUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -292,6 +294,7 @@
 				A280A0ED2DDCE7E300F98F3F /* SJA_re.entitlements */,
 				A280A0EE2DDCE7E300F98F3F /* SJA_reApp.swift */,
 				B99C9D6F2F00000100000006 /* WidgetSyncManager.swift */,
+				A25BDEF22F6CDEC200238690 /* DebugEedcf6Logger.swift */,
 				066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */,
 				0771171D9E05D8FD244231C9 /* AuthView.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* BlockPreferencesManager.swift */,
@@ -539,6 +542,7 @@
 				B99C9DA52F0056D00000001A /* BackgroundTaskManager.swift in Sources */,
 				A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */,
 				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
+				A25BDEF32F6CDEC200238690 /* DebugEedcf6Logger.swift in Sources */,
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
 				A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */,
 				A2DT00012F00A1B000000001 /* DayTypeBulletinParser.swift in Sources */,

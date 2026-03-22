@@ -165,7 +165,7 @@ final class BackgroundRefreshManager {
             let referenceDate = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: start) ?? now
             
             let blocks = try await ScheduleService.loadBlocks(for: referenceDate)
-            let noSchoolReason = blocks.isEmpty ? "Schedule unavailable" : nil
+            let noSchoolReason = blocks.isEmpty ? ScheduleService.widgetNoSchoolReasonWhenEmptyBlocks(for: referenceDate) : nil
             let dayTypeDisplay = await DayTypeCache.predictedDayType(for: referenceDate)
             let scheduleTitle = widgetScheduleTitle(for: calendar.startOfDay(for: referenceDate))
             
@@ -184,6 +184,21 @@ final class BackgroundRefreshManager {
             }
             
             await MainActor.run {
+                // #region agent log
+                let first = events.first
+                DebugEedcf6Logger.log(
+                    hypothesisId: "H4_displayName_computed_in_background",
+                    location: "BackgroundRefreshManager.performWidgetRefresh",
+                    message: "background computed payload fields",
+                    data: [
+                        "dayTypeDisplay": dayTypeDisplay ?? "nil",
+                        "scheduleTitle": scheduleTitle ?? "nil",
+                        "eventsCount": "\(events.count)",
+                        "firstBlockName": first?.blockName ?? "nil",
+                        "firstDisplayName": first?.displayName ?? "nil"
+                    ]
+                )
+                // #endregion
                 WidgetSyncManager.shared.updateSchedule(
                     scheduleDate: calendar.startOfDay(for: referenceDate),
                     events: events,

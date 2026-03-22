@@ -3,6 +3,7 @@ import WidgetKit
 
 final class WidgetSyncManager {
     static let shared = WidgetSyncManager()
+    private static let widgetKind = "ClassCountdownWidget"
 
     private let suiteName = "group.danielzhang.Hilltoppers2"
     private let defaults: UserDefaults?
@@ -52,6 +53,8 @@ final class WidgetSyncManager {
             return f.string(from: payload.scheduleDate)
         }()
 
+        let firstEventDisplayName = payload.events.first?.displayName ?? "nil"
+
         if let existingData = defaults.data(forKey: widgetPayloadKey),
            let existingPayload = try? decoder.decode(ClassCountdownWidgetPayload.self, from: existingData),
            existingPayload.scheduleDate == payload.scheduleDate,
@@ -59,6 +62,21 @@ final class WidgetSyncManager {
            existingPayload.noSchoolReason == payload.noSchoolReason,
            existingPayload.dayTypeDisplay == payload.dayTypeDisplay,
            existingPayload.scheduleTitle == payload.scheduleTitle {
+            // #region agent log
+            DebugEedcf6Logger.log(
+                hypothesisId: "H2_payload_skipped_due_to_equality",
+                location: "WidgetSyncManager.writePayloadIfNeeded",
+                message: "payload skip (no changes detected)",
+                data: [
+                    "scheduleDate": scheduleDateString,
+                    "eventsCount": "\(payload.events.count)",
+                    "firstDisplayName": firstEventDisplayName,
+                    "dayTypeDisplay": payload.dayTypeDisplay ?? "nil",
+                    "scheduleTitle": payload.scheduleTitle ?? "nil",
+                    "noSchoolReason": payload.noSchoolReason ?? "nil"
+                ]
+            )
+            // #endregion
             RefreshTimelineStore.append(
                 kind: .widgetPayloadSkip,
                 details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")"
@@ -69,24 +87,83 @@ final class WidgetSyncManager {
         guard let encoded = try? encoder.encode(payload) else { return }
         defaults.set(encoded, forKey: widgetPayloadKey)
 
+        // #region agent log
+        DebugEedcf6Logger.log(
+            hypothesisId: "H2_payload_written_due_to_change",
+            location: "WidgetSyncManager.writePayloadIfNeeded",
+            message: "payload write (changes detected)",
+            data: [
+                "scheduleDate": scheduleDateString,
+                "eventsCount": "\(payload.events.count)",
+                "firstDisplayName": firstEventDisplayName,
+                "dayTypeDisplay": payload.dayTypeDisplay ?? "nil",
+                "scheduleTitle": payload.scheduleTitle ?? "nil",
+                "noSchoolReason": payload.noSchoolReason ?? "nil"
+            ]
+        )
+        // #endregion
+
         RefreshTimelineStore.append(
             kind: .widgetPayloadWrite,
             details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")"
         )
-        WidgetCenter.shared.reloadTimelines(ofKind: "ClassCountdownWidget")
+        WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
     }
 
     /// 将 block 显示名设置写入 App Group，供 Widget 用缓存建课表时显示用户设置的课程名。
-    func syncBlockPreferencesToAppGroup() {
+    func syncBlockPreferencesToAppGroup(reloadTimelines: Bool = false) {
         guard let defaults else { return }
+        var didWrite = false
         // 优先从本地持久化直接同步，避免后台刷新/未打开 app 时 shared.preferences 仍为空导致同步不到。
         if let localData = UserDefaults.standard.data(forKey: "blockPreferences") {
+            // #region agent log
+            DebugEedcf6Logger.log(
+                hypothesisId: "H1_blockprefs_sync_local_data",
+                location: "WidgetSyncManager.syncBlockPreferencesToAppGroup",
+                message: "sync BlockPreferences from localData",
+                data: [
+                    "localDataBytes": "\(localData.count)",
+                    "appGroupHasBeforeBytes": "\(defaults.data(forKey: "BlockPreferences")?.count ?? 0)"
+                ]
+            )
+            // #endregion
             defaults.set(localData, forKey: "BlockPreferences")
+            didWrite = true
+            // #region agent log
+            DebugEedcf6Logger.log(
+                hypothesisId: "H1_blockprefs_sync_appgroup_after_set",
+                location: "WidgetSyncManager.syncBlockPreferencesToAppGroup",
+                message: "BlockPreferences wrote to app group",
+                data: [
+                    "appGroupAfterBytes": "\(defaults.data(forKey: "BlockPreferences")?.count ?? 0)"
+                ]
+            )
+            // #endregion
+            if reloadTimelines, didWrite {
+                WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
+            }
             return
         }
 
         let prefs = BlockPreferencesManager.shared.preferences
         guard let data = try? encoder.encode(prefs) else { return }
         defaults.set(data, forKey: "BlockPreferences")
+        didWrite = true
+
+        // #region agent log
+        DebugEedcf6Logger.log(
+            hypothesisId: "H1_blockprefs_sync_shared_preferences",
+            location: "WidgetSyncManager.syncBlockPreferencesToAppGroup",
+            message: "sync BlockPreferences from shared.preferences",
+            data: [
+                "encodedBytes": "\(data.count)",
+                "appGroupAfterBytes": "\(defaults.data(forKey: "BlockPreferences")?.count ?? 0)"
+            ]
+        )
+        // #endregion
+
+        if reloadTimelines, didWrite {
+            WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
+        }
     }
 }

@@ -1,6 +1,28 @@
 import Foundation
 
 struct ScheduleService {
+    /// True when `loadBlocks` would use no default JSON (Saturday/Sunday in EST), i.e. weekday not Mon–Fri school day mapping.
+    /// Used by widget background refresh to set `noSchoolReason` to match `WidgetScheduleFromCache` (`No school (weekend)`).
+    static func isLikelyWeekendNoDefaultSchedule(for date: Date) -> Bool {
+        var calendar = Calendar.current
+        calendar.timeZone = Date.estTimeZone
+        let weekday = calendar.component(.weekday, from: date)
+        switch weekday {
+        case 2, 3, 4, 5, 6:
+            return false
+        default:
+            return true
+        }
+    }
+
+    /// Reason string when `loadBlocks` returned no events for the widget payload (best-effort; weekend vs generic unavailable).
+    static func widgetNoSchoolReasonWhenEmptyBlocks(for date: Date) -> String {
+        if isLikelyWeekendNoDefaultSchedule(for: date) {
+            return "No school (weekend)"
+        }
+        return "Schedule unavailable"
+    }
+
     static func loadBlocks(for date: Date) async throws -> [Block] {
         if try await ScheduleTypeFetcher.isInSpecialPeriod(date: date) {
             print("📅 [SCHEDULE] Date \(date) is within a special period - treating as no school")

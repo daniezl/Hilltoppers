@@ -230,7 +230,7 @@ class BlockPreferencesManager: ObservableObject {
         
         // 同步到 App Group，确保 Widget 用缓存构建课表时能立刻拿到最新的课程名称
         await MainActor.run {
-            WidgetSyncManager.shared.syncBlockPreferencesToAppGroup()
+            WidgetSyncManager.shared.syncBlockPreferencesToAppGroup(reloadTimelines: true)
         }
         
         // Save to cloud if authenticated
