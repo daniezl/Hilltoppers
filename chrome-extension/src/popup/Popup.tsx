@@ -92,6 +92,7 @@ const Popup: React.FC = () => {
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
   const menuRequestIdRef = useRef(0);
+  const hasManualDiningSelectionRef = useRef(false);
 
   const debugTestTime = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -135,6 +136,11 @@ const Popup: React.FC = () => {
 
   useEffect(() => {
     setShowLunchDetails(false);
+  }, [schedule.dateKey]);
+
+  useEffect(() => {
+    // Reset manual override when schedule day changes.
+    hasManualDiningSelectionRef.current = false;
   }, [schedule.dateKey]);
 
   useEffect(() => {
@@ -441,6 +447,42 @@ const Popup: React.FC = () => {
   }, [blockPrefs, nextBlock, schedule.dayType]);
 
   const dayTypeLabel = schedule.dayType;
+
+  const autoDiningPeriod = useMemo<DiningMenuPayload['period']>(() => {
+    if (!schedule.blocks.length) {
+      return 'Lunch';
+    }
+    const firstBlock = schedule.blocks[0];
+    const firstStart = parseBlockTime(firstBlock.start, baseDate);
+
+    if (now < firstStart) {
+      return 'Breakfast';
+    }
+
+    const namedLunchBlock =
+      schedule.blocks.find((block) => block.name.toLowerCase().includes('lunch')) ?? lunchBlock;
+
+    if (namedLunchBlock) {
+      const lunchEnd = parseBlockTime(namedLunchBlock.end, baseDate);
+      if (now >= lunchEnd) {
+        return 'Dinner';
+      }
+    }
+
+    return 'Lunch';
+  }, [baseDate, lunchBlock, now, schedule.blocks]);
+
+  useEffect(() => {
+    if (hasManualDiningSelectionRef.current) {
+      return;
+    }
+    if (selectedDiningPeriod !== autoDiningPeriod) {
+      setMenuLoading(true);
+      setMenuError(null);
+      setMenuData(null);
+      setSelectedDiningPeriod(autoDiningPeriod);
+    }
+  }, [autoDiningPeriod, selectedDiningPeriod]);
   
   // Check if it's a no school day (no blocks and dayType indicates no school)
   const isNoSchool = schedule.blocks.length === 0 && 
@@ -659,6 +701,7 @@ const Popup: React.FC = () => {
                   className={`dining-period-tab ${selectedDiningPeriod === period ? 'active' : ''}`}
                   onClick={() => {
                     if (selectedDiningPeriod !== period) {
+                      hasManualDiningSelectionRef.current = true;
                       setMenuLoading(true);
                       setMenuError(null);
                       setMenuData(null);
