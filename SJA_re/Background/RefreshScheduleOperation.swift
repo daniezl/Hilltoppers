@@ -25,6 +25,10 @@ final class RefreshScheduleOperation: Operation {
                 let blocks = try await ScheduleService.loadBlocks(for: referenceDate)
                 let noSchoolReason = blocks.isEmpty ? ScheduleService.widgetNoSchoolReasonWhenEmptyBlocks(for: referenceDate) : nil
                 let dayTypeDisplay = await DayTypeCache.predictedDayType(for: referenceDate)
+                let dayTypeResolution = resolveDayTypeDisplay(
+                    primary: dayTypeDisplay,
+                    referenceDate: referenceDate
+                )
                 let scheduleTitle = widgetScheduleTitle(for: calendar.startOfDay(for: referenceDate))
 
                 let events: [WidgetClassEvent] = blocks.compactMap { (block) -> WidgetClassEvent? in
@@ -35,7 +39,7 @@ final class RefreshScheduleOperation: Operation {
 
                     return WidgetClassEvent(
                         blockName: block.name,
-                        displayName: widgetDisplayName(for: block.name, dayTypeDisplay: dayTypeDisplay),
+                        displayName: widgetDisplayName(for: block.name, dayTypeDisplay: dayTypeResolution.value),
                         startDate: start,
                         endDate: end
                     )
@@ -51,6 +55,8 @@ final class RefreshScheduleOperation: Operation {
                         message: "background computed payload fields",
                         data: [
                             "dayTypeDisplay": dayTypeDisplay ?? "nil",
+                            "dayTypeDisplayResolved": dayTypeResolution.value ?? "nil",
+                            "usedFallbackDayType": dayTypeResolution.usedFallback ? "true" : "false",
                             "scheduleTitle": scheduleTitle ?? "nil",
                             "eventsCount": "\(events.count)",
                             "firstBlockName": first?.blockName ?? "nil",
@@ -62,8 +68,13 @@ final class RefreshScheduleOperation: Operation {
                         scheduleDate: calendar.startOfDay(for: referenceDate),
                         events: events,
                         noSchoolReason: noSchoolReason,
-                        dayTypeDisplay: dayTypeDisplay,
-                        scheduleTitle: scheduleTitle
+                        dayTypeDisplay: dayTypeResolution.value,
+                        scheduleTitle: scheduleTitle,
+                        debugContext: [
+                            "dayTypeDisplayResolved": dayTypeResolution.value ?? "nil",
+                            "usedFallbackDayType": dayTypeResolution.usedFallback ? "true" : "false",
+                            "firstDisplayName": first?.displayName ?? "nil"
+                        ]
                     )
                     WidgetKit.WidgetCenter.shared.reloadAllTimelines()
                 }
@@ -122,16 +133,62 @@ private extension RefreshScheduleOperation {
         }
 
         let lower = (dayTypeDisplay ?? "").lowercased()
+        let isGreenDayKnown = lower.contains("green") != lower.contains("white")
         let isGreenDay = lower.contains("green") && !lower.contains("white")
         if pref.alternating {
-            let isFree = isGreenDay ? pref.freeGreen : pref.freeWhite
-            if isFree { return "Free Block" }
-            let custom = isGreenDay ? pref.nameGreen : pref.nameWhite
-            return custom.isEmpty ? blockName : custom
+            if isGreenDayKnown {
+                let isFree = isGreenDay ? pref.freeGreen : pref.freeWhite
+                if isFree { return "Free Block" }
+                let custom = trimmedNonEmpty(isGreenDay ? pref.nameGreen : pref.nameWhite)
+                return custom ?? blockName
+            }
+
+            // Day type unknown: only use deterministic values that cannot pick the wrong side.
+            if pref.freeGreen && pref.freeWhite { return "Free Block" }
+            let green = trimmedNonEmpty(pref.nameGreen)
+            let white = trimmedNonEmpty(pref.nameWhite)
+            if let green, white == nil { return green }
+            if let white, green == nil { return white }
+            if let green, let white, green == white { return green }
+            return blockName
         }
 
         if pref.free { return "Free Block" }
-        return pref.name.isEmpty ? blockName : pref.name
+        return trimmedNonEmpty(pref.name) ?? blockName
+    }
+
+    func resolveDayTypeDisplay(primary: String?, referenceDate: Date) -> (value: String?, usedFallback: Bool) {
+        if let primary = trimmedNonEmpty(primary) {
+            return (primary, false)
+        }
+        if let fallback = cachedDayType(for: referenceDate) {
+            return (fallback, true)
+        }
+        return (nil, false)
+    }
+
+    func cachedDayType(for referenceDate: Date) -> String? {
+        guard let def = appGroupDefaults else { return nil }
+        let cal = Calendar.sja
+        if let date = def.object(forKey: "LastPredictedDayDate") as? Date,
+           cal.isDate(date, inSameDayAs: referenceDate),
+           let type = trimmedNonEmpty(def.string(forKey: "LastPredictedDayType")) {
+            return type
+        }
+        if let date = def.object(forKey: "LastBulletinDate") as? Date,
+           cal.isDate(date, inSameDayAs: referenceDate),
+           let type = trimmedNonEmpty(def.string(forKey: "LastBulletinDayType")) {
+            return type
+        }
+        return nil
+    }
+
+    func trimmedNonEmpty(_ value: String?) -> String? {
+        guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
     }
 
     func widgetBlockKey(from blockName: String) -> String? {

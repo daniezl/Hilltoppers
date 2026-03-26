@@ -2,7 +2,13 @@ import Foundation
 import SwiftUI
 
 struct DebugRefreshTimelineView: View {
-    @State private var timestamps: [Date] = []
+    private struct TimelineRow: Identifiable {
+        let id: UUID
+        let timestamp: Date
+        let openStatusText: String?
+    }
+
+    @State private var rows: [TimelineRow] = []
     @State private var isLoading: Bool = false
 
     private var timeOnlyFormatter: DateFormatter {
@@ -42,16 +48,20 @@ struct DebugRefreshTimelineView: View {
             if isLoading {
                 Text("Loading...")
                     .foregroundColor(.secondary)
-            } else if timestamps.isEmpty {
+            } else if rows.isEmpty {
                 Text("No background refresh records.")
                     .foregroundColor(.secondary)
             } else {
-                ForEach(timestamps, id: \.self) { ts in
-                    let parts = timelineRowParts(for: ts)
+                ForEach(rows) { row in
+                    let parts = timelineRowParts(for: row.timestamp)
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(parts.prefix)
                             .font(.footnote.weight(.semibold))
                             .foregroundColor(.primary)
+                        Spacer(minLength: 8)
+                        Text(row.openStatusText ?? "")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(.secondary)
                         Spacer(minLength: 8)
                         Text(parts.time)
                             .font(.footnote.weight(.semibold))
@@ -73,7 +83,28 @@ struct DebugRefreshTimelineView: View {
     private func reload() {
         isLoading = true
         let loaded = RefreshTimelineStore.loadRecent()
-        timestamps = loaded
+        let cal = Calendar.sja
+
+        let openedDays = Set(
+            loaded
+                .filter { $0.kind == .appActiveStart }
+                .map { cal.startOfDay(for: $0.timestamp) }
+        )
+
+        let knownRefreshDays = Set(
+            loaded
+                .filter { event in
+                    switch event.kind {
+                    case .widgetBackgroundRefreshStart, .widgetDailyRefreshStart:
+                        return true
+                    default:
+                        return false
+                    }
+                }
+                .map { cal.startOfDay(for: $0.timestamp) }
+        )
+
+        rows = loaded
             .filter { event in
                 // 只保留后台刷新开始时间（含 6 小时 app-refresh task 与每日 midnight task）
                 switch event.kind {
@@ -83,8 +114,24 @@ struct DebugRefreshTimelineView: View {
                     return false
                 }
             }
-            .map(\.timestamp)
-            .sorted(by: >)
+            .map { event in
+                let day = cal.startOfDay(for: event.timestamp)
+                let status: String?
+                if openedDays.contains(day) {
+                    status = "opened"
+                } else if knownRefreshDays.contains(day) {
+                    status = "not opened"
+                } else {
+                    status = nil
+                }
+
+                return TimelineRow(
+                    id: event.id,
+                    timestamp: event.timestamp,
+                    openStatusText: status
+                )
+            }
+            .sorted(by: { $0.timestamp > $1.timestamp })
         isLoading = false
     }
 }

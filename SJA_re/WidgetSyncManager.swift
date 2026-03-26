@@ -16,7 +16,14 @@ final class WidgetSyncManager {
         decoder = JSONDecoder()
     }
 
-    func updateSchedule(scheduleDate: Date, events: [WidgetClassEvent], noSchoolReason: String?, dayTypeDisplay: String?, scheduleTitle: String? = nil) {
+    func updateSchedule(
+        scheduleDate: Date,
+        events: [WidgetClassEvent],
+        noSchoolReason: String?,
+        dayTypeDisplay: String?,
+        scheduleTitle: String? = nil,
+        debugContext: [String: String] = [:]
+    ) {
         let payload = ClassCountdownWidgetPayload(
             scheduleDate: scheduleDate,
             lastUpdated: Date(),
@@ -26,7 +33,7 @@ final class WidgetSyncManager {
             scheduleTitle: scheduleTitle
         )
 
-        writePayloadIfNeeded(payload)
+        writePayloadIfNeeded(payload, debugContext: debugContext)
         syncBlockPreferencesToAppGroup()
     }
 
@@ -41,10 +48,10 @@ final class WidgetSyncManager {
             scheduleTitle: nil
         )
 
-        writePayloadIfNeeded(payload)
+        writePayloadIfNeeded(payload, debugContext: [:])
     }
 
-    private func writePayloadIfNeeded(_ payload: ClassCountdownWidgetPayload) {
+    private func writePayloadIfNeeded(_ payload: ClassCountdownWidgetPayload, debugContext: [String: String]) {
         guard let defaults else { return }
 
         let scheduleDateString: String = {
@@ -54,6 +61,7 @@ final class WidgetSyncManager {
         }()
 
         let firstEventDisplayName = payload.events.first?.displayName ?? "nil"
+        let debugSuffix = formatDebugContext(debugContext)
 
         if let existingData = defaults.data(forKey: widgetPayloadKey),
            let existingPayload = try? decoder.decode(ClassCountdownWidgetPayload.self, from: existingData),
@@ -79,7 +87,7 @@ final class WidgetSyncManager {
             // #endregion
             RefreshTimelineStore.append(
                 kind: .widgetPayloadSkip,
-                details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")"
+                details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")\(debugSuffix)"
             )
             return
         }
@@ -105,9 +113,18 @@ final class WidgetSyncManager {
 
         RefreshTimelineStore.append(
             kind: .widgetPayloadWrite,
-            details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")"
+            details: "scheduleDate=\(scheduleDateString) events=\(payload.events.count) dayType=\(payload.dayTypeDisplay ?? "nil") scheduleTitle=\(payload.scheduleTitle ?? "nil") noSchoolReason=\(payload.noSchoolReason ?? "nil")\(debugSuffix)"
         )
         WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
+    }
+
+    private func formatDebugContext(_ context: [String: String]) -> String {
+        guard !context.isEmpty else { return "" }
+        let rendered = context
+            .sorted(by: { $0.key < $1.key })
+            .map { "\($0.key)=\($0.value)" }
+            .joined(separator: " ")
+        return rendered.isEmpty ? "" : " \(rendered)"
     }
 
     /// 将 block 显示名设置写入 App Group，供 Widget 用缓存建课表时显示用户设置的课程名。
