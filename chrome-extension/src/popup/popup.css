@@ -12,9 +12,8 @@ body, html {
 }
 
 header {
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
-  padding-bottom: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .header-row {
@@ -42,6 +41,15 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border: 1px solid transparent;
+}
+
+.day-type-pill-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.day-type-pill-link:hover {
+  text-decoration: none;
 }
 
 .day-type-pill.green {
@@ -194,27 +202,37 @@ header {
 }
 
 .dining-period-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  border-radius: 999px;
+  background: #fbfcff;
+  padding: 2px;
+  overflow: hidden;
   margin-bottom: 10px;
 }
 
 .dining-period-tab {
-  border: 1px solid rgba(17, 17, 17, 0.2);
+  flex: 1 1 0;
+  border: none;
   border-radius: 999px;
-  background: #f7f8fb;
+  background: transparent;
   color: #555f6a;
   font-size: 12px;
   font-weight: 600;
-  padding: 5px 8px;
+  padding: 5px 6px;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dining-period-tab + .dining-period-tab {
+  margin-left: 2px;
 }
 
 .dining-period-tab.active {
-  background: rgba(46, 160, 67, 0.12);
-  border-color: rgba(46, 160, 67, 0.35);
+  background: rgba(46, 160, 67, 0.1);
   color: #1f6f2b;
+  box-shadow: 0 0 0 1px rgba(46, 160, 67, 0.25) inset;
 }
 
 .dining-grid {
@@ -254,13 +272,22 @@ header {
 }
 
 .dining-link {
-  color: #2b6cb0;
+  color: #2ea043;
   text-decoration: none;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .dining-link:hover {
   text-decoration: underline;
+}
+
+.dining-link-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .dining-error {
@@ -275,24 +302,23 @@ header {
 
 .schedule-toggle {
   display: flex;
-  font-weight: 700;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
+  border: 1px solid rgba(17, 17, 17, 0.12);
   border-radius: 6px;
   background: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #111111;
+  color: #4a5560;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .schedule-toggle:hover {
-  background: rgba(46, 160, 67, 0.08);
-  border-color: #2ea043;
+  background: #f3f5f7;
+  border-color: rgba(17, 17, 17, 0.18);
 }
 
 .schedule-list ul {
@@ -401,7 +427,21 @@ header {
 }
 
 .schedule-toggle span:first-child {
-  font-weight: 700;
+  font-weight: 600;
+}
+
+.toggle-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-title-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: #161b22;
+  opacity: 1;
 }
 
 .schedule-hint {

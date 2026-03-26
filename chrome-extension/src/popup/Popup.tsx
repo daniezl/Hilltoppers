@@ -30,6 +30,7 @@ interface DiningMenuPayload {
 }
 
 const DINING_MENU_URL = 'https://stjacademy.campus-dining.com/menus/';
+const DAILY_BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch', 'Dinner'];
 
 function safeSendMessage<T>(message: unknown): Promise<T> {
@@ -517,6 +518,8 @@ const Popup: React.FC = () => {
     return 'neutral';
   }, [dayTypeLabel]);
 
+  const isDayTypeBulletinLink = dayTypeClass === 'green' || dayTypeClass === 'white';
+
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;
   }
@@ -551,17 +554,42 @@ const Popup: React.FC = () => {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M5 7.5h14M5 12h14M5 16.5h14"
+                    d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
                     stroke="currentColor"
-                    stroke-width="1.6"
+                    stroke-width="1.8"
                     stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   />
                 </svg>
               </button>
             </div>
           </div>
           <div className="header-right">
-            {dayTypeLabel ? <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span> : null}
+            {dayTypeLabel ? (
+              isDayTypeBulletinLink ? (
+                <a
+                  className={`day-type-pill ${dayTypeClass} day-type-pill-link`}
+                  href={DAILY_BULLETIN_URL}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  title="Open Daily Bulletin"
+                  aria-label="Open Daily Bulletin"
+                >
+                  {dayTypeLabel}
+                </a>
+              ) : (
+                <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span>
+              )
+            ) : null}
           </div>
         </div>
       </header>
@@ -611,7 +639,19 @@ const Popup: React.FC = () => {
             aria-expanded={scheduleExpanded}
             onClick={() => setScheduleExpanded((prev) => !prev)}
           >
-            <span>Schedule</span>
+            <span className="toggle-title">
+              <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>Schedule</span>
+            </span>
             <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
           </button>
         {scheduleExpanded && (
@@ -686,7 +726,43 @@ const Popup: React.FC = () => {
           aria-expanded={menuExpanded}
           onClick={() => setMenuExpanded((prev) => !prev)}
         >
-          <span>Menu</span>
+          <span className="toggle-title">
+            <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="m2.1 21.8 6.4-6.3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="m19 5-7 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Menu</span>
+          </span>
           <span className={`chevron ${menuExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
         {menuExpanded && (
@@ -729,18 +805,32 @@ const Popup: React.FC = () => {
                     </article>
                   </div>
                 ) : null}
-                <p className="dining-meta">
-                  <a
-                    className="dining-link"
-                    href={DINING_MENU_URL}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    Open menu website
-                  </a>
-                </p>
               </>
             )}
+            <p className="dining-meta">
+              <a
+                className="dining-link"
+                href={DINING_MENU_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <svg
+                  className="dining-link-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Menu Website</span>
+              </a>
+            </p>
           </div>
         )}
       </section>
