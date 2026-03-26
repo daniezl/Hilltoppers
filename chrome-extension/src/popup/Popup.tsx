@@ -139,9 +139,12 @@ const Popup: React.FC = () => {
     setShowLunchDetails(false);
   }, [schedule.dateKey]);
 
+  const prevDateKeyRef = useRef(schedule.dateKey);
   useEffect(() => {
-    // Reset manual override when schedule day changes.
-    hasManualDiningSelectionRef.current = false;
+    if (prevDateKeyRef.current && prevDateKeyRef.current !== schedule.dateKey) {
+      hasManualDiningSelectionRef.current = false;
+    }
+    prevDateKeyRef.current = schedule.dateKey;
   }, [schedule.dateKey]);
 
   useEffect(() => {
@@ -174,6 +177,65 @@ const Popup: React.FC = () => {
         });
     };
 
+    safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
+      .then((payload) => {
+        const next = {
+          dateKey: payload?.dateKey ?? '',
+          blocks: payload?.blocks ?? [],
+          dayType: payload?.dayType ?? null,
+          details: payload?.details ?? null
+        };
+        setSchedule(next);
+        const hasContent = Boolean(next.dateKey) || (Array.isArray(next.blocks) && next.blocks.length > 0) || Boolean(next.dayType);
+        if (hasContent) {
+          hasResolvedInitial.current = true;
+          setIsLoading(false);
+        }
+        requestRefresh('popup-init');
+      })
+      .catch((err) => {
+        console.error('[popup] Failed to get cached schedule', err);
+        setError('Unable to retrieve schedule.');
+        hasResolvedInitial.current = true;
+        setIsLoading(false);
+      });
+
+    function handleScheduleMessage(message: unknown) {
+      if (
+        typeof message === 'object' &&
+        message !== null &&
+        (message as { type?: string }).type === 'scheduleUpdated'
+      ) {
+        const payload = (message as { payload: SchedulePayload }).payload;
+        const next = {
+          dateKey: payload?.dateKey ?? '',
+          blocks: payload?.blocks ?? [],
+          dayType: payload?.dayType ?? null,
+          details: payload?.details ?? null
+        };
+        setSchedule(next);
+        refreshRequestedRef.current = false;
+        hasResolvedInitial.current = true;
+        setIsLoading(false);
+      }
+    }
+
+    if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage?.addListener) {
+      chrome.runtime.onMessage.addListener(handleScheduleMessage);
+      return () => {
+        hasResolvedInitial.current = true;
+        window.clearTimeout(loadingTimeout);
+        chrome.runtime.onMessage.removeListener(handleScheduleMessage);
+      };
+    }
+
+    return () => {
+      hasResolvedInitial.current = true;
+      window.clearTimeout(loadingTimeout);
+    };
+  }, []);
+
+  useEffect(() => {
     const requestDiningRefresh = (period: DiningMenuPayload['period'], requestId: number) => {
       if (requestId !== menuRequestIdRef.current) {
         return;
@@ -198,7 +260,6 @@ const Popup: React.FC = () => {
             setMenuLoading(false);
             return;
           }
-          // Avoid showing stale period data when backend responds without payload.
           setMenuData(null);
           setMenuError('Menu unavailable');
           setMenuLoading(false);
@@ -213,30 +274,6 @@ const Popup: React.FC = () => {
           setMenuLoading(false);
         });
     };
-
-    safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
-      .then((payload) => {
-        const next = {
-          dateKey: payload?.dateKey ?? '',
-          blocks: payload?.blocks ?? [],
-          dayType: payload?.dayType ?? null,
-          details: payload?.details ?? null
-        };
-        setSchedule(next);
-        const hasContent = Boolean(next.dateKey) || (Array.isArray(next.blocks) && next.blocks.length > 0) || Boolean(next.dayType);
-        if (hasContent) {
-          hasResolvedInitial.current = true;
-          setIsLoading(false);
-        }
-        // Always request fresh data from Firestore when popup opens
-        requestRefresh('popup-init');
-      })
-      .catch((err) => {
-        console.error('[popup] Failed to get cached schedule', err);
-        setError('Unable to retrieve schedule.');
-        hasResolvedInitial.current = true;
-        setIsLoading(false);
-      });
 
     const menuRequestId = menuRequestIdRef.current + 1;
     menuRequestIdRef.current = menuRequestId;
@@ -266,24 +303,7 @@ const Popup: React.FC = () => {
         setMenuLoading(false);
       });
 
-    function handleMessage(message: unknown) {
-      if (
-        typeof message === 'object' &&
-        message !== null &&
-        (message as { type?: string }).type === 'scheduleUpdated'
-      ) {
-        const payload = (message as { payload: SchedulePayload }).payload;
-        const next = {
-          dateKey: payload?.dateKey ?? '',
-          blocks: payload?.blocks ?? [],
-          dayType: payload?.dayType ?? null,
-          details: payload?.details ?? null
-        };
-        setSchedule(next);
-        refreshRequestedRef.current = false;
-        hasResolvedInitial.current = true;
-        setIsLoading(false);
-      }
+    function handleDiningMessage(message: unknown) {
       if (
         typeof message === 'object' &&
         message !== null &&
@@ -300,18 +320,13 @@ const Popup: React.FC = () => {
     }
 
     if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage?.addListener) {
-      chrome.runtime.onMessage.addListener(handleMessage);
+      chrome.runtime.onMessage.addListener(handleDiningMessage);
       return () => {
-        hasResolvedInitial.current = true;
-        window.clearTimeout(loadingTimeout);
-        chrome.runtime.onMessage.removeListener(handleMessage);
+        chrome.runtime.onMessage.removeListener(handleDiningMessage);
       };
     }
 
-    return () => {
-      hasResolvedInitial.current = true;
-      window.clearTimeout(loadingTimeout);
-    };
+    return () => {};
   }, [selectedDiningPeriod]);
 
   const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
