@@ -179,6 +179,100 @@ header {
   gap: 6px;
 }
 
+.dining-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.dining-content {
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.dining-period-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dining-period-tab {
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  border-radius: 999px;
+  background: #f7f8fb;
+  color: #555f6a;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.dining-period-tab.active {
+  background: rgba(46, 160, 67, 0.12);
+  border-color: rgba(46, 160, 67, 0.35);
+  color: #1f6f2b;
+}
+
+.dining-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dining-column {
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: 6px;
+  padding: 8px;
+  background: #fbfcff;
+}
+
+.dining-station {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7d8591;
+  font-weight: 700;
+}
+
+.dining-item {
+  margin: 0;
+  font-size: 13px;
+  color: #161b22;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.dining-meta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #7d8591;
+}
+
+.dining-link {
+  color: #2b6cb0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dining-link:hover {
+  text-decoration: underline;
+}
+
+.dining-error {
+  margin: 0;
+  font-size: 13px;
+  color: #d1242f;
+}
+
+.dining-list.collapsed .dining-content {
+  display: none;
+}
+
 .schedule-toggle {
   display: flex;
   font-weight: 700;
@@ -401,4 +495,10 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+@media (max-width: 340px) {
+  .dining-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -19,6 +19,19 @@ interface SchedulePayload {
   details?: string | null;
 }
 
+interface DiningMenuPayload {
+  period: 'Breakfast' | 'Lunch' | 'Dinner';
+  dateLabel: string | null;
+  sourceUrl: string;
+  globalFareFirst: string | null;
+  classicKitchenFirst: string | null;
+  fetchedAt: string;
+  rule: 'first-listed';
+}
+
+const DINING_MENU_URL = 'https://stjacademy.campus-dining.com/menus/';
+const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch', 'Dinner'];
+
 function safeSendMessage<T>(message: unknown): Promise<T> {
   return new Promise((resolve, reject) => {
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
@@ -71,8 +84,14 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
+  const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
+  const [menuLoading, setMenuLoading] = useState<boolean>(true);
+  const [menuError, setMenuError] = useState<string | null>(null);
+  const [menuData, setMenuData] = useState<DiningMenuPayload | null>(null);
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
+  const menuRequestIdRef = useRef(0);
 
   const debugTestTime = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -148,6 +167,46 @@ const Popup: React.FC = () => {
         });
     };
 
+    const requestDiningRefresh = (period: DiningMenuPayload['period'], requestId: number) => {
+      if (requestId !== menuRequestIdRef.current) {
+        return;
+      }
+      safeSendMessage<{ ok: boolean; error?: string; payload?: DiningMenuPayload | null }>({
+        type: 'requestDiningMenuRefresh',
+        period
+      })
+        .then((response) => {
+          if (requestId !== menuRequestIdRef.current) {
+            return;
+          }
+          if (response?.payload) {
+            setMenuData(response.payload);
+            setMenuError(null);
+            setMenuLoading(false);
+            return;
+          }
+          if (!response?.ok) {
+            setMenuError('Menu unavailable');
+            setMenuData(null);
+            setMenuLoading(false);
+            return;
+          }
+          // Avoid showing stale period data when backend responds without payload.
+          setMenuData(null);
+          setMenuError('Menu unavailable');
+          setMenuLoading(false);
+        })
+        .catch((err) => {
+          if (requestId !== menuRequestIdRef.current) {
+            return;
+          }
+          console.error('[popup] Failed to request dining menu refresh', err);
+          setMenuError('Menu unavailable');
+          setMenuData(null);
+          setMenuLoading(false);
+        });
+    };
+
     safeSendMessage<SchedulePayload>({ type: 'getScheduleCache' })
       .then((payload) => {
         const next = {
@@ -172,6 +231,34 @@ const Popup: React.FC = () => {
         setIsLoading(false);
       });
 
+    const menuRequestId = menuRequestIdRef.current + 1;
+    menuRequestIdRef.current = menuRequestId;
+
+    safeSendMessage<DiningMenuPayload | null>({
+      type: 'getDiningMenuCache',
+      period: selectedDiningPeriod
+    })
+      .then((payload) => {
+        if (menuRequestId !== menuRequestIdRef.current) {
+          return;
+        }
+        if (payload) {
+          setMenuData(payload);
+          setMenuError(null);
+          setMenuLoading(false);
+        }
+        requestDiningRefresh(selectedDiningPeriod, menuRequestId);
+      })
+      .catch((err) => {
+        if (menuRequestId !== menuRequestIdRef.current) {
+          return;
+        }
+        console.error('[popup] Failed to get cached dining menu', err);
+        setMenuError('Menu unavailable');
+        setMenuData(null);
+        setMenuLoading(false);
+      });
+
     function handleMessage(message: unknown) {
       if (
         typeof message === 'object' &&
@@ -190,6 +277,19 @@ const Popup: React.FC = () => {
         hasResolvedInitial.current = true;
         setIsLoading(false);
       }
+      if (
+        typeof message === 'object' &&
+        message !== null &&
+        (message as { type?: string }).type === 'diningMenuUpdated'
+      ) {
+        const payload = (message as { payload: DiningMenuPayload }).payload;
+        if (!payload || payload.period !== selectedDiningPeriod) {
+          return;
+        }
+        setMenuData(payload);
+        setMenuError(null);
+        setMenuLoading(false);
+      }
     }
 
     if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage?.addListener) {
@@ -205,7 +305,7 @@ const Popup: React.FC = () => {
       hasResolvedInitial.current = true;
       window.clearTimeout(loadingTimeout);
     };
-  }, []);
+  }, [selectedDiningPeriod]);
 
   const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
 
@@ -273,6 +373,14 @@ const Popup: React.FC = () => {
   const formattedDate = useMemo(() => {
     return DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('ccc, MMM d');
   }, [baseDate]);
+
+  const isMenuForToday = useMemo(() => {
+    if (!menuData?.dateLabel) {
+      return false;
+    }
+    const todayLabel = DateTime.now().setZone(EST_ZONE).toFormat('cccc, LLLL d');
+    return menuData.dateLabel === todayLabel;
+  }, [menuData?.dateLabel]);
 
   const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;
@@ -461,7 +569,7 @@ const Popup: React.FC = () => {
             aria-expanded={scheduleExpanded}
             onClick={() => setScheduleExpanded((prev) => !prev)}
           >
-            <span>Today&apos;s Schedule</span>
+            <span>Schedule</span>
             <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
           </button>
         {scheduleExpanded && (
@@ -529,6 +637,70 @@ const Popup: React.FC = () => {
         )}
         </section>
       )}
+      <section className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
+        <button
+          type="button"
+          className="schedule-toggle"
+          aria-expanded={menuExpanded}
+          onClick={() => setMenuExpanded((prev) => !prev)}
+        >
+          <span>Menu</span>
+          <span className={`chevron ${menuExpanded ? 'open' : ''}`} aria-hidden="true" />
+        </button>
+        {menuExpanded && (
+          <div className="dining-content">
+            <div className="dining-period-tabs" role="tablist" aria-label="Menu period">
+              {DINING_PERIODS.map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedDiningPeriod === period}
+                  className={`dining-period-tab ${selectedDiningPeriod === period ? 'active' : ''}`}
+                  onClick={() => {
+                    if (selectedDiningPeriod !== period) {
+                      setMenuLoading(true);
+                      setMenuError(null);
+                      setMenuData(null);
+                      setSelectedDiningPeriod(period);
+                    }
+                  }}
+                >
+                  {period}
+                </button>
+              ))}
+            </div>
+            {menuLoading ? (
+              <p className="dining-meta">Loading menu...</p>
+            ) : menuError ? (
+              <p className="dining-error">{menuError}</p>
+            ) : (
+              <>
+                {isMenuForToday ? (
+                  <div className="dining-grid">
+                    <article className="dining-column">
+                      <p className="dining-item">{menuData?.globalFareFirst ?? 'No item found'}</p>
+                    </article>
+                    <article className="dining-column">
+                      <p className="dining-item">{menuData?.classicKitchenFirst ?? 'No item found'}</p>
+                    </article>
+                  </div>
+                ) : null}
+                <p className="dining-meta">
+                  <a
+                    className="dining-link"
+                    href={DINING_MENU_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    Open menu website
+                  </a>
+                </p>
+              </>
+            )}
+          </div>
+        )}
+      </section>
     </main>
   );
 };

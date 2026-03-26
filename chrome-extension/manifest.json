@@ -26,6 +26,8 @@
     "https://accounts.google.com/*",
     "https://appleid.apple.com/*",
     "https://stjacademy.org/*",
+    "https://stjacademy.campus-dining.com/*",
+    "https://menus.campus-dining.com/*",
     "https://www.google-analytics.com/*",
     "https://hilltoppers.pages.dev/*"
   ],

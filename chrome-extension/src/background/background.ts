@@ -1,6 +1,12 @@
 
 import { DateTime } from 'luxon';
 import { loadBlocksForDate } from '../services/scheduleService';
+import {
+  DiningMenuError,
+  type DiningPeriod,
+  type DiningMenuResult,
+  loadDiningMenuFirstItems
+} from '../services/diningMenuService';
 import { Block, EST_ZONE, parseBlockTime } from '../types/schedule';
 import { type TimeFormat } from '../storage/schedulePreferences';
 import { isWithinSchoolHours, getNextSchoolHoursStart } from '../utils/timeUtils';
@@ -20,6 +26,10 @@ let cachedDetails: string | null = null;
 let cachedTimeFormat: TimeFormat = '12h';
 let cachedTimestamp: number | null = null; // Timestamp when cache was last updated
 let refreshInFlight: Promise<void> | null = null;
+const diningMenuCache: Partial<Record<DiningPeriod, DiningMenuResult>> = {};
+const diningRefreshTimestamps: Partial<Record<DiningPeriod, number>> = {};
+const diningRefreshInFlight: Partial<Record<DiningPeriod, Promise<void>>> = {};
+const DINING_CACHE_TTL_MS = 45 * 60 * 1000;
 
 function getTodayKey(): string {
   return DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');
@@ -375,6 +385,64 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
   await refreshInFlight;
 }
 
+async function refreshDiningMenu(period: DiningPeriod, forceRefresh = false): Promise<void> {
+  if (diningRefreshInFlight[period]) {
+    await diningRefreshInFlight[period];
+    return;
+  }
+
+  const now = Date.now();
+  const cachedMenu = diningMenuCache[period];
+  const cachedTimestamp = diningRefreshTimestamps[period];
+  if (!forceRefresh && cachedMenu && cachedTimestamp && now - cachedTimestamp < DINING_CACHE_TTL_MS) {
+    return;
+  }
+
+  diningRefreshInFlight[period] = (async () => {
+    const previousMenu = diningMenuCache[period] ?? null;
+    const previousTimestamp = diningRefreshTimestamps[period] ?? null;
+    try {
+      const nextMenu = await loadDiningMenuFirstItems(period);
+      diningMenuCache[period] = nextMenu;
+      diningRefreshTimestamps[period] = Date.now();
+      if (typeof chrome !== 'undefined') {
+        chrome.runtime.sendMessage(
+          {
+            type: 'diningMenuUpdated',
+            payload: nextMenu
+          },
+          () => {
+            const error = chrome.runtime.lastError;
+            if (error) {
+              console.debug('[background] diningMenuUpdated sendMessage lastError', error.message);
+            }
+          }
+        );
+      }
+    } catch (error) {
+      if (error instanceof DiningMenuError) {
+        console.warn('[background] Failed to refresh dining menu', {
+          code: error.code,
+          message: error.message
+        });
+      } else {
+        console.warn('[background] Failed to refresh dining menu', error);
+      }
+
+      if (previousMenu && previousTimestamp) {
+        diningMenuCache[period] = previousMenu;
+        diningRefreshTimestamps[period] = previousTimestamp;
+      } else {
+        throw error;
+      }
+    } finally {
+      delete diningRefreshInFlight[period];
+    }
+  })();
+
+  await diningRefreshInFlight[period];
+}
+
 function ensureRefreshAlarm(): void {
   chrome.alarms.get(REFRESH_ALARM, (alarm) => {
     if (!alarm) {
@@ -439,12 +507,14 @@ chrome.runtime.onInstalled.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
   await refreshSchedule(true); // 强制刷新，优先从网络加载
+  await refreshDiningMenu('Lunch', true);
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
   await refreshSchedule(true); // 强制刷新，优先从网络加载
+  await refreshDiningMenu('Lunch', true);
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -512,6 +582,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       });
     return true;
   }
+  if (message?.type === 'getDiningMenuCache') {
+    const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
+    sendResponse(diningMenuCache[period] ?? null);
+    return true;
+  }
+  if (message?.type === 'requestDiningMenuRefresh') {
+    const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
+    refreshDiningMenu(period, true)
+      .then(() => sendResponse({ ok: true, payload: diningMenuCache[period] ?? null }))
+      .catch((error) => {
+        console.error('[background] Dining menu refresh failed', error);
+        sendResponse({
+          ok: false,
+          error: (error as Error)?.message ?? 'dining_refresh_failed',
+          payload: diningMenuCache[period] ?? null
+        });
+      });
+    return true;
+  }
   return false;
 });
 
@@ -534,6 +623,9 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
 // Initial kick-off when the service worker spins up.
 refreshSchedule(true).catch((error) => { // 强制刷新，优先从网络加载
   console.error('[background] Initial refresh failed', error);
+});
+refreshDiningMenu('Lunch', true).catch((error) => {
+  console.warn('[background] Initial dining menu refresh failed', error);
 });
 ensureRefreshAlarm();
 ensureIconAlarm();
