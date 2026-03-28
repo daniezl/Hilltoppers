@@ -344,6 +344,9 @@ struct ClassCountdownWidget: Widget {
 private extension ClassCountdownWidgetEntryView {
     /// 标题已是 "No School" 时，小字只显示原因，不重复 "No school (…)"。
     static func noSchoolSubtitle(for reason: String) -> String {
+        let normalized = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.isEmpty { return "" }
+        if normalized.lowercased() == "schedule unavailable" { return "" }
         if reason == "No school (weekend)" { return "Weekend" }
         if reason == "No school (special day)" { return "Special day" }
         if reason == "No School" { return "" }
