@@ -46,21 +46,22 @@ header {
 .day-type-pill-link {
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .day-type-pill-link:hover {
   text-decoration: none;
-  transform: translateY(1px);
-  box-shadow: inset 0 2px 4px rgba(17, 17, 17, 0.14);
 }
 
 .day-type-pill-link.green:hover {
-  border-color: rgba(46, 160, 67, 0.45);
+  background: rgba(46, 160, 67, 0.18);
+  border-color: rgba(46, 160, 67, 0.38);
 }
 
 .day-type-pill-link.white:hover {
-  border-color: rgba(17, 17, 17, 0.28);
+  background: rgba(17, 17, 17, 0.06);
+  border-color: rgba(17, 17, 17, 0.24);
+  color: #2f3842;
 }
 
 .day-type-pill.green {
@@ -275,10 +276,47 @@ header {
 
 .dining-item {
   margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
   font-size: 13px;
   color: #161b22;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.dining-more-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #161b22;
+  font-weight: 600;
+}
+
+.dining-more-list li {
+  margin: 0;
+  padding: 6px 0 0;
+}
+
+.dining-more-list li + li {
+  margin-top: 6px;
+  border-top: 1px solid rgba(17, 17, 17, 0.08);
+}
+
+.dining-item-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+}
+
+.dining-item-link:hover {
+  color: #2ea043;
+  text-decoration: none;
 }
 
 .dining-meta {

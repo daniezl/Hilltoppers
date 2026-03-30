@@ -25,6 +25,8 @@ interface DiningMenuPayload {
   sourceUrl: string;
   globalFareFirst: string | null;
   classicKitchenFirst: string | null;
+  globalFareMore: string[];
+  classicKitchenMore: string[];
   fetchedAt: string;
   rule: 'first-listed';
 }
@@ -32,6 +34,11 @@ interface DiningMenuPayload {
 const DINING_MENU_URL = 'https://stjacademy.campus-dining.com/menus/';
 const DAILY_BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch', 'Dinner'];
+const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
+
+function getDishSearchUrl(dishName: string): string {
+  return `${GOOGLE_SEARCH_URL}${encodeURIComponent(dishName)}`;
+}
 
 function safeSendMessage<T>(message: unknown): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -813,10 +820,72 @@ const Popup: React.FC = () => {
                 {isMenuForToday ? (
                   <div className="dining-grid">
                     <article className="dining-column">
-                      <p className="dining-item">{menuData?.globalFareFirst ?? 'No item found'}</p>
+                      <p className="dining-item">
+                        {menuData?.globalFareFirst ? (
+                          <a
+                            className="dining-item-link"
+                            href={getDishSearchUrl(menuData.globalFareFirst)}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            title="Look Up"
+                          >
+                            {menuData.globalFareFirst}
+                          </a>
+                        ) : (
+                          'No item found'
+                        )}
+                      </p>
+                      {(menuData?.globalFareMore?.length ?? 0) > 0 ? (
+                        <ul className="dining-more-list">
+                          {(menuData?.globalFareMore ?? []).map((item) => (
+                            <li key={`global-${item}`}>
+                              <a
+                                className="dining-item-link"
+                                href={getDishSearchUrl(item)}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                title="Look Up"
+                              >
+                                {item}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
                     </article>
                     <article className="dining-column">
-                      <p className="dining-item">{menuData?.classicKitchenFirst ?? 'No item found'}</p>
+                      <p className="dining-item">
+                        {menuData?.classicKitchenFirst ? (
+                          <a
+                            className="dining-item-link"
+                            href={getDishSearchUrl(menuData.classicKitchenFirst)}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            title="Look Up"
+                          >
+                            {menuData.classicKitchenFirst}
+                          </a>
+                        ) : (
+                          'No item found'
+                        )}
+                      </p>
+                      {(menuData?.classicKitchenMore?.length ?? 0) > 0 ? (
+                        <ul className="dining-more-list">
+                          {(menuData?.classicKitchenMore ?? []).map((item) => (
+                            <li key={`classic-${item}`}>
+                              <a
+                                className="dining-item-link"
+                                href={getDishSearchUrl(item)}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                title="Look Up"
+                              >
+                                {item}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
                     </article>
                   </div>
                 ) : null}

@@ -22,6 +22,8 @@ export interface DiningMenuResult {
   sourceUrl: string;
   globalFareFirst: string | null;
   classicKitchenFirst: string | null;
+  globalFareMore: string[];
+  classicKitchenMore: string[];
   fetchedAt: string;
   rule: 'first-listed';
 }
@@ -87,6 +89,10 @@ function findDateLabel(lines: string[]): string | null {
   return null;
 }
 
+function isCaloriesLine(line: string): boolean {
+  return /^\d[\d,]*(\.\d+)?\s*cal$/i.test(line.trim());
+}
+
 function isDishCandidate(line: string): boolean {
   const lower = line.toLowerCase();
   if (!line || line.length < 2 || line.length > 120) {
@@ -104,10 +110,49 @@ function isDishCandidate(line: string): boolean {
   if (lower.startsWith('ingredients:')) {
     return false;
   }
+  if (lower.includes('% daily values')) {
+    return false;
+  }
   if (lower.includes(' per portion')) {
     return false;
   }
+  if (/^\d[\d,]*(\.\d+)?\s*(g|mg|mcg|oz|ml)$/i.test(line)) {
+    return false;
+  }
+  if (/^\d+(\.\d+)?%$/.test(line)) {
+    return false;
+  }
+  if (isCaloriesLine(line)) {
+    return false;
+  }
+  if (/^\d+\/\d+\s+(cup|oz|tbsp|tsp)\b/i.test(line)) {
+    return false;
+  }
+  if (/^\d+\s+(cup|oz|tbsp|tsp)\b/i.test(line)) {
+    return false;
+  }
+  if (/^\d+(\.\d+)?$/.test(line)) {
+    return false;
+  }
   if (lower.startsWith('|') || lower.endsWith('|')) {
+    return false;
+  }
+  if (
+    lower === 'calories' ||
+    lower === 'total fat' ||
+    lower === 'saturates' ||
+    lower === 'trans fat' ||
+    lower === 'cholesterol' ||
+    lower === 'sodium' ||
+    lower === 'carbs' ||
+    lower === 'fiber' ||
+    lower === 'sugars' ||
+    lower === 'protein' ||
+    lower === 'calcium' ||
+    lower === 'iron' ||
+    lower === 'potassium' ||
+    lower === 'vitamin d'
+  ) {
     return false;
   }
   if (
@@ -122,26 +167,47 @@ function isDishCandidate(line: string): boolean {
   return true;
 }
 
-function extractFirstStationItem(
+function isStationLabel(line: string): boolean {
+  const lower = line.toLowerCase();
+  return (
+    lower === 'classic kitchen' ||
+    lower === 'global fare' ||
+    lower === 'greens' ||
+    lower === 'the local deli' ||
+    lower === 'sauce & stone'
+  );
+}
+
+function extractStationItems(
   lines: string[],
   stationName: 'Global Fare' | 'Classic Kitchen',
   startIndex = 0
-): string | null {
+): string[] {
   const stationLower = stationName.toLowerCase();
   for (let i = startIndex; i < lines.length - 2; i += 1) {
     if (
       lines[i].toLowerCase() === stationLower &&
       lines[i + 1].toLowerCase() === 'nutritional information'
     ) {
-      for (let j = i + 2; j < Math.min(lines.length, i + 50); j += 1) {
-        if (isDishCandidate(lines[j])) {
-          return lines[j];
+      const items: string[] = [];
+      const seen = new Set<string>();
+      for (let j = i + 2; j < lines.length; j += 1) {
+        const line = lines[j];
+        if (j > i + 2 && isStationLabel(line)) {
+          break;
+        }
+        if (isDishCandidate(line) && isCaloriesLine(lines[j + 1] ?? '')) {
+          const normalized = line.toLowerCase();
+          if (!seen.has(normalized)) {
+            seen.add(normalized);
+            items.push(line);
+          }
         }
       }
-      return null;
+      return items;
     }
   }
-  return null;
+  return [];
 }
 
 function extractMenuIdentifiers(html: string): Partial<Record<DiningPeriod, string>> {
@@ -211,8 +277,10 @@ export async function loadDiningMenuFirstItems(period: DiningPeriod = 'Lunch'): 
     throw new DiningMenuError('parse', 'Menu page content is empty');
   }
 
-  const globalFareFirst = extractFirstStationItem(lines, 'Global Fare');
-  const classicKitchenFirst = extractFirstStationItem(lines, 'Classic Kitchen');
+  const globalFareItems = extractStationItems(lines, 'Global Fare');
+  const classicKitchenItems = extractStationItems(lines, 'Classic Kitchen');
+  const globalFareFirst = globalFareItems[0] ?? null;
+  const classicKitchenFirst = classicKitchenItems[0] ?? null;
 
   if (!globalFareFirst && !classicKitchenFirst) {
     throw new DiningMenuError('no_station', 'No target stations found in menu content');
@@ -224,6 +292,8 @@ export async function loadDiningMenuFirstItems(period: DiningPeriod = 'Lunch'): 
     sourceUrl: periodUrl,
     globalFareFirst,
     classicKitchenFirst,
+    globalFareMore: globalFareItems.slice(1),
+    classicKitchenMore: classicKitchenItems.slice(1),
     fetchedAt: new Date().toISOString(),
     rule: 'first-listed'
   };
