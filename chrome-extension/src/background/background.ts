@@ -29,6 +29,7 @@ let refreshInFlight: Promise<void> | null = null;
 const diningMenuCache: Partial<Record<DiningPeriod, DiningMenuResult>> = {};
 const diningRefreshTimestamps: Partial<Record<DiningPeriod, number>> = {};
 const diningRefreshInFlight: Partial<Record<DiningPeriod, Promise<void>>> = {};
+const lastForcedDiningRefreshDateByPeriod: Partial<Record<DiningPeriod, string>> = {};
 const DINING_CACHE_TTL_MS = 45 * 60 * 1000;
 
 function getTodayKey(): string {
@@ -443,6 +444,16 @@ async function refreshDiningMenu(period: DiningPeriod, forceRefresh = false): Pr
   await diningRefreshInFlight[period];
 }
 
+function shouldForceDiningRefreshToday(period: DiningPeriod): boolean {
+  const todayKey = getTodayKey();
+  if (lastForcedDiningRefreshDateByPeriod[period] === todayKey) {
+    return false;
+  }
+  // Mark once per day per period to cap forced-refresh traffic.
+  lastForcedDiningRefreshDateByPeriod[period] = todayKey;
+  return true;
+}
+
 function ensureRefreshAlarm(): void {
   chrome.alarms.get(REFRESH_ALARM, (alarm) => {
     if (!alarm) {
@@ -507,14 +518,12 @@ chrome.runtime.onInstalled.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
   await refreshSchedule(true); // 强制刷新，优先从网络加载
-  await refreshDiningMenu('Lunch', true);
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
   await refreshSchedule(true); // 强制刷新，优先从网络加载
-  await refreshDiningMenu('Lunch', true);
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -589,7 +598,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message?.type === 'requestDiningMenuRefresh') {
     const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
-    refreshDiningMenu(period, true)
+    const forceRefresh = shouldForceDiningRefreshToday(period);
+    refreshDiningMenu(period, forceRefresh)
       .then(() => sendResponse({ ok: true, payload: diningMenuCache[period] ?? null }))
       .catch((error) => {
         console.error('[background] Dining menu refresh failed', error);
@@ -623,9 +633,6 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
 // Initial kick-off when the service worker spins up.
 refreshSchedule(true).catch((error) => { // 强制刷新，优先从网络加载
   console.error('[background] Initial refresh failed', error);
-});
-refreshDiningMenu('Lunch', true).catch((error) => {
-  console.warn('[background] Initial dining menu refresh failed', error);
 });
 ensureRefreshAlarm();
 ensureIconAlarm();

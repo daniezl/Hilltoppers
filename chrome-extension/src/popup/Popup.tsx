@@ -100,6 +100,7 @@ const Popup: React.FC = () => {
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
   const menuRequestIdRef = useRef(0);
+  const latestMenuDataRef = useRef<DiningMenuPayload | null>(null);
   const hasManualDiningSelectionRef = useRef(false);
 
   const debugTestTime = useMemo(() => {
@@ -243,6 +244,14 @@ const Popup: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    latestMenuDataRef.current = menuData;
+  }, [menuData]);
+
+  useEffect(() => {
+    if (!menuExpanded) {
+      return () => {};
+    }
+
     const requestDiningRefresh = (period: DiningMenuPayload['period'], requestId: number) => {
       if (requestId !== menuRequestIdRef.current) {
         return;
@@ -262,12 +271,21 @@ const Popup: React.FC = () => {
             return;
           }
           if (!response?.ok) {
+            // If refresh fails but we already have data for this period, keep it.
+            if (latestMenuDataRef.current?.period === period) {
+              setMenuError(null);
+              setMenuLoading(false);
+              return;
+            }
             setMenuError('Menu unavailable');
-            setMenuData(null);
             setMenuLoading(false);
             return;
           }
-          setMenuData(null);
+          if (latestMenuDataRef.current?.period === period) {
+            setMenuError(null);
+            setMenuLoading(false);
+            return;
+          }
           setMenuError('Menu unavailable');
           setMenuLoading(false);
         })
@@ -276,8 +294,12 @@ const Popup: React.FC = () => {
             return;
           }
           console.error('[popup] Failed to request dining menu refresh', err);
+          if (latestMenuDataRef.current?.period === period) {
+            setMenuError(null);
+            setMenuLoading(false);
+            return;
+          }
           setMenuError('Menu unavailable');
-          setMenuData(null);
           setMenuLoading(false);
         });
     };
@@ -334,7 +356,7 @@ const Popup: React.FC = () => {
     }
 
     return () => {};
-  }, [selectedDiningPeriod]);
+  }, [menuExpanded, selectedDiningPeriod]);
 
   const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
 
