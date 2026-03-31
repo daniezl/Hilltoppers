@@ -460,6 +460,9 @@ header {
 .schedule-list li .block-time {
   font-size: 13px;
   color: #111111;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .schedule-list li.free-block .block-name,
@@ -537,8 +540,8 @@ header {
 
 
 .subblock-list {
-  margin: 6px 0 0;
-  padding: 0;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -555,6 +558,8 @@ header {
   font-size: 12px;
   color: #606770;
   width: 100%;
+  padding-right: 24px;
+  box-sizing: border-box;
 }
 
 .subblock-list .subblock-name {
@@ -567,7 +572,6 @@ header {
   font-weight: 500;
   text-align: right;
   white-space: nowrap;
-  margin-right: 24px;
 }
 
 .block-row {
@@ -610,6 +614,17 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  padding-right: 24px;
+}
+
+.block-right .lunch-inline-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: 0;
+  margin-left: 0;
 }
 
 @media (max-width: 340px) {
