@@ -812,7 +812,25 @@ const Popup: React.FC = () => {
               ))}
             </div>
             {menuLoading ? (
-              <p className="dining-meta">Loading menu...</p>
+              <p className="dining-meta dining-meta-loading">
+                <svg
+                  className="dining-loading-spinner"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray="15.7 47.1"
+                  />
+                </svg>
+                <span>Loading menu...</span>
+              </p>
             ) : menuError ? (
               <p className="dining-error">{menuError}</p>
             ) : (

@@ -325,6 +325,27 @@ header {
   color: #7d8591;
 }
 
+/* Match Menu Website row: icon 14px + gap 5px, then text. */
+.dining-meta-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dining-loading-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: #7d8591;
+  animation: dining-loading-spin 0.75s linear infinite;
+}
+
+@keyframes dining-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dining-link {
   color: #2ea043;
   text-decoration: none;
