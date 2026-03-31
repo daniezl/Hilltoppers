@@ -178,6 +178,16 @@ function isStationLabel(line: string): boolean {
   );
 }
 
+function hasCaloriesNearby(lines: string[], index: number, sectionEndExclusive: number): boolean {
+  const end = Math.min(sectionEndExclusive, index + 6);
+  for (let i = index + 1; i < end; i += 1) {
+    if (isCaloriesLine(lines[i] ?? '')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function extractStationItems(
   lines: string[],
   stationName: 'Global Fare' | 'Classic Kitchen',
@@ -185,18 +195,20 @@ function extractStationItems(
 ): string[] {
   const stationLower = stationName.toLowerCase();
   for (let i = startIndex; i < lines.length - 2; i += 1) {
-    if (
-      lines[i].toLowerCase() === stationLower &&
-      lines[i + 1].toLowerCase() === 'nutritional information'
-    ) {
+    if (lines[i].toLowerCase() === stationLower) {
       const items: string[] = [];
       const seen = new Set<string>();
-      for (let j = i + 2; j < lines.length; j += 1) {
-        const line = lines[j];
-        if (j > i + 2 && isStationLabel(line)) {
+      let sectionEndExclusive = lines.length;
+      for (let j = i + 1; j < lines.length; j += 1) {
+        if (isStationLabel(lines[j])) {
+          sectionEndExclusive = j;
           break;
         }
-        if (isDishCandidate(line) && isCaloriesLine(lines[j + 1] ?? '')) {
+      }
+
+      for (let j = i + 1; j < sectionEndExclusive; j += 1) {
+        const line = lines[j];
+        if (isDishCandidate(line) && hasCaloriesNearby(lines, j, sectionEndExclusive)) {
           const normalized = line.toLowerCase();
           if (!seen.has(normalized)) {
             seen.add(normalized);
@@ -204,7 +216,9 @@ function extractStationItems(
           }
         }
       }
-      return items;
+      if (items.length > 0) {
+        return items;
+      }
     }
   }
   return [];
