@@ -369,6 +369,15 @@ header {
   margin: 0;
   font-size: 13px;
   color: #d1242f;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dining-error-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .dining-list.collapsed .dining-content {

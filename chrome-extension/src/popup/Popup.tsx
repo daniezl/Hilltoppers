@@ -854,7 +854,33 @@ const Popup: React.FC = () => {
                 <span>Loading menu...</span>
               </p>
             ) : menuError ? (
-              <p className="dining-error">{menuError}</p>
+              <p className="dining-error">
+                <svg className="dining-error-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M8 8l8 8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M16 8l-8 8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span>{menuError}</span>
+              </p>
             ) : (
               <>
                 {isMenuForToday ? (
