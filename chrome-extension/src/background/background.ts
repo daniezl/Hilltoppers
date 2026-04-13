@@ -30,7 +30,8 @@ const diningMenuCache: Partial<Record<DiningPeriod, DiningMenuResult>> = {};
 const diningRefreshTimestamps: Partial<Record<DiningPeriod, number>> = {};
 const diningRefreshInFlight: Partial<Record<DiningPeriod, Promise<void>>> = {};
 const lastForcedDiningRefreshDateByPeriod: Partial<Record<DiningPeriod, string>> = {};
-const DINING_CACHE_TTL_MS = 45 * 60 * 1000;
+// Menu is static on Cloudflare; keep a short TTL to reduce repeat fetches while staying near publish cadence (~30m).
+const DINING_CACHE_TTL_MS = 30 * 60 * 1000;
 
 function getTodayKey(): string {
   return DateTime.now().setZone(EST_ZONE).toFormat('yyyy-LL-dd');

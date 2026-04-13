@@ -28,231 +28,69 @@ export interface DiningMenuResult {
   rule: 'first-listed';
 }
 
-const DISCOVERY_URL = 'https://stjacademy.campus-dining.com/menus/';
-const DEFAULT_MENUS_URL = 'https://menus.campus-dining.com/eliorna/d0358';
+const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_SCHEDULE_URL || 'https://hilltoppers.pages.dev';
+const MENU_JSON_URL = `${CLOUDFLARE_BASE_URL}/menu.json`;
 
-const PERIODS: DiningPeriod[] = ['Breakfast', 'Lunch', 'Dinner'];
+type RawMenuEntry = {
+  globalFare?: unknown;
+  classicKitchen?: unknown;
+};
 
-function decodeHtmlEntities(input: string): string {
-  return input
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&apos;/gi, "'")
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>');
-}
+type RawMenuJson = {
+  updatedAt?: unknown;
+  source?: unknown;
+  menuDate?: unknown;
+  menus?: Record<string, RawMenuEntry>;
+};
 
-function toTextLines(html: string): string[] {
-  const withoutScripts = html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ');
-  const withBreaks = withoutScripts
-    .replace(/<(br|\/p|\/div|\/li|\/tr|\/h[1-6])\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n');
-  const withoutTags = withBreaks.replace(/<[^>]+>/g, ' ');
-  const decoded = decodeHtmlEntities(withoutTags);
-  return decoded
-    .split(/\r?\n/)
-    .map((line) => line.replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
-}
-
-function extractEnlargeUrl(html: string): string | null {
-  const directMatch = html.match(
-    /<a[^>]+href=["']([^"']+)["'][^>]*>\s*Enlarge\s*<\/a>/i
-  );
-  if (directMatch?.[1]) {
-    return directMatch[1].trim();
+function normalizeItems(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
   }
-
-  const fallbackMatch = html.match(
-    /https?:\/\/menus\.campus-dining\.com\/[^\s"'<>]+/i
-  );
-  return fallbackMatch?.[0]?.trim() ?? null;
-}
-
-function findDateLabel(lines: string[]): string | null {
-  const dateStartIndex = lines.findIndex((line) => line.toLowerCase() === 'date');
-  if (dateStartIndex < 0) {
-    return null;
-  }
-  const datePattern =
-    /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+[A-Za-z]+\s+\d{1,2}$/;
-  for (let i = dateStartIndex + 1; i < Math.min(lines.length, dateStartIndex + 40); i += 1) {
-    if (datePattern.test(lines[i])) {
-      return lines[i];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of value) {
+    if (typeof item !== 'string') {
+      continue;
     }
-  }
-  return null;
-}
-
-function isCaloriesLine(line: string): boolean {
-  return /^\d[\d,]*(\.\d+)?\s*cal$/i.test(line.trim());
-}
-
-function isDishCandidate(line: string): boolean {
-  const lower = line.toLowerCase();
-  if (!line || line.length < 2 || line.length > 120) {
-    return false;
-  }
-  if (
-    lower === 'nutritional information' ||
-    lower === 'filters' ||
-    lower === 'download menu' ||
-    lower === 'my meal' ||
-    lower === 'all'
-  ) {
-    return false;
-  }
-  if (lower.startsWith('ingredients:')) {
-    return false;
-  }
-  if (lower.includes('% daily values')) {
-    return false;
-  }
-  if (lower.includes(' per portion')) {
-    return false;
-  }
-  if (/^\d[\d,]*(\.\d+)?\s*(g|mg|mcg|oz|ml)$/i.test(line)) {
-    return false;
-  }
-  if (/^\d+(\.\d+)?%$/.test(line)) {
-    return false;
-  }
-  if (isCaloriesLine(line)) {
-    return false;
-  }
-  if (/^\d+\/\d+\s+(cup|oz|tbsp|tsp)\b/i.test(line)) {
-    return false;
-  }
-  if (/^\d+\s+(cup|oz|tbsp|tsp)\b/i.test(line)) {
-    return false;
-  }
-  if (/^\d+(\.\d+)?$/.test(line)) {
-    return false;
-  }
-  if (lower.startsWith('|') || lower.endsWith('|')) {
-    return false;
-  }
-  if (
-    lower === 'calories' ||
-    lower === 'total fat' ||
-    lower === 'saturates' ||
-    lower === 'trans fat' ||
-    lower === 'cholesterol' ||
-    lower === 'sodium' ||
-    lower === 'carbs' ||
-    lower === 'fiber' ||
-    lower === 'sugars' ||
-    lower === 'protein' ||
-    lower === 'calcium' ||
-    lower === 'iron' ||
-    lower === 'potassium' ||
-    lower === 'vitamin d'
-  ) {
-    return false;
-  }
-  if (
-    lower === 'classic kitchen' ||
-    lower === 'global fare' ||
-    lower === 'greens' ||
-    lower === 'the local deli' ||
-    lower === 'sauce & stone'
-  ) {
-    return false;
-  }
-  return true;
-}
-
-function isStationLabel(line: string): boolean {
-  const lower = line.toLowerCase();
-  return (
-    lower === 'classic kitchen' ||
-    lower === 'global fare' ||
-    lower === 'greens' ||
-    lower === 'the local deli' ||
-    lower === 'sauce & stone'
-  );
-}
-
-function hasCaloriesNearby(lines: string[], index: number, sectionEndExclusive: number): boolean {
-  const end = Math.min(sectionEndExclusive, index + 6);
-  for (let i = index + 1; i < end; i += 1) {
-    if (isCaloriesLine(lines[i] ?? '')) {
-      return true;
+    const trimmed = item.trim();
+    if (!trimmed) {
+      continue;
     }
-  }
-  return false;
-}
-
-function extractStationItems(
-  lines: string[],
-  stationName: 'Global Fare' | 'Classic Kitchen',
-  startIndex = 0
-): string[] {
-  const stationLower = stationName.toLowerCase();
-  for (let i = startIndex; i < lines.length - 2; i += 1) {
-    if (lines[i].toLowerCase() === stationLower) {
-      const items: string[] = [];
-      const seen = new Set<string>();
-      let sectionEndExclusive = lines.length;
-      for (let j = i + 1; j < lines.length; j += 1) {
-        if (isStationLabel(lines[j])) {
-          sectionEndExclusive = j;
-          break;
-        }
-      }
-
-      for (let j = i + 1; j < sectionEndExclusive; j += 1) {
-        const line = lines[j];
-        if (isDishCandidate(line) && hasCaloriesNearby(lines, j, sectionEndExclusive)) {
-          const normalized = line.toLowerCase();
-          if (!seen.has(normalized)) {
-            seen.add(normalized);
-            items.push(line);
-          }
-        }
-      }
-      if (items.length > 0) {
-        return items;
-      }
-    }
-  }
-  return [];
-}
-
-function extractMenuIdentifiers(html: string): Partial<Record<DiningPeriod, string>> {
-  const result: Partial<Record<DiningPeriod, string>> = {};
-  for (const period of PERIODS) {
-    const escapedPeriod = period.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const matcher = new RegExp(
-      `<div\\s+data-menu-identifier=["']([^"']+)["'][^>]*>\\s*${escapedPeriod}\\s*<\\/div>`,
-      'i'
-    );
-    const match = html.match(matcher);
-    if (match?.[1]) {
-      result[period] = match[1];
+    const key = trimmed.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(trimmed);
     }
   }
   return result;
 }
 
-function parseMenuContext(html: string): { locationGuid: string; date: string } | null {
-  const locationMatch = html.match(/k10\.settings\.menu\.location\.guid\s*=\s*'([^']+)'/i);
-  const dateMatch = html.match(/k10\.settings\.menu\.date\s*=\s*'([^']+)'/i);
-  if (!locationMatch?.[1] || !dateMatch?.[1]) {
+function toDateLabel(menuDate: unknown): string | null {
+  if (typeof menuDate !== 'string') {
     return null;
   }
-  return {
-    locationGuid: locationMatch[1].trim(),
-    date: dateMatch[1].trim()
-  };
+  const match = menuDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null;
+  }
+  // Use noon UTC to avoid timezone edge cases while formatting in EST/EDT.
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/New_York'
+  }).format(date);
 }
 
-async function safeFetchText(url: string): Promise<string> {
+async function safeFetchJson(url: string): Promise<RawMenuJson> {
   let response: Response;
   try {
     response = await fetch(url, { cache: 'no-cache' });
@@ -264,51 +102,47 @@ async function safeFetchText(url: string): Promise<string> {
     throw new DiningMenuError('network', `Failed to fetch ${url}: HTTP ${response.status}`);
   }
 
-  return response.text();
+  try {
+    return (await response.json()) as RawMenuJson;
+  } catch (error) {
+    throw new DiningMenuError('parse', `Failed to parse ${url} as JSON: ${(error as Error).message}`);
+  }
 }
 
 export async function loadDiningMenuFirstItems(period: DiningPeriod = 'Lunch'): Promise<DiningMenuResult> {
-  const discoveryHtml = await safeFetchText(DISCOVERY_URL);
-  const discoveredUrl = extractEnlargeUrl(discoveryHtml);
-  const sourceUrl = discoveredUrl || DEFAULT_MENUS_URL;
-  const baseUrl = sourceUrl.split('?')[0];
-  const defaultHtml = await safeFetchText(baseUrl);
-  const menuIdentifiers = extractMenuIdentifiers(defaultHtml);
-  const menuContext = parseMenuContext(defaultHtml);
-  const selectedMenuGuid = menuIdentifiers[period];
-  if (!selectedMenuGuid) {
-    throw new DiningMenuError('no_item', `No menu identifier found for ${period}`);
+  const data = await safeFetchJson(MENU_JSON_URL);
+  const menus = data.menus;
+  if (!menus || typeof menus !== 'object') {
+    throw new DiningMenuError('parse', 'menu.json is missing the menus object');
   }
-  if (!menuContext) {
-    throw new DiningMenuError('parse', 'Failed to parse menu context');
+  const entry = menus[period.toLowerCase()] ?? menus[period];
+  if (!entry || typeof entry !== 'object') {
+    throw new DiningMenuError('no_item', `No menu data found for ${period}`);
   }
 
-  const periodUrl = `${baseUrl}?cl=true&mguid=${encodeURIComponent(menuContext.locationGuid)}&mldate=${encodeURIComponent(menuContext.date)}&mlguid=${encodeURIComponent(selectedMenuGuid)}&internalrequest=true`;
-  const menuHtml = await safeFetchText(periodUrl);
-  const lines = toTextLines(menuHtml);
-
-  if (!lines.length) {
-    throw new DiningMenuError('parse', 'Menu page content is empty');
-  }
-
-  const globalFareItems = extractStationItems(lines, 'Global Fare');
-  const classicKitchenItems = extractStationItems(lines, 'Classic Kitchen');
+  const globalFareItems = normalizeItems((entry as RawMenuEntry).globalFare);
+  const classicKitchenItems = normalizeItems((entry as RawMenuEntry).classicKitchen);
   const globalFareFirst = globalFareItems[0] ?? null;
   const classicKitchenFirst = classicKitchenItems[0] ?? null;
 
   if (!globalFareFirst && !classicKitchenFirst) {
-    throw new DiningMenuError('no_station', 'No target stations found in menu content');
+    throw new DiningMenuError('no_station', `No usable menu items found for ${period}`);
   }
+
+  const fetchedAt =
+    typeof data.updatedAt === 'string' && data.updatedAt.trim().length > 0
+      ? data.updatedAt
+      : new Date().toISOString();
 
   return {
     period,
-    dateLabel: findDateLabel(lines),
-    sourceUrl: periodUrl,
+    dateLabel: toDateLabel(data.menuDate),
+    sourceUrl: typeof data.source === 'string' && data.source.trim().length > 0 ? data.source : MENU_JSON_URL,
     globalFareFirst,
     classicKitchenFirst,
     globalFareMore: globalFareItems.slice(1),
     classicKitchenMore: classicKitchenItems.slice(1),
-    fetchedAt: new Date().toISOString(),
+    fetchedAt,
     rule: 'first-listed'
   };
 }
