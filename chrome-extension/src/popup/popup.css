@@ -54,8 +54,8 @@ header {
 }
 
 .day-type-pill-link.green:hover {
-  background: rgba(46, 160, 67, 0.18);
-  border-color: rgba(46, 160, 67, 0.38);
+  background: rgba(26, 127, 55, 0.18);
+  border-color: rgba(26, 127, 55, 0.38);
 }
 
 .day-type-pill-link.white:hover {
@@ -65,9 +65,9 @@ header {
 }
 
 .day-type-pill.green {
-  background: rgba(46, 160, 67, 0.12);
+  background: rgba(26, 127, 55, 0.12);
   color: currentColor;
-  border-color: rgba(46, 160, 67, 0.25);
+  border-color: rgba(26, 127, 55, 0.25);
 }
 
 .day-type-pill.white {
@@ -128,7 +128,7 @@ header {
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 8px;
   padding: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .status-current {
@@ -193,6 +193,32 @@ header {
   font-size: 13px;
 }
 
+.progress-bar-container {
+  margin: 12px -12px -12px;
+}
+
+.progress-bar-track {
+  height: 6px;
+  background: rgba(26, 127, 55, 0.12);
+  border-radius: 0 0 7px 7px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #1a7f37;
+  border-radius: 0 3px 3px 0;
+  transition: width 1s linear;
+}
+
+.progress-break .progress-bar-track {
+  background: rgba(243, 156, 61, 0.18);
+}
+
+.progress-break .progress-bar-fill {
+  background: #f39c3d;
+}
+
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -247,9 +273,9 @@ header {
 }
 
 .dining-period-tab.active {
-  background: rgba(46, 160, 67, 0.1);
+  background: rgba(26, 127, 55, 0.1);
   color: #1f6f2b;
-  box-shadow: 0 0 0 1px rgba(46, 160, 67, 0.25) inset;
+  box-shadow: 0 0 0 1px rgba(26, 127, 55, 0.25) inset;
 }
 
 .dining-grid {
@@ -315,7 +341,7 @@ header {
 }
 
 .dining-item-link:hover {
-  color: #2ea043;
+  color: #1a7f37;
   text-decoration: none;
 }
 
@@ -347,7 +373,7 @@ header {
 }
 
 .dining-link {
-  color: #2ea043;
+  color: #1a7f37;
   text-decoration: none;
   font-weight: 600;
   display: inline-flex;
@@ -431,18 +457,12 @@ header {
 }
 
 .schedule-list li.current-block {
-  background: rgba(46, 160, 67, 0.1);
+  background: rgba(26, 127, 55, 0.1);
   position: relative;
 }
 
 .schedule-list li.current-block::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #2ea043;
+  display: none;
 }
 
 .schedule-list li.upcoming-block {
@@ -451,13 +471,7 @@ header {
 }
 
 .schedule-list li.upcoming-block::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #6fdd88;
+  display: none;
 }
 
 .schedule-list li .block-name {

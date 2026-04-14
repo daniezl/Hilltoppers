@@ -6,8 +6,8 @@
   --text: #111111;
   --muted: #5b6570;
   --border: #d0d7de;
-  --accent: #2ea043;
-  --accent-muted: rgba(46, 160, 67, 0.12);
+  --accent: #1a7f37;
+  --accent-muted: rgba(26, 127, 55, 0.12);
   --danger: #bc4c2c;
 }
 
@@ -89,7 +89,7 @@
 .login__message--success,
 .login__notice--info {
   background: var(--accent-muted);
-  border-color: rgba(46, 160, 67, 0.35);
+  border-color: rgba(26, 127, 55, 0.35);
   color: var(--accent);
 }
 
@@ -225,7 +225,7 @@
 }
 
 .login button.primary:not(:disabled):hover {
-  box-shadow: 0 8px 16px rgba(46, 160, 67, 0.25);
+  box-shadow: 0 8px 16px rgba(26, 127, 55, 0.25);
   transform: translateY(-1px);
 }
 

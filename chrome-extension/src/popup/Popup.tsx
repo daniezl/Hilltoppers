@@ -491,6 +491,57 @@ const Popup: React.FC = () => {
     return resolveBlockDisplay(nextBlock.name, schedule.dayType, blockPrefs);
   }, [blockPrefs, nextBlock, schedule.dayType]);
 
+  const progressBar = useMemo<{
+    startLabel: string;
+    endLabel: string;
+    percent: number;
+    isBreak: boolean;
+  } | null>(() => {
+    if (currentBlock) {
+      const times = getBlockTimes(currentBlock, baseDate);
+      const total = times.end.getTime() - times.start.getTime();
+      const elapsed = now.getTime() - times.start.getTime();
+      const percent = Math.min(Math.max(elapsed / total, 0), 1);
+      return {
+        startLabel: toDisplayTime(times.start, schedulePrefs.timeFormat),
+        endLabel: toDisplayTime(times.end, schedulePrefs.timeFormat),
+        percent,
+        isBreak: false,
+      };
+    }
+
+    if (nextBlock) {
+      const nextTimes = getBlockTimes(nextBlock, baseDate);
+
+      // Show progress during breaks as well (from previous block end -> next block start).
+      const nextIndex = schedule.blocks.findIndex((block) => block.id === nextBlock.id);
+      const prevBlock = nextIndex > 0 ? schedule.blocks[nextIndex - 1] : undefined;
+      const breakStart = prevBlock ? parseBlockTime(prevBlock.end, baseDate) : null;
+
+      if (breakStart) {
+        const total = nextTimes.start.getTime() - breakStart.getTime();
+        const elapsed = now.getTime() - breakStart.getTime();
+        const percent = total > 0 ? Math.min(Math.max(elapsed / total, 0), 1) : 1;
+        return {
+          startLabel: toDisplayTime(breakStart, schedulePrefs.timeFormat),
+          endLabel: toDisplayTime(nextTimes.start, schedulePrefs.timeFormat),
+          percent,
+          isBreak: true,
+        };
+      }
+
+      // Fallback (no previous block): keep the break bar full so the UI is stable.
+      return {
+        startLabel: toDisplayTime(nextTimes.start, schedulePrefs.timeFormat),
+        endLabel: toDisplayTime(nextTimes.end, schedulePrefs.timeFormat),
+        percent: 1,
+        isBreak: true,
+      };
+    }
+
+    return null;
+  }, [currentBlock, nextBlock, baseDate, now, schedulePrefs.timeFormat]);
+
   const dayTypeLabel = schedule.dayType;
 
   const autoDiningPeriod = useMemo<DiningMenuPayload['period']>(() => {
@@ -672,6 +723,16 @@ const Popup: React.FC = () => {
                 <p>Have a good day!</p>
               </>
             )}
+          </div>
+        )}
+        {progressBar && (
+          <div className={`progress-bar-container${progressBar.isBreak ? ' progress-break' : ''}`}>
+            <div className="progress-bar-track">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${progressBar.percent * 100}%` }}
+              />
+            </div>
           </div>
         )}
       </section>
