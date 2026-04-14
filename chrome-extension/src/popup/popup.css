@@ -4,6 +4,8 @@ body, html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #111111;
   background: #f7f8fb;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .popup {
@@ -94,6 +96,59 @@ header {
   gap: 8px;
 }
 
+.day-type-pill-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.settings-button-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.hover-float-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #7d8591;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.daytype-float-icon {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.daytype-float-label {
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translate(-50%, -2px);
+}
+
+.settings-float-label {
+  top: 50%;
+  left: calc(100% + 6px);
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.day-type-pill-wrapper:hover .daytype-float-label,
+.day-type-pill-wrapper:focus-within .daytype-float-label {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.settings-button-wrapper:hover .settings-float-label,
+.settings-button-wrapper:focus-within .settings-float-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
 .settings-button {
   border: none;
   background: transparent;
@@ -129,6 +184,12 @@ header {
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status:hover {
+  border-color: rgba(17, 17, 17, 0.28);
+  box-shadow: 0 6px 14px rgba(17, 17, 17, 0.08);
 }
 
 .status-current {
@@ -194,14 +255,44 @@ header {
 }
 
 .progress-bar-container {
-  margin: 12px -12px -12px;
+  position: relative;
+  margin: 14px -12px -12px;
+}
+
+.progress-bar-labels {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #7d8591;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.status:hover .progress-bar-labels,
+.status:focus-within .progress-bar-labels {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.status:hover .progress-bar-track,
+.status:focus-within .progress-bar-track {
+  transform: scaleY(0.72);
 }
 
 .progress-bar-track {
-  height: 6px;
+  height: 5px;
   background: rgba(26, 127, 55, 0.12);
   border-radius: 0 0 7px 7px;
   overflow: hidden;
+  transform-origin: bottom center;
+  transition: transform 0.18s ease;
 }
 
 .progress-bar-fill {
@@ -604,29 +695,34 @@ header {
   gap: 10px;
 }
 
-.lunch-inline-toggle {
+.block-row.expandable {
+  cursor: pointer;
+}
+
+.block-row.expandable:hover {
+  color: #20652f;
+}
+
+.block-row.expandable:focus-visible {
+  outline: 2px solid rgba(26, 127, 55, 0.28);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.subblock-inline-toggle {
   margin-top: 6px;
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   padding: 4px;
-  border: none;
-  background: transparent;
   color: currentColor;
   font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
   align-self: flex-end;
 }
 
-.lunch-inline-toggle:hover {
-  color: #20652f;
-}
-
-.lunch-inline-toggle span {
-  font-size: 12px;
-  font-weight: 600;
+.subblock-inline-toggle .chevron {
+  display: inline-block;
 }
 
 .subblock-list .subblock-name {
@@ -641,7 +737,7 @@ header {
   padding-right: 24px;
 }
 
-.block-right .lunch-inline-toggle {
+.block-right .subblock-inline-toggle {
   position: absolute;
   right: 0;
   top: 50%;

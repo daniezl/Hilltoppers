@@ -134,7 +134,7 @@ const Popup: React.FC = () => {
       ) ?? null,
     [schedule.blocks]
   );
-  const [showLunchDetails, setShowLunchDetails] = useState<boolean>(false);
+  const [expandedBlockId, setExpandedBlockId] = useState<string | null>(null);
 
   const isUsingDefaultBlockPrefs = useMemo(() =>
     (Object.keys(DEFAULT_BLOCK_NAMES) as BlockKey[]).every((key) => {
@@ -144,7 +144,7 @@ const Popup: React.FC = () => {
   [blockPrefs]);
 
   useEffect(() => {
-    setShowLunchDetails(false);
+    setExpandedBlockId(null);
   }, [schedule.dateKey]);
 
   const prevDateKeyRef = useRef(schedule.dateKey);
@@ -633,54 +633,74 @@ const Popup: React.FC = () => {
         <div className="header-row">
           <div className="header-left">
             <div className="header-title-row">
-              <button
-                type="button"
-                className="settings-button"
-                onClick={handleOpenClassSettings}
-                aria-label="Open settings"
-                title="Settings"
-              >
-                <svg
-                  aria-hidden="true"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+              <div className="settings-button-wrapper">
+                <button
+                  type="button"
+                  className="settings-button"
+                  onClick={handleOpenClassSettings}
+                  aria-label="Open settings"
                 >
-                  <path
-                    d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    aria-hidden="true"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="3"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <span className="hover-float-label settings-float-label">Settings</span>
+              </div>
             </div>
           </div>
           <div className="header-right">
             {dayTypeLabel ? (
               isDayTypeBulletinLink ? (
-                <a
-                  className={`day-type-pill ${dayTypeClass} day-type-pill-link`}
-                  href={DAILY_BULLETIN_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  title="Open Daily Bulletin"
-                  aria-label="Open Daily Bulletin"
-                >
-                  {dayTypeLabel}
-                </a>
+                <div className="day-type-pill-wrapper">
+                  <a
+                    className={`day-type-pill ${dayTypeClass} day-type-pill-link`}
+                    href={DAILY_BULLETIN_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label="Open Daily Bulletin"
+                  >
+                    {dayTypeLabel}
+                  </a>
+                  <span className="hover-float-label daytype-float-label">
+                    <svg
+                      className="daytype-float-icon"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span>Daily Bulletin</span>
+                  </span>
+                </div>
               ) : (
                 <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span>
               )
@@ -727,6 +747,10 @@ const Popup: React.FC = () => {
         )}
         {progressBar && (
           <div className={`progress-bar-container${progressBar.isBreak ? ' progress-break' : ''}`}>
+            <div className="progress-bar-labels">
+              <span>{progressBar.startLabel}</span>
+              <span>{progressBar.endLabel}</span>
+            </div>
             <div className="progress-bar-track">
               <div
                 className="progress-bar-fill"
@@ -775,28 +799,41 @@ const Popup: React.FC = () => {
                 if (display.useGrayText) itemClasses.push('muted-block');
                 const className = itemClasses.join(' ') || undefined;
                 const subBlocksForBlock = Array.isArray(block.subBlocks) ? block.subBlocks : [];
-                const isLunchBlock = lunchBlock && block.id === lunchBlock.id;
+                const hasSubBlocks = subBlocksForBlock.length > 0;
+                const isExpanded = expandedBlockId === block.id;
+                const toggleExpanded = () => {
+                  if (!hasSubBlocks) return;
+                  setExpandedBlockId((prev) => (prev === block.id ? null : block.id));
+                };
 
                 return (
                   <li key={block.id} className={className}>
-                    <div className="block-row">
+                    <div
+                      className={`block-row${hasSubBlocks ? ' expandable' : ''}`}
+                      onClick={hasSubBlocks ? toggleExpanded : undefined}
+                      onKeyDown={hasSubBlocks ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          toggleExpanded();
+                        }
+                      } : undefined}
+                      role={hasSubBlocks ? 'button' : undefined}
+                      tabIndex={hasSubBlocks ? 0 : undefined}
+                      aria-expanded={hasSubBlocks ? isExpanded : undefined}
+                    >
                       <span className="block-name">{display.label}</span>
                       <div className="block-right">
                         <span className="block-time">
                           {toDisplayTime(start, schedulePrefs.timeFormat)} – {toDisplayTime(end, schedulePrefs.timeFormat)}
                         </span>
-                        {isLunchBlock ? (
-                          <button
-                            type="button"
-                            className="lunch-inline-toggle"
-                            onClick={() => setShowLunchDetails((prev) => !prev)}
-                          >
-                            <span className={`chevron ${showLunchDetails ? "open" : ""}`} aria-hidden="true" />
-                          </button>
+                        {hasSubBlocks ? (
+                          <span className="subblock-inline-toggle" aria-hidden="true">
+                            <span className={`chevron ${isExpanded ? 'open' : ''}`} />
+                          </span>
                         ) : null}
                       </div>
                     </div>
-                    {isLunchBlock && showLunchDetails ? (
+                    {hasSubBlocks && isExpanded ? (
                       <ul className="subblock-list">
                         {subBlocksForBlock.map((sub) => (
                           <li key={sub.id ?? sub.name}>
