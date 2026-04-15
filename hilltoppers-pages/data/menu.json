@@ -1,0 +1,47 @@
+{
+  "updatedAt": "2026-04-15T17:06:44.311Z",
+  "source": "menus.tenkites.com",
+  "menuDate": "2026-04-15",
+  "menus": {
+    "breakfast": {
+      "classicKitchen": [
+        "Bacon Egg and Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Sausage and Egg Croissant"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Chicken Sausage Patty",
+        "Belgian Waffle w/ Powder Sugar & Syrup",
+        "Hashbrown Patty"
+      ]
+    },
+    "lunch": {
+      "classicKitchen": [
+        "Grilled Chicken Breast",
+        "Penne Pasta with Alfredo Sauce",
+        "Garlic Bread",
+        "Fresh Roasted Broccoli"
+      ],
+      "globalFare": [
+        "Sloppy Joe Beef",
+        "Curly Fries",
+        "Buttered Corn"
+      ]
+    },
+    "dinner": {
+      "classicKitchen": [
+        "Greek-Marinated Grilled Chicken",
+        "Pita Bread",
+        "Roasted Yellow Squash",
+        "Roasted Chickpeas"
+      ],
+      "globalFare": [
+        "Orange Chipotle Tilapia",
+        "French Bread",
+        "Jasmine Rice",
+        "Honey Roasted Brussel Sprouts"
+      ]
+    }
+  }
+}

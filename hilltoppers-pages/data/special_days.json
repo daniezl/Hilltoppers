@@ -1,0 +1,343 @@
+{
+  "2025-11-20": {
+    "type": "no_school",
+    "details": "test"
+  },
+  "2025-11-22": {
+    "type": "custom",
+    "details": "test details",
+    "schedule": [
+      {
+        "name": "test",
+        "start": "08:00",
+        "end": "15:06"
+      }
+    ]
+  },
+  "2025-12-05": {
+    "type": "custom",
+    "details": "Capstone Day",
+    "schedule": [
+      {
+        "name": "Chapel",
+        "start": "08:30",
+        "end": "08:45"
+      },
+      {
+        "name": "Session 1",
+        "start": "09:00",
+        "end": "10:35"
+      },
+      {
+        "name": "Break",
+        "start": "10:35",
+        "end": "10:45"
+      },
+      {
+        "name": "Lunch",
+        "start": "10:45",
+        "end": "11:20"
+      },
+      {
+        "name": "Session 2",
+        "start": "11:30",
+        "end": "12:50"
+      },
+      {
+        "name": "Session 3",
+        "start": "13:00",
+        "end": "14:30"
+      }
+    ]
+  },
+  "2025-12-10": {
+    "type": "no_school"
+  },
+  "2025-12-15": {
+    "schedule": [
+      {
+        "end": "11:30",
+        "name": "Humanities / English / ESL",
+        "start": "09:00"
+      },
+      {
+        "end": "12:30",
+        "name": "Lunch",
+        "start": "11:30"
+      },
+      {
+        "end": "15:15",
+        "name": "Science",
+        "start": "12:45"
+      }
+    ],
+    "type": "custom"
+  },
+  "2025-12-16": {
+    "schedule": [
+      {
+        "end": "11:30",
+        "name": "Social Studies / CTE",
+        "start": "09:00"
+      },
+      {
+        "end": "12:30",
+        "name": "Lunch",
+        "start": "11:30"
+      },
+      {
+        "end": "15:15",
+        "name": "Languages / CTE",
+        "start": "12:45"
+      }
+    ],
+    "type": "custom"
+  },
+  "2025-12-17": {
+    "schedule": [
+      {
+        "end": "11:30",
+        "name": "Math",
+        "start": "09:00"
+      },
+      {
+        "end": "12:30",
+        "name": "Lunch",
+        "start": "11:30"
+      },
+      {
+        "end": "15:15",
+        "name": "Health",
+        "start": "12:45"
+      }
+    ],
+    "type": "custom"
+  },
+  "2025-12-18": {
+    "schedule": [
+      {
+        "end": "8:10",
+        "name": "Chapel",
+        "start": "8:00"
+      },
+      {
+        "end": "8:45",
+        "name": "A Block",
+        "start": "8:20"
+      },
+      {
+        "end": "9:15",
+        "name": "B Block",
+        "start": "8:50"
+      },
+      {
+        "end": "9:45",
+        "name": "C Block",
+        "start": "9:20"
+      },
+      {
+        "end": "10:15",
+        "name": "D Block",
+        "start": "9:50"
+      },
+      {
+        "end": "10:45",
+        "name": "E Block",
+        "start": "10:20"
+      },
+      {
+        "end": "11:20",
+        "name": "Advisory",
+        "start": "10:50"
+      },
+      {
+        "end": "12:30",
+        "name": "Lunch",
+        "start": "11:30"
+      }
+    ],
+    "type": "custom"
+  },
+  "2026-01-07": {
+    "type": "late_start"
+  },
+  "2026-01-14": {
+    "type": "late_start"
+  },
+  "2026-01-19": {
+    "type": "no_school"
+  },
+  "2026-01-26": {
+    "type": "no_school"
+  },
+  "2026-02-04": {
+    "type": "custom",
+    "schedule": [
+      { "name": "A Block", "start": "8:00", "end": "8:50" },
+      { "name": "B Block", "start": "8:55", "end": "9:45" },
+      { "name": "D Block", "start": "9:50", "end": "10:40" },
+      { "name": "E Block", "start": "10:45", "end": "11:35" },
+      { "name": "C Block", "start": "11:40", "end": "12:10" },
+      {
+        "name": "Lunch",
+        "start": "11:40",
+        "end": "13:10",
+        "subBlocks": [
+          { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
+          { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
+          { "name": "3rd Lunch", "start": "12:10", "end": "12:45" },
+          { "name": "4th Lunch", "start": "12:25", "end": "13:00" },
+          { "name": "5th Lunch", "start": "12:40", "end": "13:10" }
+        ]
+      },
+      { "name": "Winter Carnival Preparations", "start": "13:15", "end": "14:40" }
+    ]
+  },
+  "2026-02-05": {
+    "type": "custom",
+    "schedule": [
+      { "name": "A Block", "start": "8:00", "end": "8:50" },
+      { "name": "B Block", "start": "8:55", "end": "9:45" },
+      { "name": "D Block", "start": "9:50", "end": "10:40" },
+      { "name": "E Block", "start": "10:45", "end": "11:35" },
+      { "name": "C Block", "start": "11:40", "end": "13:10" },
+      {
+        "name": "Lunch",
+        "start": "11:40",
+        "end": "13:10",
+        "subBlocks": [
+          { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
+          { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
+          { "name": "3rd Lunch", "start": "12:10", "end": "12:45" },
+          { "name": "4th Lunch", "start": "12:25", "end": "13:00" },
+          { "name": "5th Lunch", "start": "12:40", "end": "13:10" }
+        ]
+      },
+      { "name": "Winter Carnival Chapel", "start": "13:15", "end": "14:40" },
+      { "name": "Winter Carnival Events", "start": "15:00", "end": "20:00" }
+    ]
+  },
+  "2026-02-06": {
+    "type": "custom",
+    "schedule": [
+      { "name": "Chapel", "start": "8:00", "end": "8:15" },
+      { "name": "Winter Carnival Events", "start": "8:20", "end": "14:30" },
+      { "name": "Lunch", "start": "11:00", "end": "13:00" },
+      { "name": "Dance-off", "start": "13:30", "end": "14:30" }
+    ]
+  },
+  "2026-02-11": {
+    "type": "late_start"
+  },
+  "2026-02-16": {
+    "type": "no_school"
+  },
+  "2026-02-17": {
+    "type": "late_start"
+  },
+  "2026-03-09": {
+    "type": "late_start"
+  },
+  "2026-03-10": {
+    "type": "late_start"
+  },
+  "2026-03-11": {
+    "type": "late_start"
+  },
+  "2026-03-12": {
+    "type": "late_start"
+  },
+  "2026-03-13": {
+    "type": "no_school"
+  },
+  "2026-03-16": {
+    "type": "late_start"
+  },
+  "2026-03-17": {
+    "type": "late_start"
+  },
+  "2026-03-27": {
+    "type": "no_school"
+  },
+  "2026-04-01": {
+    "type": "late_start"
+  },
+  "2026-04-16": {
+    "type": "custom",
+    "details": "Fashion Show Schedule",
+    "schedule": [
+      {
+        "name": "9/10 Fashion Show, 11/12 Advisor Meetings",
+        "start": "8:00",
+        "end": "8:30"
+      },
+      {
+        "name": "11/12 Fashion Show, 9/10 Advisor Meetings",
+        "start": "8:40",
+        "end": "9:10"
+      },
+      {
+        "name": "A Block",
+        "start": "9:20",
+        "end": "10:10"
+      },
+      {
+        "name": "B Block",
+        "start": "10:15",
+        "end": "11:05"
+      },
+      {
+        "name": "C Block",
+        "start": "11:10",
+        "end": "12:55",
+        "subBlocks": [
+          {
+            "name": "Lunch 1",
+            "start": "11:05",
+            "end": "11:35"
+          },
+          {
+            "name": "Lunch 2",
+            "start": "11:25",
+            "end": "11:55"
+          },
+          {
+            "name": "Lunch 3",
+            "start": "11:45",
+            "end": "12:15"
+          },
+          {
+            "name": "Lunch 4",
+            "start": "12:05",
+            "end": "12:35"
+          },
+          {
+            "name": "Lunch 5",
+            "start": "12:25",
+            "end": "12:55"
+          }
+        ]
+      },
+      {
+        "name": "D Block",
+        "start": "13:00",
+        "end": "13:50"
+      },
+      {
+        "name": "E Block",
+        "start": "13:55",
+        "end": "14:45"
+      },
+      {
+        "name": "Conference Period",
+        "start": "14:50",
+        "end": "15:10"
+      },
+      {
+        "name": "Interdisciplinary Time",
+        "start": "15:10",
+        "end": "15:30"
+      }
+    ]
+  }
+}
