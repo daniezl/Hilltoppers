@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
-import { Block, EST_ZONE, parseBlockTime, toDisplayTime } from '../types/schedule';
+import {
+  Block, EST_ZONE, parseBlockTime, toDisplayTime,
+  GradeLevel, GRADE_LABELS, ALL_GRADES,
+  gradeFromGraduationYear, graduationYearFromGrade
+} from '../types/schedule';
 import {
   BlockPreferenceRecord,
   createEmptyPreferences,
@@ -9,7 +13,12 @@ import {
   DEFAULT_BLOCK_NAMES,
   BlockKey
 } from '../storage/blockPreferences';
-import { loadSchedulePreferences, type SchedulePreferences, DEFAULT_SCHEDULE_PREFERENCES } from '../storage/schedulePreferences';
+import {
+  loadSchedulePreferences,
+  saveSchedulePreferences,
+  type SchedulePreferences,
+  DEFAULT_SCHEDULE_PREFERENCES
+} from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
 
 interface SchedulePayload {
@@ -97,11 +106,15 @@ const Popup: React.FC = () => {
   const [menuLoading, setMenuLoading] = useState<boolean>(true);
   const [menuError, setMenuError] = useState<string | null>(null);
   const [menuData, setMenuData] = useState<DiningMenuPayload | null>(null);
+  const [viewingGrade, setViewingGrade] = useState<GradeLevel | null>(null);
+  const [showGradePrompt, setShowGradePrompt] = useState(false);
+  const [pendingGradeSelection, setPendingGradeSelection] = useState<GradeLevel | null>(null);
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
   const menuRequestIdRef = useRef(0);
   const latestMenuDataRef = useRef<DiningMenuPayload | null>(null);
   const hasManualDiningSelectionRef = useRef(false);
+  const gradeInitializedRef = useRef(false);
 
   const debugTestTime = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -127,12 +140,47 @@ const Popup: React.FC = () => {
         : DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate(),
     [schedule.dateKey]
   );
+  const hasGradeSpecificBlocks = useMemo(
+    () => schedule.blocks.some((b) => b.grades && b.grades.length > 0),
+    [schedule.blocks]
+  );
+
+  const savedGrade = useMemo<GradeLevel | null>(
+    () => schedulePrefs.graduationYear != null
+      ? gradeFromGraduationYear(schedulePrefs.graduationYear)
+      : null,
+    [schedulePrefs.graduationYear]
+  );
+
+  useEffect(() => {
+    if (gradeInitializedRef.current) return;
+    if (savedGrade != null) {
+      setViewingGrade(savedGrade);
+      gradeInitializedRef.current = true;
+    }
+  }, [savedGrade]);
+
+  useEffect(() => {
+    if (hasGradeSpecificBlocks && savedGrade == null && !isLoading) {
+      setShowGradePrompt(true);
+    }
+  }, [hasGradeSpecificBlocks, savedGrade, isLoading]);
+
+  const filteredBlocks = useMemo(() => {
+    if (!hasGradeSpecificBlocks || viewingGrade == null) {
+      return schedule.blocks;
+    }
+    return schedule.blocks.filter(
+      (b) => !b.grades || b.grades.includes(viewingGrade)
+    );
+  }, [schedule.blocks, hasGradeSpecificBlocks, viewingGrade]);
+
   const lunchBlock = useMemo(
     () =>
-      schedule.blocks.find(
+      filteredBlocks.find(
         (block) => Array.isArray(block.subBlocks) && block.subBlocks.length > 0
       ) ?? null,
-    [schedule.blocks]
+    [filteredBlocks]
   );
   const [expandedBlockId, setExpandedBlockId] = useState<string | null>(null);
 
@@ -439,15 +487,15 @@ const Popup: React.FC = () => {
     let remaining = 0;
     let nextStartsIn = 0;
 
-    for (let i = 0; i < schedule.blocks.length; i += 1) {
-      const block = schedule.blocks[i];
+    for (let i = 0; i < filteredBlocks.length; i += 1) {
+      const block = filteredBlocks[i];
       const times = getBlockTimes(block, baseDate);
       if (now >= times.start && now < times.end) {
         current = block;
         const nextIndex = i + 1;
-        if (nextIndex < schedule.blocks.length) {
-          next = schedule.blocks[nextIndex];
-          const nextStart = parseBlockTime(schedule.blocks[nextIndex].start, baseDate);
+        if (nextIndex < filteredBlocks.length) {
+          next = filteredBlocks[nextIndex];
+          const nextStart = parseBlockTime(filteredBlocks[nextIndex].start, baseDate);
           nextStartsIn = Math.max(0, nextStart.getTime() - now.getTime());
         }
         remaining = Math.max(0, times.end.getTime() - now.getTime());
@@ -461,7 +509,7 @@ const Popup: React.FC = () => {
     }
 
     return { currentBlock: current, nextBlock: next, remainingMs: remaining, nextStartsInMs: nextStartsIn };
-  }, [schedule.blocks, baseDate, now]);
+  }, [filteredBlocks, baseDate, now]);
 
   const formattedRemaining = useMemo(() => {
     if (!currentBlock) {
@@ -514,8 +562,8 @@ const Popup: React.FC = () => {
       const nextTimes = getBlockTimes(nextBlock, baseDate);
 
       // Show progress during breaks as well (from previous block end -> next block start).
-      const nextIndex = schedule.blocks.findIndex((block) => block.id === nextBlock.id);
-      const prevBlock = nextIndex > 0 ? schedule.blocks[nextIndex - 1] : undefined;
+      const nextIndex = filteredBlocks.findIndex((block) => block.id === nextBlock.id);
+      const prevBlock = nextIndex > 0 ? filteredBlocks[nextIndex - 1] : undefined;
       const breakStart = prevBlock ? parseBlockTime(prevBlock.end, baseDate) : null;
 
       if (breakStart) {
@@ -545,10 +593,10 @@ const Popup: React.FC = () => {
   const dayTypeLabel = schedule.dayType;
 
   const autoDiningPeriod = useMemo<DiningMenuPayload['period']>(() => {
-    if (!schedule.blocks.length) {
+    if (!filteredBlocks.length) {
       return 'Lunch';
     }
-    const firstBlock = schedule.blocks[0];
+    const firstBlock = filteredBlocks[0];
     const firstStart = parseBlockTime(firstBlock.start, baseDate);
 
     if (now < firstStart) {
@@ -556,7 +604,7 @@ const Popup: React.FC = () => {
     }
 
     const namedLunchBlock =
-      schedule.blocks.find((block) => block.name.toLowerCase().includes('lunch')) ?? lunchBlock;
+      filteredBlocks.find((block) => block.name.toLowerCase().includes('lunch')) ?? lunchBlock;
 
     if (namedLunchBlock) {
       const lunchEnd = parseBlockTime(namedLunchBlock.end, baseDate);
@@ -566,7 +614,7 @@ const Popup: React.FC = () => {
     }
 
     return 'Lunch';
-  }, [baseDate, lunchBlock, now, schedule.blocks]);
+  }, [baseDate, lunchBlock, now, filteredBlocks]);
 
   useEffect(() => {
     if (hasManualDiningSelectionRef.current) {
@@ -580,8 +628,7 @@ const Popup: React.FC = () => {
     }
   }, [autoDiningPeriod, selectedDiningPeriod]);
   
-  // Check if it's a no school day (no blocks and dayType indicates no school)
-  const isNoSchool = schedule.blocks.length === 0 && 
+  const isNoSchool = filteredBlocks.length === 0 && 
     (dayTypeLabel?.toLowerCase().includes('no school') ?? false);
 
   const handleOpenClassSettings = () => {
@@ -594,6 +641,22 @@ const Popup: React.FC = () => {
     } else {
       window.open(targetUrl, '_blank', 'noopener');
     }
+  };
+
+  const handleGradePromptConfirm = () => {
+    if (pendingGradeSelection == null) return;
+    const gradYear = graduationYearFromGrade(pendingGradeSelection);
+    const updatedPrefs: SchedulePreferences = { ...schedulePrefs, graduationYear: gradYear };
+    setSchedulePrefs(updatedPrefs);
+    setViewingGrade(pendingGradeSelection);
+    gradeInitializedRef.current = true;
+    setShowGradePrompt(false);
+    setPendingGradeSelection(null);
+    saveSchedulePreferences(updatedPrefs).then(() => {
+      if (typeof chrome !== 'undefined') {
+        chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
+      }
+    }).catch((err) => console.error('[popup] Failed to save grade preference', err));
   };
 
   const dayTypeClass = useMemo(() => {
@@ -627,6 +690,35 @@ const Popup: React.FC = () => {
 
   return (
     <main className="popup">
+      {showGradePrompt && (
+        <div className="grade-prompt-overlay">
+          <div className="grade-prompt-card">
+            <h2 className="grade-prompt-title">What grade are you in?</h2>
+            <div className="grade-prompt-options">
+              {ALL_GRADES.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={`grade-option${pendingGradeSelection === g ? ' selected' : ''}`}
+                  onClick={() => setPendingGradeSelection(g)}
+                >
+                  <span className="grade-option-label">{GRADE_LABELS[g]}</span>
+                  <span className="grade-option-number">{g}th grade</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="grade-prompt-continue"
+              disabled={pendingGradeSelection == null}
+              onClick={handleGradePromptConfirm}
+            >
+              Continue
+            </button>
+            <p className="grade-prompt-hint">You can change this later in Settings (top left).</p>
+          </div>
+        </div>
+      )}
       <header>
         <div className="header-row">
           <div className="header-left">
@@ -777,8 +869,22 @@ const Popup: React.FC = () => {
           </button>
         {scheduleExpanded && (
           <>
+            {hasGradeSpecificBlocks && viewingGrade != null && (
+              <div className="grade-selector">
+                <span>Showing schedule for</span>
+                <select
+                  value={viewingGrade}
+                  onChange={(e) => setViewingGrade(Number(e.target.value) as GradeLevel)}
+                  aria-label="Select grade to view schedule"
+                >
+                  {ALL_GRADES.map((g) => (
+                    <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <ul>
-              {schedule.blocks.map((block) => {
+              {filteredBlocks.map((block) => {
                 const { start, end } = getBlockTimes(block, baseDate);
                 const isCurrent = currentBlock?.id === block.id;
                 const isNext = !currentBlock && nextBlock?.id === block.id;

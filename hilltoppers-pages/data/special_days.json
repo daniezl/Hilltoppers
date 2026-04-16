@@ -267,14 +267,28 @@
     "details": "Fashion Show",
     "schedule": [
       {
-        "name": "9/10 Fashion Show, 11/12 Advisor Meetings",
+        "name": "Fashion Show",
         "start": "8:00",
-        "end": "8:30"
+        "end": "8:30",
+        "grades": [9, 10]
       },
       {
-        "name": "11/12 Fashion Show, 9/10 Advisor Meetings",
+        "name": "Advisor Meetings",
+        "start": "8:00",
+        "end": "8:30",
+        "grades": [11, 12]
+      },
+      {
+        "name": "Advisor Meetings",
         "start": "8:40",
-        "end": "9:10"
+        "end": "9:10",
+        "grades": [9, 10]
+      },
+      {
+        "name": "Fashion Show",
+        "start": "8:40",
+        "end": "9:10",
+        "grades": [11, 12]
       },
       {
         "name": "A Block",

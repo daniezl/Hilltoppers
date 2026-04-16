@@ -13,6 +13,10 @@ import {
   saveSchedulePreferences,
   type SchedulePreferences
 } from '../storage/schedulePreferences';
+import {
+  ALL_GRADES, GRADE_LABELS, type GradeLevel,
+  gradeFromGraduationYear, graduationYearFromGrade
+} from '../types/schedule';
 import { onAuthState, reloadCurrentUser, signOut as signOutUser } from '../firebase/auth';
 import type { AuthUser } from '../firebase/auth';
 import { logClassSettingsReset, logPreferenceSaved, logScreenView } from '../firebase/analytics';
@@ -401,6 +405,20 @@ const ClassSettings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  const handleGradeLevelChange = (value: string) => {
+    const grade = value ? (Number(value) as GradeLevel) : undefined;
+    const gradYear = grade != null ? graduationYearFromGrade(grade) : undefined;
+    setSchedulePrefs((prev) => ({
+      ...prev,
+      graduationYear: gradYear
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const currentGrade = useMemo(() => {
+    if (schedulePrefs.graduationYear == null) return '';
+    return String(gradeFromGraduationYear(schedulePrefs.graduationYear));
+  }, [schedulePrefs.graduationYear]);
 
   const handleReset = () => {
     const confirmed = window.confirm(
@@ -533,6 +551,19 @@ const ClassSettings: React.FC = () => {
               >
                 <option value="12h">12-hour</option>
                 <option value="24h">24-hour</option>
+              </select>
+            </div>
+            <div className="class-settings__field">
+              <label htmlFor="grade-level">Grade level</label>
+              <select
+                id="grade-level"
+                value={currentGrade}
+                onChange={(e) => handleGradeLevelChange(e.target.value)}
+              >
+                <option value="">Not set</option>
+                {ALL_GRADES.map((g) => (
+                  <option key={g} value={g}>{GRADE_LABELS[g]} ({g}th)</option>
+                ))}
               </select>
             </div>
           </section>

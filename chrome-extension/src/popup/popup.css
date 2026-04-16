@@ -757,6 +757,144 @@ header {
   margin-left: 0;
 }
 
+/* Grade prompt overlay */
+
+.grade-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(247, 248, 251, 0.92);
+  backdrop-filter: blur(4px);
+}
+
+.grade-prompt-card {
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.1);
+  padding: 24px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grade-prompt-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #161b22;
+  text-align: center;
+}
+
+.grade-prompt-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grade-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(17, 17, 17, 0.14);
+  border-radius: 8px;
+  background: #fbfcff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.grade-option:hover {
+  border-color: rgba(26, 127, 55, 0.35);
+  background: rgba(26, 127, 55, 0.04);
+}
+
+.grade-option.selected {
+  border-color: #1a7f37;
+  background: rgba(26, 127, 55, 0.08);
+}
+
+.grade-option-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #161b22;
+}
+
+.grade-option-number {
+  font-size: 12px;
+  color: #7d8591;
+}
+
+.grade-prompt-continue {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #1a7f37;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.grade-prompt-continue:hover:not(:disabled) {
+  background: #176d2f;
+}
+
+.grade-prompt-continue:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.grade-prompt-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #7d8591;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Grade selector in schedule section */
+
+.grade-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #7d8591;
+}
+
+.grade-selector select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  border-radius: 4px;
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d8591'/%3E%3C/svg%3E") no-repeat right 6px center;
+  padding: 3px 20px 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #161b22;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.grade-selector select:hover {
+  border-color: rgba(17, 17, 17, 0.28);
+}
+
+.grade-selector select:focus {
+  outline: none;
+  border-color: rgba(26, 127, 55, 0.5);
+  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.12);
+}
+
 @media (max-width: 340px) {
   .dining-grid {
     grid-template-columns: 1fr;

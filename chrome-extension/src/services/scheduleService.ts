@@ -36,6 +36,7 @@ interface RawBlock {
   start: string;
   end: string;
   subBlocks?: RawSubBlock[];
+  grades?: number[];
 }
 
 type SpecialDayRecord = DocumentData & {
@@ -77,7 +78,8 @@ function mapBlocks(raw: RawBlock[]): Block[] {
       name: block.name,
       start: block.start,
       end: block.end,
-      subBlocks
+      subBlocks,
+      grades: block.grades
     };
   });
 }

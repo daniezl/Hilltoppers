@@ -1,5 +1,16 @@
 import { DateTime } from 'luxon';
 
+export type GradeLevel = 9 | 10 | 11 | 12;
+
+export const GRADE_LABELS: Record<GradeLevel, string> = {
+  9: 'Freshman',
+  10: 'Sophomore',
+  11: 'Junior',
+  12: 'Senior'
+};
+
+export const ALL_GRADES: GradeLevel[] = [9, 10, 11, 12];
+
 export interface SubBlock {
   id: string;
   name: string;
@@ -13,9 +24,24 @@ export interface Block {
   start: string;
   end: string;
   subBlocks?: SubBlock[];
+  grades?: number[];
 }
 
 export const EST_ZONE = 'America/New_York';
+
+export function getCurrentSchoolYear(): number {
+  const now = DateTime.now().setZone(EST_ZONE);
+  return now.month >= 7 ? now.year + 1 : now.year;
+}
+
+export function gradeFromGraduationYear(gradYear: number): GradeLevel {
+  const grade = 12 - (gradYear - getCurrentSchoolYear());
+  return Math.max(9, Math.min(12, grade)) as GradeLevel;
+}
+
+export function graduationYearFromGrade(grade: GradeLevel): number {
+  return getCurrentSchoolYear() + (12 - grade);
+}
 
 export function parseBlockTime(time: string, base: Date): Date {
   const [hour, minute] = time.split(':').map(Number);

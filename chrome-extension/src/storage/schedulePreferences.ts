@@ -8,6 +8,7 @@ export type TimeFormat = '12h' | '24h';
 export interface SchedulePreferences {
   lunchPeriod: number;
   timeFormat: TimeFormat;
+  graduationYear?: number;
 }
 
 export const DEFAULT_SCHEDULE_PREFERENCES: SchedulePreferences = {
