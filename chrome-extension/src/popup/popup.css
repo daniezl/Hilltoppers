@@ -629,6 +629,22 @@ header {
   color: #7d8591;
 }
 
+.popup.no-network {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 160px;
+  color: #7d8591;
+}
+
+.popup.no-network p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .schedule-toggle span:first-child {
   font-weight: 600;
 }

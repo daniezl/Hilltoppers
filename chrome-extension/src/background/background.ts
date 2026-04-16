@@ -262,79 +262,33 @@ async function updateActionIcon(): Promise<void> {
   }
 }
 
-async function refreshSchedule(forceRefresh = false): Promise<void> {
+async function refreshSchedule(): Promise<void> {
   if (refreshInFlight) {
     await refreshInFlight;
     return;
   }
 
   refreshInFlight = (async () => {
-    const previousSchedule = [...cachedSchedule];
-    const previousDateKey = cachedDateKey;
-    const previousDayType = cachedDayType;
-    const previousDetails = cachedDetails;
-    const previousTimestamp = cachedTimestamp;
-    
     try {
       const today = DateTime.now().setZone(EST_ZONE).startOf('day').toJSDate();
       const todayKey = getTodayKey();
-      console.info('[background] Refreshing schedule for', todayKey, { forceRefresh });
-      const scheduleResult = await loadBlocksForDate(today, forceRefresh);
-      const { blocks, dayType, details, networkFailed } = scheduleResult;
-      
-      const hasValidBlocks = blocks.length > 0;
-      const hasValidDayType = dayType !== null;
-      const isValidData = hasValidBlocks || hasValidDayType;
-      const previousHadBlocks = previousDateKey === todayKey && previousSchedule.length > 0;
+      console.info('[background] Refreshing schedule for', todayKey);
+      const { blocks, dayType, details, networkFailed } = await loadBlocksForDate(today);
 
-      // When network failed and the new result has no blocks but the
-      // previous cache for today DID have blocks, keep the old cache.
-      // This prevents a stale "No School" from overwriting a good schedule.
-      if (networkFailed && !hasValidBlocks && previousHadBlocks) {
-        console.warn('[background] Network failed and refresh lost blocks, keeping previous cache', {
-          previousBlockCount: previousSchedule.length,
-          previousDayType,
-          newDayType: dayType
-        });
-        cachedSchedule = previousSchedule;
-        cachedDateKey = previousDateKey;
-        cachedDayType = previousDayType;
-        cachedDetails = previousDetails;
-        cachedNetworkFailed = true;
-      } else if (isValidData) {
-        cachedSchedule = blocks;
-        cachedDateKey = todayKey;
-        cachedDayType = dayType ?? null;
-        cachedDetails = details ?? null;
-        cachedNetworkFailed = networkFailed ?? false;
-        cachedTimestamp = Date.now();
-        console.info('[background] Refresh complete', {
-          dateKey: cachedDateKey,
-          blockCount: cachedSchedule.length,
-          dayType: cachedDayType,
-          details: cachedDetails,
-          networkFailed: cachedNetworkFailed,
-          cachedAt: new Date(cachedTimestamp).toISOString()
-        });
-      } else {
-        if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
-          console.warn('[background] Refresh returned invalid data, keeping previous cache for today');
-          cachedSchedule = previousSchedule;
-          cachedDateKey = previousDateKey;
-          cachedDayType = previousDayType;
-          cachedDetails = previousDetails;
-          cachedNetworkFailed = networkFailed ?? false;
-        } else {
-          cachedSchedule = blocks;
-          cachedDateKey = todayKey;
-          cachedDayType = dayType ?? null;
-          cachedDetails = details ?? null;
-          cachedNetworkFailed = networkFailed ?? false;
-          cachedTimestamp = Date.now();
-          console.warn('[background] Refresh returned invalid data, no previous cache available');
-        }
-      }
-      
+      cachedSchedule = blocks;
+      cachedDateKey = todayKey;
+      cachedDayType = dayType ?? null;
+      cachedDetails = details ?? null;
+      cachedNetworkFailed = networkFailed ?? false;
+      cachedTimestamp = Date.now();
+
+      console.info('[background] Refresh complete', {
+        dateKey: cachedDateKey,
+        blockCount: cachedSchedule.length,
+        dayType: cachedDayType,
+        networkFailed: cachedNetworkFailed
+      });
+
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage(
           {
@@ -348,34 +302,15 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
             }
           },
           () => {
-            const error = chrome.runtime.lastError;
-            if (error) {
-              console.debug('[background] scheduleUpdated sendMessage lastError', error.message);
-            }
+            const err = chrome.runtime.lastError;
+            if (err) console.debug('[background] scheduleUpdated sendMessage lastError', err.message);
           }
         );
       }
     } catch (error) {
       console.error('[background] Failed to refresh schedule', error);
-      const todayKey = getTodayKey();
       cachedNetworkFailed = true;
-      if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
-        const cacheAge = previousTimestamp ? Date.now() - previousTimestamp : null;
-        const cacheAgeMinutes = cacheAge ? Math.round(cacheAge / 60000) : null;
-        console.info('[background] Restoring previous cache due to refresh error', {
-          previousBlockCount: previousSchedule.length,
-          previousDayType: previousDayType,
-          cacheTimestamp: previousTimestamp ? new Date(previousTimestamp).toISOString() : null,
-          cacheAgeMinutes: cacheAgeMinutes
-        });
-        cachedSchedule = previousSchedule;
-        cachedDateKey = previousDateKey;
-        cachedDayType = previousDayType;
-        cachedDetails = previousDetails;
-      } else {
-        cachedDateKey = todayKey;
-        console.warn('[background] Refresh failed and no valid previous cache for today');
-      }
+      cachedDateKey = getTodayKey();
     } finally {
       await updateActionIcon();
       refreshInFlight = null;
@@ -516,20 +451,22 @@ function ensureIconAlarm(): void {
 chrome.runtime.onInstalled.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
-  await refreshSchedule(true); // 强制刷新，优先从网络加载
+  // Clean up any stale persisted schedule cache from older versions.
+  chrome.storage.local.remove('bg_schedule_cache').catch(() => {});
+  await refreshSchedule();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   ensureRefreshAlarm();
   ensureIconAlarm();
-  await refreshSchedule(true); // 强制刷新，优先从网络加载
+  await refreshSchedule();
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === REFRESH_ALARM) {
     if (isWithinSchoolHours()) {
       // Within school hours, refresh and ensure periodic alarm continues
-      await refreshSchedule(true); // 强制刷新，优先从网络加载
+      await refreshSchedule();
       ensureRefreshAlarm(); // Re-ensure alarm is periodic
     } else {
       // Outside school hours, don't refresh but schedule for next school hours
@@ -577,13 +514,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === 'preferencesUpdated') {
-    refreshSchedule(true).finally(() => sendResponse({ ok: true })); // 强制刷新，优先从网络加载
+    refreshSchedule().finally(() => sendResponse({ ok: true }));
     return true;
   }
   if (message?.type === 'requestScheduleRefresh') {
     // Always allow manual refresh from popup, regardless of time
     // Popup 打开时强制刷新，优先从网络加载，失败时使用缓存
-    refreshSchedule(true)
+    refreshSchedule()
       .then(() => sendResponse({ ok: true }))
       .catch((error) => {
         console.error('[background] Forced refresh failed', error);
@@ -631,7 +568,7 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
 }
 
 // Initial kick-off when the service worker spins up.
-refreshSchedule(true).catch((error) => { // 强制刷新，优先从网络加载
+refreshSchedule().catch((error) => {
   console.error('[background] Initial refresh failed', error);
 });
 ensureRefreshAlarm();

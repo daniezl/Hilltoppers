@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon';
 import { EST_ZONE } from '../types/schedule';
 import { predictDayType } from './dayTypePredictor';
-import { getCachedDayType, setCachedDayType } from '../storage/localCache';
 
 const BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const MONTH_NAMES = [
@@ -130,44 +129,17 @@ function parseBulletin(html: string): BulletinResult {
 
 export async function resolveBulletinDayType(targetDate: Date): Promise<string | null> {
   const target = DateTime.fromJSDate(targetDate, { zone: EST_ZONE }).startOf('day');
-  const dateKey = target.toFormat('yyyy-LL-dd');
-  
-  // Try cache first
-  const cached = await getCachedDayType(dateKey);
-  if (cached) {
-    return cached;
-  }
-  
   try {
     const html = await fetchBulletinHtml();
     const { label, bulletinDate } = parseBulletin(html);
-    if (!label) {
-      return null;
-    }
-
-    if (!bulletinDate) {
-      // Cache the label
-      await setCachedDayType(dateKey, label);
-      return label;
-    }
-
+    if (!label) return null;
+    if (!bulletinDate) return label;
     const bulletin = DateTime.fromJSDate(bulletinDate, { zone: EST_ZONE }).startOf('day');
-
-    if (bulletin.hasSame(target, 'day')) {
-      // Cache the label
-      await setCachedDayType(dateKey, label);
-      return label;
-    }
-
+    if (bulletin.hasSame(target, 'day')) return label;
     try {
-      const predicted = await predictDayType(label, bulletinDate, targetDate);
-      // Cache the predicted result
-      await setCachedDayType(dateKey, predicted);
-      return predicted;
+      return await predictDayType(label, bulletinDate, targetDate);
     } catch (error) {
       console.warn('[dayTypeResolver] Prediction fallback failed', error);
-      // Cache the fallback label
-      await setCachedDayType(dateKey, label);
       return label;
     }
   } catch (error) {

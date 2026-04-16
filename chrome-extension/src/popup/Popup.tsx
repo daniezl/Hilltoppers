@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { WifiSlash } from '@phosphor-icons/react';
 import { DateTime } from 'luxon';
 import {
   Block, EST_ZONE, parseBlockTime, toDisplayTime,
@@ -26,6 +27,7 @@ interface SchedulePayload {
   blocks: Block[];
   dayType: string | null;
   details?: string | null;
+  networkFailed?: boolean;
 }
 
 interface DiningMenuPayload {
@@ -239,7 +241,8 @@ const Popup: React.FC = () => {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
           dayType: payload?.dayType ?? null,
-          details: payload?.details ?? null
+          details: payload?.details ?? null,
+          networkFailed: payload?.networkFailed ?? false
         };
         setSchedule(next);
         const hasContent = Boolean(next.dateKey) || (Array.isArray(next.blocks) && next.blocks.length > 0) || Boolean(next.dayType);
@@ -267,7 +270,8 @@ const Popup: React.FC = () => {
           dateKey: payload?.dateKey ?? '',
           blocks: payload?.blocks ?? [],
           dayType: payload?.dayType ?? null,
-          details: payload?.details ?? null
+          details: payload?.details ?? null,
+          networkFailed: payload?.networkFailed ?? false
         };
         setSchedule(next);
         refreshRequestedRef.current = false;
@@ -628,8 +632,10 @@ const Popup: React.FC = () => {
     }
   }, [autoDiningPeriod, selectedDiningPeriod]);
   
-  const isNoSchool = filteredBlocks.length === 0 && 
+  const isNoSchool = filteredBlocks.length === 0 &&
     (dayTypeLabel?.toLowerCase().includes('no school') ?? false);
+
+  const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
   const handleOpenClassSettings = () => {
     const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
@@ -684,6 +690,15 @@ const Popup: React.FC = () => {
     return (
       <main className="popup">
         <div className="loading-state">Loading…</div>
+      </main>
+    );
+  }
+
+  if (isNetworkFailed) {
+    return (
+      <main className="popup no-network">
+        <WifiSlash size={44} weight="regular" />
+        <p>No internet connection</p>
       </main>
     );
   }
@@ -820,7 +835,12 @@ const Popup: React.FC = () => {
           </div>
         ) : (
           <div className="status-ended">
-            {isNoSchool ? (
+            {isNetworkFailed ? (
+              <>
+                <h2>No internet connection</h2>
+                <p>Please check your internet.</p>
+              </>
+            ) : isNoSchool ? (
               <>
                 <h2>{schedule.details ?? 'No school today'}</h2>
                 <p>Have a good day!</p>
@@ -848,7 +868,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      {!isNoSchool && (
+      {!isNoSchool && !isNetworkFailed && (
         <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
             type="button"
