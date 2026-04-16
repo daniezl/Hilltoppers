@@ -9,6 +9,13 @@ export const GRADE_LABELS: Record<GradeLevel, string> = {
   12: 'Senior'
 };
 
+export const GRADE_LABELS_PLURAL: Record<GradeLevel, string> = {
+  9: 'Freshmen',
+  10: 'Sophomores',
+  11: 'Juniors',
+  12: 'Seniors'
+};
+
 export const ALL_GRADES: GradeLevel[] = [9, 10, 11, 12];
 
 export interface SubBlock {

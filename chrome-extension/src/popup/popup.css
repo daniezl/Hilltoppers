@@ -757,107 +757,90 @@ header {
   margin-left: 0;
 }
 
-/* Grade prompt overlay */
+/* Grade prompt (full-page replacement, like loading state) */
 
-.grade-prompt-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(247, 248, 251, 0.92);
-  backdrop-filter: blur(4px);
-}
-
-.grade-prompt-card {
-  background: #ffffff;
-  border: 1px solid rgba(17, 17, 17, 0.14);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.1);
-  padding: 24px;
-  width: 280px;
+.grade-prompt {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
-.grade-prompt-title {
+.grade-prompt-label {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: #161b22;
-  text-align: center;
 }
 
-.grade-prompt-options {
-  display: flex;
-  flex-direction: column;
+.grade-prompt-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
 
-.grade-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.grade-prompt-row {
+  display: block;
   width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid rgba(17, 17, 17, 0.14);
-  border-radius: 8px;
-  background: #fbfcff;
+  padding: 8px 0;
+  border: none;
+  border-radius: 999px;
+  background: #ebeef2;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5560;
+  text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.grade-option:hover {
-  border-color: rgba(26, 127, 55, 0.35);
-  background: rgba(26, 127, 55, 0.04);
-}
-
-.grade-option.selected {
-  border-color: #1a7f37;
-  background: rgba(26, 127, 55, 0.08);
-}
-
-.grade-option-label {
-  font-size: 14px;
-  font-weight: 600;
+.grade-prompt-row:hover {
+  background: #dfe3e8;
   color: #161b22;
 }
 
-.grade-option-number {
-  font-size: 12px;
-  color: #7d8591;
-}
-
-.grade-prompt-continue {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #1a7f37;
-  color: #ffffff;
-  font-size: 14px;
+.grade-prompt-row.selected {
+  background: #abe0bc;
+  color: #14532d;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease;
-}
-
-.grade-prompt-continue:hover:not(:disabled) {
-  background: #176d2f;
-}
-
-.grade-prompt-continue:disabled {
-  opacity: 0.45;
-  cursor: default;
 }
 
 .grade-prompt-hint {
   margin: 0;
-  font-size: 12px;
-  color: #7d8591;
-  text-align: center;
-  line-height: 1.4;
+  font-size: 11px;
+  color: #a0a7b0;
+}
+
+.grade-prompt-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  border: none;
+  border-radius: 999px;
+  background: #abe0bc;
+  color: #14532d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease;
+}
+
+.grade-prompt-continue.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.grade-prompt-continue:hover {
+  background: #8fd4a6;
 }
 
 /* Grade selector in schedule section */
@@ -865,6 +848,7 @@ header {
 .grade-selector {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
   padding: 6px 10px;
   font-size: 12px;

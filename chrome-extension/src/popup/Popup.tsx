@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
 import {
   Block, EST_ZONE, parseBlockTime, toDisplayTime,
-  GradeLevel, GRADE_LABELS, ALL_GRADES,
+  GradeLevel, GRADE_LABELS, GRADE_LABELS_PLURAL, ALL_GRADES,
   gradeFromGraduationYear, graduationYearFromGrade
 } from '../types/schedule';
 import {
@@ -688,37 +688,41 @@ const Popup: React.FC = () => {
     );
   }
 
+  if (showGradePrompt) {
+    return (
+      <main className="popup grade-prompt">
+        <p className="grade-prompt-label">Which grade are you in?</p>
+        <ul className="grade-prompt-list">
+          {ALL_GRADES.map((g) => (
+            <li key={g}>
+              <button
+                type="button"
+                className={`grade-prompt-row${pendingGradeSelection === g ? ' selected' : ''}`}
+                onClick={() => setPendingGradeSelection((prev) => prev === g ? null : g)}
+              >
+                {GRADE_LABELS[g]}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="grade-prompt-hint">You can change this anytime in Settings.</p>
+        <button
+          type="button"
+          className={`grade-prompt-continue${pendingGradeSelection != null ? ' visible' : ''}`}
+          disabled={pendingGradeSelection == null}
+          onClick={handleGradePromptConfirm}
+        >
+          Continue
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </main>
+    );
+  }
+
   return (
     <main className="popup">
-      {showGradePrompt && (
-        <div className="grade-prompt-overlay">
-          <div className="grade-prompt-card">
-            <h2 className="grade-prompt-title">What grade are you in?</h2>
-            <div className="grade-prompt-options">
-              {ALL_GRADES.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  className={`grade-option${pendingGradeSelection === g ? ' selected' : ''}`}
-                  onClick={() => setPendingGradeSelection(g)}
-                >
-                  <span className="grade-option-label">{GRADE_LABELS[g]}</span>
-                  <span className="grade-option-number">{g}th grade</span>
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="grade-prompt-continue"
-              disabled={pendingGradeSelection == null}
-              onClick={handleGradePromptConfirm}
-            >
-              Continue
-            </button>
-            <p className="grade-prompt-hint">You can change this later in Settings (top left).</p>
-          </div>
-        </div>
-      )}
       <header>
         <div className="header-row">
           <div className="header-left">
@@ -878,7 +882,7 @@ const Popup: React.FC = () => {
                   aria-label="Select grade to view schedule"
                 >
                   {ALL_GRADES.map((g) => (
-                    <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+                    <option key={g} value={g}>{GRADE_LABELS_PLURAL[g]}</option>
                   ))}
                 </select>
               </div>
