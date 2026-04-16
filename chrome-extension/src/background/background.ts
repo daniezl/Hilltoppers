@@ -282,11 +282,8 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
       const scheduleResult = await loadBlocksForDate(today, forceRefresh);
       const { blocks, dayType, details } = scheduleResult;
       
-      // Only update cache if we got valid data
-      // Valid data means: we have blocks, or a meaningful dayType (not just "Unknown" or null)
-      // If we have blocks, it's always valid even if dayType is "Unknown"
       const hasValidBlocks = blocks.length > 0;
-      const hasValidDayType = dayType !== null && dayType !== 'Unknown';
+      const hasValidDayType = dayType !== null;
       const isValidData = hasValidBlocks || hasValidDayType;
       
       if (isValidData) {

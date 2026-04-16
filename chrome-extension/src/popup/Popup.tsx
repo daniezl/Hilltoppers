@@ -613,8 +613,6 @@ const Popup: React.FC = () => {
     return 'neutral';
   }, [dayTypeLabel]);
 
-  const isDayTypeBulletinLink = dayTypeClass === 'green' || dayTypeClass === 'white';
-
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;
   }
@@ -671,40 +669,34 @@ const Popup: React.FC = () => {
             </div>
           </div>
           <div className="header-right">
-            {dayTypeLabel ? (
-              isDayTypeBulletinLink ? (
-                <div className="day-type-pill-wrapper">
-                  <a
-                    className={`day-type-pill ${dayTypeClass} day-type-pill-link`}
-                    href={DAILY_BULLETIN_URL}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label="Open Daily Bulletin"
-                  >
-                    {dayTypeLabel}
-                  </a>
-                  <span className="hover-float-label daytype-float-label">
-                    <svg
-                      className="daytype-float-icon"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <span>Daily Bulletin</span>
-                  </span>
-                </div>
-              ) : (
-                <span className={`day-type-pill ${dayTypeClass}`}>{dayTypeLabel}</span>
-              )
-            ) : null}
+            <div className="day-type-pill-wrapper">
+              <a
+                className={`day-type-pill ${dayTypeClass} day-type-pill-link`}
+                href={DAILY_BULLETIN_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="Open Daily Bulletin"
+              >
+                {dayTypeLabel ?? 'Unknown'}
+              </a>
+              <span className="hover-float-label daytype-float-label">
+                <svg
+                  className="daytype-float-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Daily Bulletin</span>
+              </span>
+            </div>
           </div>
         </div>
       </header>

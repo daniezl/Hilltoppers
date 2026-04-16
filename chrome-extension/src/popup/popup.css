@@ -66,6 +66,17 @@ header {
   color: #2f3842;
 }
 
+.day-type-pill-link.no-school:hover {
+  background: rgba(188, 76, 44, 0.18);
+  border-color: rgba(188, 76, 44, 0.38);
+}
+
+.day-type-pill-link.neutral:hover {
+  background: rgba(17, 17, 17, 0.06);
+  border-color: rgba(17, 17, 17, 0.24);
+  color: #2f3842;
+}
+
 .day-type-pill.green {
   background: rgba(26, 127, 55, 0.12);
   color: currentColor;

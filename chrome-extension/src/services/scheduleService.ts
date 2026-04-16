@@ -41,6 +41,7 @@ interface RawBlock {
 type SpecialDayRecord = DocumentData & {
   type?: string;
   details?: string;
+  color?: string;
   schedule?: RawBlock[];
 };
 
@@ -401,13 +402,12 @@ function decodeScheduleFromData(data: SpecialDayRecord | null): Block[] | null {
   return mapBlocks(data.schedule);
 }
 
-function deriveDayTypeLabel(rawType?: string | null, details?: string | null): string | null {
+function deriveDayTypeLabel(rawType?: string | null, color?: string | null): string | null {
   const normalize = (value?: string | null): string | null => {
     if (!value) {
       return null;
     }
-    const trimmed = value.trim();
-    const lower = trimmed.toLowerCase();
+    const lower = value.trim().toLowerCase();
     if (lower.includes('green')) {
       return 'Green Day';
     }
@@ -420,7 +420,7 @@ function deriveDayTypeLabel(rawType?: string | null, details?: string | null): s
     return null;
   };
 
-  return normalize(rawType) ?? normalize(details) ?? (details ? details.trim() : null) ?? null;
+  return normalize(color);
 }
 
 async function loadJsonSchedule(key: string): Promise<Block[] | null> {
@@ -653,15 +653,17 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
   const specialDayData = await fetchSpecialDayData(date);
   const rawType = specialDayData?.type ?? null;
   const details = specialDayData?.details ?? null;
+  const color = specialDayData?.color ?? null;
   if (specialDayData) {
     console.info('[scheduleService] Special day record found', {
       type: rawType,
-      details
+      details,
+      color
     });
   } else {
     console.info('[scheduleService] No special day record for', requestKey);
   }
-  let dayTypeLabel = deriveDayTypeLabel(rawType, details);
+  let dayTypeLabel = deriveDayTypeLabel(rawType, color);
 
   if (rawType === 'no_school') {
     console.info('[scheduleService] Raw type no_school, returning empty schedule');
@@ -708,7 +710,7 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
       return { blocks: [], dayType: 'No School', details: 'Weekend' };
     }
     console.info('[scheduleService] No fallback key (likely weekend)', { dayTypeLabel });
-    return { blocks: [], dayType: dayTypeLabel ?? 'Unknown' };
+    return { blocks: [], dayType: dayTypeLabel ?? null };
   }
 
   const fallbackSchedule = await loadJsonSchedule(fallbackKey);
@@ -721,5 +723,5 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
       dayTypeLabel
     });
   }
-  return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel ?? 'Unknown' };
+  return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel };
 }

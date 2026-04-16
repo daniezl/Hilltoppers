@@ -41,7 +41,7 @@ function normalizeLabel(text: string | null | undefined): string | null {
   if (lower.includes('no school')) {
     return 'No School';
   }
-  return trimmed.length ? trimmed : null;
+  return null;
 }
 
 async function fetchBulletinHtml(): Promise<string> {
