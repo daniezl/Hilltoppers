@@ -19,3 +19,7 @@
 - Do not create deployment folders unless explicitly requested
 - Keep the repository structure clean and organized
 
+## Chrome extension (`chrome-extension/`)
+
+- After changing extension source (TypeScript, CSS, manifest, etc.), run `npm run build` in `chrome-extension/` so `dist/` is updated and the change can be verified. Use `npm run dev` for watch mode during active development instead of repeated manual builds.
+

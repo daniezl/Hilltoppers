@@ -2,6 +2,10 @@
 
 This package contains the Chrome extension implementation for SchoolApp. It mirrors the scheduling logic from the iOS project while focusing on displaying the current schedule and user preferences inside the browser.
 
+## Build after changes
+
+After you edit extension code, run **`npm run build`** in this directory (`chrome-extension/`) so `dist/` is up to date before you reload the extension in Chrome. During development, **`npm run dev`** rebuilds on save so you do not need to run `build` manually each time.
+
 ## Getting Started
 
 1. Install dependencies:
