@@ -50,6 +50,7 @@ export interface ScheduleResult {
   blocks: Block[];
   dayType: string | null;
   details?: string | null;
+  networkFailed?: boolean;
 }
 
 function makeId(prefix: string, name: string, index: number): string {
@@ -646,10 +647,26 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
   const requestKey = DateTime.fromJSDate(date, { zone: EST_ZONE }).toFormat('yyyy-LL-dd');
   console.info('[scheduleService] loadBlocksForDate start', requestKey, { forceRefresh });
 
-  if (await isInSpecialPeriod(date, forceRefresh)) {
+  // Pre-fetch Cloudflare data to determine if network is available.
+  // Both fetches are attempted; if BOTH return null the device is likely offline.
+  const cloudflarePeriodsPromise = loadSpecialPeriodsFromCloudflare(forceRefresh);
+  const cloudflareDaysPromise = loadSpecialDaysFromCloudflare(forceRefresh);
+  const [cloudflarePeriods, cloudflareDays] = await Promise.all([cloudflarePeriodsPromise, cloudflareDaysPromise]);
+
+  const networkFailed = cloudflarePeriods === null && cloudflareDays === null;
+  if (networkFailed) {
+    console.warn('[scheduleService] All Cloudflare fetches failed, likely offline');
+  }
+
+  // Update periods cache if we got fresh data
+  if (cloudflarePeriods !== null) {
+    await setCachedSpecialPeriods(cloudflarePeriods);
+  }
+
+  if (await isInSpecialPeriod(date, false)) {
     console.info('[scheduleService] Date falls within special period, returning No School');
-    const periodDetails = await getSpecialPeriodDetails(date, forceRefresh);
-    return { blocks: [], dayType: 'No School', details: periodDetails };
+    const periodDetails = await getSpecialPeriodDetails(date, false);
+    return { blocks: [], dayType: 'No School', details: periodDetails, networkFailed };
   }
 
   const specialDayData = await fetchSpecialDayData(date);
@@ -669,7 +686,7 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
 
   if (rawType === 'no_school') {
     console.info('[scheduleService] Raw type no_school, returning empty schedule');
-    return { blocks: [], dayType: dayTypeLabel ?? 'No School', details: details ?? null };
+    return { blocks: [], dayType: dayTypeLabel ?? 'No School', details: details ?? null, networkFailed };
   }
 
   if (rawType === 'custom') {
@@ -681,7 +698,7 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
       dayTypeLabel,
       blocks: custom.length
     });
-    return { blocks: custom, dayType: dayTypeLabel };
+    return { blocks: custom, dayType: dayTypeLabel, networkFailed };
   }
 
   if (typeof rawType === 'string' && rawType) {
@@ -695,7 +712,7 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
         dayTypeLabel,
         blocks: typedSchedule.length
       });
-      return { blocks: typedSchedule, dayType: dayTypeLabel };
+      return { blocks: typedSchedule, dayType: dayTypeLabel, networkFailed };
     }
     console.warn('[scheduleService] Failed to load typed schedule asset', rawType);
   }
@@ -706,13 +723,12 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
 
   const fallbackKey = getDefaultScheduleForWeekday(date);
   if (!fallbackKey) {
-    // If it's weekend and not a special day, return No School with weekend details
     if (!rawType) {
       console.info('[scheduleService] Weekend (not special day), returning No School');
-      return { blocks: [], dayType: 'No School', details: 'Weekend' };
+      return { blocks: [], dayType: 'No School', details: 'Weekend', networkFailed };
     }
     console.info('[scheduleService] No fallback key (likely weekend)', { dayTypeLabel });
-    return { blocks: [], dayType: dayTypeLabel ?? null };
+    return { blocks: [], dayType: dayTypeLabel ?? null, networkFailed };
   }
 
   const fallbackSchedule = await loadJsonSchedule(fallbackKey);
@@ -725,5 +741,5 @@ export async function loadBlocksForDate(date: Date, forceRefresh = false): Promi
       dayTypeLabel
     });
   }
-  return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel };
+  return { blocks: fallbackSchedule ?? [], dayType: dayTypeLabel, networkFailed };
 }

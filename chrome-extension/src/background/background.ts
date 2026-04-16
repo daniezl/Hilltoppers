@@ -23,8 +23,9 @@ let cachedSchedule: Block[] = [];
 let cachedDateKey = '';
 let cachedDayType: string | null = null;
 let cachedDetails: string | null = null;
+let cachedNetworkFailed = false;
 let cachedTimeFormat: TimeFormat = '12h';
-let cachedTimestamp: number | null = null; // Timestamp when cache was last updated
+let cachedTimestamp: number | null = null;
 let refreshInFlight: Promise<void> | null = null;
 const diningMenuCache: Partial<Record<DiningPeriod, DiningMenuResult>> = {};
 const diningRefreshTimestamps: Partial<Record<DiningPeriod, number>> = {};
@@ -268,7 +269,6 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
   }
 
   refreshInFlight = (async () => {
-    // Save current cache as fallback
     const previousSchedule = [...cachedSchedule];
     const previousDateKey = cachedDateKey;
     const previousDayType = cachedDayType;
@@ -280,56 +280,58 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
       const todayKey = getTodayKey();
       console.info('[background] Refreshing schedule for', todayKey, { forceRefresh });
       const scheduleResult = await loadBlocksForDate(today, forceRefresh);
-      const { blocks, dayType, details } = scheduleResult;
+      const { blocks, dayType, details, networkFailed } = scheduleResult;
       
       const hasValidBlocks = blocks.length > 0;
       const hasValidDayType = dayType !== null;
       const isValidData = hasValidBlocks || hasValidDayType;
-      
-      if (isValidData) {
+      const previousHadBlocks = previousDateKey === todayKey && previousSchedule.length > 0;
+
+      // When network failed and the new result has no blocks but the
+      // previous cache for today DID have blocks, keep the old cache.
+      // This prevents a stale "No School" from overwriting a good schedule.
+      if (networkFailed && !hasValidBlocks && previousHadBlocks) {
+        console.warn('[background] Network failed and refresh lost blocks, keeping previous cache', {
+          previousBlockCount: previousSchedule.length,
+          previousDayType,
+          newDayType: dayType
+        });
+        cachedSchedule = previousSchedule;
+        cachedDateKey = previousDateKey;
+        cachedDayType = previousDayType;
+        cachedDetails = previousDetails;
+        cachedNetworkFailed = true;
+      } else if (isValidData) {
         cachedSchedule = blocks;
         cachedDateKey = todayKey;
         cachedDayType = dayType ?? null;
         cachedDetails = details ?? null;
+        cachedNetworkFailed = networkFailed ?? false;
         cachedTimestamp = Date.now();
         console.info('[background] Refresh complete', {
           dateKey: cachedDateKey,
           blockCount: cachedSchedule.length,
           dayType: cachedDayType,
           details: cachedDetails,
+          networkFailed: cachedNetworkFailed,
           cachedAt: new Date(cachedTimestamp).toISOString()
         });
       } else {
-        // If we got invalid/empty data but have previous cache for today, keep previous cache
         if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
-          const cacheAge = previousTimestamp ? Date.now() - previousTimestamp : null;
-          const cacheAgeMinutes = cacheAge ? Math.round(cacheAge / 60000) : null;
-          console.warn('[background] Refresh returned invalid data, keeping previous cache for today', {
-            previousBlockCount: previousSchedule.length,
-            previousDayType: previousDayType,
-            cacheTimestamp: previousTimestamp ? new Date(previousTimestamp).toISOString() : null,
-            cacheAgeMinutes: cacheAgeMinutes
-          });
-          // Restore previous cache
+          console.warn('[background] Refresh returned invalid data, keeping previous cache for today');
           cachedSchedule = previousSchedule;
           cachedDateKey = previousDateKey;
           cachedDayType = previousDayType;
           cachedDetails = previousDetails;
-          // Keep previous timestamp since we're using the same cache
+          cachedNetworkFailed = networkFailed ?? false;
         } else {
-          // No valid data and no previous cache for today, use the new data anyway
           cachedSchedule = blocks;
           cachedDateKey = todayKey;
           cachedDayType = dayType ?? null;
           cachedDetails = details ?? null;
+          cachedNetworkFailed = networkFailed ?? false;
           cachedTimestamp = Date.now();
-          console.warn('[background] Refresh returned invalid data, but no previous cache available', {
-            dateKey: cachedDateKey,
-            blockCount: cachedSchedule.length,
-            dayType: cachedDayType,
-            details: cachedDetails,
-            cachedAt: new Date(cachedTimestamp).toISOString()
-          });
+          console.warn('[background] Refresh returned invalid data, no previous cache available');
         }
       }
       
@@ -341,7 +343,8 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
               dateKey: cachedDateKey,
               blocks: cachedSchedule,
               dayType: cachedDayType,
-              details: cachedDetails
+              details: cachedDetails,
+              networkFailed: cachedNetworkFailed
             }
           },
           () => {
@@ -354,8 +357,8 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
       }
     } catch (error) {
       console.error('[background] Failed to refresh schedule', error);
-      // On error, restore previous cache if it's for today
       const todayKey = getTodayKey();
+      cachedNetworkFailed = true;
       if (previousDateKey === todayKey && (previousSchedule.length > 0 || previousDayType)) {
         const cacheAge = previousTimestamp ? Date.now() - previousTimestamp : null;
         const cacheAgeMinutes = cacheAge ? Math.round(cacheAge / 60000) : null;
@@ -369,9 +372,7 @@ async function refreshSchedule(forceRefresh = false): Promise<void> {
         cachedDateKey = previousDateKey;
         cachedDayType = previousDayType;
         cachedDetails = previousDetails;
-        // Keep previous timestamp since we're using the same cache
       } else {
-        // If previous cache is not for today, we still need to update dateKey
         cachedDateKey = todayKey;
         console.warn('[background] Refresh failed and no valid previous cache for today');
       }
@@ -570,7 +571,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       dateKey: cachedDateKey,
       blocks: cachedSchedule,
       dayType: cachedDayType,
-      details: cachedDetails
+      details: cachedDetails,
+      networkFailed: cachedNetworkFailed
     });
     return true;
   }
