@@ -1,47 +1,38 @@
 {
-  "updatedAt": "2026-04-18T03:37:52.202Z",
+  "updatedAt": "2026-04-18T05:44:12.873Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-04-17",
+  "menuDate": "2026-04-18",
   "menus": {
     "breakfast": {
+      "classicKitchen": [],
+      "globalFare": []
+    },
+    "lunch": {
       "classicKitchen": [
-        "Egg Bacon & Cheese Bagel Sandwich",
-        "Egg and Cheese Bagel",
-        "Egg Sausage and Cheese Bagel"
+        "Bacon Grilled Cheese Sandwich - American",
+        "Mixed Vegetables",
+        "Butternut Squash & Andouille Soup"
       ],
       "globalFare": [
         "Scrambled Eggs",
         "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link",
+        "Breakfast Quesadilla",
+        "Sausage Patty",
         "Hashbrown Patty"
-      ]
-    },
-    "lunch": {
-      "classicKitchen": [
-        "Meatball Sub",
-        "Green Beans & Peppers",
-        "Cheese Sticks"
-      ],
-      "globalFare": [
-        "BBQ Chicken Wings",
-        "Honey Garlic Chicken Wings",
-        "Brown Rice",
-        "BBQ Lime Cauliflower Bites"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Bacon Cheeseburger",
-        "Black Bean Patty",
-        "Mac & Cheese Bites",
-        "Peas & Carrots"
+        "Onion Crusted Chicken Aioli",
+        "Baked Italian Tofu",
+        "Fresh Garlic Mashed Potatoes",
+        "Carrot Baby Peeled Tri-Color"
       ],
       "globalFare": [
-        "Grilled Pesto-Marinated Chicken Breast",
-        "Garlic Breadstick",
-        "Cavatappi Pasta",
-        "Fresh Roasted Broccoli",
-        "Pesto Cream Sauce"
+        "Slow-Cooked Tomato & Herb White Beans",
+        "Poblano Stuffed Pork Loin",
+        "Confetti Rice",
+        "Green Beans With Tomatoes"
       ]
     }
   }
