@@ -1,55 +1,40 @@
 {
-  "updatedAt": "2026-04-16T18:12:12.813Z",
+  "updatedAt": "2026-04-19T20:02:05.746Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-04-16",
+  "menuDate": "2026-04-19",
   "menus": {
     "breakfast": {
+      "classicKitchen": [],
+      "globalFare": []
+    },
+    "lunch": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Battered Cod Sandwich",
+        "Sauteed Spinach",
+        "Potato & Pepperjack Chowder",
+        "Corn Chowder"
       ],
       "globalFare": [
         "Pork Bacon",
         "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
+        "Breakfast Quesadilla",
         "Home Fried Potatoes"
-      ]
-    },
-    "lunch": {
-      "classicKitchen": [
-        "Taco Meat",
-        "Potato Baked Bar",
-        "Vegetarian Picadillo",
-        "Mexican Potato Bar",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce"
-      ],
-      "globalFare": [
-        "Breaded Korean Chicken",
-        "Plant-Based Chik'n Tenders",
-        "Brown Rice",
-        "Stir Fry Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Beef Pot Roast",
-        "Confetti Lentils",
-        "Red Skin Mashed Potatoes",
-        "Sauteed Carrots & Parsnips",
-        "Greek Salad"
+        "Grilled Chicken Breast",
+        "Meatless Stuffed Bell Peppers",
+        "Roasted Fingerling Potatoes",
+        "Roasted Garlic Butter Mushrooms"
       ],
       "globalFare": [
-        "BBQ Pork Chop",
-        "Sweet Potato Fries",
-        "Buttered Corn",
-        "Baked Beans"
+        "Roasted Red Pepper Hummus",
+        "Beef Sri Lankan Curry",
+        "Naan Bread",
+        "Indian Baked Rice",
+        "Oven Roasted Cauliflower with Turmeric"
       ]
     }
   }
