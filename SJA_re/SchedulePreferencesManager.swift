@@ -19,6 +19,7 @@ enum TimeFormat: String, Codable {
 struct SchedulePreferences: Codable {
     var lunchPeriod: Int = 1
     var timeFormat: TimeFormat = .hour12
+    var graduationYear: Int? = nil
 }
 
 class SchedulePreferencesManager: ObservableObject {

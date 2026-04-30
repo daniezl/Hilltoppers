@@ -13,4 +13,5 @@ struct Block: Codable, Identifiable {
     let start: String
     let end: String
     let subBlocks: [SubBlock]?
+    let grades: [Int]?
 }

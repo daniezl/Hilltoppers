@@ -540,6 +540,8 @@ struct ScheduleView: View {
     @State private var balloonHasExited = false
     @State private var hasStartedTextAnimation = false
     @State private var shouldShowConfetti = false
+    @State private var viewingGrade: GradeLevel? = nil
+    @State private var showGradePrompt: Bool = false
 
     
 
@@ -549,9 +551,20 @@ struct ScheduleView: View {
         testDate ?? now
     }
     
-    // Always show all blocks, but modify display based on user settings
+    // True when any block in today's schedule is restricted to specific grades.
+    var hasGradeSpecificBlocks: Bool {
+        loader.blocks.contains { ($0.grades?.isEmpty == false) }
+    }
+
+    // Filter the day's blocks down to the grade currently being viewed (if any).
+    // When the schedule has no grade-specific blocks, or the user has not picked
+    // a grade yet, return everything unchanged.
     var displayBlocks: [Block] {
-        return loader.blocks
+        guard hasGradeSpecificBlocks, let g = viewingGrade else { return loader.blocks }
+        return loader.blocks.filter { block in
+            guard let grades = block.grades, !grades.isEmpty else { return true }
+            return grades.contains(g.rawValue)
+        }
     }
 
     var body: some View {
@@ -634,6 +647,25 @@ struct ScheduleView: View {
                                     .font(.headline)
                                     .fontWeight(.bold)
                                 Spacer()
+                                if hasGradeSpecificBlocks, let g = viewingGrade {
+                                    Menu {
+                                        ForEach(GradeLevel.allCases) { grade in
+                                            Button(grade.labelPlural) { viewingGrade = grade }
+                                        }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Text("")
+                                                .foregroundColor(.secondary)
+                                            Text(g.labelPlural)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.secondary)
+                                            Image(systemName: "chevron.down")
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .font(.caption)
+                                    }
+                                }
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 16)
@@ -642,7 +674,7 @@ struct ScheduleView: View {
                             Divider()
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8) // between title and blocks
-                            
+
                             ForEach(Array(displayBlocks.enumerated()), id: \.element.id) { index, block in
                                 VStack(spacing: 0) {
                                     // Time info above highlighted block (only if dropdown is closed)
@@ -791,6 +823,8 @@ struct ScheduleView: View {
         .onAppear {
             loader.showBlocks = false
             startTimeUpdateTimer()
+            syncViewingGradeFromPrefs()
+            evaluateGradePrompt()
             Task {
                 // Delay loading if splash screen is showing to let animation complete
                 if showSplashScreen {
@@ -818,6 +852,53 @@ struct ScheduleView: View {
         .onChange(of: currentDayTypeDate) { _ in
             updateCountdownWidget()
         }
+        .onChange(of: loader.blocks.count) { _ in
+            syncViewingGradeFromPrefs()
+            evaluateGradePrompt()
+        }
+        .onChange(of: schedulePrefsManager.preferences.graduationYear) { _ in
+            syncViewingGradeFromPrefs()
+            evaluateGradePrompt()
+        }
+        .sheet(isPresented: $showGradePrompt) {
+            GradePromptSheet { grade in
+                var prefs = schedulePrefsManager.preferences
+                prefs.graduationYear = graduationYear(from: grade)
+                schedulePrefsManager.preferences = prefs
+                Task { await schedulePrefsManager.savePreferences() }
+                viewingGrade = grade
+                showGradePrompt = false
+            }
+            .presentationDetents([.medium])
+            .interactiveDismissDisabled(true)
+        }
+    }
+
+    // MARK: - Grade prompt helpers
+
+    /// Reset `viewingGrade` to whatever the user has saved in preferences (if anything).
+    /// Called on first appear and when preferences change so the dropdown defaults to the user's grade.
+    private func syncViewingGradeFromPrefs() {
+        if let gradYear = schedulePrefsManager.preferences.graduationYear {
+            viewingGrade = gradFromGraduationYear(gradYear)
+        }
+    }
+
+    /// Show the first-launch grade picker when today's schedule has grade-specific blocks
+    /// and the user hasn't picked a grade yet.
+    private func evaluateGradePrompt() {
+        guard hasGradeSpecificBlocks else {
+            showGradePrompt = false
+            return
+        }
+        if schedulePrefsManager.preferences.graduationYear == nil && !loader.blocks.isEmpty {
+            showGradePrompt = true
+        }
+    }
+
+    /// Convenience wrapper around the free function to avoid name collision in the closure.
+    private func gradFromGraduationYear(_ y: Int) -> GradeLevel {
+        gradeFromGraduationYear(y)
     }
 
     // Helper functions
@@ -827,7 +908,7 @@ struct ScheduleView: View {
     }
 
     func currentBlockInfo() -> (Block, Int)? {
-        for block in loader.blocks {
+        for block in displayBlocks {
             guard let start = timeToday(block.start), let end = timeToday(block.end) else { continue }
             if currentTime >= start && currentTime < end {
                 let secondsLeft = Int(end.timeIntervalSince(currentTime))
@@ -839,9 +920,9 @@ struct ScheduleView: View {
 
     func nextBlockInfo() -> (Block, Int)? {
         // Find the next block that hasn't started yet, and only if not currently in a block
-        if loader.blocks.isEmpty { return nil }
-        if loader.blocks.contains(where: isCurrent) { return nil }
-        let futureBlocks = loader.blocks.compactMap { block -> (Block, Int)? in
+        if displayBlocks.isEmpty { return nil }
+        if displayBlocks.contains(where: isCurrent) { return nil }
+        let futureBlocks = displayBlocks.compactMap { block -> (Block, Int)? in
             guard let start = timeToday(block.start) else { return nil }
             let diff = Int(start.timeIntervalSince(currentTime))
             return diff > 0 ? (block, diff) : nil
@@ -889,21 +970,22 @@ struct ScheduleView: View {
     }
 
     func isNextBlock(index: Int) -> Bool {
-        guard !isCurrent(block: loader.blocks[index]) else { return false }
-        let block = loader.blocks[index]
+        guard index >= 0, index < displayBlocks.count else { return false }
+        guard !isCurrent(block: displayBlocks[index]) else { return false }
+        let block = displayBlocks[index]
         let start = timeToday(block.start) ?? Date.distantFuture
         if index == 0 {
             // Before the first block
             return currentTime < start
         } else {
-            let prevEnd = timeToday(loader.blocks[index - 1].end) ?? Date.distantPast
+            let prevEnd = timeToday(displayBlocks[index - 1].end) ?? Date.distantPast
             return currentTime >= prevEnd && currentTime < start
         }
     }
     
     func isNextUpcomingBlock(_ block: Block) -> Bool {
         // Don't show dashed border if currently in a block
-        if loader.blocks.contains(where: { isCurrent(block: $0) }) {
+        if displayBlocks.contains(where: { isCurrent(block: $0) }) {
             return false
         }
         
@@ -929,7 +1011,7 @@ struct ScheduleView: View {
     }
 
     func currentSubBlockInfo() -> (parent: Block, sub: SubBlock, Int)? {
-        for block in loader.blocks {
+        for block in displayBlocks {
             guard let subBlocks = block.subBlocks else { continue }
             for sub in subBlocks {
                 guard let start = timeToday(sub.start), let end = timeToday(sub.end) else { continue }
@@ -1359,6 +1441,83 @@ struct BlockHeader: View {
                 : nil
         )
         .cornerRadius(8)
+    }
+}
+
+// MARK: - Grade Prompt Sheet
+
+/// First-launch grade picker shown when today's schedule has grade-specific blocks
+/// and the user has not yet set their `graduationYear`. Mirrors the Chrome extension's
+/// design: capsule-shaped options in a 2-column grid, a hint, and a full-width
+/// "Continue" button that fades in once a grade is selected.
+struct GradePromptSheet: View {
+    let onSelect: (GradeLevel) -> Void
+    @State private var pending: GradeLevel? = nil
+
+    // Match chrome-extension/src/popup/popup.css colors so the iOS sheet feels
+    // identical to the extension's prompt.
+    private let optionBg     = Color(red: 0xeb / 255, green: 0xee / 255, blue: 0xf2 / 255) // #ebeef2
+    private let selectedBg   = Color(red: 0xab / 255, green: 0xe0 / 255, blue: 0xbc / 255) // #abe0bc
+    private let selectedText = Color(red: 0x14 / 255, green: 0x53 / 255, blue: 0x2d / 255) // #14532d
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Which grade are you in?")
+                .font(.title3.weight(.semibold))
+                .padding(.top, 24)
+
+            LazyVGrid(
+                columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                spacing: 8
+            ) {
+                ForEach(GradeLevel.allCases) { grade in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            pending = (pending == grade) ? nil : grade
+                        }
+                    } label: {
+                        Text(grade.label)
+                            .font(.callout.weight(pending == grade ? .semibold : .regular))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule().fill(pending == grade ? selectedBg : optionBg)
+                            )
+                            .foregroundColor(pending == grade ? selectedText : .primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+
+            Text("You can change this anytime in Settings.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+
+            Spacer(minLength: 0)
+
+            Button {
+                if let g = pending { onSelect(g) }
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Continue")
+                        .font(.callout.weight(.semibold))
+                    Image(systemName: "arrow.right")
+                        .font(.callout.weight(.semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Capsule().fill(selectedBg))
+                .foregroundColor(selectedText)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+            .opacity(pending == nil ? 0 : 1)
+            .allowsHitTesting(pending != nil)
+            .offset(y: pending == nil ? 6 : 0)
+            .animation(.easeOut(duration: 0.2), value: pending)
+        }
     }
 }
 

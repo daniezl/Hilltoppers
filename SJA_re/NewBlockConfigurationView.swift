@@ -227,6 +227,38 @@ struct NewBlockConfigurationView: View {
                                 .padding()
                                 .background(Color(UIColor.secondarySystemBackground))
                                 .cornerRadius(8)
+
+                                HStack {
+                                    Text("Grade level")
+                                        .font(.subheadline)
+
+                                    Spacer()
+
+                                    Picker("Grade level", selection: Binding<GradeLevel?>(
+                                        get: {
+                                            schedulePrefsManager.preferences.graduationYear
+                                                .map { gradeFromGraduationYear($0) }
+                                        },
+                                        set: { newValue in
+                                            schedulePrefsManager.preferences.graduationYear =
+                                                newValue.map { graduationYear(from: $0) }
+                                            Task {
+                                                await schedulePrefsManager.savePreferences()
+                                            }
+                                        }
+                                    )) {
+                                        Text("Not set").tag(Optional<GradeLevel>.none)
+                                        ForEach(GradeLevel.allCases) { g in
+                                            Text("\(g.label) (\(g.rawValue)th)")
+                                                .tag(Optional(g))
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .tint(accentGreen)
+                                }
+                                .padding()
+                                .background(Color(UIColor.secondarySystemBackground))
+                                .cornerRadius(8)
                             }
                             .padding(.horizontal)
                         }

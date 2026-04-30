@@ -31,6 +31,20 @@ struct NotificationScheduleSummary {
     let scheduledCount: Int
 }
 
+/// Drop blocks restricted to grades the user is not in. Notifications follow the
+/// user's saved grade (no temporary view override). When `graduationYear` is unset,
+/// keep the full schedule so the user still receives all notifications.
+func filterByUserGrade(_ blocks: [Block]) -> [Block] {
+    guard let gradYear = SchedulePreferencesManager.shared.preferences.graduationYear else {
+        return blocks
+    }
+    let g = gradeFromGraduationYear(gradYear).rawValue
+    return blocks.filter { block in
+        guard let grades = block.grades, !grades.isEmpty else { return true }
+        return grades.contains(g)
+    }
+}
+
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -451,7 +465,8 @@ class NotificationManager: ObservableObject {
     
     func scheduleNotifications(for date: Date, dayType: String = "", clearExisting: Bool = true) async -> NotificationScheduleSummary {
         do {
-            let blocks = try await ScheduleService.loadBlocks(for: date)
+            let rawBlocks = try await ScheduleService.loadBlocks(for: date)
+            let blocks = filterByUserGrade(rawBlocks)
             return await scheduleNotifications(blocks: blocks, on: date, dayType: dayType, clearExisting: clearExisting)
         } catch {
             // print("❌ Failed to determine schedule for notifications on \(date): \(error)")
@@ -627,7 +642,8 @@ class NotificationManager: ObservableObject {
             attempts += 1
 
             do {
-                let blocks = try await ScheduleService.loadBlocks(for: date)
+                let rawBlocks = try await ScheduleService.loadBlocks(for: date)
+                let blocks = filterByUserGrade(rawBlocks)
                 if blocks.isEmpty {
                     // print("🗓️ [NOTIFICATIONS] No blocks for \(date) - moving to next day")
                 } else {
@@ -3336,6 +3352,7 @@ enum TimeFormat: String, Codable {
 struct SchedulePreferences: Codable, Equatable {
     var lunchPeriod: Int = 1
     var timeFormat: TimeFormat = .hour12
+    var graduationYear: Int? = nil
 }
 
 class SchedulePreferencesManager: ObservableObject {
