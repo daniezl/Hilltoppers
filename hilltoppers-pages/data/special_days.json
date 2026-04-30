@@ -356,5 +356,15 @@
   },
   "2026-04-29": {
     "type": "late_start"
+  },
+  "2026-05-01": {
+    "type": "custom",
+    "details": "Grade-aware test",
+    "schedule": [
+      { "name": "9th Grade Test",  "start": "10:00", "end": "11:00", "grades": [9] },
+      { "name": "10th Grade Test", "start": "10:00", "end": "11:00", "grades": [10] },
+      { "name": "11th Grade Test", "start": "10:00", "end": "11:00", "grades": [11] },
+      { "name": "12th Grade Test", "start": "10:00", "end": "11:00", "grades": [12] }
+    ]
   }
 }
