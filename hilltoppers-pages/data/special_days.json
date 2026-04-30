@@ -359,12 +359,32 @@
   },
   "2026-05-01": {
     "type": "custom",
-    "details": "Grade-aware test",
+    "details": "Capstone Day",
     "schedule": [
-      { "name": "9th Grade Test",  "start": "10:00", "end": "11:00", "grades": [9] },
-      { "name": "10th Grade Test", "start": "10:00", "end": "11:00", "grades": [10] },
-      { "name": "11th Grade Test", "start": "10:00", "end": "11:00", "grades": [11] },
-      { "name": "12th Grade Test", "start": "10:00", "end": "11:00", "grades": [12] }
+      { "name": "Chapel",    "start": "8:30",  "end": "8:45",  "grades": [11, 12] },
+      { "name": "Session 1", "start": "9:00",  "end": "10:40", "grades": [11, 12] },
+      { "name": "Break",     "start": "10:40", "end": "10:50", "grades": [11, 12] },
+      {
+        "name": "Lunch",
+        "start": "10:45",
+        "end": "12:50",
+        "grades": [11, 12],
+        "subBlocks": [
+          { "name": "Group 1 (S. Church, etc.)", "start": "10:45", "end": "11:20" },
+          { "name": "Group 2 (Fuller, etc.)",    "start": "12:15", "end": "12:50" }
+        ]
+      },
+      {
+        "name": "Session 2",
+        "start": "10:50",
+        "end": "12:50",
+        "grades": [11, 12],
+        "subBlocks": [
+          { "name": "Fuller Hall, Brantview, Morse, Truck Shop, Welding Shop", "start": "10:50", "end": "12:10" },
+          { "name": "South Church Venues, Library Venues",                     "start": "11:30", "end": "12:50" }
+        ]
+      },
+      { "name": "Session 3", "start": "13:00", "end": "14:40", "grades": [11, 12] }
     ]
   }
 }
