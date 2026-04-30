@@ -1,41 +1,47 @@
 {
-  "updatedAt": "2026-04-30T00:00:39.927Z",
+  "updatedAt": "2026-04-30T04:12:06.193Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-04-29",
+  "menuDate": "2026-04-30",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
       "globalFare": [
-        "Scrambled Eggs",
-        "Strawberry Pancake Mix",
-        "Chicken Sausage Patty",
-        "Tater Tots"
+        "Ham & Cheese Quiche",
+        "Quiche Lorraine",
+        "Spinach & Bacon Quiche",
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Pesto-Marinated Chicken Breast",
-        "Baked Tofu Steak",
-        "Parmesan Orzo",
-        "California Blend Vegetables"
+        "Potsticker Vegetable 1 Oz Fzn App",
+        "BBQ Chicken Breast",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Vegetable Lo Mein",
+        "Asian BBQ Sauce"
       ],
       "globalFare": [
-        "Black Bean Patty",
-        "Hamburger on a Bun",
-        "French Fries"
+        "Cheese Quesadilla",
+        "Chicken Quesadilla",
+        "Roasted Confetti Corn",
+        "Mexican Fiesta Soup",
+        "Corn Tortilla Strips"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken Fajita Meat",
-        "Jasmine Rice",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn"
+        "Gnocchi with Roasted Cauliflower",
+        "Honey Glazed Pork Loin",
+        "Fresh Roasted Broccoli",
+        "White Cheese Sauce"
       ],
       "globalFare": [
-        "Chicken Brazilian Stroganoff",
-        "Jasmine Rice",
-        "Roasted Garlic Butter Mushrooms"
+        "Teriyaki Glazed Chicken Breast",
+        "Adobo Marinated Egg",
+        "Vegetable Egg Roll",
+        "Asian Fried Rice",
+        "Seasoned Asian Vegetables",
+        "Egg Drop Soup"
       ]
     }
   }
