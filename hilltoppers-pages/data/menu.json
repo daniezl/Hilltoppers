@@ -1,47 +1,43 @@
 {
-  "updatedAt": "2026-05-01T01:24:33.145Z",
+  "updatedAt": "2026-05-01T05:11:13.762Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-04-30",
+  "menuDate": "2026-05-01",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
       "globalFare": [
-        "Ham & Cheese Quiche",
-        "Quiche Lorraine",
-        "Spinach & Bacon Quiche",
-        "Home Fried Potatoes"
+        "Hashbrown Patty",
+        "Biscuit with Sausage Gravy",
+        "Scrambled Eggs",
+        "French Waffles"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Potsticker Vegetable 1 Oz Fzn App",
-        "BBQ Chicken Breast",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Vegetable Lo Mein",
-        "Asian BBQ Sauce"
+        "TVP Vegan Meatballs",
+        "Spaghetti & Meatballs",
+        "Fresh Roasted Green Beans",
+        "Marinara Sauce"
       ],
       "globalFare": [
-        "Cheese Quesadilla",
-        "Chicken Quesadilla",
-        "Roasted Confetti Corn",
-        "Mexican Fiesta Soup",
-        "Corn Tortilla Strips"
+        "Whole Grain Corn Dog",
+        "Mac & Cheese Bites",
+        "Waffle Fries",
+        "Peas & Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Gnocchi with Roasted Cauliflower",
-        "Honey Glazed Pork Loin",
-        "Fresh Roasted Broccoli",
-        "White Cheese Sauce"
+        "Western Turkey Burger",
+        "Vegan Veggie Patty",
+        "Onion Rings",
+        "Roasted Green Beans"
       ],
       "globalFare": [
-        "Teriyaki Glazed Chicken Breast",
-        "Adobo Marinated Egg",
-        "Vegetable Egg Roll",
-        "Asian Fried Rice",
-        "Seasoned Asian Vegetables",
-        "Egg Drop Soup"
+        "Baked Ziti",
+        "Italian Sausage",
+        "Italian Vegetables",
+        "Marinara Sauce"
       ]
     }
   }
