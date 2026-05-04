@@ -1,30 +1,44 @@
 {
-  "updatedAt": "2026-05-04T00:12:02.015Z",
+  "updatedAt": "2026-05-04T04:28:48.297Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-03",
+  "menuDate": "2026-05-04",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Bacon Egg Cheese Biscuit Sandwich",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Sandwich Club on Croissant",
-        "Broccoli & Cheddar Soup"
+        "Chicago Dog",
+        "Four Cheese Macaroni & Cheese",
+        "Coleslaw"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Crispy Chicken Bowl WG",
+        "Southern Style Biscuit"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "BBQ Glazed Salmon",
-        "Confetti Lentils",
-        "Oven Roasted Red Potatoes"
+        "Chicken Cordon Blue",
+        "Baked Beans",
+        "Red Skin Mashed Potatoes",
+        "Roasted Asparagus"
       ],
       "globalFare": [
-        "Dhaba Chicken Curry",
+        "Asian Garlic Beef Strips",
         "Jasmine Rice",
-        "Steamed Green Beans and Carrots",
-        "Roasted Curried Cauliflower"
+        "Asian Style Snap Peas",
+        "Cambodian Style Tofu Salad"
       ]
     }
   }
