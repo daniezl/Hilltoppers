@@ -1,41 +1,44 @@
 {
-  "updatedAt": "2026-05-06T03:58:23.863Z",
+  "updatedAt": "2026-05-06T06:40:01.735Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-05",
+  "menuDate": "2026-05-06",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Croissant Sandwich Sausage/Cheese",
+        "Egg and Cheese Croissant",
+        "Egg Bacon and Cheese Croissant",
+        "Sausage, Egg & Cheese Croissant"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
-        "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Halal Chicken Sausage",
+        "Potato Hashbrown Patty",
+        "Waffles Belgian",
+        "Scrambled Eggs"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Pur Whole Grain Baked Penne w/ Sauce",
-        "PU4 Roasted Cauliflower"
+        "Kansas City BBQ Pulled Pork",
+        "Kaiser Roll",
+        "Baked Beans",
+        "Onion Rings",
+        "Buttered Green Peas"
       ],
       "globalFare": [
-        "Brunch Burger"
+        "Vegetable Potsticker",
+        "Noodles Sweet Chili Stir Fry",
+        "Fried Chicken Potsticker",
+        "Broccoli & Mushroom Vegetarian Stir Fry"
       ]
     },
     "dinner": {
-      "classicKitchen": [],
+      "classicKitchen": [
+        "Seafood Paella",
+        "Peas & Carrots"
+      ],
       "globalFare": [
-        "Broccoli Marinara",
-        "Tofu Cacciatore",
-        "Chp Chicken Cacciatore",
-        "Jasmine Rice"
+        "Cheese Lasagna Casserole"
       ]
     }
   }
