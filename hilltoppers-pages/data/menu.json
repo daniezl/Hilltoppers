@@ -1,44 +1,50 @@
 {
-  "updatedAt": "2026-05-07T01:19:32.162Z",
+  "updatedAt": "2026-05-07T05:00:51.999Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-06",
+  "menuDate": "2026-05-07",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Croissant Sandwich Sausage/Cheese",
-        "Egg and Cheese Croissant",
-        "Egg Bacon and Cheese Croissant",
-        "Sausage, Egg & Cheese Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Halal Chicken Sausage",
-        "Potato Hashbrown Patty",
-        "Waffles Belgian",
-        "Scrambled Eggs"
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
+        "Scrambled Eggs",
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Kansas City BBQ Pulled Pork",
-        "Kaiser Roll",
-        "Baked Beans",
-        "Onion Rings",
-        "Buttered Green Peas"
+        "Buffalo Chicken Tenders",
+        "Crispy Fried Cauliflower",
+        "Bread Roll Sub 6' 2.3 Oz"
       ],
       "globalFare": [
-        "Vegetable Potsticker",
-        "Noodles Sweet Chili Stir Fry",
-        "Fried Chicken Potsticker",
-        "Broccoli & Mushroom Vegetarian Stir Fry"
+        "Beef Tex Mex Casserole",
+        "Tator Tot Casserole",
+        "Vegetarian Picadillo",
+        "Black Beans & Rice",
+        "Corn with Peppers and Onions"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Seafood Paella",
-        "Peas & Carrots"
+        "Beef and Mac Casserole",
+        "Sauce Tomato Cream"
       ],
       "globalFare": [
-        "Cheese Lasagna Casserole"
+        "Kansas City BBQ Sauce",
+        "Vegetarian Breaded Chicken Cutlet",
+        "Popcorn Chicken",
+        "Jasmine Rice",
+        "Stir Fry Vegetables"
       ]
     }
   }
