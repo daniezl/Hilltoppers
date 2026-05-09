@@ -1,44 +1,32 @@
 {
-  "updatedAt": "2026-05-09T03:37:19.774Z",
+  "updatedAt": "2026-05-09T06:21:55.845Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-08",
+  "menuDate": "2026-05-09",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Egg and Cheese Bagel",
-        "Sandwich Bagel Egg Cheese & Sausage",
-        "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
-      ],
-      "globalFare": [
-        "Potato Hashbrown Patty",
-        "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Meatballs",
-        "Cheese Ravioli",
-        "Steamed Broccoli & Carrots",
-        "Pesto Cream Sauce",
-        "Marinara Sauce"
+        "Plant-Based Chik'n Tenders",
+        "Nashville Hot Chicken Sandwich",
+        "Southern Style Biscuit",
+        "Tater Tots"
       ],
-      "globalFare": [
-        "Grilled Chicken Panini",
-        "Grilled Vegetable Panini",
-        "Curly Fries"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Grilled Three Cheese Sandwich",
-        "Grilled Ham & Cheese",
-        "Cream of Tomato Soup"
+        "Balsamic Glazed Chicken",
+        "Beans Garbanzo Ranch Roasted",
+        "Seasoned White Rice",
+        "Honey Roasted Brussel Sprouts"
       ],
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Buffalo Chicken Mac and Cheese"
+        "Beef Pot Roast",
+        "Lentils with Vegetables",
+        "Red Skin Mashed Potatoes"
       ]
     }
   }
