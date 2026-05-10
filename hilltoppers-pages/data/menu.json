@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-05-10T01:21:42.030Z",
+  "updatedAt": "2026-05-10T05:06:36.428Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-09",
+  "menuDate": "2026-05-10",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,24 +9,25 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Nashville Hot Chicken Sandwich",
-        "Southern Style Biscuit",
-        "Tater Tots"
+        "Seasoned Pulled Chicken",
+        "Taco Bowl",
+        "Jasmine Rice",
+        "Cumin Black Beans",
+        "Roasted Confetti Corn"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Balsamic Glazed Chicken",
-        "Beans Garbanzo Ranch Roasted",
-        "Seasoned White Rice",
-        "Honey Roasted Brussel Sprouts"
+        "Apricot Glazed Pork",
+        "Tofu, Peas, & Mushrooms Stir Fry",
+        "Noodle Ramen Cooked",
+        "Stir Fry Vegetables"
       ],
       "globalFare": [
-        "Beef Pot Roast",
-        "Lentils with Vegetables",
-        "Red Skin Mashed Potatoes"
+        "Indian Butter Chicken",
+        "Aztec Vegetable Medley",
+        "Goddess Berry Salad"
       ]
     }
   }
