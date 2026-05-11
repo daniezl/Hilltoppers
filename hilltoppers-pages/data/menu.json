@@ -1,33 +1,47 @@
 {
-  "updatedAt": "2026-05-11T01:26:35.762Z",
+  "updatedAt": "2026-05-11T05:40:02.476Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-10",
+  "menuDate": "2026-05-11",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Sausage Egg & Cheese Stuffed Biscuit",
+        "Bacon, Egg, & Cheese Biscuit",
+        "Egg and Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Potato Hashbrown Patty",
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Pork Sausage Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Seasoned Pulled Chicken",
-        "Taco Bowl",
-        "Jasmine Rice",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn"
+        "Ham Diced",
+        "Macaroni & Cheese",
+        "Broccoli  Florets Mini Fresh",
+        "Bacon Bits",
+        "Cheese Sauce"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Brown Rice Royale",
+        "Chicken & Broccoli Asian",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Asian Marinated Tofu"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Apricot Glazed Pork",
-        "Tofu, Peas, & Mushrooms Stir Fry",
-        "Noodle Ramen Cooked",
-        "Stir Fry Vegetables"
+        "Stuffing Mix",
+        "Cajun Turkey Cutlet",
+        "Cream Style Corn",
+        "Mashed Sweet Potatoes"
       ],
       "globalFare": [
-        "Indian Butter Chicken",
-        "Aztec Vegetable Medley",
-        "Goddess Berry Salad"
+        "Chicken Parmesan",
+        "Capellini",
+        "Carrot Baby Cut"
       ]
     }
   }
