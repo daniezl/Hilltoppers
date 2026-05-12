@@ -1,47 +1,52 @@
 {
-  "updatedAt": "2026-05-12T00:08:04.272Z",
+  "updatedAt": "2026-05-12T04:24:28.740Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-11",
+  "menuDate": "2026-05-12",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Sausage Egg & Cheese Stuffed Biscuit",
-        "Bacon, Egg, & Cheese Biscuit",
-        "Egg and Cheese Biscuit"
+        "Mild Shredded Cheddar Cheese",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Potato Hashbrown Patty",
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Pork Sausage Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Ham Diced",
-        "Macaroni & Cheese",
-        "Broccoli  Florets Mini Fresh",
-        "Bacon Bits",
-        "Cheese Sauce"
+        "Beef Meatball Teriyaki",
+        "Vegan Vegetable Lo Mein",
+        "Teriyaki Tofu",
+        "Sesame Snap Peas"
       ],
       "globalFare": [
-        "Brown Rice Royale",
-        "Chicken & Broccoli Asian",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Asian Marinated Tofu"
+        "Southwest Chicken Rice Bowl",
+        "Brown Rice",
+        "Cumin Black Beans",
+        "Corn with Peppers and Onions"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Stuffing Mix",
-        "Cajun Turkey Cutlet",
-        "Cream Style Corn",
-        "Mashed Sweet Potatoes"
+        "Crabcakes with Lemon Cream Sauce",
+        "Garlic Shrimp",
+        "Midsummer Risotto",
+        "Fresh Roasted Broccoli & Cauliflower",
+        "Caesar Salad"
       ],
       "globalFare": [
-        "Chicken Parmesan",
-        "Capellini",
-        "Carrot Baby Cut"
+        "Smothered Pork Chop",
+        "Red Skin Mashed Potatoes",
+        "Roasted Asparagus",
+        "Fried Apples"
       ]
     }
   }
