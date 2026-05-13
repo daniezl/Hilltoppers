@@ -1,52 +1,51 @@
 {
-  "updatedAt": "2026-05-13T01:24:15.315Z",
+  "updatedAt": "2026-05-13T05:28:02.846Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-12",
+  "menuDate": "2026-05-13",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg and Cheese Croissant",
+        "Egg Bacon and Cheese Croissant",
+        "Sausage, Egg & Cheese Croissant"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
+        "Waffles Belgian",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Chicken Sausage Patty",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Beef Meatball Teriyaki",
-        "Vegan Vegetable Lo Mein",
-        "Teriyaki Tofu",
-        "Sesame Snap Peas"
+        "Diced Ham",
+        "Whole Kernel Corn",
+        "Steamed Potatoes",
+        "Bacon Bits",
+        "Corn Chowder"
       ],
       "globalFare": [
-        "Southwest Chicken Rice Bowl",
-        "Brown Rice",
-        "Cumin Black Beans",
-        "Corn with Peppers and Onions"
+        "Jerk Pork Loin",
+        "Blackened Tofu",
+        "Red Beans & Rice",
+        "Oven Roasted Red Potatoes",
+        "Sweet Potato Hash",
+        "Sauteed Squash & Zucchini"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Crabcakes with Lemon Cream Sauce",
-        "Garlic Shrimp",
-        "Midsummer Risotto",
-        "Fresh Roasted Broccoli & Cauliflower",
-        "Caesar Salad"
+        "Sloppy Joe Beef",
+        "Vegan Chorizo",
+        "Tater Tots",
+        "Green Beans",
+        "Steamed Green Beans and Carrots"
       ],
       "globalFare": [
-        "Smothered Pork Chop",
-        "Red Skin Mashed Potatoes",
-        "Roasted Asparagus",
-        "Fried Apples"
+        "Chp Sweet & Sour Chicken",
+        "Tofu Vegetable Stir Fry",
+        "Jasmine Rice",
+        "Stir Fry Vegetables"
       ]
     }
   }
