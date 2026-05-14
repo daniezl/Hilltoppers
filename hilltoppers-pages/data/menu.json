@@ -1,51 +1,48 @@
 {
-  "updatedAt": "2026-05-14T01:26:59.825Z",
+  "updatedAt": "2026-05-14T05:28:50.380Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-13",
+  "menuDate": "2026-05-14",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Egg and Cheese Croissant",
-        "Egg Bacon and Cheese Croissant",
-        "Sausage, Egg & Cheese Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Waffles Belgian",
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Diced Ham",
-        "Whole Kernel Corn",
-        "Steamed Potatoes",
-        "Bacon Bits",
-        "Corn Chowder"
+        "BBQ Chicken",
+        "Vegan Chorizo",
+        "Seasoned French Fries"
       ],
       "globalFare": [
-        "Jerk Pork Loin",
-        "Blackened Tofu",
-        "Red Beans & Rice",
-        "Oven Roasted Red Potatoes",
-        "Sweet Potato Hash",
-        "Sauteed Squash & Zucchini"
+        "Halal Chicken Sausage",
+        "Scrambled Eggs with Cheese",
+        "Pancakes",
+        "Oven Roasted Red Potatoes"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Sloppy Joe Beef",
-        "Vegan Chorizo",
-        "Tater Tots",
-        "Green Beans",
-        "Steamed Green Beans and Carrots"
+        "Country Style Braised Beef Tips",
+        "BLT Chopped Salad",
+        "Roasted Potato Wedges",
+        "Roasted Button Mushrooms",
+        "Carrot Charred"
       ],
       "globalFare": [
-        "Chp Sweet & Sour Chicken",
-        "Tofu Vegetable Stir Fry",
-        "Jasmine Rice",
-        "Stir Fry Vegetables"
+        "Swordfish with Fettuccine"
       ]
     }
   }
