@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
-import { getCurrentUser } from '../firebase/auth';
+import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
 
 export type BlockKey = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -262,7 +262,10 @@ async function saveToRemote(userId: string, preferences: BlockPreferenceRecord):
 }
 
 export async function loadBlockPreferences(): Promise<BlockPreferenceRecord> {
-  const user = getCurrentUser();
+  // Same rationale as loadSchedulePreferences: wait for Firebase Auth to
+  // finish restoring its persisted session so we don't fall back to local
+  // storage while the user actually is signed in.
+  const user = await waitForAuthReady();
   if (user) {
     const remote = await loadFromRemote(user.uid);
     if (remote) {

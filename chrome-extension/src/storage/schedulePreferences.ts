@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
-import { getCurrentUser } from '../firebase/auth';
+import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
 
 export type TimeFormat = '12h' | '24h';
@@ -105,7 +105,12 @@ async function saveToRemote(userId: string, preferences: SchedulePreferences): P
 }
 
 export async function loadSchedulePreferences(): Promise<SchedulePreferences> {
-  const user = getCurrentUser();
+  // Wait for Firebase Auth to restore its persisted session before deciding
+  // whether to read from Firestore. Without this, a freshly opened popup may
+  // see `getCurrentUser() === null` even though the user is signed in,
+  // causing us to fall back to chrome.storage.sync and miss the user's
+  // saved graduationYear (e.g. set on another device).
+  const user = await waitForAuthReady();
   if (user) {
     const remote = await loadFromRemote(user.uid);
     if (remote) {
