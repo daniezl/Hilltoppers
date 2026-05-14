@@ -262,23 +262,34 @@ async function saveToRemote(userId: string, preferences: BlockPreferenceRecord):
 }
 
 export async function loadBlockPreferences(): Promise<BlockPreferenceRecord> {
-  // Same rationale as loadSchedulePreferences: wait for Firebase Auth to
-  // finish restoring its persisted session so we don't fall back to local
-  // storage while the user actually is signed in.
-  const user = await waitForAuthReady();
-  if (user) {
-    const remote = await loadFromRemote(user.uid);
-    if (remote) {
-      try {
-        await saveToSyncStorage(remote);
-      } catch (error) {
-        console.warn('[blockPreferences] Failed to cache remote preferences locally', error);
-      }
-      return remote;
-    }
-  }
-
+  // Fast path: return chrome.storage.sync so the popup can render block
+  // names without waiting for Firebase Auth. Callers that want the
+  // authoritative value from Firestore should also call
+  // `syncBlockPreferencesFromRemote()`.
   return loadFromSyncStorage();
+}
+
+/**
+ * Waits for Firebase Auth to restore its persisted session, then pulls the
+ * user's block preferences from Firestore and mirrors them back into
+ * `chrome.storage.sync`. Returns `null` when there is no signed-in user or
+ * no remote document.
+ */
+export async function syncBlockPreferencesFromRemote(): Promise<BlockPreferenceRecord | null> {
+  const user = await waitForAuthReady();
+  if (!user) {
+    return null;
+  }
+  const remote = await loadFromRemote(user.uid);
+  if (!remote) {
+    return null;
+  }
+  try {
+    await saveToSyncStorage(remote);
+  } catch (error) {
+    console.warn('[blockPreferences] Failed to cache remote preferences locally', error);
+  }
+  return remote;
 }
 
 export async function saveBlockPreferences(preferences: BlockPreferenceRecord): Promise<void> {

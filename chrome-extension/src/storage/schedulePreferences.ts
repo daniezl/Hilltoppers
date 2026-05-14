@@ -105,25 +105,36 @@ async function saveToRemote(userId: string, preferences: SchedulePreferences): P
 }
 
 export async function loadSchedulePreferences(): Promise<SchedulePreferences> {
-  // Wait for Firebase Auth to restore its persisted session before deciding
-  // whether to read from Firestore. Without this, a freshly opened popup may
-  // see `getCurrentUser() === null` even though the user is signed in,
-  // causing us to fall back to chrome.storage.sync and miss the user's
-  // saved graduationYear (e.g. set on another device).
-  const user = await waitForAuthReady();
-  if (user) {
-    const remote = await loadFromRemote(user.uid);
-    if (remote) {
-      try {
-        await saveToSyncStorage(remote);
-      } catch (error) {
-        console.warn('[schedulePreferences] Failed to cache remote preferences locally', error);
-      }
-      return remote;
-    }
-  }
-
+  // Fast path: return whatever chrome.storage.sync has so the UI can render
+  // immediately without waiting for Firebase Auth to restore its persisted
+  // session. Callers that also want the authoritative value from Firestore
+  // should call `syncSchedulePreferencesFromRemote()` afterwards.
   return loadFromSyncStorage();
+}
+
+/**
+ * Waits for Firebase Auth to restore its persisted session, then pulls the
+ * user's preferences from Firestore. On success, also writes them back to
+ * `chrome.storage.sync` so subsequent fast-path loads stay correct.
+ *
+ * Returns `null` when the user is not signed in or the remote doc has no
+ * stored preferences.
+ */
+export async function syncSchedulePreferencesFromRemote(): Promise<SchedulePreferences | null> {
+  const user = await waitForAuthReady();
+  if (!user) {
+    return null;
+  }
+  const remote = await loadFromRemote(user.uid);
+  if (!remote) {
+    return null;
+  }
+  try {
+    await saveToSyncStorage(remote);
+  } catch (error) {
+    console.warn('[schedulePreferences] Failed to cache remote preferences locally', error);
+  }
+  return remote;
 }
 
 export async function saveSchedulePreferences(preferences: SchedulePreferences): Promise<void> {

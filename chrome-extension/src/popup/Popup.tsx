@@ -10,6 +10,7 @@ import {
   BlockPreferenceRecord,
   createEmptyPreferences,
   loadBlockPreferences,
+  syncBlockPreferencesFromRemote,
   resolveBlockDisplay,
   DEFAULT_BLOCK_NAMES,
   BlockKey
@@ -17,6 +18,7 @@ import {
 import {
   loadSchedulePreferences,
   saveSchedulePreferences,
+  syncSchedulePreferencesFromRemote,
   type SchedulePreferences,
   DEFAULT_SCHEDULE_PREFERENCES
 } from '../storage/schedulePreferences';
@@ -102,6 +104,7 @@ const Popup: React.FC = () => {
   const [scheduleExpanded, setScheduleExpanded] = useState<boolean>(false);
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
+  const [prefsLoaded, setPrefsLoaded] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
@@ -163,10 +166,13 @@ const Popup: React.FC = () => {
   }, [savedGrade]);
 
   useEffect(() => {
+    if (!prefsLoaded) return;
     if (hasGradeSpecificBlocks && savedGrade == null && !isLoading) {
       setShowGradePrompt(true);
+    } else if (savedGrade != null) {
+      setShowGradePrompt(false);
     }
-  }, [hasGradeSpecificBlocks, savedGrade, isLoading]);
+  }, [hasGradeSpecificBlocks, savedGrade, isLoading, prefsLoaded]);
 
   const filteredBlocks = useMemo(() => {
     if (!hasGradeSpecificBlocks || viewingGrade == null) {
@@ -424,15 +430,30 @@ const Popup: React.FC = () => {
   }, [debugTestTime]);
 
   useEffect(() => {
-    Promise.all([
-      loadBlockPreferences(),
-      loadSchedulePreferences()
-    ])
-      .then(([blockPrefs, schedulePrefs]) => {
-        setBlockPrefs(blockPrefs);
-        setSchedulePrefs(schedulePrefs);
-      })
-      .catch((err) => console.error('[popup] Failed to load preferences', err));
+    let cancelled = false;
+    (async () => {
+      try {
+        const [localBlocks, localSchedule] = await Promise.all([
+          loadBlockPreferences(),
+          loadSchedulePreferences()
+        ]);
+        if (cancelled) return;
+        setBlockPrefs(localBlocks);
+        setSchedulePrefs(localSchedule);
+
+        const [remoteBlocks, remoteSchedule] = await Promise.all([
+          syncBlockPreferencesFromRemote(),
+          syncSchedulePreferencesFromRemote()
+        ]);
+        if (cancelled) return;
+        if (remoteBlocks) setBlockPrefs(remoteBlocks);
+        if (remoteSchedule) setSchedulePrefs(remoteSchedule);
+      } catch (err) {
+        console.error('[popup] Failed to load preferences', err);
+      } finally {
+        if (!cancelled) setPrefsLoaded(true);
+      }
+    })();
 
     if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
       const listener = (
@@ -460,10 +481,13 @@ const Popup: React.FC = () => {
       };
       chrome.storage.onChanged.addListener(listener);
       return () => {
+        cancelled = true;
         chrome.storage.onChanged.removeListener(listener);
       };
     }
-    return () => {};
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const baseDate = useMemo(() => {

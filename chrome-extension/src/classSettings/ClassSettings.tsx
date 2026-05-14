@@ -5,12 +5,14 @@ import {
   type BlockPreferenceRecord,
   createEmptyPreferences,
   loadBlockPreferences,
-  saveBlockPreferences
+  saveBlockPreferences,
+  syncBlockPreferencesFromRemote
 } from '../storage/blockPreferences';
 import {
   DEFAULT_SCHEDULE_PREFERENCES,
   loadSchedulePreferences,
   saveSchedulePreferences,
+  syncSchedulePreferencesFromRemote,
   type SchedulePreferences
 } from '../storage/schedulePreferences';
 import {
@@ -113,6 +115,15 @@ const ClassSettings: React.FC = () => {
         if (!cancelled) {
           setBlockPrefs(nextBlocks);
           setSchedulePrefs(nextSchedule);
+        }
+
+        const [remoteBlocks, remoteSchedule] = await Promise.all([
+          syncBlockPreferencesFromRemote(),
+          syncSchedulePreferencesFromRemote()
+        ]);
+        if (!cancelled) {
+          if (remoteBlocks) setBlockPrefs(remoteBlocks);
+          if (remoteSchedule) setSchedulePrefs(remoteSchedule);
         }
       } catch (error) {
         console.error('[class-settings] Failed to load data', error);
