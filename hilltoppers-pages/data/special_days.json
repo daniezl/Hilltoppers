@@ -343,14 +343,9 @@
         "end": "14:45"
       },
       {
-        "name": "Conference Period",
+        "name": "CP",
         "start": "14:50",
         "end": "15:10"
-      },
-      {
-        "name": "Interdisciplinary Time",
-        "start": "15:10",
-        "end": "15:30"
       }
     ]
   },
@@ -385,6 +380,31 @@
         ]
       },
       { "name": "Session 3", "start": "13:00", "end": "14:40", "grades": [11, 12] }
+    ]
+  },
+  "2026-05-14": {
+    "type": "custom",
+    "details": "Senior Breakfast Schedule",
+    "schedule": [
+      { "name": "A Block",          "start": "8:00",  "end": "8:55" },
+      { "name": "Senior Breakfast", "start": "9:00",  "end": "10:00", "grades": [12] },
+      { "name": "Advisory",         "start": "9:00",  "end": "10:00", "grades": [9, 10, 11] },
+      { "name": "B Block",          "start": "10:05", "end": "11:00" },
+      {
+        "name": "C Block",
+        "start": "11:05",
+        "end": "12:40",
+        "subBlocks": [
+          { "name": "Lunch 1", "start": "11:05", "end": "11:30" },
+          { "name": "Lunch 2", "start": "11:20", "end": "11:45" },
+          { "name": "Lunch 3", "start": "11:40", "end": "12:05" },
+          { "name": "Lunch 4", "start": "12:00", "end": "12:25" },
+          { "name": "Lunch 5", "start": "12:15", "end": "12:40" }
+        ]
+      },
+      { "name": "D Block", "start": "12:45", "end": "13:40" },
+      { "name": "E Block", "start": "13:45", "end": "14:40" },
+      { "name": "CP",      "start": "14:45", "end": "15:05" }
     ]
   }
 }

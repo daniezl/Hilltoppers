@@ -36,3 +36,29 @@ On 4/16, grades 9–10 have Fashion Show first while grades 11–12 have Advisor
 - **Different time slots per grade.** Each block has its own `start`/`end`, so this works naturally — just tag each with `"grades"`.
 - **Valid values:** `9`, `10`, `11`, `12`. You can use any combination (e.g. `[9]`, `[10, 11, 12]`, `[9, 10, 11, 12]`).
 - **Backward compatible.** Old app versions that don't understand `"grades"` will show all blocks (they just ignore the extra field).
+
+## Naming Conventions
+
+When transcribing a schedule from an official PDF/handout into JSON, follow these rules so blocks render consistently across the app:
+
+| In the official schedule | Write in JSON as | Reason |
+| --- | --- | --- |
+| `Conference Period` | `CP` | "CP" is what students actually call it, and it keeps the row compact. |
+| `Interdisciplinary Time` | *(omit entirely)* | Nobody uses this slot — leaving it out keeps the day's schedule clean. |
+
+### Example
+
+The official Senior Breakfast Schedule (5/14/2026) ends with:
+
+```
+Conference Period: 2:45 – 3:05
+Interdisciplinary Time: 3:05 – 3:30
+```
+
+In JSON:
+
+```json
+{ "name": "CP", "start": "14:45", "end": "15:05" }
+```
+
+(Note: `Interdisciplinary Time` is dropped entirely, and `Conference Period` becomes `CP`.)
