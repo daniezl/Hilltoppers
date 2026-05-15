@@ -406,5 +406,16 @@
       { "name": "E Block", "start": "13:45", "end": "14:40" },
       { "name": "CP",      "start": "14:45", "end": "15:05" }
     ]
+  },
+  "2026-05-15": {
+    "type": "custom",
+    "details": "Spring Day",
+    "schedule": [
+      { "name": "Chapel",                "start": "8:00",  "end": "8:45" },
+      { "name": "Spring Day Activities", "start": "8:45",  "end": "11:00" },
+      { "name": "BBQ Lunch",             "start": "11:00", "end": "13:00" },
+      { "name": "Spring Day Activities", "start": "13:00", "end": "14:30" },
+      { "name": "Advisory Check In",     "start": "14:30", "end": "15:00" }
+    ]
   }
 }
