@@ -1,48 +1,48 @@
 {
-  "updatedAt": "2026-05-15T00:01:28.757Z",
+  "updatedAt": "2026-05-15T04:35:23.216Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-14",
+  "menuDate": "2026-05-15",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg and Cheese Bagel",
+        "Bacon, Egg & Cheese Bagel",
+        "Egg Sausage and Cheese Bagel"
       ],
       "globalFare": [
-        "Pork Bacon",
-        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "BBQ Chicken",
-        "Vegan Chorizo",
-        "Seasoned French Fries"
+        "Taco Meat",
+        "Soft Shell Beef Taco",
+        "Rice Brown Spanish",
+        "Black Refried Beans",
+        "Roasted Confetti Corn"
       ],
       "globalFare": [
-        "Halal Chicken Sausage",
-        "Scrambled Eggs with Cheese",
-        "Pancakes",
-        "Oven Roasted Red Potatoes"
+        "Charbroil Patty 4 oz",
+        "Tater Tots",
+        "Peas and Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Country Style Braised Beef Tips",
-        "BLT Chopped Salad",
-        "Roasted Potato Wedges",
-        "Roasted Button Mushrooms",
-        "Carrot Charred"
+        "Oven-Fried Chicken Breast",
+        "Country Gravy",
+        "Red Skin Mashed Potatoes",
+        "Seasoned Corn on the Cob",
+        "Comeback Slaw"
       ],
       "globalFare": [
-        "Swordfish with Fettuccine"
+        "Cheese Pizza",
+        "Meat Lovers Pizza",
+        "Pepperoni Pizza",
+        "Garlic Breadstick"
       ]
     }
   }
