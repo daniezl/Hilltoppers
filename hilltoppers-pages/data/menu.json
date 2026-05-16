@@ -1,48 +1,37 @@
 {
-  "updatedAt": "2026-05-16T01:19:36.661Z",
+  "updatedAt": "2026-05-16T04:56:59.315Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-15",
+  "menuDate": "2026-05-16",
   "menus": {
     "breakfast": {
+      "classicKitchen": [],
+      "globalFare": []
+    },
+    "lunch": {
       "classicKitchen": [
-        "Egg and Cheese Bagel",
-        "Bacon, Egg & Cheese Bagel",
-        "Egg Sausage and Cheese Bagel"
+        "Classic Reuben",
+        "Mixed Vegetables",
+        "Baked Potato Soup"
       ],
       "globalFare": [
         "Scrambled Eggs",
         "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link",
+        "Sausage Patty 2 Oz.",
         "Hashbrown Patty"
-      ]
-    },
-    "lunch": {
-      "classicKitchen": [
-        "Taco Meat",
-        "Soft Shell Beef Taco",
-        "Rice Brown Spanish",
-        "Black Refried Beans",
-        "Roasted Confetti Corn"
-      ],
-      "globalFare": [
-        "Charbroil Patty 4 oz",
-        "Tater Tots",
-        "Peas and Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Oven-Fried Chicken Breast",
-        "Country Gravy",
-        "Red Skin Mashed Potatoes",
-        "Seasoned Corn on the Cob",
-        "Comeback Slaw"
+        "Vegan Stuffed Pepper",
+        "BBQ Pork Chop",
+        "Butternut Squash",
+        "Sweet Potato Fries"
       ],
       "globalFare": [
-        "Cheese Pizza",
-        "Meat Lovers Pizza",
-        "Pepperoni Pizza",
-        "Garlic Breadstick"
+        "Chicken Marsala",
+        "Creamy Basil & Sun Dried Tomatoes Pasta",
+        "Sauteed Mushrooms",
+        "Sauteed Zucchini"
       ]
     }
   }
