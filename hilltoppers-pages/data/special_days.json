@@ -417,5 +417,9 @@
       { "name": "Spring Day Activities", "start": "13:00", "end": "14:30" },
       { "name": "Advisory Check In",     "start": "14:30", "end": "15:00" }
     ]
+  },
+  "2026-05-18": {
+    "type": "schedule_mon_thu",
+    "color": "white"
   }
 }
