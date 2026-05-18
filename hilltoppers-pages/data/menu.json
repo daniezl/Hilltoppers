@@ -1,32 +1,51 @@
 {
-  "updatedAt": "2026-05-17T23:32:36.107Z",
+  "updatedAt": "2026-05-18T04:13:36.667Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-17",
+  "menuDate": "2026-05-18",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Italian Beef & Pork Meatball",
-        "Meatballs TVP Vegan GF",
-        "Garlic Breadstick"
+        "Lo Mein Noodles Wide",
+        "Potsticker Vegetable 1 Oz Fzn App",
+        "Pork With Orange & Ginger",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Mushroom Miso Broth"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Scrambled Eggs",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Furikake",
+        "Huli Huli Chicken",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Black Beans",
+        "Seasoned French Fries"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Broccoli & Cheese Casserole"
+        "Seasoned Ground Beef",
+        "Roll Dinner Hawaiian",
+        "Red Skin Mashed Potatoes",
+        "Sautéed Corn and Onions",
+        "Peas & Carrots",
+        "Brown Gravy",
+        "Green Salad"
       ],
       "globalFare": [
-        "Jasmine Rice"
+        "John Wayne Casserole",
+        "Broccoli and Rice Casserole",
+        "Sauteed Squash & Zucchini"
       ]
     }
   }
