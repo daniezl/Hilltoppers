@@ -1,48 +1,51 @@
 {
-  "updatedAt": "2026-05-15T00:01:28.757Z",
+  "updatedAt": "2026-05-18T12:39:10.511Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-14",
+  "menuDate": "2026-05-18",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
       ],
       "globalFare": [
-        "Pork Bacon",
-        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "BBQ Chicken",
-        "Vegan Chorizo",
-        "Seasoned French Fries"
+        "Lo Mein Noodles Wide",
+        "Potsticker Vegetable 1 Oz Fzn App",
+        "Pork With Orange & Ginger",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Mushroom Miso Broth"
       ],
       "globalFare": [
-        "Halal Chicken Sausage",
-        "Scrambled Eggs with Cheese",
-        "Pancakes",
-        "Oven Roasted Red Potatoes"
+        "Furikake",
+        "Huli Huli Chicken",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Black Beans",
+        "Seasoned French Fries"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Country Style Braised Beef Tips",
-        "BLT Chopped Salad",
-        "Roasted Potato Wedges",
-        "Roasted Button Mushrooms",
-        "Carrot Charred"
+        "Seasoned Ground Beef",
+        "Roll Dinner Hawaiian",
+        "Red Skin Mashed Potatoes",
+        "Sautéed Corn and Onions",
+        "Peas & Carrots",
+        "Brown Gravy",
+        "Green Salad"
       ],
       "globalFare": [
-        "Swordfish with Fettuccine"
+        "John Wayne Casserole",
+        "Broccoli and Rice Casserole",
+        "Sauteed Squash & Zucchini"
       ]
     }
   }
