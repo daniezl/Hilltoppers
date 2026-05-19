@@ -1,51 +1,52 @@
 {
-  "updatedAt": "2026-05-19T01:30:55.830Z",
+  "updatedAt": "2026-05-19T06:14:39.691Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-18",
+  "menuDate": "2026-05-19",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
-        "Egg and Cheese Biscuit",
-        "Sausage & Cheese Biscuit"
+        "Mild Shredded Cheddar Cheese",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Red Onions",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Lo Mein Noodles Wide",
-        "Potsticker Vegetable 1 Oz Fzn App",
-        "Pork With Orange & Ginger",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Mushroom Miso Broth"
+        "Fried Chicken Drumsticks",
+        "Red Quinoa & Garbanzo Beans",
+        "Red Skin Mashed Potatoes",
+        "Honey Buttered Baby Carrots"
       ],
       "globalFare": [
-        "Furikake",
-        "Huli Huli Chicken",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Black Beans",
-        "Seasoned French Fries"
+        "Sweet Potato Pulled Pork BBQ Bowl",
+        "Canned Dark Red Kidney Beans",
+        "Oven Roasted Sweet Potatoes",
+        "Sautéed Garlic Kale"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Roll Dinner Hawaiian",
-        "Red Skin Mashed Potatoes",
-        "Sautéed Corn and Onions",
-        "Peas & Carrots",
-        "Brown Gravy",
-        "Green Salad"
+        "Country Fried Steak",
+        "Baked Beans",
+        "Scalloped Potatoes",
+        "Roasted Asparagus",
+        "Fresh Roasted Green Beans"
       ],
       "globalFare": [
-        "John Wayne Casserole",
-        "Broccoli and Rice Casserole",
-        "Sauteed Squash & Zucchini"
+        "Chicken, Shrimp, and Sausage Jambalaya",
+        "French Bread",
+        "Jasmine Rice",
+        "Peas & Carrots"
       ]
     }
   }
