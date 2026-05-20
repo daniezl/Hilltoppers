@@ -1,52 +1,47 @@
 {
-  "updatedAt": "2026-05-20T00:12:45.373Z",
+  "updatedAt": "2026-05-20T04:48:00.503Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-19",
+  "menuDate": "2026-05-20",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Red Onions",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Bacon Egg and Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Sausage and Egg Croissant"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Chicken Sausage Patty",
+        "Belgian Waffle w/ Powder Sugar & Syrup",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Fried Chicken Drumsticks",
-        "Red Quinoa & Garbanzo Beans",
-        "Red Skin Mashed Potatoes",
-        "Honey Buttered Baby Carrots"
+        "Grilled Chicken Breast",
+        "Penne Pasta with Alfredo Sauce",
+        "Garlic Bread",
+        "Fresh Roasted Broccoli"
       ],
       "globalFare": [
-        "Sweet Potato Pulled Pork BBQ Bowl",
-        "Canned Dark Red Kidney Beans",
-        "Oven Roasted Sweet Potatoes",
-        "Sautéed Garlic Kale"
+        "Sloppy Joe Beef",
+        "Curly Fries",
+        "Buttered Corn"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Country Fried Steak",
-        "Baked Beans",
-        "Scalloped Potatoes",
-        "Roasted Asparagus",
-        "Fresh Roasted Green Beans"
+        "Greek-Marinated Grilled Chicken",
+        "Pita Bread",
+        "Couscous Vegetable",
+        "Roasted Yellow Squash",
+        "Roasted Chickpeas"
       ],
       "globalFare": [
-        "Chicken, Shrimp, and Sausage Jambalaya",
+        "Orange Chipotle Tilapia",
         "French Bread",
         "Jasmine Rice",
-        "Peas & Carrots"
+        "Honey Roasted Brussel Sprouts"
       ]
     }
   }
