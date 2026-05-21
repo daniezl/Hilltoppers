@@ -439,6 +439,10 @@
       { "name": "Math", "start": "12:45", "end": "15:15" }
     ]
   },
+  "2026-05-25": {
+    "type": "no_school",
+    "details": "Memorial Day"
+  },
   "2026-05-26": {
     "type": "custom",
     "details": "Exams",
