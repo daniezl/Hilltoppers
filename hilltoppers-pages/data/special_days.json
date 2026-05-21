@@ -444,13 +444,6 @@
     "details": "Exams",
     "schedule": [
       { "name": "Science", "start": "9:00", "end": "11:30" },
-      { "name": "Lunch", "start": "11:30", "end": "12:30" }
-    ]
-  },
-  "2026-05-27": {
-    "type": "custom",
-    "details": "Exams",
-    "schedule": [
       { "name": "Lunch", "start": "11:30", "end": "12:30" },
       { "name": "Health", "start": "12:45", "end": "15:15" }
     ]
