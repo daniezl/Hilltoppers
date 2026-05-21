@@ -1,47 +1,54 @@
 {
-  "updatedAt": "2026-05-20T23:50:21.678Z",
+  "updatedAt": "2026-05-21T04:17:13.753Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-20",
+  "menuDate": "2026-05-21",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon Egg and Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Sausage and Egg Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Belgian Waffle w/ Powder Sugar & Syrup",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Penne Pasta with Alfredo Sauce",
-        "Garlic Bread",
-        "Fresh Roasted Broccoli"
+        "Taco Meat",
+        "Potato Baked Bar",
+        "Vegetarian Picadillo",
+        "Mexican Potato Bar",
+        "Cumin Black Beans",
+        "Roasted Confetti Corn",
+        "Nacho Cheese Sauce"
       ],
       "globalFare": [
-        "Sloppy Joe Beef",
-        "Curly Fries",
-        "Buttered Corn"
+        "Breaded Korean Chicken",
+        "Brown Rice",
+        "Stir Fry Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Greek-Marinated Grilled Chicken",
-        "Pita Bread",
-        "Couscous Vegetable",
-        "Roasted Yellow Squash",
-        "Roasted Chickpeas"
+        "Beef Pot Roast",
+        "Confetti Lentils",
+        "Red Skin Mashed Potatoes",
+        "Sauteed Carrots & Parsnips",
+        "Greek Salad"
       ],
       "globalFare": [
-        "Orange Chipotle Tilapia",
-        "French Bread",
-        "Jasmine Rice",
-        "Honey Roasted Brussel Sprouts"
+        "BBQ Pork Chop",
+        "Sweet Potato Fries",
+        "Buttered Corn",
+        "Baked Beans"
       ]
     }
   }
