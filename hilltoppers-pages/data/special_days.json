@@ -420,5 +420,39 @@
   },
   "2026-05-18": {
     "color": "white"
+  },
+  "2026-05-21": {
+    "type": "custom",
+    "details": "Exams",
+    "schedule": [
+      { "name": "English/Humanities/ESL", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Languages", "start": "12:45", "end": "15:15" }
+    ]
+  },
+  "2026-05-22": {
+    "type": "custom",
+    "details": "Exams",
+    "schedule": [
+      { "name": "Social Studies", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Math", "start": "12:45", "end": "15:15" }
+    ]
+  },
+  "2026-05-26": {
+    "type": "custom",
+    "details": "Exams",
+    "schedule": [
+      { "name": "Science", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" }
+    ]
+  },
+  "2026-05-27": {
+    "type": "custom",
+    "details": "Exams",
+    "schedule": [
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Health", "start": "12:45", "end": "15:15" }
+    ]
   }
 }
