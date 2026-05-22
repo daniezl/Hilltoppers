@@ -1,54 +1,46 @@
 {
-  "updatedAt": "2026-05-21T23:34:54.616Z",
+  "updatedAt": "2026-05-22T04:12:22.814Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-21",
+  "menuDate": "2026-05-22",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg Bacon & Cheese Bagel Sandwich",
+        "Egg and Cheese Bagel",
+        "Egg Sausage and Cheese Bagel"
       ],
       "globalFare": [
-        "Pork Bacon",
-        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Taco Meat",
-        "Potato Baked Bar",
-        "Vegetarian Picadillo",
-        "Mexican Potato Bar",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce"
+        "Meatball Sub",
+        "Green Beans & Peppers",
+        "Cheese Sticks"
       ],
       "globalFare": [
-        "Breaded Korean Chicken",
+        "BBQ Chicken Wings",
+        "Honey Garlic Chicken Wings",
         "Brown Rice",
-        "Stir Fry Vegetables"
+        "BBQ Lime Cauliflower Bites"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Beef Pot Roast",
-        "Confetti Lentils",
-        "Red Skin Mashed Potatoes",
-        "Sauteed Carrots & Parsnips",
-        "Greek Salad"
+        "Bacon Cheeseburger",
+        "Black Bean Patty",
+        "Mac & Cheese Bites",
+        "Peas & Carrots"
       ],
       "globalFare": [
-        "BBQ Pork Chop",
-        "Sweet Potato Fries",
-        "Buttered Corn",
-        "Baked Beans"
+        "Grilled Pesto-Marinated Chicken Breast",
+        "Garlic Breadstick",
+        "Fresh Roasted Broccoli",
+        "Pesto Cream Sauce"
       ]
     }
   }
