@@ -1,34 +1,39 @@
 {
-  "updatedAt": "2026-05-23T23:36:33.255Z",
+  "updatedAt": "2026-05-24T04:10:44.062Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-23",
+  "menuDate": "2026-05-24",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
       "globalFare": []
     },
     "lunch": {
-      "classicKitchen": [],
+      "classicKitchen": [
+        "Battered Cod Sandwich",
+        "Sauteed Spinach",
+        "Potato & Pepperjack Chowder"
+      ],
       "globalFare": [
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
         "Breakfast Quesadilla",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Onion Crusted Chicken Aioli",
-        "Baked Italian Tofu",
-        "Fresh Garlic Mashed Potatoes",
-        "Carrot Baby Peeled Tri-Color"
+        "Grilled Chicken Breast",
+        "Meatless Stuffed Bell Peppers",
+        "Roasted Fingerling Potatoes",
+        "Roasted Garlic Butter Mushrooms"
       ],
       "globalFare": [
-        "Slow-Cooked Tomato & Herb White Beans",
-        "Poblano Stuffed Pork Loin",
-        "Confetti Rice",
-        "Green Beans With Tomatoes"
+        "Roasted Red Pepper Hummus",
+        "Beef Sri Lankan Curry",
+        "Naan Bread",
+        "Indian Baked Rice",
+        "Oven Roasted Cauliflower with Turmeric"
       ]
     }
   }
