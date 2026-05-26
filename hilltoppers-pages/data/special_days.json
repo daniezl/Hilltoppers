@@ -173,165 +173,57 @@
   "2026-02-04": {
     "type": "custom",
     "schedule": [
-      {
-        "name": "A Block",
-        "start": "8:00",
-        "end": "8:50"
-      },
-      {
-        "name": "B Block",
-        "start": "8:55",
-        "end": "9:45"
-      },
-      {
-        "name": "D Block",
-        "start": "9:50",
-        "end": "10:40"
-      },
-      {
-        "name": "E Block",
-        "start": "10:45",
-        "end": "11:35"
-      },
-      {
-        "name": "C Block",
-        "start": "11:40",
-        "end": "12:10"
-      },
+      { "name": "A Block", "start": "8:00", "end": "8:50" },
+      { "name": "B Block", "start": "8:55", "end": "9:45" },
+      { "name": "D Block", "start": "9:50", "end": "10:40" },
+      { "name": "E Block", "start": "10:45", "end": "11:35" },
+      { "name": "C Block", "start": "11:40", "end": "12:10" },
       {
         "name": "Lunch",
         "start": "11:40",
         "end": "13:10",
         "subBlocks": [
-          {
-            "name": "1st Lunch",
-            "start": "11:40",
-            "end": "12:15"
-          },
-          {
-            "name": "2nd Lunch",
-            "start": "11:55",
-            "end": "12:30"
-          },
-          {
-            "name": "3rd Lunch",
-            "start": "12:10",
-            "end": "12:45"
-          },
-          {
-            "name": "4th Lunch",
-            "start": "12:25",
-            "end": "13:00"
-          },
-          {
-            "name": "5th Lunch",
-            "start": "12:40",
-            "end": "13:10"
-          }
+          { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
+          { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
+          { "name": "3rd Lunch", "start": "12:10", "end": "12:45" },
+          { "name": "4th Lunch", "start": "12:25", "end": "13:00" },
+          { "name": "5th Lunch", "start": "12:40", "end": "13:10" }
         ]
       },
-      {
-        "name": "Winter Carnival Preparations",
-        "start": "13:15",
-        "end": "14:40"
-      }
+      { "name": "Winter Carnival Preparations", "start": "13:15", "end": "14:40" }
     ]
   },
   "2026-02-05": {
     "type": "custom",
     "schedule": [
-      {
-        "name": "A Block",
-        "start": "8:00",
-        "end": "8:50"
-      },
-      {
-        "name": "B Block",
-        "start": "8:55",
-        "end": "9:45"
-      },
-      {
-        "name": "D Block",
-        "start": "9:50",
-        "end": "10:40"
-      },
-      {
-        "name": "E Block",
-        "start": "10:45",
-        "end": "11:35"
-      },
-      {
-        "name": "C Block",
-        "start": "11:40",
-        "end": "13:10"
-      },
+      { "name": "A Block", "start": "8:00", "end": "8:50" },
+      { "name": "B Block", "start": "8:55", "end": "9:45" },
+      { "name": "D Block", "start": "9:50", "end": "10:40" },
+      { "name": "E Block", "start": "10:45", "end": "11:35" },
+      { "name": "C Block", "start": "11:40", "end": "13:10" },
       {
         "name": "Lunch",
         "start": "11:40",
         "end": "13:10",
         "subBlocks": [
-          {
-            "name": "1st Lunch",
-            "start": "11:40",
-            "end": "12:15"
-          },
-          {
-            "name": "2nd Lunch",
-            "start": "11:55",
-            "end": "12:30"
-          },
-          {
-            "name": "3rd Lunch",
-            "start": "12:10",
-            "end": "12:45"
-          },
-          {
-            "name": "4th Lunch",
-            "start": "12:25",
-            "end": "13:00"
-          },
-          {
-            "name": "5th Lunch",
-            "start": "12:40",
-            "end": "13:10"
-          }
+          { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
+          { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
+          { "name": "3rd Lunch", "start": "12:10", "end": "12:45" },
+          { "name": "4th Lunch", "start": "12:25", "end": "13:00" },
+          { "name": "5th Lunch", "start": "12:40", "end": "13:10" }
         ]
       },
-      {
-        "name": "Winter Carnival Chapel",
-        "start": "13:15",
-        "end": "14:40"
-      },
-      {
-        "name": "Winter Carnival Events",
-        "start": "15:00",
-        "end": "20:00"
-      }
+      { "name": "Winter Carnival Chapel", "start": "13:15", "end": "14:40" },
+      { "name": "Winter Carnival Events", "start": "15:00", "end": "20:00" }
     ]
   },
   "2026-02-06": {
     "type": "custom",
     "schedule": [
-      {
-        "name": "Chapel",
-        "start": "8:00",
-        "end": "8:15"
-      },
-      {
-        "name": "Winter Carnival Events",
-        "start": "8:20",
-        "end": "14:30"
-      },
-      {
-        "name": "Lunch",
-        "start": "11:00",
-        "end": "13:00"
-      },
-      {
-        "name": "Dance-off",
-        "start": "13:30",
-        "end": "14:30"
-      }
+      { "name": "Chapel", "start": "8:00", "end": "8:15" },
+      { "name": "Winter Carnival Events", "start": "8:20", "end": "14:30" },
+      { "name": "Lunch", "start": "11:00", "end": "13:00" },
+      { "name": "Dance-off", "start": "13:30", "end": "14:30" }
     ]
   },
   "2026-02-11": {
@@ -378,37 +270,25 @@
         "name": "Fashion Show",
         "start": "8:00",
         "end": "8:30",
-        "grades": [
-          9,
-          10
-        ]
+        "grades": [9, 10]
       },
       {
         "name": "Advisor Meetings",
         "start": "8:00",
         "end": "8:30",
-        "grades": [
-          11,
-          12
-        ]
+        "grades": [11, 12]
       },
       {
         "name": "Advisor Meetings",
         "start": "8:40",
         "end": "9:10",
-        "grades": [
-          9,
-          10
-        ]
+        "grades": [9, 10]
       },
       {
         "name": "Fashion Show",
         "start": "8:40",
         "end": "9:10",
-        "grades": [
-          11,
-          12
-        ]
+        "grades": [11, 12]
       },
       {
         "name": "A Block",
@@ -476,196 +356,66 @@
     "type": "custom",
     "details": "Capstone Day",
     "schedule": [
-      {
-        "name": "Chapel",
-        "start": "8:30",
-        "end": "8:45",
-        "grades": [
-          11,
-          12
-        ]
-      },
-      {
-        "name": "Session 1",
-        "start": "9:00",
-        "end": "10:40",
-        "grades": [
-          11,
-          12
-        ]
-      },
-      {
-        "name": "Break",
-        "start": "10:40",
-        "end": "10:50",
-        "grades": [
-          11,
-          12
-        ]
-      },
+      { "name": "Chapel",    "start": "8:30",  "end": "8:45",  "grades": [11, 12] },
+      { "name": "Session 1", "start": "9:00",  "end": "10:40", "grades": [11, 12] },
+      { "name": "Break",     "start": "10:40", "end": "10:50", "grades": [11, 12] },
       {
         "name": "Lunch",
         "start": "10:45",
         "end": "12:50",
-        "grades": [
-          11,
-          12
-        ],
+        "grades": [11, 12],
         "subBlocks": [
-          {
-            "name": "Group 1 (S. Church, etc.)",
-            "start": "10:45",
-            "end": "11:20"
-          },
-          {
-            "name": "Group 2 (Fuller, etc.)",
-            "start": "12:15",
-            "end": "12:50"
-          }
+          { "name": "Group 1 (S. Church, etc.)", "start": "10:45", "end": "11:20" },
+          { "name": "Group 2 (Fuller, etc.)",    "start": "12:15", "end": "12:50" }
         ]
       },
       {
         "name": "Session 2",
         "start": "10:50",
         "end": "12:50",
-        "grades": [
-          11,
-          12
-        ],
+        "grades": [11, 12],
         "subBlocks": [
-          {
-            "name": "Fuller Hall, Brantview, Morse, Truck Shop, Welding Shop",
-            "start": "10:50",
-            "end": "12:10"
-          },
-          {
-            "name": "South Church Venues, Library Venues",
-            "start": "11:30",
-            "end": "12:50"
-          }
+          { "name": "Fuller Hall, Brantview, Morse, Truck Shop, Welding Shop", "start": "10:50", "end": "12:10" },
+          { "name": "South Church Venues, Library Venues",                     "start": "11:30", "end": "12:50" }
         ]
       },
-      {
-        "name": "Session 3",
-        "start": "13:00",
-        "end": "14:40",
-        "grades": [
-          11,
-          12
-        ]
-      }
+      { "name": "Session 3", "start": "13:00", "end": "14:40", "grades": [11, 12] }
     ]
   },
   "2026-05-14": {
     "type": "custom",
     "details": "Senior Breakfast Schedule",
     "schedule": [
-      {
-        "name": "A Block",
-        "start": "8:00",
-        "end": "8:55"
-      },
-      {
-        "name": "Senior Breakfast",
-        "start": "9:00",
-        "end": "10:00",
-        "grades": [
-          12
-        ]
-      },
-      {
-        "name": "Advisory",
-        "start": "9:00",
-        "end": "10:00",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "B Block",
-        "start": "10:05",
-        "end": "11:00"
-      },
+      { "name": "A Block",          "start": "8:00",  "end": "8:55" },
+      { "name": "Senior Breakfast", "start": "9:00",  "end": "10:00", "grades": [12] },
+      { "name": "Advisory",         "start": "9:00",  "end": "10:00", "grades": [9, 10, 11] },
+      { "name": "B Block",          "start": "10:05", "end": "11:00" },
       {
         "name": "C Block",
         "start": "11:05",
         "end": "12:40",
         "subBlocks": [
-          {
-            "name": "Lunch 1",
-            "start": "11:05",
-            "end": "11:30"
-          },
-          {
-            "name": "Lunch 2",
-            "start": "11:20",
-            "end": "11:45"
-          },
-          {
-            "name": "Lunch 3",
-            "start": "11:40",
-            "end": "12:05"
-          },
-          {
-            "name": "Lunch 4",
-            "start": "12:00",
-            "end": "12:25"
-          },
-          {
-            "name": "Lunch 5",
-            "start": "12:15",
-            "end": "12:40"
-          }
+          { "name": "Lunch 1", "start": "11:05", "end": "11:30" },
+          { "name": "Lunch 2", "start": "11:20", "end": "11:45" },
+          { "name": "Lunch 3", "start": "11:40", "end": "12:05" },
+          { "name": "Lunch 4", "start": "12:00", "end": "12:25" },
+          { "name": "Lunch 5", "start": "12:15", "end": "12:40" }
         ]
       },
-      {
-        "name": "D Block",
-        "start": "12:45",
-        "end": "13:40"
-      },
-      {
-        "name": "E Block",
-        "start": "13:45",
-        "end": "14:40"
-      },
-      {
-        "name": "CP",
-        "start": "14:45",
-        "end": "15:05"
-      }
+      { "name": "D Block", "start": "12:45", "end": "13:40" },
+      { "name": "E Block", "start": "13:45", "end": "14:40" },
+      { "name": "CP",      "start": "14:45", "end": "15:05" }
     ]
   },
   "2026-05-15": {
     "type": "custom",
     "details": "Spring Day",
     "schedule": [
-      {
-        "name": "Chapel",
-        "start": "8:00",
-        "end": "8:45"
-      },
-      {
-        "name": "Spring Day Activities",
-        "start": "8:45",
-        "end": "11:00"
-      },
-      {
-        "name": "BBQ Lunch",
-        "start": "11:00",
-        "end": "13:00"
-      },
-      {
-        "name": "Spring Day Activities",
-        "start": "13:00",
-        "end": "14:30"
-      },
-      {
-        "name": "Advisory Check In",
-        "start": "14:30",
-        "end": "15:00"
-      }
+      { "name": "Chapel",                "start": "8:00",  "end": "8:45" },
+      { "name": "Spring Day Activities", "start": "8:45",  "end": "11:00" },
+      { "name": "BBQ Lunch",             "start": "11:00", "end": "13:00" },
+      { "name": "Spring Day Activities", "start": "13:00", "end": "14:30" },
+      { "name": "Advisory Check In",     "start": "14:30", "end": "15:00" }
     ]
   },
   "2026-05-18": {
@@ -675,42 +425,18 @@
     "type": "custom",
     "details": "Exams",
     "schedule": [
-      {
-        "name": "English/Humanities/ESL",
-        "start": "9:00",
-        "end": "11:30"
-      },
-      {
-        "name": "Lunch",
-        "start": "11:30",
-        "end": "12:30"
-      },
-      {
-        "name": "Languages",
-        "start": "12:45",
-        "end": "15:15"
-      }
+      { "name": "English/Humanities/ESL", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Languages", "start": "12:45", "end": "15:15" }
     ]
   },
   "2026-05-22": {
     "type": "custom",
     "details": "Exams",
     "schedule": [
-      {
-        "name": "Social Studies",
-        "start": "9:00",
-        "end": "11:30"
-      },
-      {
-        "name": "Lunch",
-        "start": "11:30",
-        "end": "12:30"
-      },
-      {
-        "name": "Math",
-        "start": "12:45",
-        "end": "15:15"
-      }
+      { "name": "Social Studies", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Math", "start": "12:45", "end": "15:15" }
     ]
   },
   "2026-05-25": {
@@ -721,217 +447,52 @@
     "type": "custom",
     "details": "Exams",
     "schedule": [
-      {
-        "name": "Science",
-        "start": "9:00",
-        "end": "11:30"
-      },
-      {
-        "name": "Lunch",
-        "start": "11:30",
-        "end": "12:30"
-      },
-      {
-        "name": "Health",
-        "start": "12:45",
-        "end": "15:15"
-      }
+      { "name": "Science", "start": "9:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Health", "start": "12:45", "end": "15:15" }
     ]
   },
   "2026-05-27": {
     "type": "custom",
     "details": "Last Chapel Schedule",
+    "color": "white",
     "schedule": [
-      {
-        "name": "A Block",
-        "start": "8:00",
-        "end": "8:45",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "B Block",
-        "start": "8:50",
-        "end": "9:35",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "Senior Marching and Song Practice (Field House)",
-        "start": "9:00",
-        "end": "13:00",
-        "grades": [
-          12
-        ]
-      },
-      {
-        "name": "D Block",
-        "start": "9:40",
-        "end": "10:25",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "E Block",
-        "start": "10:30",
-        "end": "11:15",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
+      { "name": "A Block", "start": "8:00", "end": "8:45", "grades": [9, 10, 11] },
+      { "name": "B Block", "start": "8:50", "end": "9:35", "grades": [9, 10, 11] },
+      { "name": "Senior Marching and Song Practice (Field House)", "start": "9:00", "end": "13:00", "grades": [12] },
+      { "name": "D Block", "start": "9:40", "end": "10:25", "grades": [9, 10, 11] },
+      { "name": "E Block", "start": "10:30", "end": "11:15", "grades": [9, 10, 11] },
       {
         "name": "C Block",
         "start": "11:20",
         "end": "12:50",
-        "grades": [
-          9,
-          10,
-          11
-        ],
+        "grades": [9, 10, 11],
         "subBlocks": [
-          {
-            "name": "Lunch #1",
-            "start": "11:20",
-            "end": "11:50"
-          },
-          {
-            "name": "Lunch #2",
-            "start": "11:35",
-            "end": "12:05"
-          },
-          {
-            "name": "Lunch #3",
-            "start": "11:50",
-            "end": "12:20"
-          },
-          {
-            "name": "Lunch #4",
-            "start": "12:05",
-            "end": "12:35"
-          },
-          {
-            "name": "Lunch #5",
-            "start": "12:20",
-            "end": "12:50"
-          }
+          { "name": "Lunch #1", "start": "11:20", "end": "11:50" },
+          { "name": "Lunch #2", "start": "11:35", "end": "12:05" },
+          { "name": "Lunch #3", "start": "11:50", "end": "12:20" },
+          { "name": "Lunch #4", "start": "12:05", "end": "12:35" },
+          { "name": "Lunch #5", "start": "12:20", "end": "12:50" }
         ]
       },
-      {
-        "name": "Last Chapel (Fuller Hall)",
-        "start": "13:00",
-        "end": "15:00"
-      },
-      {
-        "name": "Departing Faculty Tea (Library Fireside)",
-        "start": "15:00",
-        "end": "16:00"
-      }
-    ],
-    "color": "white"
+      { "name": "Last Chapel (Fuller Hall)", "start": "13:00", "end": "15:00" },
+      { "name": "Departing Faculty Tea (Library Fireside)", "start": "15:00", "end": "16:00" }
+    ]
   },
   "2026-05-28": {
     "type": "custom",
     "details": "Last Day of School",
     "schedule": [
-      {
-        "name": "Chapel",
-        "start": "8:00",
-        "end": "8:10",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "A Block",
-        "start": "8:20",
-        "end": "8:45",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "B Block",
-        "start": "8:50",
-        "end": "9:15",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "Senior Marching and Song Practice (Field House)",
-        "start": "9:00",
-        "end": "11:30",
-        "grades": [
-          12
-        ]
-      },
-      {
-        "name": "C Block",
-        "start": "9:20",
-        "end": "9:45",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "D Block",
-        "start": "9:50",
-        "end": "10:15",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "E Block",
-        "start": "10:20",
-        "end": "10:45",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "Advisory",
-        "start": "10:50",
-        "end": "11:20",
-        "grades": [
-          9,
-          10,
-          11
-        ]
-      },
-      {
-        "name": "Lunch (Streeter Dining Hall)",
-        "start": "11:30",
-        "end": "12:30"
-      },
-      {
-        "name": "Make-up Exams",
-        "start": "12:30",
-        "end": "15:00"
-      }
+      { "name": "Chapel", "start": "8:00", "end": "8:10", "grades": [9, 10, 11] },
+      { "name": "A Block", "start": "8:20", "end": "8:45", "grades": [9, 10, 11] },
+      { "name": "B Block", "start": "8:50", "end": "9:15", "grades": [9, 10, 11] },
+      { "name": "Senior Marching and Song Practice (Field House)", "start": "9:00", "end": "11:30", "grades": [12] },
+      { "name": "C Block", "start": "9:20", "end": "9:45", "grades": [9, 10, 11] },
+      { "name": "D Block", "start": "9:50", "end": "10:15", "grades": [9, 10, 11] },
+      { "name": "E Block", "start": "10:20", "end": "10:45", "grades": [9, 10, 11] },
+      { "name": "Advisory", "start": "10:50", "end": "11:20", "grades": [9, 10, 11] },
+      { "name": "Lunch (Streeter Dining Hall)", "start": "11:30", "end": "12:30" },
+      { "name": "Make-up Exams", "start": "12:30", "end": "15:00" }
     ]
   }
 }
