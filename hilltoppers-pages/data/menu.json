@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-05-27T00:14:11.299Z",
+  "updatedAt": "2026-05-27T04:57:19.645Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-26",
+  "menuDate": "2026-05-27",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,32 +9,27 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Nacho Bar",
-        "Spicy Refried Beans",
-        "Brown Rice",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce",
-        "Chili con Carne"
+        "Grilled Pesto-Marinated Chicken Breast",
+        "Baked Tofu Steak",
+        "Parmesan Orzo",
+        "California Blend Vegetables"
       ],
       "globalFare": [
-        "General Tso's Chicken",
-        "Braised Gochujang Tofu",
-        "Brown Rice",
-        "Stir Fry Vegetables"
+        "Black Bean Patty",
+        "Hamburger on a Bun",
+        "French Fries"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Loaded Bacon Ranch Fries",
-        "Kansas City BBQ Pulled Pork",
-        "Baked Beans",
-        "Seasoned Corn on the Cob"
+        "Baked Italian Meatloaf",
+        "Red Skin Mashed Potatoes",
+        "Steamed Green Beans and Carrots"
       ],
       "globalFare": [
-        "Garlic Thai Chicken",
-        "Capellini",
-        "Asian Style Snap Peas",
-        "Chicken Broth"
+        "Chicken Brazilian Stroganoff",
+        "Jasmine Rice",
+        "Roasted Garlic Butter Mushrooms"
       ]
     }
   }
