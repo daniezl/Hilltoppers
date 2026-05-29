@@ -1,36 +1,38 @@
 {
-  "updatedAt": "2026-05-28T23:38:58.652Z",
+  "updatedAt": "2026-05-29T04:13:09.334Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-28",
+  "menuDate": "2026-05-29",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
       "globalFare": []
     },
     "lunch": {
-      "classicKitchen": [],
+      "classicKitchen": [
+        "TVP Vegan Meatballs",
+        "Spaghetti & Meatballs",
+        "Fresh Roasted Green Beans",
+        "Marinara Sauce"
+      ],
       "globalFare": [
-        "Spicy Mexican Shredded Pork",
-        "Cheese Quesadilla",
-        "Roasted Confetti Corn",
-        "Mexican Fiesta Soup",
-        "Corn Tortilla Strips"
+        "Whole Grain Corn Dog",
+        "Mac & Cheese Bites",
+        "Waffle Fries",
+        "Peas & Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Gnocchi with Roasted Cauliflower",
-        "Honey Glazed Pork Loin",
-        "Fresh Roasted Broccoli",
-        "White Cheese Sauce"
+        "Western Turkey Burger",
+        "Vegan Veggie Patty",
+        "Onion Rings",
+        "Roasted Green Beans"
       ],
       "globalFare": [
-        "Teriyaki Glazed Chicken Breast",
-        "Adobo Marinated Egg",
-        "Vegetable Egg Roll",
-        "Asian Fried Rice",
-        "Seasoned Asian Vegetables",
-        "Egg Drop Soup"
+        "Baked Ziti",
+        "Italian Sausage",
+        "Italian Vegetables",
+        "Marinara Sauce"
       ]
     }
   }
