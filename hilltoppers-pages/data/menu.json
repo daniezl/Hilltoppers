@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-05-30T00:13:56.087Z",
+  "updatedAt": "2026-05-30T04:35:29.688Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-29",
+  "menuDate": "2026-05-30",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,30 +9,26 @@
     },
     "lunch": {
       "classicKitchen": [
-        "TVP Vegan Meatballs",
-        "Spaghetti & Meatballs",
-        "Fresh Roasted Green Beans",
-        "Marinara Sauce"
+        "Plant-Based Chik'n Tenders",
+        "Crispy Chicken with Pepper Jack Sandwich",
+        "French Fries",
+        "Zucchini & Tomatoes"
       ],
-      "globalFare": [
-        "Whole Grain Corn Dog",
-        "Mac & Cheese Bites",
-        "Waffle Fries",
-        "Peas & Carrots"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Western Turkey Burger",
-        "Vegan Veggie Patty",
-        "Onion Rings",
-        "Roasted Green Beans"
+        "London Broil",
+        "Risotto Stuffed Portobello",
+        "Baked Potato Bar",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Baked Ziti",
-        "Italian Sausage",
-        "Italian Vegetables",
-        "Marinara Sauce"
+        "Vegetable Potsticker",
+        "Oriental Chicken",
+        "Braised Gochujang Tofu",
+        "Vegetable Rice",
+        "Stir Fry Vegetables"
       ]
     }
   }
