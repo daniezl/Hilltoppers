@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-05-31T00:05:58.025Z",
+  "updatedAt": "2026-05-31T05:05:24.331Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-30",
+  "menuDate": "2026-05-31",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,26 +9,23 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Crispy Chicken with Pepper Jack Sandwich",
-        "French Fries",
-        "Zucchini & Tomatoes"
+        "Sandwich Club on Croissant",
+        "Broccoli & Cheddar Soup"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "London Broil",
-        "Risotto Stuffed Portobello",
-        "Baked Potato Bar",
-        "Brussel Sprouts"
+        "Confetti Lentils",
+        "Roasted Garlic Chicken",
+        "Oven Roasted Red Potatoes",
+        "Carrot Baby Cut"
       ],
       "globalFare": [
-        "Vegetable Potsticker",
-        "Oriental Chicken",
-        "Braised Gochujang Tofu",
-        "Vegetable Rice",
-        "Stir Fry Vegetables"
+        "Caribbean Coconut Curry Sauce",
+        "Coconut Lime Tilapia",
+        "Jasmine Rice",
+        "Roasted Curried Cauliflower"
       ]
     }
   }
