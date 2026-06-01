@@ -1,31 +1,49 @@
 {
-  "updatedAt": "2026-06-01T01:40:54.920Z",
+  "updatedAt": "2026-06-01T07:06:37.359Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-05-31",
+  "menuDate": "2026-06-01",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Bacon and Cheese Biscuit",
+        "Fried Egg",
+        "Southern Style Biscuit",
+        "Cheese American Reduced Fat Sodium 160 C"
+      ],
+      "globalFare": [
+        "Sausage Patty",
+        "Scrambled Eggs with Peppers and Onions",
+        "Cinnamon Buttermilk Pancakes",
+        "Hashbrowns"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Sandwich Club on Croissant",
-        "Broccoli & Cheddar Soup"
+        "Baby Corn",
+        "Italian Breaded Chicken",
+        "French Fries"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Chicken Sausage Patty",
+        "Oven Roasted Red Potatoes"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Confetti Lentils",
-        "Roasted Garlic Chicken",
-        "Oven Roasted Red Potatoes",
-        "Carrot Baby Cut"
+        "Baked Italian Chicken Breast",
+        "Manicotti",
+        "Fresh Roasted Broccoli & Cauliflower"
       ],
       "globalFare": [
-        "Caribbean Coconut Curry Sauce",
-        "Coconut Lime Tilapia",
-        "Jasmine Rice",
-        "Roasted Curried Cauliflower"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Tortilla",
+        "Spicy Refried Beans",
+        "Mexican Street Corn Salad",
+        "Seasoned White Rice",
+        "Nacho Cheese Sauce"
       ]
     }
   }
