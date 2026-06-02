@@ -1,49 +1,48 @@
 {
-  "updatedAt": "2026-06-01T23:52:43.061Z",
+  "updatedAt": "2026-06-02T04:41:49.731Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-01",
+  "menuDate": "2026-06-02",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon and Cheese Biscuit",
-        "Fried Egg",
-        "Southern Style Biscuit",
-        "Cheese American Reduced Fat Sodium 160 C"
+        "Bagel Bacon Egg Chs Topping",
+        "Egg and Cheese Bagel"
       ],
       "globalFare": [
-        "Sausage Patty",
-        "Scrambled Eggs with Peppers and Onions",
-        "Cinnamon Buttermilk Pancakes",
-        "Hashbrowns"
+        "Corned Beef Hash",
+        "Scrambled Eggs",
+        "French Toast Sticks",
+        "Tater Tots"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Baby Corn",
-        "Italian Breaded Chicken",
-        "French Fries"
+        "Crispy Fried Cauliflower",
+        "Fried Chicken Drumsticks",
+        "Augratin Potatoes",
+        "Green Beans with Red Peppers"
       ],
       "globalFare": [
-        "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Chicken Sausage Patty",
-        "Oven Roasted Red Potatoes"
+        "Vegetable Potsticker",
+        "Pork Belly",
+        "Brown Rice",
+        "Seasoned Stir Fry Vegetables",
+        "Broth Pork Shoyu"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Baked Italian Chicken Breast",
-        "Manicotti",
-        "Fresh Roasted Broccoli & Cauliflower"
+        "Braised Beef Brisket",
+        "Tofu, Veggie & Rice Stir Fry",
+        "Oven Roasted Red Potatoes",
+        "Sauteed Carrots and Parsnips"
       ],
       "globalFare": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Tortilla",
-        "Spicy Refried Beans",
-        "Mexican Street Corn Salad",
-        "Seasoned White Rice",
-        "Nacho Cheese Sauce"
+        "Grilled Chicken Breast",
+        "Vegetarian Alfredo Primavera",
+        "Fresh Roasted Broccoli",
+        "Sauted Spinach and Mushrooms",
+        "Squash Medley"
       ]
     }
   }
