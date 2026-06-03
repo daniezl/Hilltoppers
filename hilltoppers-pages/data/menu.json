@@ -1,48 +1,51 @@
 {
-  "updatedAt": "2026-06-03T02:09:48.018Z",
+  "updatedAt": "2026-06-03T07:23:23.829Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-02",
+  "menuDate": "2026-06-03",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bagel Bacon Egg Chs Topping",
-        "Egg and Cheese Bagel"
+        "Bacon Egg and Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Sausage and Egg Croissant"
       ],
       "globalFare": [
-        "Corned Beef Hash",
+        "Hashbrown Patty",
+        "Biscuit 1.2 Oz w/Sausage Gravy LAMH",
         "Scrambled Eggs",
-        "French Toast Sticks",
-        "Tater Tots"
+        "Belgian Waffle w/ Powder Sugar & Syrup"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Crispy Fried Cauliflower",
-        "Fried Chicken Drumsticks",
-        "Augratin Potatoes",
-        "Green Beans with Red Peppers"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Brown Rice",
+        "Cumin Black Beans",
+        "Corn with Peppers and Onions",
+        "Nacho Cheese Sauce",
+        "Chips Doritos Cool Ranch RF WG 1 Oz",
+        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
       ],
       "globalFare": [
-        "Vegetable Potsticker",
-        "Pork Belly",
-        "Brown Rice",
-        "Seasoned Stir Fry Vegetables",
-        "Broth Pork Shoyu"
+        "Fried Chicken Tenders",
+        "Plant-Based Chik'n Tenders",
+        "French Fries",
+        "Peas & Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Braised Beef Brisket",
-        "Tofu, Veggie & Rice Stir Fry",
-        "Oven Roasted Red Potatoes",
-        "Sauteed Carrots and Parsnips"
+        "Smothered Chicken",
+        "Roasted Tofu",
+        "Seasoned White Rice",
+        "Roasted Carrots"
       ],
       "globalFare": [
-        "Grilled Chicken Breast",
-        "Vegetarian Alfredo Primavera",
-        "Fresh Roasted Broccoli",
-        "Sauted Spinach and Mushrooms",
-        "Squash Medley"
+        "Beef Stroganoff",
+        "Mushroom Spinach Stroganoff Vegan",
+        "Parsley Buttered Egg Noodles",
+        "Chp Key Largo Veg"
       ]
     }
   }
