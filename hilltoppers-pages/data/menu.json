@@ -1,51 +1,45 @@
 {
-  "updatedAt": "2026-06-04T02:07:02.083Z",
+  "updatedAt": "2026-06-04T07:07:14.569Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-03",
+  "menuDate": "2026-06-04",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon Egg and Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Sausage and Egg Croissant"
+        "Bacon & Cheese Wrap",
+        "Egg & Potato Breakfast Wrap"
       ],
       "globalFare": [
-        "Hashbrown Patty",
-        "Biscuit 1.2 Oz w/Sausage Gravy LAMH",
+        "Pork Bacon",
         "Scrambled Eggs",
-        "Belgian Waffle w/ Powder Sugar & Syrup"
+        "French Toast",
+        "Hashbrown"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Brown Rice",
-        "Cumin Black Beans",
-        "Corn with Peppers and Onions",
-        "Nacho Cheese Sauce",
-        "Chips Doritos Cool Ranch RF WG 1 Oz",
-        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
+        "Meatball",
+        "Garlic Breadstick",
+        "Fettuccine Alfredo",
+        "Steamed Broccoli"
       ],
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Plant-Based Chik'n Tenders",
-        "French Fries",
-        "Peas & Carrots"
+        "Italian Sausage with Peppers & Onions",
+        "Potato Cheddar Bites",
+        "Roasted Carrots"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Smothered Chicken",
+        "Herb Baked Chicken Breast",
         "Roasted Tofu",
-        "Seasoned White Rice",
-        "Roasted Carrots"
+        "Red Skin Mashed Potatoes",
+        "Turmeric Roasted Cauliflower"
       ],
       "globalFare": [
-        "Beef Stroganoff",
-        "Mushroom Spinach Stroganoff Vegan",
-        "Parsley Buttered Egg Noodles",
-        "Chp Key Largo Veg"
+        "Grilled Pork Chop",
+        "Baked Sweet Potato",
+        "Mixed Vegetables",
+        "Roasted Apples"
       ]
     }
   }
