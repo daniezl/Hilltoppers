@@ -1,45 +1,52 @@
 {
-  "updatedAt": "2026-06-04T23:46:21.938Z",
+  "updatedAt": "2026-06-05T04:19:26.585Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-04",
+  "menuDate": "2026-06-05",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon & Cheese Wrap",
-        "Egg & Potato Breakfast Wrap"
+        "Sandwich Egg & Cheese English Muffin",
+        "Breakfast Sandwich",
+        "Egg Bacon and Cheese English Muffin"
       ],
       "globalFare": [
-        "Pork Bacon",
         "Scrambled Eggs",
-        "French Toast",
-        "Hashbrown"
+        "Buttermilk Pancakes",
+        "Mild Pork Sausage Link",
+        "Hashbrowns"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Meatball",
-        "Garlic Breadstick",
-        "Fettuccine Alfredo",
-        "Steamed Broccoli"
+        "Breaded Fish Sandwich",
+        "Baked Beans",
+        "French Fries",
+        "Coleslaw",
+        "Oven Roasted Succotash"
       ],
       "globalFare": [
-        "Italian Sausage with Peppers & Onions",
-        "Potato Cheddar Bites",
-        "Roasted Carrots"
+        "Sweet & Sour Chicken",
+        "Vegetable Egg Roll",
+        "Fried Brown Rice",
+        "Sweet-n- Sour Tofu & Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Herb Baked Chicken Breast",
-        "Roasted Tofu",
-        "Red Skin Mashed Potatoes",
-        "Turmeric Roasted Cauliflower"
+        "Pork Ribs Baby Back BBQ",
+        "Baked Beans",
+        "Spicy Cajun Wedges",
+        "Seasoned Corn on the Cob"
       ],
       "globalFare": [
-        "Grilled Pork Chop",
-        "Baked Sweet Potato",
-        "Mixed Vegetables",
-        "Roasted Apples"
+        "Beef Bibimbap Bowl",
+        "Adobo Marinated Egg",
+        "Asian Marinated Tofu",
+        "Jasmine Rice",
+        "Steamed Broccoli",
+        "Sauteed Button Mushrooms",
+        "Shredded Carrots",
+        "Kimchi"
       ]
     }
   }
