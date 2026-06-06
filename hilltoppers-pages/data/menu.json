@@ -1,52 +1,32 @@
 {
-  "updatedAt": "2026-06-05T23:47:00.562Z",
+  "updatedAt": "2026-06-06T04:01:56.213Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-05",
+  "menuDate": "2026-06-06",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Sandwich Egg & Cheese English Muffin",
-        "Breakfast Sandwich",
-        "Egg Bacon and Cheese English Muffin"
-      ],
-      "globalFare": [
-        "Scrambled Eggs",
-        "Buttermilk Pancakes",
-        "Mild Pork Sausage Link",
-        "Hashbrowns"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Breaded Fish Sandwich",
-        "Baked Beans",
-        "French Fries",
-        "Coleslaw",
-        "Oven Roasted Succotash"
+        "Shakshuka",
+        "Seasoned White Rice",
+        "Sauted Spinach and Mushrooms"
       ],
-      "globalFare": [
-        "Sweet & Sour Chicken",
-        "Vegetable Egg Roll",
-        "Fried Brown Rice",
-        "Sweet-n- Sour Tofu & Vegetables"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Pork Ribs Baby Back BBQ",
-        "Baked Beans",
-        "Spicy Cajun Wedges",
-        "Seasoned Corn on the Cob"
+        "Beef Flank Steak",
+        "Baked Potato",
+        "Roasted Green Beans",
+        "Broccoli & Carrots"
       ],
       "globalFare": [
-        "Beef Bibimbap Bowl",
-        "Adobo Marinated Egg",
-        "Asian Marinated Tofu",
-        "Jasmine Rice",
-        "Steamed Broccoli",
-        "Sauteed Button Mushrooms",
-        "Shredded Carrots",
-        "Kimchi"
+        "Orange Chili Broiled Chicken",
+        "Garlic Orange Chili Tofu",
+        "Cilantro Lime Brown Rice",
+        "Roasted Confetti Corn"
       ]
     }
   }
