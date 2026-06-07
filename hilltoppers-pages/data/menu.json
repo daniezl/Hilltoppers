@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-06-07T01:38:01.487Z",
+  "updatedAt": "2026-06-07T06:35:43.390Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-06",
+  "menuDate": "2026-06-07",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,24 +9,25 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Shakshuka",
-        "Seasoned White Rice",
-        "Sauted Spinach and Mushrooms"
+        "Turkey Club Sandwich",
+        "Peas and Carrots",
+        "Loaded Baked Potato Soup"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Beef Flank Steak",
-        "Baked Potato",
-        "Roasted Green Beans",
-        "Broccoli & Carrots"
+        "Mozzarella Pizza Stick",
+        "Pepperoni Calzone",
+        "Sausage Pepperoni Calzone",
+        "Cheese Calzone",
+        "Marinara Sauce"
       ],
       "globalFare": [
-        "Orange Chili Broiled Chicken",
-        "Garlic Orange Chili Tofu",
-        "Cilantro Lime Brown Rice",
-        "Roasted Confetti Corn"
+        "Jerk Chicken",
+        "Jerk Tofu",
+        "Quinoa & Tomatoes",
+        "Stir Fry Vegetables"
       ]
     }
   }
