@@ -1,33 +1,51 @@
 {
-  "updatedAt": "2026-06-08T01:41:02.203Z",
+  "updatedAt": "2026-08-26T13:52:56.028Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-06-07",
+  "menuDate": "2026-08-26",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Bacon Egg and Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Sausage and Egg Croissant"
+      ],
+      "globalFare": [
+        "Hashbrown Patty",
+        "Biscuit 1.2 Oz w/Sausage Gravy LAMH",
+        "Scrambled Eggs",
+        "Belgian Waffle w/ Powder Sugar & Syrup"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Turkey Club Sandwich",
-        "Peas and Carrots",
-        "Loaded Baked Potato Soup"
+        "Grilled Cheese",
+        "Grilled Ham and Cheese",
+        "French Fries",
+        "Peas & Carrots"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Cumin Black Beans",
+        "Corn with Peppers and Onions",
+        "Nacho Cheese Sauce",
+        "Chips Doritos Cool Ranch RF WG 1 Oz",
+        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Mozzarella Pizza Stick",
-        "Pepperoni Calzone",
-        "Sausage Pepperoni Calzone",
-        "Cheese Calzone",
+        "Seasoned Ground Beef",
+        "Cheese Lasagna Casserole",
+        "Garlic Breadstick",
+        "California Blend Vegetables",
         "Marinara Sauce"
       ],
       "globalFare": [
-        "Jerk Chicken",
-        "Jerk Tofu",
-        "Quinoa & Tomatoes",
-        "Stir Fry Vegetables"
+        "Plant-Based Chik'n Tenders",
+        "BLT Crispy Chicken Sandwich",
+        "Curly Fries",
+        "Buttered Corn"
       ]
     }
   }
