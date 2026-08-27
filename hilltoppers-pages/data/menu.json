@@ -1,51 +1,46 @@
 {
-  "updatedAt": "2026-08-27T00:36:42.265Z",
+  "updatedAt": "2026-08-27T11:04:38.110Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-26",
+  "menuDate": "2026-08-27",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon Egg and Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Sausage and Egg Croissant"
+        "Bacon & Cheese Wrap",
+        "Egg & Potato Breakfast Wrap"
       ],
       "globalFare": [
-        "Hashbrown Patty",
-        "Biscuit 1.2 Oz w/Sausage Gravy LAMH",
+        "Pork Bacon",
         "Scrambled Eggs",
-        "Belgian Waffle w/ Powder Sugar & Syrup"
+        "French Toast",
+        "Hashbrown"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Cheese",
-        "Grilled Ham and Cheese",
-        "French Fries",
-        "Peas & Carrots"
+        "Meatball",
+        "Garlic Breadstick",
+        "Spaghetti Noodles",
+        "Steamed Broccoli",
+        "Parmesan Broiled Tomato"
       ],
       "globalFare": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Cumin Black Beans",
-        "Corn with Peppers and Onions",
-        "Nacho Cheese Sauce",
-        "Chips Doritos Cool Ranch RF WG 1 Oz",
-        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
+        "Buffalo Cauliflower Bites",
+        "Boneless Breaded Chicken Wings",
+        "Seasoned White Rice",
+        "Cranberry Broccoli Salad"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Cheese Lasagna Casserole",
-        "Garlic Breadstick",
-        "California Blend Vegetables",
-        "Marinara Sauce"
+        "Gnocchi with Summer Squash and Basil",
+        "Honey Glazed Pork Loin",
+        "Roasted Cauliflower",
+        "Lemon Pepper Peas with Dill"
       ],
       "globalFare": [
-        "Plant-Based Chik'n Tenders",
-        "BLT Crispy Chicken Sandwich",
-        "Curly Fries",
-        "Buttered Corn"
+        "Grilled Chipotle Chicken",
+        "Seasoned White Rice",
+        "Green Beans with Sauteed Mushrooms"
       ]
     }
   }
