@@ -1,18 +1,27 @@
 {
-  "updatedAt": "2026-08-27T11:04:38.110Z",
+  "updatedAt": "2026-08-27T21:06:58.627Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-08-27",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon & Cheese Wrap",
-        "Egg & Potato Breakfast Wrap"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
         "Pork Bacon",
         "Scrambled Eggs",
-        "French Toast",
-        "Hashbrown"
+        "Black Forest Ham",
+        "Breakfast Quesadilla",
+        "Home Fried Potatoes",
+        "Bacon Bits"
       ]
     },
     "lunch": {
