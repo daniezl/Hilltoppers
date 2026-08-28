@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-08-27T21:06:58.627Z",
+  "updatedAt": "2026-08-28T05:34:28.495Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-27",
+  "menuDate": "2026-08-28",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -16,40 +16,41 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Pork Bacon",
         "Scrambled Eggs",
-        "Black Forest Ham",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes",
-        "Bacon Bits"
+        "Mild Pork Sausage Link",
+        "Chocolate Chip Pancakes",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Meatball",
-        "Garlic Breadstick",
-        "Spaghetti Noodles",
-        "Steamed Broccoli",
-        "Parmesan Broiled Tomato"
+        "Breaded Fish Sandwich",
+        "Baked Beans",
+        "French Fries",
+        "Coleslaw",
+        "Oven Roasted Succotash"
       ],
       "globalFare": [
-        "Buffalo Cauliflower Bites",
-        "Boneless Breaded Chicken Wings",
-        "Seasoned White Rice",
-        "Cranberry Broccoli Salad"
+        "Sweet & Sour Chicken",
+        "Vegetable Egg Roll",
+        "Fried Brown Rice",
+        "Sweet-n- Sour Tofu & Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Gnocchi with Summer Squash and Basil",
-        "Honey Glazed Pork Loin",
-        "Roasted Cauliflower",
-        "Lemon Pepper Peas with Dill"
+        "Pork Ribs Baby Back BBQ",
+        "Baked Beans",
+        "Cheese Mashed Potatoes",
+        "Seasoned Corn on the Cob"
       ],
       "globalFare": [
-        "Grilled Chipotle Chicken",
-        "Seasoned White Rice",
-        "Green Beans with Sauteed Mushrooms"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Tortilla",
+        "Spicy Refried Beans",
+        "Mexican Street Corn Salad",
+        "Jasmine Rice"
       ]
     }
   }
