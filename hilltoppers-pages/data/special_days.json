@@ -7,156 +7,60 @@
     "type": "custom",
     "details": "test details",
     "schedule": [
-      {
-        "name": "test",
-        "start": "08:00",
-        "end": "15:06"
-      }
+      { "name": "test", "start": "08:00", "end": "15:06" }
     ]
   },
   "2025-12-05": {
     "type": "custom",
     "details": "Capstone Day",
     "schedule": [
-      {
-        "name": "Chapel",
-        "start": "08:30",
-        "end": "08:45"
-      },
-      {
-        "name": "Session 1",
-        "start": "09:00",
-        "end": "10:35"
-      },
-      {
-        "name": "Break",
-        "start": "10:35",
-        "end": "10:45"
-      },
-      {
-        "name": "Lunch",
-        "start": "10:45",
-        "end": "11:20"
-      },
-      {
-        "name": "Session 2",
-        "start": "11:30",
-        "end": "12:50"
-      },
-      {
-        "name": "Session 3",
-        "start": "13:00",
-        "end": "14:30"
-      }
+      { "name": "Chapel", "start": "08:30", "end": "08:45" },
+      { "name": "Session 1", "start": "09:00", "end": "10:35" },
+      { "name": "Break", "start": "10:35", "end": "10:45" },
+      { "name": "Lunch", "start": "10:45", "end": "11:20" },
+      { "name": "Session 2", "start": "11:30", "end": "12:50" },
+      { "name": "Session 3", "start": "13:00", "end": "14:30" }
     ]
   },
   "2025-12-10": {
     "type": "no_school"
   },
   "2025-12-15": {
+    "type": "custom",
     "schedule": [
-      {
-        "end": "11:30",
-        "name": "Humanities / English / ESL",
-        "start": "09:00"
-      },
-      {
-        "end": "12:30",
-        "name": "Lunch",
-        "start": "11:30"
-      },
-      {
-        "end": "15:15",
-        "name": "Science",
-        "start": "12:45"
-      }
-    ],
-    "type": "custom"
+      { "name": "Humanities / English / ESL", "start": "09:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Science", "start": "12:45", "end": "15:15" }
+    ]
   },
   "2025-12-16": {
+    "type": "custom",
     "schedule": [
-      {
-        "end": "11:30",
-        "name": "Social Studies / CTE",
-        "start": "09:00"
-      },
-      {
-        "end": "12:30",
-        "name": "Lunch",
-        "start": "11:30"
-      },
-      {
-        "end": "15:15",
-        "name": "Languages / CTE",
-        "start": "12:45"
-      }
-    ],
-    "type": "custom"
+      { "name": "Social Studies / CTE", "start": "09:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Languages / CTE", "start": "12:45", "end": "15:15" }
+    ]
   },
   "2025-12-17": {
+    "type": "custom",
     "schedule": [
-      {
-        "end": "11:30",
-        "name": "Math",
-        "start": "09:00"
-      },
-      {
-        "end": "12:30",
-        "name": "Lunch",
-        "start": "11:30"
-      },
-      {
-        "end": "15:15",
-        "name": "Health",
-        "start": "12:45"
-      }
-    ],
-    "type": "custom"
+      { "name": "Math", "start": "09:00", "end": "11:30" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" },
+      { "name": "Health", "start": "12:45", "end": "15:15" }
+    ]
   },
   "2025-12-18": {
+    "type": "custom",
     "schedule": [
-      {
-        "end": "8:10",
-        "name": "Chapel",
-        "start": "8:00"
-      },
-      {
-        "end": "8:45",
-        "name": "A Block",
-        "start": "8:20"
-      },
-      {
-        "end": "9:15",
-        "name": "B Block",
-        "start": "8:50"
-      },
-      {
-        "end": "9:45",
-        "name": "C Block",
-        "start": "9:20"
-      },
-      {
-        "end": "10:15",
-        "name": "D Block",
-        "start": "9:50"
-      },
-      {
-        "end": "10:45",
-        "name": "E Block",
-        "start": "10:20"
-      },
-      {
-        "end": "11:20",
-        "name": "Advisory",
-        "start": "10:50"
-      },
-      {
-        "end": "12:30",
-        "name": "Lunch",
-        "start": "11:30"
-      }
-    ],
-    "type": "custom"
+      { "name": "Chapel", "start": "8:00", "end": "8:10" },
+      { "name": "A Block", "start": "8:20", "end": "8:45" },
+      { "name": "B Block", "start": "8:50", "end": "9:15" },
+      { "name": "C Block", "start": "9:20", "end": "9:45" },
+      { "name": "D Block", "start": "9:50", "end": "10:15" },
+      { "name": "E Block", "start": "10:20", "end": "10:45" },
+      { "name": "Advisory", "start": "10:50", "end": "11:20" },
+      { "name": "Lunch", "start": "11:30", "end": "12:30" }
+    ]
   },
   "2026-01-07": {
     "type": "late_start"
@@ -179,9 +83,7 @@
       { "name": "E Block", "start": "10:45", "end": "11:35" },
       { "name": "C Block", "start": "11:40", "end": "12:10" },
       {
-        "name": "Lunch",
-        "start": "11:40",
-        "end": "13:10",
+        "name": "Lunch", "start": "11:40", "end": "13:10",
         "subBlocks": [
           { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
           { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
@@ -202,9 +104,7 @@
       { "name": "E Block", "start": "10:45", "end": "11:35" },
       { "name": "C Block", "start": "11:40", "end": "13:10" },
       {
-        "name": "Lunch",
-        "start": "11:40",
-        "end": "13:10",
+        "name": "Lunch", "start": "11:40", "end": "13:10",
         "subBlocks": [
           { "name": "1st Lunch", "start": "11:40", "end": "12:15" },
           { "name": "2nd Lunch", "start": "11:55", "end": "12:30" },
@@ -266,87 +166,25 @@
     "type": "custom",
     "details": "Fashion Show",
     "schedule": [
+      { "name": "Fashion Show", "start": "8:00", "end": "8:30", "grades": [9,10] },
+      { "name": "Advisor Meetings", "start": "8:00", "end": "8:30", "grades": [11,12] },
+      { "name": "Advisor Meetings", "start": "8:40", "end": "9:10", "grades": [9,10] },
+      { "name": "Fashion Show", "start": "8:40", "end": "9:10", "grades": [11,12] },
+      { "name": "A Block", "start": "9:20", "end": "10:10" },
+      { "name": "B Block", "start": "10:15", "end": "11:05" },
       {
-        "name": "Fashion Show",
-        "start": "8:00",
-        "end": "8:30",
-        "grades": [9, 10]
-      },
-      {
-        "name": "Advisor Meetings",
-        "start": "8:00",
-        "end": "8:30",
-        "grades": [11, 12]
-      },
-      {
-        "name": "Advisor Meetings",
-        "start": "8:40",
-        "end": "9:10",
-        "grades": [9, 10]
-      },
-      {
-        "name": "Fashion Show",
-        "start": "8:40",
-        "end": "9:10",
-        "grades": [11, 12]
-      },
-      {
-        "name": "A Block",
-        "start": "9:20",
-        "end": "10:10"
-      },
-      {
-        "name": "B Block",
-        "start": "10:15",
-        "end": "11:05"
-      },
-      {
-        "name": "C Block",
-        "start": "11:10",
-        "end": "12:55",
+        "name": "C Block", "start": "11:10", "end": "12:55",
         "subBlocks": [
-          {
-            "name": "Lunch 1",
-            "start": "11:05",
-            "end": "11:35"
-          },
-          {
-            "name": "Lunch 2",
-            "start": "11:25",
-            "end": "11:55"
-          },
-          {
-            "name": "Lunch 3",
-            "start": "11:45",
-            "end": "12:15"
-          },
-          {
-            "name": "Lunch 4",
-            "start": "12:05",
-            "end": "12:35"
-          },
-          {
-            "name": "Lunch 5",
-            "start": "12:25",
-            "end": "12:55"
-          }
+          { "name": "Lunch 1", "start": "11:05", "end": "11:35" },
+          { "name": "Lunch 2", "start": "11:25", "end": "11:55" },
+          { "name": "Lunch 3", "start": "11:45", "end": "12:15" },
+          { "name": "Lunch 4", "start": "12:05", "end": "12:35" },
+          { "name": "Lunch 5", "start": "12:25", "end": "12:55" }
         ]
       },
-      {
-        "name": "D Block",
-        "start": "13:00",
-        "end": "13:50"
-      },
-      {
-        "name": "E Block",
-        "start": "13:55",
-        "end": "14:45"
-      },
-      {
-        "name": "CP",
-        "start": "14:50",
-        "end": "15:10"
-      }
+      { "name": "D Block", "start": "13:00", "end": "13:50" },
+      { "name": "E Block", "start": "13:55", "end": "14:45" },
+      { "name": "CP", "start": "14:50", "end": "15:10" }
     ]
   },
   "2026-04-29": {
@@ -356,44 +194,36 @@
     "type": "custom",
     "details": "Capstone Day",
     "schedule": [
-      { "name": "Chapel",    "start": "8:30",  "end": "8:45",  "grades": [11, 12] },
-      { "name": "Session 1", "start": "9:00",  "end": "10:40", "grades": [11, 12] },
-      { "name": "Break",     "start": "10:40", "end": "10:50", "grades": [11, 12] },
+      { "name": "Chapel", "start": "8:30", "end": "8:45", "grades": [11,12] },
+      { "name": "Session 1", "start": "9:00", "end": "10:40", "grades": [11,12] },
+      { "name": "Break", "start": "10:40", "end": "10:50", "grades": [11,12] },
       {
-        "name": "Lunch",
-        "start": "10:45",
-        "end": "12:50",
-        "grades": [11, 12],
+        "name": "Lunch", "start": "10:45", "end": "12:50", "grades": [11,12],
         "subBlocks": [
           { "name": "Group 1 (S. Church, etc.)", "start": "10:45", "end": "11:20" },
-          { "name": "Group 2 (Fuller, etc.)",    "start": "12:15", "end": "12:50" }
+          { "name": "Group 2 (Fuller, etc.)", "start": "12:15", "end": "12:50" }
         ]
       },
       {
-        "name": "Session 2",
-        "start": "10:50",
-        "end": "12:50",
-        "grades": [11, 12],
+        "name": "Session 2", "start": "10:50", "end": "12:50", "grades": [11,12],
         "subBlocks": [
           { "name": "Fuller Hall, Brantview, Morse, Truck Shop, Welding Shop", "start": "10:50", "end": "12:10" },
-          { "name": "South Church Venues, Library Venues",                     "start": "11:30", "end": "12:50" }
+          { "name": "South Church Venues, Library Venues", "start": "11:30", "end": "12:50" }
         ]
       },
-      { "name": "Session 3", "start": "13:00", "end": "14:40", "grades": [11, 12] }
+      { "name": "Session 3", "start": "13:00", "end": "14:40", "grades": [11,12] }
     ]
   },
   "2026-05-14": {
     "type": "custom",
     "details": "Senior Breakfast Schedule",
     "schedule": [
-      { "name": "A Block",          "start": "8:00",  "end": "8:55" },
-      { "name": "Senior Breakfast", "start": "9:00",  "end": "10:00", "grades": [12] },
-      { "name": "Advisory",         "start": "9:00",  "end": "10:00", "grades": [9, 10, 11] },
-      { "name": "B Block",          "start": "10:05", "end": "11:00" },
+      { "name": "A Block", "start": "8:00", "end": "8:55" },
+      { "name": "Senior Breakfast", "start": "9:00", "end": "10:00", "grades": [12] },
+      { "name": "Advisory", "start": "9:00", "end": "10:00", "grades": [9,10,11] },
+      { "name": "B Block", "start": "10:05", "end": "11:00" },
       {
-        "name": "C Block",
-        "start": "11:05",
-        "end": "12:40",
+        "name": "C Block", "start": "11:05", "end": "12:40",
         "subBlocks": [
           { "name": "Lunch 1", "start": "11:05", "end": "11:30" },
           { "name": "Lunch 2", "start": "11:20", "end": "11:45" },
@@ -404,18 +234,18 @@
       },
       { "name": "D Block", "start": "12:45", "end": "13:40" },
       { "name": "E Block", "start": "13:45", "end": "14:40" },
-      { "name": "CP",      "start": "14:45", "end": "15:05" }
+      { "name": "CP", "start": "14:45", "end": "15:05" }
     ]
   },
   "2026-05-15": {
     "type": "custom",
     "details": "Spring Day",
     "schedule": [
-      { "name": "Chapel",                "start": "8:00",  "end": "8:45" },
-      { "name": "Spring Day Activities", "start": "8:45",  "end": "11:00" },
-      { "name": "BBQ Lunch",             "start": "11:00", "end": "13:00" },
+      { "name": "Chapel", "start": "8:00", "end": "8:45" },
+      { "name": "Spring Day Activities", "start": "8:45", "end": "11:00" },
+      { "name": "BBQ Lunch", "start": "11:00", "end": "13:00" },
       { "name": "Spring Day Activities", "start": "13:00", "end": "14:30" },
-      { "name": "Advisory Check In",     "start": "14:30", "end": "15:00" }
+      { "name": "Advisory Check In", "start": "14:30", "end": "15:00" }
     ]
   },
   "2026-05-18": {
@@ -457,16 +287,13 @@
     "details": "Last Chapel Schedule",
     "color": "white",
     "schedule": [
-      { "name": "A Block", "start": "8:00", "end": "8:45", "grades": [9, 10, 11] },
-      { "name": "B Block", "start": "8:50", "end": "9:35", "grades": [9, 10, 11] },
+      { "name": "A Block", "start": "8:00", "end": "8:45", "grades": [9,10,11] },
+      { "name": "B Block", "start": "8:50", "end": "9:35", "grades": [9,10,11] },
       { "name": "Senior Marching and Song Practice", "start": "9:00", "end": "13:00", "grades": [12] },
-      { "name": "D Block", "start": "9:40", "end": "10:25", "grades": [9, 10, 11] },
-      { "name": "E Block", "start": "10:30", "end": "11:15", "grades": [9, 10, 11] },
+      { "name": "D Block", "start": "9:40", "end": "10:25", "grades": [9,10,11] },
+      { "name": "E Block", "start": "10:30", "end": "11:15", "grades": [9,10,11] },
       {
-        "name": "C Block",
-        "start": "11:20",
-        "end": "12:50",
-        "grades": [9, 10, 11],
+        "name": "C Block", "start": "11:20", "end": "12:50", "grades": [9,10,11],
         "subBlocks": [
           { "name": "Lunch #1", "start": "11:20", "end": "11:50" },
           { "name": "Lunch #2", "start": "11:35", "end": "12:05" },
@@ -483,16 +310,81 @@
     "type": "custom",
     "details": "Last Day of School",
     "schedule": [
-      { "name": "Chapel", "start": "8:00", "end": "8:10", "grades": [9, 10, 11] },
-      { "name": "A Block", "start": "8:20", "end": "8:45", "grades": [9, 10, 11] },
-      { "name": "B Block", "start": "8:50", "end": "9:15", "grades": [9, 10, 11] },
+      { "name": "Chapel", "start": "8:00", "end": "8:10", "grades": [9,10,11] },
+      { "name": "A Block", "start": "8:20", "end": "8:45", "grades": [9,10,11] },
+      { "name": "B Block", "start": "8:50", "end": "9:15", "grades": [9,10,11] },
       { "name": "Senior Marching and Song Practice", "start": "9:00", "end": "11:30", "grades": [12] },
-      { "name": "C Block", "start": "9:20", "end": "9:45", "grades": [9, 10, 11] },
-      { "name": "D Block", "start": "9:50", "end": "10:15", "grades": [9, 10, 11] },
-      { "name": "E Block", "start": "10:20", "end": "10:45", "grades": [9, 10, 11] },
-      { "name": "Advisory", "start": "10:50", "end": "11:20", "grades": [9, 10, 11] },
+      { "name": "C Block", "start": "9:20", "end": "9:45", "grades": [9,10,11] },
+      { "name": "D Block", "start": "9:50", "end": "10:15", "grades": [9,10,11] },
+      { "name": "E Block", "start": "10:20", "end": "10:45", "grades": [9,10,11] },
+      { "name": "Advisory", "start": "10:50", "end": "11:20", "grades": [9,10,11] },
       { "name": "Lunch", "start": "11:30", "end": "12:30" },
       { "name": "Make-up Exams", "start": "12:30", "end": "15:00" }
     ]
+  },
+  "2026-09-02": {
+    "type": "late_start",
+    "details": "Late Start Schedule",
+    "source": "sja-calendar"
+  },
+  "2026-09-07": {
+    "type": "no_school",
+    "details": "Labor Day – No Classes",
+    "source": "sja-calendar"
+  },
+  "2026-09-30": {
+    "type": "late_start",
+    "details": "Late Start Schedule",
+    "source": "sja-calendar"
+  },
+  "2026-10-09": {
+    "type": "no_school",
+    "details": "Faculty In-Service – No Classes",
+    "source": "sja-calendar"
+  },
+  "2026-10-12": {
+    "type": "no_school",
+    "details": "Faculty In-Service – No Classes",
+    "source": "sja-calendar"
+  },
+  "2026-11-04": {
+    "type": "late_start",
+    "details": "Late Start Schedule",
+    "source": "sja-calendar"
+  },
+  "2026-11-09": {
+    "type": "no_school",
+    "details": "No Classes",
+    "source": "sja-calendar"
+  },
+  "2027-01-18": {
+    "type": "no_school",
+    "details": "MLK Day – No Classes",
+    "source": "sja-calendar"
+  },
+  "2027-02-10": {
+    "type": "late_start",
+    "details": "Late Start Schedule",
+    "source": "sja-calendar"
+  },
+  "2027-03-26": {
+    "type": "no_school",
+    "details": "No Classes",
+    "source": "sja-calendar"
+  },
+  "2027-03-31": {
+    "type": "late_start",
+    "details": "Late Start Schedule",
+    "source": "sja-calendar"
+  },
+  "2027-05-31": {
+    "type": "no_school",
+    "details": "Memorial Day – No Classes",
+    "source": "sja-calendar"
+  },
+  "2027-06-04": {
+    "type": "no_school",
+    "details": "Faculty In-Service – No Classes",
+    "source": "sja-calendar"
   }
 }

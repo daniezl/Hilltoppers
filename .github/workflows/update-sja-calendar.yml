@@ -1,0 +1,44 @@
+name: Sync SJA calendar
+
+# Opens a pull request rather than pushing, because special_days.json is
+# hand-curated and the bot's classification is deliberately conservative.
+# A failing run is the alarm that the calendar feed or the parser broke.
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # ~6-7am in St. Johnsbury, before the school day
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync calendar into schedule overrides
+        id: sync
+        working-directory: hilltoppers-pages
+        env:
+          SJA_REPORT_FILE: ${{ runner.temp }}/sja-calendar-report.md
+        run: node scripts/fetch_sja_calendar.mjs
+
+      - name: Open pull request
+        if: steps.sync.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bot/sja-calendar-sync
+          delete-branch: true
+          title: "chore: sync special days from SJA calendar"
+          body-path: ${{ runner.temp }}/sja-calendar-report.md
+          commit-message: "chore: sync special days from SJA calendar"
+          add-paths: |
+            hilltoppers-pages/data/special_days.json
+            hilltoppers-pages/data/special_periods.json

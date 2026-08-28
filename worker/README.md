@@ -1,5 +1,10 @@
 # Schedule Admin Worker
 
+> **Unused — slated to be archived.** Nothing reads the KV data this Worker writes.
+> The source of truth for special days is the git-tracked
+> `hilltoppers-pages/data/special_days.json`, served from Cloudflare Pages; that is
+> what the iOS app and Chrome extension fetch. See `src/index.ts` for details.
+
 Cloudflare Worker backend for the Schedule Admin system. Handles authentication via Cloudflare Access and provides API endpoints for schedule management.
 
 ## Setup

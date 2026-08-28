@@ -1,8 +1,21 @@
 /**
  * Cloudflare Worker for Schedule Admin API
- * 
+ *
  * Handles authentication via Cloudflare Access and provides
  * admin endpoints for schedule management.
+ *
+ * STATUS: UNUSED. This Worker and the `admin/` panel in front of it have never
+ * been used in production. Nothing reads the KV data they write.
+ *
+ * The actual source of truth for special days is the git-tracked file
+ * `hilltoppers-pages/data/special_days.json`, hand-edited and served as a static
+ * asset from Cloudflare Pages (hilltoppers.pages.dev/special_days.json). Both the
+ * iOS app (ScheduleConfig.specialDaysURL) and the Chrome extension
+ * (scheduleService.CLOUDFLARE_BASE_URL) fetch that Pages URL, NOT this Worker.
+ *
+ * Consequence: publishing through the admin panel writes KV `special_days` and has
+ * no effect on any client. Do not build on this path without first repointing the
+ * clients. Slated to be archived.
  */
 
 export interface Env {
@@ -327,7 +340,8 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
     days[dateKey] = JSON.parse(draft);
     await env.SCHEDULE_KV.put('special_days', JSON.stringify(days));
     
-    // Note: Data is now served from Worker, no need to update Pages repository
+    // NOTE: the KV aggregate written above is a dead end — clients read
+    // special_days.json from Pages (git), so publishing here reaches nobody.
     
     return jsonResponse({ success: true, dateKey }, 200, request);
   } catch (error) {

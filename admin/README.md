@@ -1,5 +1,11 @@
 # Schedule Admin UI
 
+> **Unused — slated to be archived.** This panel has never been used. Special days
+> are edited by hand in `hilltoppers-pages/data/special_days.json`, which is served
+> from Cloudflare Pages and is what the iOS app and Chrome extension actually read.
+> The drafts this panel saves go to Worker KV, which no client reads, so publishing
+> here has no effect. See `worker/src/index.ts` for details.
+
 Internal admin interface for managing school schedules. Designed with strict utilitarian principles - no gradients, blur, shadows, or decorative effects.
 
 ## Design Philosophy

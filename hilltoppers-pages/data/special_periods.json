@@ -23,5 +23,29 @@
     "start": "2026-05-29",
     "end": "2026-08-25",
     "details": "Summer Break"
+  },
+  {
+    "start": "2026-11-25",
+    "end": "2026-11-27",
+    "details": "Thanksgiving Break",
+    "source": "sja-calendar"
+  },
+  {
+    "start": "2026-12-18",
+    "end": "2027-01-05",
+    "details": "Holiday Break",
+    "source": "sja-calendar"
+  },
+  {
+    "start": "2027-02-19",
+    "end": "2027-03-02",
+    "details": "Winter Break",
+    "source": "sja-calendar"
+  },
+  {
+    "start": "2027-04-17",
+    "end": "2027-04-25",
+    "details": "Spring Break",
+    "source": "sja-calendar"
   }
 ]

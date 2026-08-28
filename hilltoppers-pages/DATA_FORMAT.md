@@ -2,6 +2,11 @@
 
 How to write entries in `data/special_days.json`.
 
+This file is the source of truth for special days, edited by hand and committed to
+git. Cloudflare Pages serves it as a static asset, and both the iOS app and the
+Chrome extension fetch it directly from there. The `admin/` panel and `worker/`
+draft→publish flow are unused and write to Worker KV that nothing reads.
+
 ## Grade-Specific Blocks
 
 Add a `"grades"` field to any block that only applies to certain grades. Blocks without `"grades"` are shown to all students.
