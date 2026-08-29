@@ -1,56 +1,39 @@
 {
-  "updatedAt": "2026-08-29T01:52:53.404Z",
+  "updatedAt": "2026-08-29T08:52:27.103Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-28",
+  "menuDate": "2026-08-29",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
-      ],
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Breaded Fish Sandwich",
-        "Baked Beans",
-        "French Fries",
-        "Coleslaw",
-        "Oven Roasted Succotash"
+        "Classic Reuben",
+        "Mixed Vegetables",
+        "Seasoned French Fries",
+        "French Fry Seasoning"
       ],
       "globalFare": [
-        "Sweet & Sour Chicken",
-        "Vegetable Egg Roll",
-        "Fried Brown Rice",
-        "Sweet-n- Sour Tofu & Vegetables"
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty 2 Oz",
+        "Hashbrown Patty"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Pork Ribs Baby Back BBQ",
+        "Fried Pork Chop",
         "Baked Beans",
-        "Cheese Mashed Potatoes",
-        "Seasoned Corn on the Cob"
+        "Red Skin Mashed Garlic Potatoes",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Tortilla",
-        "Spicy Refried Beans",
-        "Mexican Street Corn Salad",
-        "Jasmine Rice"
+        "Fried Chicken Tenders",
+        "Teriyaki Chicken Nuggets",
+        "Plant-Based Chik'n Tenders",
+        "Seasoned White Rice",
+        "Stir Fry Vegetables"
       ]
     }
   }
