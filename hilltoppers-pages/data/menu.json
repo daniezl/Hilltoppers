@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-08-30T01:33:49.167Z",
+  "updatedAt": "2026-08-30T08:09:54.330Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-29",
+  "menuDate": "2026-08-30",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,31 +9,29 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Classic Reuben",
-        "Mixed Vegetables",
-        "Seasoned French Fries",
-        "French Fry Seasoning"
+        "Meatballs TVP Vegan GF",
+        "All-Beef Meatball Sub",
+        "Garlic Breadstick"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty 2 Oz",
-        "Hashbrown Patty"
+        "Home Fried Potatoes",
+        "Bacon"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Fried Pork Chop",
-        "Baked Beans",
-        "Red Skin Mashed Garlic Potatoes",
-        "Brussel Sprouts"
+        "Pasta with Chicken & Wild Mushroom Sauce",
+        "Turkey Tetrazzini",
+        "Spaghetti Noodles",
+        "Peas & Mushrooms"
       ],
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Teriyaki Chicken Nuggets",
-        "Plant-Based Chik'n Tenders",
-        "Seasoned White Rice",
-        "Stir Fry Vegetables"
+        "Classic Swiss Steak",
+        "Stewed Chickpea",
+        "Red Skin Mashed Garlic Potatoes",
+        "Sautéed Garden Fresh Green Beans"
       ]
     }
   }
