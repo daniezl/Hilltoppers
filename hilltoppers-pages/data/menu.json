@@ -1,37 +1,48 @@
 {
-  "updatedAt": "2026-08-30T23:45:47.872Z",
+  "updatedAt": "2026-08-31T04:58:38.123Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-30",
+  "menuDate": "2026-08-31",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Bacon Egg Cheese Biscuit Sandwich",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Meatballs TVP Vegan GF",
-        "All-Beef Meatball Sub",
-        "Garlic Breadstick"
+        "Crispy Chicken Bowl WG",
+        "Popcorn Chicken",
+        "Plant-Based Chik'n Tenders",
+        "Country Gravy",
+        "Mashed Potatoes",
+        "Buttered Corn"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Scrambled Eggs",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Chicago Dog",
+        "Four Cheese Macaroni & Cheese",
+        "Coleslaw"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Pasta with Chicken & Wild Mushroom Sauce",
-        "Turkey Tetrazzini",
-        "Spaghetti Noodles",
-        "Peas & Mushrooms"
+        "BBQ Chicken Thigh",
+        "Baked Beans",
+        "Roasted Potato Wedges",
+        "Roasted Baby Carrots with Dill"
       ],
       "globalFare": [
-        "Classic Swiss Steak",
-        "Stewed Chickpea",
-        "Red Skin Mashed Garlic Potatoes",
-        "Sautéed Garden Fresh Green Beans"
+        "Asian Garlic Beef Strips",
+        "Jasmine Rice",
+        "Asian Style Snap Peas",
+        "Cambodian Style Tofu Salad"
       ]
     }
   }
