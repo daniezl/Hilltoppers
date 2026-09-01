@@ -1,11 +1,73 @@
-# Schedule Admin Worker
+# Hilltoppers Worker
 
-> **Unused — slated to be archived.** Nothing reads the KV data this Worker writes.
-> The source of truth for special days is the git-tracked
-> `hilltoppers-pages/data/special_days.json`, served from Cloudflare Pages; that is
-> what the iOS app and Chrome extension fetch. See `src/index.ts` for details.
+Two unrelated things live here:
 
-Cloudflare Worker backend for the Schedule Admin system. Handles authentication via Cloudflare Access and provides API endpoints for schedule management.
+- **Ideas board** (`/api/ideas/*`) — live, backs the extension popup and
+  `ideas-site/`. See below.
+- **Schedule admin** (`/api/admin/*`) — the older half, and effectively dead.
+  Nothing reads the KV data it writes; the source of truth for special days is
+  the git-tracked `hilltoppers-pages/data/special_days.json` served from
+  Cloudflare Pages, which is what the iOS app and the extension actually fetch.
+
+---
+
+# Ideas board
+
+Students vote on and submit feature ideas without needing a GitHub account.
+Each idea is a GitHub issue; this Worker holds the votes, because a reaction
+added with the bot token is attributed to that one account and would never
+count past one.
+
+## Setup
+
+Everything mechanical is in one script. Run it from this directory:
+
+```bash
+npm install
+npm run setup:ideas
+```
+
+It creates the D1 database, writes its id into `wrangler.toml`, creates the
+votes table, prompts for the GitHub token if it is missing, deploys, and then
+calls the live endpoint to prove it works. Re-running it is safe — every step
+checks whether it already happened.
+
+The only thing you need in hand is a fine-grained GitHub token with
+**Issues: Read and write** on `daniezl/Hilltoppers` and nothing else. The
+script tells you when to paste it.
+
+Afterwards the website still has to be set up in the Cloudflare dashboard; the
+script prints those steps when it finishes, and `ideas-site/README.md` has them
+too.
+
+## Moderation
+
+No review queue and no admin screen — it rides on the `enhancement` label:
+
+- The board shows issues labelled `enhancement`.
+- Submissions are created **with no labels**, so they stay invisible.
+- Approve by adding the label in the GitHub UI; reject by deleting the issue.
+
+Status is read off GitHub as well: `wontfix` → Not right now, closed → Done,
+assignee → Being built, otherwise Open for votes.
+
+> Do not create an issue template with `enhancement` in its `labels:` field.
+> Templates apply labels regardless of who opens the issue, which would put
+> unreviewed issues straight onto the board.
+
+## Ideas endpoints
+
+- `GET /api/ideas` — list; works signed out, and reports `hasVoted` when a
+  token is sent
+- `POST /api/ideas` — submit (signed in, verified email, 3 per day)
+- `POST` / `DELETE /api/ideas/:number/vote` — vote and un-vote
+
+These are public routes and must stay outside Cloudflare Access, which should
+only cover `/api/admin/*`.
+
+---
+
+# Schedule admin (legacy)
 
 ## Setup
 

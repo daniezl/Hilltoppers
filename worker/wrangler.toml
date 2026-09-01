@@ -31,7 +31,7 @@ database_id = "REPLACE_WITH_D1_DATABASE_ID"
 # 想法板对应的仓库
 GITHUB_REPO = "daniezl/Hilltoppers"
 # Firebase 项目 ID，用于校验 ID token 的 iss/aud（不是密钥）
-FIREBASE_PROJECT_ID = "REPLACE_WITH_FIREBASE_PROJECT_ID"
+FIREBASE_PROJECT_ID = "schedule-59d28"
 
 # 环境变量说明：
 # - EDITORS: 编辑器邮箱列表（逗号分隔），通过 wrangler secret put EDITORS 设置
