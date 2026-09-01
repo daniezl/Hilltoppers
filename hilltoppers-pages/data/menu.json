@@ -1,48 +1,48 @@
 {
-  "updatedAt": "2026-09-01T01:59:51.619Z",
+  "updatedAt": "2026-09-01T07:43:42.650Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-08-31",
+  "menuDate": "2026-09-01",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon Egg Cheese Biscuit Sandwich",
-        "Egg and Cheese Biscuit",
-        "Sausage & Cheese Biscuit"
+        "Mild Shredded Cheddar Cheese",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Crispy Chicken Bowl WG",
-        "Popcorn Chicken",
-        "Plant-Based Chik'n Tenders",
-        "Country Gravy",
-        "Mashed Potatoes",
-        "Buttered Corn"
+        "Brunch Burger"
       ],
       "globalFare": [
-        "Chicago Dog",
-        "Four Cheese Macaroni & Cheese",
-        "Coleslaw"
+        "Greek Style Chicken Thighs",
+        "Chips Pita Baked",
+        "Brown Rice",
+        "Broccoli and Cauliflower",
+        "Roasted Chickpeas"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "BBQ Chicken Thigh",
-        "Baked Beans",
-        "Roasted Potato Wedges",
-        "Roasted Baby Carrots with Dill"
+        "MM5 Garlic Herb Crusted Pork Loin",
+        "Red Skin Mashed Potatoes",
+        "Italian Corn"
       ],
       "globalFare": [
-        "Asian Garlic Beef Strips",
+        "Tofu Cacciatore",
+        "Chicken Cacciatore",
         "Jasmine Rice",
-        "Asian Style Snap Peas",
-        "Cambodian Style Tofu Salad"
+        "Fresh Roasted Broccoli"
       ]
     }
   }
