@@ -27,7 +27,8 @@
     "https://appleid.apple.com/*",
     "https://stjacademy.org/*",
     "https://www.google-analytics.com/*",
-    "https://hilltoppers.pages.dev/*"
+    "https://hilltoppers.pages.dev/*",
+    "https://schedule-admin-api.danielzhang089.workers.dev/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
