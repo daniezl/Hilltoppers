@@ -25,7 +25,7 @@ preview_id = "0dc72530532c41f3b79647f91bac9766"
 [[d1_databases]]
 binding = "IDEAS_DB"
 database_name = "hilltoppers-ideas"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "feac5906-fed7-4c58-8e28-01c2313c2336"
 
 [vars]
 # 想法板对应的仓库

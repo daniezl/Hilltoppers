@@ -122,7 +122,7 @@ if (toml.includes(`database_id = "${databaseId}"`)) {
 heading('Creating the votes table');
 try {
   // Re-runnable: schema.sql uses CREATE TABLE IF NOT EXISTS.
-  wrangler(['d1', 'execute', DB_NAME, '--file=schema.sql', '--remote', '--yes']);
+  wrangler(['d1', 'execute', DB_NAME, '--file=schema.sql', '--remote']);
   ok('Table ready');
 } catch (error) {
   fail('Could not apply schema.sql.', String(error.stderr ?? error.message ?? error));
@@ -131,7 +131,8 @@ try {
 heading('Checking the GitHub token');
 let hasToken = false;
 try {
-  const secrets = JSON.parse(wrangler(['secret', 'list', '--json']));
+  // `secret list` already prints JSON by default; there is no --json flag.
+  const secrets = JSON.parse(wrangler(['secret', 'list']));
   hasToken = secrets.some((secret) => secret.name === 'GITHUB_TOKEN');
 } catch {
   // A worker that has never been deployed has no secret list yet.
@@ -148,9 +149,19 @@ if (hasToken) {
       Resource owner ......... daniezl
       Repository access ...... Only select repositories → Hilltoppers
       Repository permissions . Issues: Read and write
-
-    Then paste it at the prompt below.
 `);
+  // Pasting a token needs a real terminal. Without one, wrangler's prompt would
+  // fail with something unhelpful, so say what to run instead.
+  if (!process.stdin.isTTY) {
+    fail(
+      'GITHUB_TOKEN is not set, and there is no terminal to paste it into.',
+      'Run these two commands in your own terminal:\n\n' +
+        `    cd ${workerDir}\n` +
+        '    npx wrangler secret put GITHUB_TOKEN\n\n' +
+        'Then run "npm run setup:ideas" again to finish.'
+    );
+  }
+  info('Paste it at the prompt below.');
   try {
     wranglerInteractive(['secret', 'put', 'GITHUB_TOKEN']);
     ok('GITHUB_TOKEN saved');
