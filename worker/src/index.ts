@@ -18,6 +18,11 @@
  * clients. Slated to be archived.
  */
 
+import { handleCreateIdea, handleGetIdeas, handleVote } from './ideas';
+import { json as ideasJson, preflight } from './http';
+
+const IDEAS_VOTE_PATH = /^\/api\/ideas\/\d+\/vote$/;
+
 export interface Env {
   // Role allowlists (comma-separated emails)
   EDITORS: string;
@@ -28,6 +33,12 @@ export interface Env {
   
   // KV namespace for storing schedule data
   SCHEDULE_KV: KVNamespace;
+
+  // Ideas board
+  GITHUB_TOKEN: string;
+  GITHUB_REPO: string;
+  FIREBASE_PROJECT_ID: string;
+  IDEAS_DB: D1Database;
 }
 
 interface User {
@@ -423,7 +434,32 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
-    
+
+    // Ideas board. Public, and with its own CORS policy because it is called
+    // from the extension and the ideas site rather than the admin UI.
+    if (path === '/api/ideas' || IDEAS_VOTE_PATH.test(path)) {
+      if (request.method === 'OPTIONS') {
+        return preflight(request);
+      }
+      if (path === '/api/ideas') {
+        if (request.method === 'GET') {
+          return handleGetIdeas(request, env);
+        }
+        if (request.method === 'POST') {
+          return handleCreateIdea(request, env);
+        }
+      } else {
+        const issueNumber = Number(path.split('/')[3]);
+        if (request.method === 'POST') {
+          return handleVote(request, env, issueNumber, true);
+        }
+        if (request.method === 'DELETE') {
+          return handleVote(request, env, issueNumber, false);
+        }
+      }
+      return ideasJson({ error: 'Method not allowed' }, 405, request);
+    }
+
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return handleCORS(request);
