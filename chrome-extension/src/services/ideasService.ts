@@ -97,24 +97,31 @@ export function isNewIdea(idea: Idea, now = Date.now()): boolean {
   return now - Date.parse(idea.createdAt) < NEW_WINDOW_MS;
 }
 
+function isFinished(idea: Idea): boolean {
+  return idea.status === 'shipped' || idea.status === 'declined';
+}
+
 /**
- * Ranks new ideas above the rest, then by votes within each group.
+ * Groups ideas as new, then still open, then finished; votes break ties inside
+ * each group.
  *
- * Handling "new" as the first sort key rather than reserving fixed slots means
- * the empty cases take care of themselves: with nothing new, all five slots go
- * to the most-wanted ideas instead of sitting unused.
+ * Handling this as sort keys rather than reserving fixed slots means the empty
+ * cases take care of themselves: with nothing new, all five slots go to the
+ * most-wanted ideas instead of sitting unused. Finished ideas rank last because
+ * a popular shipped idea would otherwise hold a slot nobody can act on — they
+ * are still worth showing, just not ahead of what is still up for grabs.
  */
+function popupRank(idea: Idea, now: number): number {
+  if (isFinished(idea)) {
+    return 2;
+  }
+  return isNewIdea(idea, now) ? 0 : 1;
+}
+
 export function sortForPopup(ideas: Idea[]): Idea[] {
   const now = Date.now();
   return [...ideas]
-    .sort((a, b) => {
-      const aNew = isNewIdea(a, now);
-      const bNew = isNewIdea(b, now);
-      if (aNew !== bNew) {
-        return aNew ? -1 : 1;
-      }
-      return b.votes - a.votes;
-    })
+    .sort((a, b) => popupRank(a, now) - popupRank(b, now) || b.votes - a.votes)
     .slice(0, POPUP_IDEA_COUNT);
 }
 
