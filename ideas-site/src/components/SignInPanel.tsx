@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  authAvailable,
-  mapAuthError,
-  registerWithEmail,
-  signInWithApple,
-  signInWithEmail,
-  signInWithGoogle
-} from '../auth';
+import { authAvailable, mapAuthError, registerWithEmail, signInWithEmail } from '../auth';
 
 type Mode = 'signIn' | 'register';
 
@@ -69,29 +62,6 @@ const SignInPanel: React.FC<Props> = ({ heading, blurb }) => {
     <div className="detail-card">
       <h1 className="detail-title">{heading}</h1>
       {blurb ? <p className="muted">{blurb}</p> : null}
-
-      <div className="auth-providers">
-        <button
-          type="button"
-          className="provider-button"
-          disabled={busy}
-          onClick={() => void run(signInWithGoogle)}
-        >
-          Continue with Google
-        </button>
-        <button
-          type="button"
-          className="provider-button"
-          disabled={busy}
-          onClick={() => void run(signInWithApple)}
-        >
-          Continue with Apple
-        </button>
-      </div>
-
-      <div className="auth-divider">
-        <span>or use your email</span>
-      </div>
 
       <form onSubmit={handleSubmit}>
         {mode === 'register' ? (

@@ -511,54 +511,6 @@ html {
 
 /* Sign-in */
 
-.auth-providers {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.provider-button {
-  width: 100%;
-  padding: 10px 16px;
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.provider-button:hover:not(:disabled) {
-  background: var(--surface-subtle);
-  border-color: var(--border);
-}
-
-.provider-button:disabled {
-  color: var(--muted);
-  cursor: not-allowed;
-}
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0 4px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border-soft);
-}
-
 .field-hint {
   display: block;
   margin-top: 6px;

@@ -79,9 +79,15 @@ first use.
 
 A handed-over session cannot refresh itself — the site holds a token, not an
 account — so it lapses after about an hour and the site falls back to ordinary
-sign-in. The site offers the same methods as the extension (Google, Apple,
-email and password), and both surfaces resolve to one Firebase account, which
-is what keeps votes to one per person across the two.
+sign-in. That fallback is email and password, the one method the extension
+offers, so the two surfaces resolve to one Firebase account, which is what
+keeps votes to one per person across them.
+
+Google and Apple are deliberately absent. The extension has the code for both
+but keeps the buttons commented out, and Apple is not usable anyway: the
+project answers `OPERATION_NOT_ALLOWED : Code flow is not enabled for Apple`.
+Adding a provider here before the extension has it would split accounts, since
+signing in with Google would create a second uid with none of the votes.
 
 ---
 

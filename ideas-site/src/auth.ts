@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FirebaseError, initializeApp, type FirebaseApp } from 'firebase/app';
 import {
-  GoogleAuthProvider,
-  OAuthProvider,
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
@@ -10,7 +8,6 @@ import {
   sendEmailVerification,
   setPersistence,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
   type Auth,
@@ -154,19 +151,6 @@ export function useAuthUser(): AuthState {
   return { user, ready: firebaseReady && handoffReady };
 }
 
-export async function signInWithGoogle(): Promise<void> {
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
-  await signInWithPopup(requireAuth(), provider);
-}
-
-export async function signInWithApple(): Promise<void> {
-  const provider = new OAuthProvider('apple.com');
-  provider.addScope('email');
-  provider.addScope('name');
-  await signInWithPopup(requireAuth(), provider);
-}
-
 export async function signInWithEmail(email: string, password: string): Promise<void> {
   await signInWithEmailAndPassword(requireAuth(), email, password);
 }
@@ -250,16 +234,8 @@ export function mapAuthError(error: unknown): string {
         return 'Network problem. Check your connection and try again.';
       case 'auth/too-many-requests':
         return 'Too many tries. Wait a moment and try again.';
-      case 'auth/popup-closed-by-user':
-        return 'The sign-in window closed before it finished.';
-      case 'auth/cancelled-popup-request':
-        return 'Another sign-in is already open.';
-      case 'auth/popup-blocked':
-        return 'Your browser blocked the sign-in window. Allow pop-ups and try again.';
       case 'auth/operation-not-allowed':
         return 'That sign-in method is turned off for this project.';
-      case 'auth/unauthorized-domain':
-        return 'This site is not on the Firebase authorised domains list yet.';
       default:
         return `Could not sign in (${error.code}).`;
     }
