@@ -1,55 +1,43 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { User } from 'firebase/auth';
-import { signIn, signOut } from '../auth';
+import { signOut, type BoardUser } from '../auth';
 
 interface Props {
-  user: User | null;
+  user: BoardUser | null;
   ready: boolean;
-  onError: (message: string) => void;
 }
 
-const Header: React.FC<Props> = ({ user, ready, onError }) => {
-  const handleSignIn = async () => {
-    try {
-      await signIn();
-    } catch (error) {
-      onError(error instanceof Error ? error.message : 'Could not sign in.');
-    }
-  };
+const Header: React.FC<Props> = ({ user, ready }) => (
+  <header className="site-header">
+    <Link className="site-brand" to="/">
+      <svg className="site-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9 18h6M10 21h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span>Hilltoppers Ideas</span>
+    </Link>
 
-  return (
-    <header className="site-header">
-      <Link className="site-brand" to="/">
-        <svg className="site-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M9 18h6M10 21h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span>Hilltoppers Ideas</span>
-      </Link>
-
-      {ready ? (
-        user ? (
-          <div className="site-account">
-            <span className="site-account-name">{user.displayName ?? user.email}</span>
-            <button type="button" className="link-button" onClick={() => void signOut()}>
-              Sign out
-            </button>
-          </div>
-        ) : (
-          <button type="button" className="pill-button ghost" onClick={handleSignIn}>
-            Sign in
+    {ready ? (
+      user ? (
+        <div className="site-account">
+          <span className="site-account-name">{user.displayName ?? user.email}</span>
+          <button type="button" className="link-button" onClick={() => void signOut()}>
+            Sign out
           </button>
-        )
-      ) : null}
-    </header>
-  );
-};
+        </div>
+      ) : (
+        <Link className="pill-button ghost" to="/sign-in">
+          Sign in
+        </Link>
+      )
+    ) : null}
+  </header>
+);
 
 export default Header;

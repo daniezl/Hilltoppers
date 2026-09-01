@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, createIdea } from '../api';
-import { signIn } from '../auth';
+import {
+  mapAuthError,
+  needsEmailVerification,
+  resendVerificationEmail,
+  type BoardUser
+} from '../auth';
+import SignInPanel from '../components/SignInPanel';
 
 const TITLE_MIN = 5;
 const TITLE_MAX = 80;
@@ -9,14 +15,15 @@ const BODY_MIN = 10;
 const BODY_MAX = 1000;
 
 interface Props {
-  signedIn: boolean;
+  user: BoardUser | null;
   onSubmitted: () => void;
 }
 
-const NewIdea: React.FC<Props> = ({ signedIn, onSubmitted }) => {
+const NewIdea: React.FC<Props> = ({ user, onSubmitted }) => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
@@ -60,27 +67,50 @@ const NewIdea: React.FC<Props> = ({ signedIn, onSubmitted }) => {
     );
   }
 
-  if (!signedIn) {
+  if (!user) {
     return (
       <main className="container narrow">
+        <Link className="back-link" to="/">
+          ← All ideas
+        </Link>
+        <SignInPanel
+          heading="Sign in to share an idea"
+          blurb="Nothing gets posted under your full name — just your first name and last initial."
+        />
+      </main>
+    );
+  }
+
+  // The API refuses unverified addresses, so stop here rather than letting the
+  // form take a long description and then throw it away on submit.
+  if (needsEmailVerification(user)) {
+    return (
+      <main className="container narrow">
+        <Link className="back-link" to="/">
+          ← All ideas
+        </Link>
         <div className="detail-card center">
-          <h1 className="detail-title">Sign in to share an idea</h1>
+          <h1 className="detail-title">Confirm your email first</h1>
           <p className="muted">
-            We only use this to make sure each person votes once. Nothing gets posted under your
-            name — just your first name and last initial.
+            Check {user.email} for a confirmation link. Open it, then come back and reload this
+            page. You can already vote — this is only needed to post an idea.
           </p>
           <button
             type="button"
             className="pill-button"
+            disabled={resending}
             onClick={() => {
-              signIn().catch((err) =>
-                setError(err instanceof Error ? err.message : 'Could not sign in.')
-              );
+              setResending(true);
+              setError(null);
+              resendVerificationEmail()
+                .then(() => setError('Sent. Check your inbox.'))
+                .catch((err) => setError(mapAuthError(err)))
+                .finally(() => setResending(false));
             }}
           >
-            Sign in with Google
+            {resending ? 'Sending…' : 'Send it again'}
           </button>
-          {error ? <p className="notice error">{error}</p> : null}
+          {error ? <p className="notice">{error}</p> : null}
         </div>
       </main>
     );

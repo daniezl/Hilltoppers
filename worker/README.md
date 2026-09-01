@@ -61,9 +61,33 @@ assignee → Being built, otherwise Open for votes.
   token is sent
 - `POST /api/ideas` — submit (signed in, verified email, 3 per day)
 - `POST` / `DELETE /api/ideas/:number/vote` — vote and un-vote
+- `POST /api/ideas/handoff` — signed in; returns a single-use code that carries
+  the session to the site
+- `POST /api/ideas/handoff/redeem` — trades that code back for the ID token
 
 These are public routes and must stay outside Cloudflare Access, which should
 only cover `/api/admin/*`.
+
+## Signing in on the site
+
+Firebase scopes a session to one origin, so the popup
+(`chrome-extension://…`) and the site (`…pages.dev`) never share a login. The
+popup therefore asks the Worker for a one-minute single-use code, opens the
+site with it in the URL fragment, and the site trades it back for the ID token
+behind it. The code, not the token, is what is exposed, and it is spent on
+first use.
+
+A handed-over session cannot refresh itself — the site holds a token, not an
+account — so it lapses after about an hour and the site falls back to ordinary
+sign-in. That fallback is email and password, the one method the extension
+offers, so the two surfaces resolve to one Firebase account, which is what
+keeps votes to one per person across them.
+
+Google and Apple are deliberately absent. The extension has the code for both
+but keeps the buttons commented out, and Apple is not usable anyway: the
+project answers `OPERATION_NOT_ALLOWED : Code flow is not enabled for Apple`.
+Adding a provider here before the extension has it would split accounts, since
+signing in with Google would create a second uid with none of the votes.
 
 ---
 

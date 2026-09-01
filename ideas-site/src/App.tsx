@@ -5,6 +5,7 @@ import IdeaDetail from './pages/IdeaDetail';
 import IdeasList from './pages/IdeasList';
 import NewIdea from './pages/NewIdea';
 import NotFound from './pages/NotFound';
+import SignIn from './pages/SignIn';
 import { fetchIdeas, setVote, type Idea } from './api';
 import { useAuthUser } from './auth';
 
@@ -94,11 +95,12 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <div className="page">
-        <Header user={user} ready={ready} onError={setToast} />
+        <Header user={user} ready={ready} />
         <Routes>
           <Route path="/" element={<IdeasList {...context} />} />
           <Route path="/idea/:number" element={<IdeaDetail {...context} />} />
-          <Route path="/new" element={<NewIdea signedIn={Boolean(user)} onSubmitted={context.reload} />} />
+          <Route path="/new" element={<NewIdea user={user} onSubmitted={context.reload} />} />
+          <Route path="/sign-in" element={<SignIn signedIn={Boolean(user)} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         {toast ? (

@@ -4,24 +4,28 @@
  * Handles authentication via Cloudflare Access and provides
  * admin endpoints for schedule management.
  *
- * STATUS: UNUSED. This Worker and the `admin/` panel in front of it have never
- * been used in production. Nothing reads the KV data they write.
+ * STATUS: the /api/ideas/* endpoints are live and serve the ideas board in the
+ * extension popup and on the ideas site. Everything else here is not.
  *
- * The actual source of truth for special days is the git-tracked file
- * `hilltoppers-pages/data/special_days.json`, hand-edited and served as a static
- * asset from Cloudflare Pages (hilltoppers.pages.dev/special_days.json). Both the
- * iOS app (ScheduleConfig.specialDaysURL) and the Chrome extension
+ * The schedule admin path (and the `admin/` panel in front of it) has never been
+ * used in production: the source of truth for special days is the git-tracked
+ * file `hilltoppers-pages/data/special_days.json`, hand-edited and served as a
+ * static asset from Cloudflare Pages (hilltoppers.pages.dev/special_days.json).
+ * Both the iOS app (ScheduleConfig.specialDaysURL) and the Chrome extension
  * (scheduleService.CLOUDFLARE_BASE_URL) fetch that Pages URL, NOT this Worker.
  *
- * Consequence: publishing through the admin panel writes KV `special_days` and has
- * no effect on any client. Do not build on this path without first repointing the
- * clients. Slated to be archived.
+ * Consequence: publishing through the admin panel writes KV `special_days` and
+ * has no effect on any client. Do not build on that path without first
+ * repointing the clients.
  */
 
 import { handleCreateIdea, handleGetIdeas, handleVote } from './ideas';
+import { handleCreateHandoff, handleRedeemHandoff } from './handoff';
 import { json as ideasJson, preflight } from './http';
 
 const IDEAS_VOTE_PATH = /^\/api\/ideas\/\d+\/vote$/;
+const IDEAS_HANDOFF_PATH = '/api/ideas/handoff';
+const IDEAS_HANDOFF_REDEEM_PATH = '/api/ideas/handoff/redeem';
 
 export interface Env {
   // Role allowlists (comma-separated emails)
@@ -437,11 +441,24 @@ export default {
 
     // Ideas board. Public, and with its own CORS policy because it is called
     // from the extension and the ideas site rather than the admin UI.
-    if (path === '/api/ideas' || IDEAS_VOTE_PATH.test(path)) {
+    if (
+      path === '/api/ideas' ||
+      path === IDEAS_HANDOFF_PATH ||
+      path === IDEAS_HANDOFF_REDEEM_PATH ||
+      IDEAS_VOTE_PATH.test(path)
+    ) {
       if (request.method === 'OPTIONS') {
         return preflight(request);
       }
-      if (path === '/api/ideas') {
+      if (path === IDEAS_HANDOFF_PATH) {
+        if (request.method === 'POST') {
+          return handleCreateHandoff(request, env);
+        }
+      } else if (path === IDEAS_HANDOFF_REDEEM_PATH) {
+        if (request.method === 'POST') {
+          return handleRedeemHandoff(request, env);
+        }
+      } else if (path === '/api/ideas') {
         if (request.method === 'GET') {
           return handleGetIdeas(request, env);
         }
