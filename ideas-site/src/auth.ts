@@ -17,6 +17,13 @@ import {
   type User
 } from 'firebase/auth';
 import { firebaseConfig, isFirebaseConfigured } from './config';
+import {
+  clearHandoff,
+  consumeHandoffCode,
+  getHandoffIdentity,
+  getHandoffToken,
+  type HandoffIdentity
+} from './handoff';
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
@@ -55,28 +62,96 @@ export function authAvailable(): boolean {
   return isFirebaseConfigured();
 }
 
+/**
+ * One shape for both ways of being signed in: an account signed in on this
+ * site, or a session handed over by the extension.
+ */
+export interface BoardUser {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  emailVerified: boolean;
+  /** Email/password accounts are the only ones that can be unverified. */
+  passwordAccount: boolean;
+  /** False when the session came from the extension, which limits what we can do with it. */
+  local: boolean;
+}
+
 export interface AuthState {
-  user: User | null;
+  user: BoardUser | null;
   ready: boolean;
 }
 
+function toBoardUser(user: User): BoardUser {
+  return {
+    uid: user.uid,
+    displayName: user.displayName,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    passwordAccount: user.providerData.some((entry) => entry?.providerId === 'password'),
+    local: true
+  };
+}
+
 export function useAuthUser(): AuthState {
-  const [state, setState] = useState<AuthState>({ user: null, ready: false });
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [handoff, setHandoff] = useState<HandoffIdentity | null>(getHandoffIdentity());
+  const [handoffReady, setHandoffReady] = useState(false);
 
   useEffect(() => {
     const instance = getAuthInstance();
     if (!instance) {
-      setState({ user: null, ready: true });
+      setFirebaseReady(true);
       return () => {};
     }
     return onAuthStateChanged(
       instance,
-      (user) => setState({ user, ready: true }),
-      () => setState({ user: null, ready: true })
+      (user) => {
+        setFirebaseUser(user);
+        setFirebaseReady(true);
+      },
+      () => {
+        setFirebaseUser(null);
+        setFirebaseReady(true);
+      }
     );
   }, []);
 
-  return state;
+  useEffect(() => {
+    let active = true;
+    consumeHandoffCode()
+      .then(() => {
+        if (active) {
+          setHandoff(getHandoffIdentity());
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setHandoffReady(true);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // A real sign-in on this site outranks a carried-over one: it can refresh
+  // itself, and it is what the person most recently chose.
+  const user = firebaseUser
+    ? toBoardUser(firebaseUser)
+    : handoff
+      ? {
+          uid: handoff.uid,
+          displayName: handoff.displayName,
+          email: handoff.email,
+          emailVerified: handoff.emailVerified,
+          passwordAccount: handoff.signInProvider === 'password',
+          local: false
+        }
+      : null;
+
+  return { user, ready: firebaseReady && handoffReady };
 }
 
 export async function signInWithGoogle(): Promise<void> {
@@ -121,22 +196,22 @@ export async function registerWithEmail(
 }
 
 export async function resendVerificationEmail(): Promise<void> {
-  const user = requireAuth().currentUser;
+  const user = getAuthInstance()?.currentUser;
   if (!user) {
-    throw new Error('You are not signed in.');
+    // A handed-over session is a token, not an account, so Firebase has nothing
+    // here to send a fresh email to.
+    throw new Error('Sign in on this page first, then we can send it again.');
   }
   await sendEmailVerification(user);
 }
 
 /** True only for password accounts still awaiting verification. */
-export function needsEmailVerification(user: User | null): boolean {
-  if (!user || user.emailVerified) {
-    return false;
-  }
-  return user.providerData.some((entry) => entry?.providerId === 'password');
+export function needsEmailVerification(user: BoardUser | null): boolean {
+  return Boolean(user && user.passwordAccount && !user.emailVerified);
 }
 
 export async function signOut(): Promise<void> {
+  clearHandoff();
   const instance = getAuthInstance();
   if (instance) {
     await firebaseSignOut(instance);
@@ -145,15 +220,14 @@ export async function signOut(): Promise<void> {
 
 export async function getIdToken(): Promise<string | null> {
   const user = getAuthInstance()?.currentUser;
-  if (!user) {
-    return null;
+  if (user) {
+    try {
+      return await user.getIdToken();
+    } catch (error) {
+      console.warn('[auth] Failed to get ID token', error);
+    }
   }
-  try {
-    return await user.getIdToken();
-  } catch (error) {
-    console.warn('[auth] Failed to get ID token', error);
-    return null;
-  }
+  return getHandoffToken();
 }
 
 export function mapAuthError(error: unknown): string {

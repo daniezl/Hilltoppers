@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { User } from 'firebase/auth';
 import { ApiError, createIdea } from '../api';
-import { mapAuthError, needsEmailVerification, resendVerificationEmail } from '../auth';
+import {
+  mapAuthError,
+  needsEmailVerification,
+  resendVerificationEmail,
+  type BoardUser
+} from '../auth';
 import SignInPanel from '../components/SignInPanel';
 
 const TITLE_MIN = 5;
@@ -11,7 +15,7 @@ const BODY_MIN = 10;
 const BODY_MAX = 1000;
 
 interface Props {
-  user: User | null;
+  user: BoardUser | null;
   onSubmitted: () => void;
 }
 
@@ -88,8 +92,8 @@ const NewIdea: React.FC<Props> = ({ user, onSubmitted }) => {
         <div className="detail-card center">
           <h1 className="detail-title">Confirm your email first</h1>
           <p className="muted">
-            We sent a link to {user.email}. Open it, then come back and reload this page. You can
-            already vote — this is only needed to post an idea.
+            Check {user.email} for a confirmation link. Open it, then come back and reload this
+            page. You can already vote — this is only needed to post an idea.
           </p>
           <button
             type="button"

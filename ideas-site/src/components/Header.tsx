@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { User } from 'firebase/auth';
-import { signOut } from '../auth';
+import { signOut, type BoardUser } from '../auth';
 
 interface Props {
-  user: User | null;
+  user: BoardUser | null;
   ready: boolean;
 }
 

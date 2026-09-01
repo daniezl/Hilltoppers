@@ -93,6 +93,41 @@ export async function setVote(
   return (await response.json()) as { votes: number; hasVoted: boolean };
 }
 
+/**
+ * Builds a site link that arrives already signed in.
+ *
+ * Firebase keeps its session per origin, so being signed in here does nothing
+ * for the site. The Worker trades this session's ID token for a single-use code
+ * which the site trades back, sparing a second sign-in just to vote on the idea
+ * you clicked.
+ *
+ * Every failure falls back to the plain link: arriving signed out is a much
+ * smaller problem than the link not working.
+ */
+export async function siteUrlWithSession(path = ''): Promise<string> {
+  const plain = `${IDEAS_SITE_URL}${path}`;
+
+  const headers = await authHeaders();
+  if (!headers.Authorization) {
+    return plain;
+  }
+
+  try {
+    const response = await fetch(`${IDEAS_API_BASE}/api/ideas/handoff`, {
+      method: 'POST',
+      headers
+    });
+    if (!response.ok) {
+      return plain;
+    }
+    const { code } = (await response.json()) as { code?: string };
+    return code ? `${plain}#c=${encodeURIComponent(code)}` : plain;
+  } catch (error) {
+    console.warn('[ideas] Could not hand the session over', error);
+    return plain;
+  }
+}
+
 export function isNewIdea(idea: Idea, now = Date.now()): boolean {
   return now - Date.parse(idea.createdAt) < NEW_WINDOW_MS;
 }
