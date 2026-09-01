@@ -1,0 +1,3 @@
+# SPA routing: /idea/:number links are shared around, so every path has to
+# resolve to index.html rather than 404 on a hard load.
+/*  /index.html  200
