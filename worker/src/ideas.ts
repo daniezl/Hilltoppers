@@ -153,12 +153,21 @@ export async function handleGetIdeas(request: Request, env: Env): Promise<Respon
     return json({ error: 'Could not reach GitHub right now.' }, 502, request);
   }
 
-  const voteCounts = await loadVoteCounts(env);
-
   // Listing works signed out; the token only decides whether we can say which
   // ideas the caller has already voted for.
   const user = await verifyFirebaseToken(request, env.FIREBASE_PROJECT_ID);
-  const myVotes = user ? await loadUserVotes(env, user.uid) : new Set<number>();
+
+  let voteCounts: Map<number, number>;
+  let myVotes: Set<number>;
+  try {
+    voteCounts = await loadVoteCounts(env);
+    myVotes = user ? await loadUserVotes(env, user.uid) : new Set<number>();
+  } catch (error) {
+    // Unguarded, a D1 hiccup threw out of the handler as a bare 500, which the
+    // site showed as the same "could not load" as an unreachable GitHub.
+    console.error('[ideas] Failed to read votes', error);
+    return json({ error: 'Could not read the votes right now.' }, 502, request);
+  }
 
   const ideas: Idea[] = issues.map((issue) => ({
     ...issue,

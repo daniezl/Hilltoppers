@@ -21,11 +21,13 @@
 
 import { handleCreateIdea, handleGetIdeas, handleVote } from './ideas';
 import { handleCreateHandoff, handleRedeemHandoff } from './handoff';
+import { handleHealth } from './health';
 import { json as ideasJson, preflight } from './http';
 
 const IDEAS_VOTE_PATH = /^\/api\/ideas\/\d+\/vote$/;
 const IDEAS_HANDOFF_PATH = '/api/ideas/handoff';
 const IDEAS_HANDOFF_REDEEM_PATH = '/api/ideas/handoff/redeem';
+const IDEAS_HEALTH_PATH = '/api/ideas/health';
 
 export interface Env {
   // Role allowlists (comma-separated emails)
@@ -445,12 +447,17 @@ export default {
       path === '/api/ideas' ||
       path === IDEAS_HANDOFF_PATH ||
       path === IDEAS_HANDOFF_REDEEM_PATH ||
+      path === IDEAS_HEALTH_PATH ||
       IDEAS_VOTE_PATH.test(path)
     ) {
       if (request.method === 'OPTIONS') {
         return preflight(request);
       }
-      if (path === IDEAS_HANDOFF_PATH) {
+      if (path === IDEAS_HEALTH_PATH) {
+        if (request.method === 'GET') {
+          return handleHealth(request, env);
+        }
+      } else if (path === IDEAS_HANDOFF_PATH) {
         if (request.method === 'POST') {
           return handleCreateHandoff(request, env);
         }
