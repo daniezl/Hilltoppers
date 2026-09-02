@@ -42,14 +42,22 @@ const IdeasList: React.FC<IdeasContext> = ({ ideas, loading, error, onVote }) =>
         </Link>
       </section>
 
-      {error ? <p className="notice error">{error}</p> : null}
-
-      {loading && !ideas ? (
-        <p className="notice">Loading ideas…</p>
-      ) : sorted.length === 0 && !error ? (
+      {/* Exclusive states. Rendering the error separately meant a failure
+          followed by a retry showed "could not load" and "loading" together. */}
+      {!ideas ? (
+        loading ? (
+          <p className="notice">Loading ideas…</p>
+        ) : (
+          <p className="notice error">{error ?? 'Could not load ideas right now.'}</p>
+        )
+      ) : sorted.length === 0 ? (
         <p className="notice">No ideas yet. Be the first to share one.</p>
       ) : (
         <>
+          {/* Ideas already on screen stay there, with the failure noted above
+              them, rather than being replaced by an error. */}
+          {error ? <p className="notice error">{error}</p> : null}
+
           <div className="sort-tabs" role="tablist" aria-label="Sort ideas">
             <button
               type="button"

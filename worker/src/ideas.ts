@@ -82,14 +82,20 @@ function stripMetadata(body: string): string {
     .trim();
 }
 
-async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
-  const url =
+export function issuesUrl(env: Env): string {
+  return (
     `https://api.github.com/repos/${env.GITHUB_REPO}/issues` +
-    `?labels=${encodeURIComponent(BOARD_LABEL)}&state=all&per_page=100&sort=created&direction=desc`;
+    `?labels=${encodeURIComponent(BOARD_LABEL)}&state=all&per_page=100&sort=created&direction=desc`
+  );
+}
 
-  const res = await fetch(url, { headers: githubHeaders(env) });
+async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
+  const res = await fetch(issuesUrl(env), { headers: githubHeaders(env) });
   if (!res.ok) {
-    throw new Error(`GitHub API returned ${res.status}`);
+    // The status alone does not say whether the token lacks Issues access, has
+    // expired, or hit a limit, and this is the only place that ever sees the
+    // explanation.
+    throw new Error(`GitHub API returned ${res.status}: ${(await res.text()).slice(0, 300)}`);
   }
 
   const raw = (await res.json()) as any[];
@@ -114,7 +120,13 @@ async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
 async function getCachedIssues(env: Env): Promise<CachedIdea[]> {
   const cached = await env.SCHEDULE_KV.get(CACHE_KEY);
   if (cached) {
-    return JSON.parse(cached) as CachedIdea[];
+    try {
+      return JSON.parse(cached) as CachedIdea[];
+    } catch (error) {
+      // A cache entry that will not parse used to throw from here and be
+      // reported as GitHub being unreachable, which is the wrong place to look.
+      console.warn('[ideas] Discarding unparseable cache entry', error);
+    }
   }
   const issues = await fetchIssuesFromGitHub(env);
   await env.SCHEDULE_KV.put(CACHE_KEY, JSON.stringify(issues), {

@@ -12,6 +12,7 @@
 
 import { probeJwks } from './firebaseAuth';
 import { json } from './http';
+import { issuesUrl } from './ideas';
 import type { Env } from './index';
 
 export async function handleHealth(request: Request, env: Env): Promise<Response> {
@@ -25,18 +26,25 @@ export async function handleHealth(request: Request, env: Env): Promise<Response
     database = `failed: ${String(error)}`;
   }
 
+  // Deliberately the same request the board makes, not a cheaper stand-in for
+  // it: a token can read /repos/{repo} and still be refused the issues under
+  // it, and then this reports ok while every visitor sees a failure.
   let github = 'unknown';
   try {
-    const response = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO}`, {
+    const response = await fetch(issuesUrl(env), {
       headers: {
         Authorization: `Bearer ${env.GITHUB_TOKEN}`,
         Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
         'User-Agent': 'Hilltoppers-Worker'
       }
     });
-    // 401 here means the token is missing or no longer valid, which is worth
-    // separating from the repository being unreachable.
-    github = response.ok ? 'ok' : `HTTP ${response.status}`;
+    if (response.ok) {
+      const issues = (await response.json()) as unknown[];
+      github = `ok (${Array.isArray(issues) ? issues.length : 0} issues)`;
+    } else {
+      github = `HTTP ${response.status}: ${(await response.text()).slice(0, 200)}`;
+    }
   } catch (error) {
     github = `failed: ${String(error)}`;
   }
@@ -50,7 +58,7 @@ export async function handleHealth(request: Request, env: Env): Promise<Response
       github,
       database
     },
-    jwks.ok && database === 'ok' && github === 'ok' ? 200 : 503,
+    jwks.ok && database === 'ok' && github.startsWith('ok') ? 200 : 503,
     request
   );
 }
