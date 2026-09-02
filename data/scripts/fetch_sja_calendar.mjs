@@ -474,6 +474,12 @@ function serializeSpecialPeriods(periods) {
 // Report
 // ---------------------------------------------------------------------------
 
+/** A day is settled once somebody has written blocks for it or called it closed. */
+function isSettled(entry) {
+  if (!entry) return false;
+  return hasHandWrittenSchedule(entry) || entry.type === "no_school";
+}
+
 function buildReport({ today, eventCount, days, periods, needsHuman, feedConflicts }) {
   const lines = [
     "Synced from the [SJA event calendar](https://stjacademy.org/?feed=eo-events).",
@@ -505,10 +511,13 @@ function buildReport({ today, eventCount, days, periods, needsHuman, feedConflic
   );
   section("Ambiguous events in the feed", feedConflicts, "none");
 
+  // Days that already carry a hand-written schedule are done; nagging about them
+  // would train the reader to skip this section.
   const horizon = addDays(today, REVIEW_HORIZON_DAYS);
   const upcoming = needsHuman
     .filter((item) => item.date >= today && item.date <= horizon)
-    .sort((a, b) => (a.date < b.date ? -1 : 1))
+    .filter((item) => !isSettled(days.merged[item.date]))
+    .sort((a, b) => compareYmd(a.date, b.date))
     .map((item) => `**${item.date}** — ${item.title} _(${item.reason})_`);
 
   lines.push(`### Still need a hand-written schedule (next ${REVIEW_HORIZON_DAYS} days)`, "");
