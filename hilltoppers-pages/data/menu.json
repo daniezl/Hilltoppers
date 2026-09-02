@@ -1,48 +1,47 @@
 {
-  "updatedAt": "2026-09-02T00:56:32.684Z",
+  "updatedAt": "2026-09-02T05:39:12.312Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-01",
+  "menuDate": "2026-09-02",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Sausage & Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Egg Bacon and Cheese Croissant",
+        "Sausage, Egg & Cheese Croissant"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
-        "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Halal Chicken Sausage",
+        "Potato Hashbrown Patty",
+        "Waffles Belgian",
+        "Scrambled Eggs"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Brunch Burger"
+        "Vegan Chorizo",
+        "Kansas City BBQ Pulled Pork",
+        "Sweet Potato Hash",
+        "Jalapeno Poppers"
       ],
       "globalFare": [
-        "Greek Style Chicken Thighs",
-        "Chips Pita Baked",
-        "Brown Rice",
-        "Broccoli and Cauliflower",
-        "Roasted Chickpeas"
+        "Vegetable Potsticker",
+        "Fried Chicken Potsticker",
+        "Brown Rice"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "MM5 Garlic Herb Crusted Pork Loin",
-        "Red Skin Mashed Potatoes",
-        "Italian Corn"
+        "Chicken Brazilian Stroganoff",
+        "Mushroom Stroganoff",
+        "Seasoned White Rice"
       ],
       "globalFare": [
-        "Tofu Cacciatore",
-        "Chicken Cacciatore",
-        "Jasmine Rice",
-        "Fresh Roasted Broccoli"
+        "Baked Fish",
+        "Capellini",
+        "Fresh Roasted Green Beans",
+        "Roasted Cauliflower",
+        "Sauce Garlic Parmesan"
       ]
     }
   }
