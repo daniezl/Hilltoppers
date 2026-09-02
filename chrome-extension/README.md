@@ -36,7 +36,7 @@ After you edit extension code, run **`npm run build`** in this directory (`chrom
 
 ## Firebase Configuration
 
-Create a `.env.local` file in `chrome-extension/` (the path is already ignored by git) and populate it with the web config values from `SJA_re/GoogleService-Info.plist`:
+Create a `.env.local` file in `chrome-extension/` (the path is already ignored by git) and populate it with the web config values from `ios/SJA_re/GoogleService-Info.plist`:
 
 ```
 VITE_FIREBASE_API_KEY=...

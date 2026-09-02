@@ -5,18 +5,18 @@
 ### Firebase 配置
 
 1. 从 Firebase Console 下载 `GoogleService-Info.plist` 文件
-2. 将文件复制到 `SJA_re/` 目录
+2. 将文件复制到 `ios/SJA_re/` 目录
 3. 确保文件名为 `GoogleService-Info.plist`（不是 `.example` 文件）
 
 **注意**：`GoogleService-Info.plist` 包含敏感信息（API keys），不应提交到 Git。
 
 ### Cloudflare 配置
 
-Cloudflare URL 配置在 `SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键。
+Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键。
 
 默认值为 `https://hilltoppers.pages.dev`。
 
-如需修改，编辑 `SJA_re/Info.plist` 中的 `CloudflareBaseURL` 值。
+如需修改，编辑 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 值。
 
 ## Chrome 扩展设置
 
@@ -47,7 +47,7 @@ VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
 
 ### iOS 应用
 
-1. 打开 `SJA_re.xcodeproj` 在 Xcode 中
+1. 在 Xcode 中打开 `ios/SJA_re.xcodeproj`
 2. 确保已配置 `GoogleService-Info.plist`
 3. 选择目标设备并运行
 

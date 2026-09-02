@@ -75,8 +75,18 @@ Load the new dist folder again
 
 For developers who want to build and run the project locally, see [SETUP.md](./SETUP.md) for detailed instructions.
 
+## Repository layout
+
+| Folder | What it is |
+|---|---|
+| `ios/` | The iOS app and its widget — one Xcode project, `ios/SJA_re.xcodeproj` |
+| `chrome-extension/` | The Chrome extension |
+| `hilltoppers-pages/` | Schedule data (special days, breaks, menu). Hand-edited JSON, served from Cloudflare Pages, read by both apps |
+| `worker/` | The ideas-board API (Cloudflare Worker). The only server-side code |
+| `ideas-site/` | Website for the ideas board — paused, see its README |
+
 **Important**: This project requires Firebase configuration. Make sure to:
-- Add `SJA_re/GoogleService-Info.plist` for iOS app
+- Add `ios/SJA_re/GoogleService-Info.plist` for iOS app
 - Create `chrome-extension/.env.local` for Chrome extension
 
 See [SETUP.md](./SETUP.md) for more details.
