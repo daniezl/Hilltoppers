@@ -1,92 +1,100 @@
-<img width="120" alt="image" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
+<img width="120" alt="Hilltoppers icon" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
 
 # Hilltoppers
 
-A toolkit for people in Saint Johnsbury Academy
+Today's schedule, today's day color, and a timer to the end of the block — for
+students at Saint Johnsbury Academy. An iOS app and a Chrome extension, built
+by a student, open to anyone at SJA who wants to help.
 
+[**Get it on the App Store**](https://apps.apple.com/us/app/hilltoppers/id6749836752) ·
+[**Add to Chrome**](https://chromewebstore.google.com/detail/bcjpcmlikbccobbpheojlnmiaffilnaa)
 
-### iOS: 
+<img width="800" alt="The iOS app: schedule, day color, and widgets" src="https://github.com/user-attachments/assets/65a9984a-1077-4531-9f75-eccbf5774e27" />
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/65a9984a-1077-4531-9f75-eccbf5774e27" /> 
+<img width="400" alt="The Chrome extension popup" src="https://github.com/user-attachments/assets/876722b8-1dae-4c1c-8d1c-870834710afa" />
 
-### Chrome Extension: 
+## What it does
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/876722b8-1dae-4c1c-8d1c-870834710afa" />
+**Schedule** — the real one for today, including the irregular days (ABDEC,
+Spirit Week, late starts, exam weeks). Put in your course names and it shows
+them instead of "A Block".
 
+**Day color** — Green or White, without opening the school website.
 
+**Block timer** — how long until this block ends, in the iOS widget and the
+Chrome toolbar icon.
 
-# ✨ Features
-### Schedule
-  Get an up-to-date schedule, even if it is not a regular one (like ABDEC and Spirit Week)
-  Customize your own schedule by putting in the names of your Courses
+**Menu** — what's in the dining hall today (extension).
 
-### Check the day color
-  Know whether it is a Green/White Day in seconds
+**Ideas** — vote on what gets built next, right in the extension. See below.
 
-### Timer
-  See the timer for the end of the block without opening the app/extension
+## Have an idea?
 
+You do not need a GitHub account.
 
+Open the extension, expand **Ideas**, and vote for what you want. Every idea
+there is something students asked for. If yours is not on the list yet, open an
+[issue](https://github.com/daniezl/Hilltoppers/issues/new) and describe it the
+way you would explain it to a friend — no technical language needed.
 
-# ⬇️ Installation
-## iOS: 
-[App Store Link](https://apps.apple.com/us/app/hilltoppers/id6749836752)
+## Want to help build it?
 
-## Chrome Extension:
-[Chrome Web Store Link](https://chromewebstore.google.com/detail/bcjpcmlikbccobbpheojlnmiaffilnaa?utm_source=item-share-cb)
+You do not need to understand all of it. Each folder is one piece, and most
+changes touch only one.
 
-You can also install it manually.
-It’s quick and safe — no special permissions required.
+| Folder | What it is | Written in | Start here |
+|---|---|---|---|
+| [`ios/`](./ios) | The iPhone app and its home-screen widget | Swift, SwiftUI | Open `ios/SJA_re.xcodeproj` in Xcode |
+| [`chrome-extension/`](./chrome-extension) | The Chrome extension | TypeScript, React | `cd chrome-extension && npm install && npm run dev` |
+| [`data/`](./data) | Special days, breaks, the menu — the JSON both apps download | JSON | Edit `data/public/special_days.json`; format in [`DATA_FORMAT.md`](./data/DATA_FORMAT.md) |
+| [`worker/`](./worker) | The ideas-board API. The only server code in the project | TypeScript, Cloudflare Workers | `cd worker && npm install && npm run dev` |
+| [`ideas-site/`](./ideas-site) | A website for the ideas board. **Paused** — see its README | TypeScript, React | — |
 
-### 1️⃣ Download the dist.zip file
+The most common change is a schedule fix: a special day was missed or has the
+wrong times. That is one JSON file, no code, and it is live about a minute after
+merging — both apps pick it up the next time they refresh. [`data/README.md`](./data/README.md) explains how.
 
-Get the ZIP file in the release (on the right of this page)
+Anything that needs Firebase or Cloudflare credentials is described in
+[`SETUP.md`](./SETUP.md).
 
-Unzip it — you’ll get a folder named dist.
+### How the pieces fit
 
-### 2️⃣ Open Chrome Extensions Page
+```
+  data/public/*.json ──► Cloudflare Pages ──► iOS app
+  (edited by hand,          (static CDN)   └─► Chrome extension
+   or by GitHub Actions)
 
-Open Chrome and go to
-👉 chrome://extensions
+  GitHub issues ──► worker/ (votes in D1) ──► Chrome extension "Ideas"
+```
 
-In the top right corner, turn on Developer mode.
+The schedule never touches a server: it is static JSON that both apps read
+directly. The Worker exists only for the ideas board, because votes need to be
+counted somewhere.
 
-### 3️⃣ Load the Extension
+### Working on it
 
-Click “Load unpacked”.
+- One branch per change, named for what it does. Merged branches are deleted
+  automatically.
+- Deploys are manual and separate from merging: the iOS app ships through
+  Xcode, the extension through the Chrome Web Store, the Worker with
+  `npx wrangler deploy`. Only `data/` deploys itself, on every merge to `main`.
+- A [GitHub Action](./.github/workflows) refreshes the dining menu every 30
+  minutes and opens a pull request when the school calendar changes.
 
-Select the dist folder (not the ZIP file).
+<details>
+<summary>Installing the extension manually from a release</summary>
 
-### 4️⃣ Done!
+If you would rather not use the Chrome Web Store:
 
-You’ll now see the extension icon appear in the Chrome toolbar.
+1. Download `dist.zip` from the [latest release](https://github.com/daniezl/Hilltoppers/releases/latest) and unzip it.
+2. Open `chrome://extensions` and turn on **Developer mode** (top right).
+3. Click **Load unpacked** and pick the unzipped `dist` folder.
+4. Click the puzzle icon in the toolbar and pin Hilltoppers.
 
-Click the puzzle icon 🧩 → Pin it for quick access.
+To update, load the new `dist` folder the same way.
 
-### 5️⃣ Optional: Update Later
+</details>
 
-If there is a new version, just:
+## License
 
-Load the new dist folder again
-
----
-
-# 🔧 Development Setup
-
-For developers who want to build and run the project locally, see [SETUP.md](./SETUP.md) for detailed instructions.
-
-## Repository layout
-
-| Folder | What it is |
-|---|---|
-| `ios/` | The iOS app and its widget — one Xcode project, `ios/SJA_re.xcodeproj` |
-| `chrome-extension/` | The Chrome extension |
-| `data/` | Everything both apps download: special days, breaks, dining menu, iOS universal-link file. `data/public/` is served as-is from Cloudflare Pages; `data/scripts/` keeps it current |
-| `worker/` | The ideas-board API (Cloudflare Worker). The only server-side code |
-| `ideas-site/` | Website for the ideas board — paused, see its README |
-
-**Important**: This project requires Firebase configuration. Make sure to:
-- Add `ios/SJA_re/GoogleService-Info.plist` for iOS app
-- Create `chrome-extension/.env.local` for Chrome extension
-
-See [SETUP.md](./SETUP.md) for more details.
+*(to be chosen — see the note in the pull request)*
