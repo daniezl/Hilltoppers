@@ -24,14 +24,11 @@ import {
 } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
 import {
-  IDEAS_SITE_URL,
-  IDEAS_SUBMIT_URL,
   fetchIdeas,
   isNewIdea,
   loadCachedIdeas,
   saveCachedIdeas,
   setVote,
-  siteUrlWithSession,
   sortForPopup,
   type Idea
 } from '../services/ideasService';
@@ -475,18 +472,6 @@ const Popup: React.FC = () => {
       cancelled = true;
     };
   }, [ideasExpanded]);
-
-  // Opening in code rather than following the href: the URL carries a one-time
-  // sign-in code that has to be fetched first, so it cannot be known at render.
-  const openIdeasSite = async (event: React.MouseEvent, path = '') => {
-    event.preventDefault();
-    const url = await siteUrlWithSession(path);
-    if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
-      chrome.tabs.create({ url });
-    } else {
-      window.open(url, '_blank', 'noopener');
-    }
-  };
 
   const handleVote = async (idea: Idea) => {
     const nextVoted = !idea.hasVoted;
@@ -1388,12 +1373,12 @@ const Popup: React.FC = () => {
               <ul className="ideas-items">
                 {popupIdeas.map((idea) => (
                   <li key={idea.number} className="idea-row">
+                    {/* Points at the GitHub issue while the ideas site is paused. */}
                     <a
                       className="idea-title"
-                      href={`${IDEAS_SITE_URL}/idea/${idea.number}`}
+                      href={idea.url}
                       target="_blank"
                       rel="noreferrer noopener"
-                      onClick={(event) => void openIdeasSite(event, `/idea/${idea.number}`)}
                     >
                       {isNewIdea(idea) ? <span className="idea-new">New</span> : null}
                       {idea.status !== 'open' ? (
@@ -1430,35 +1415,6 @@ const Popup: React.FC = () => {
               </ul>
             )}
             {voteError ? <p className="dining-error">{voteError}</p> : null}
-            <p className="ideas-footer">
-              <a
-                className="dining-link"
-                href={IDEAS_SITE_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-                onClick={(event) => void openIdeasSite(event)}
-              >
-                <span>See all ideas</span>
-              </a>
-              <a
-                className="dining-link"
-                href={IDEAS_SUBMIT_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-                onClick={(event) => void openIdeasSite(event, '/new')}
-              >
-                <svg className="dining-link-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M12 5v14M5 12h14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.1"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span>Share an idea</span>
-              </a>
-            </p>
           </div>
         )}
       </section>

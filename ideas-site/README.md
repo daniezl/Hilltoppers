@@ -1,5 +1,10 @@
 # Hilltoppers Ideas
 
+> **Paused.** Not deployed and not linked from the extension. The code stays so
+> it can be picked back up once the shared palette and sign-in design are
+> settled; until then the popup is the only client of the ideas API, and idea
+> titles there link to the GitHub issue directly. Nothing here is load-bearing.
+
 The public ideas board. Students vote on what the extension should do next and
 submit their own ideas, without needing a GitHub account.
 

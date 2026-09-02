@@ -1053,17 +1053,6 @@ header {
   color: #7d8591;
 }
 
-.ideas-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 10px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid rgba(17, 17, 17, 0.08);
-  font-size: 12px;
-}
-
 @media (max-width: 340px) {
   .dining-grid {
     grid-template-columns: 1fr;
