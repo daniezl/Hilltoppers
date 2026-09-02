@@ -216,21 +216,8 @@ try {
 console.log(`
 \x1b[1;32mBackend is up.\x1b[0m
 
-Next, the website — that part is in the Cloudflare dashboard, not here:
+The extension popup is the only client right now (the website in ideas-site/
+is paused). Rebuild it and reload it in chrome://extensions:
 
-  1. Workers & Pages → Create → Pages → connect this repo
-       Project name ....... hilltoppers-ideas
-       Root directory ..... ideas-site
-       Build command ...... npm run build
-       Output directory ... dist
-       Do NOT put it behind Cloudflare Access.
-
-  2. Add the build variables from ideas-site/.env.example
-       (copy the VITE_FIREBASE_* values out of chrome-extension/.env.local)
-
-  3. Firebase console → Authentication → Settings → Authorized domains
-       add: hilltoppers-ideas.pages.dev
-       Skipping this makes Google sign-in fail silently.
-
-Then rebuild the extension:  cd ../chrome-extension && npm run build
+  cd ../chrome-extension && npm run build
 `);
