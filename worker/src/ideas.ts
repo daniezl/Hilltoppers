@@ -136,6 +136,20 @@ async function getCachedIssues(env: Env): Promise<CachedIdea[]> {
 }
 
 /**
+ * Runs the whole list path so a failure can be attributed. The public error is
+ * deliberately vague, and it covers the cache read, the parse, the GitHub call
+ * and the cache write, which are four different things to go wrong.
+ */
+export async function probeIdeasPipeline(env: Env): Promise<{ ok: boolean; detail: string }> {
+  try {
+    const issues = await getCachedIssues(env);
+    return { ok: true, detail: `${issues.length} issues` };
+  } catch (error) {
+    return { ok: false, detail: String(error).slice(0, 400) };
+  }
+}
+
+/**
  * Vote counts are read straight from D1 on every request rather than cached
  * alongside the issues, so a vote is reflected immediately instead of up to a
  * cache period later.

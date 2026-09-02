@@ -12,7 +12,7 @@
 
 import { probeJwks } from './firebaseAuth';
 import { json } from './http';
-import { issuesUrl } from './ideas';
+import { issuesUrl, probeIdeasPipeline } from './ideas';
 import type { Env } from './index';
 
 export async function handleHealth(request: Request, env: Env): Promise<Response> {
@@ -49,6 +49,22 @@ export async function handleHealth(request: Request, env: Env): Promise<Response
     github = `failed: ${String(error)}`;
   }
 
+  // The cache namespace is shared with the schedule half and was the one
+  // dependency this endpoint did not cover, which is exactly where the list
+  // path was failing while every probe here reported ok.
+  let cache = 'unknown';
+  try {
+    const probe = `ideas:health:${Date.now()}`;
+    await env.SCHEDULE_KV.put(probe, 'ok', { expirationTtl: 60 });
+    const readBack = await env.SCHEDULE_KV.get(probe);
+    cache = readBack === 'ok' ? 'ok' : `read back ${JSON.stringify(readBack)}`;
+  } catch (error) {
+    cache = `failed: ${String(error).slice(0, 200)}`;
+  }
+
+  // Whatever the individual probes say, this is the path visitors actually hit.
+  const list = await probeIdeasPipeline(env);
+
   return json(
     {
       firebaseKeys: jwks,
@@ -56,9 +72,13 @@ export async function handleHealth(request: Request, env: Env): Promise<Response
       githubRepo: env.GITHUB_REPO,
       githubTokenSet: Boolean(env.GITHUB_TOKEN),
       github,
-      database
+      database,
+      cache,
+      list
     },
-    jwks.ok && database === 'ok' && github.startsWith('ok') ? 200 : 503,
+    jwks.ok && database === 'ok' && github.startsWith('ok') && cache === 'ok' && list.ok
+      ? 200
+      : 503,
     request
   );
 }
