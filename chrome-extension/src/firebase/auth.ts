@@ -1,13 +1,10 @@
 import {
-  GoogleAuthProvider,
-  OAuthProvider,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
   reload,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
   browserLocalPersistence,
@@ -126,21 +123,6 @@ export function waitForAuthReady(timeoutMs = 2500): Promise<User | null> {
     }, timeoutMs);
   });
   return authReadyPromise;
-}
-
-export async function signInWithGoogle(): Promise<UserCredential> {
-  const auth = getOrInitAuth();
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
-  return signInWithPopup(auth, provider);
-}
-
-export async function signInWithApple(): Promise<UserCredential> {
-  const auth = getOrInitAuth();
-  const provider = new OAuthProvider('apple.com');
-  provider.addScope('email');
-  provider.addScope('name');
-  return signInWithPopup(auth, provider);
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<UserCredential> {

@@ -4,8 +4,7 @@ How to write entries in `data/special_days.json`.
 
 This file is the source of truth for special days, edited by hand and committed to
 git. Cloudflare Pages serves it as a static asset, and both the iOS app and the
-Chrome extension fetch it directly from there. The `admin/` panel and `worker/`
-draft→publish flow are unused and write to Worker KV that nothing reads.
+Chrome extension fetch it directly from there.
 
 ## Grade-Specific Blocks
 

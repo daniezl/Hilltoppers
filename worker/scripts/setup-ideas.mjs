@@ -187,7 +187,7 @@ try {
     fail(
       `The endpoint returned HTTP ${response.status}.`,
       text.slice(0, 400) +
-        '\n\nIf that looks like a login page, Cloudflare Access is covering /api/ideas.\nIt needs to stay public — only /api/admin/* should be behind Access.'
+        '\n\nIf that looks like a login page, Cloudflare Access is covering this Worker.\nThe ideas API is public; remove the Access policy from it.'
     );
   }
 

@@ -1,9 +1,6 @@
 /**
- * CORS helpers for the public ideas endpoints.
- *
- * These are separate from the admin helpers in index.ts because the ideas API
- * is called from the extension (chrome-extension://) and the public ideas site,
- * neither of which is in the admin allowlist.
+ * CORS helpers for the ideas endpoints, which are called from the extension
+ * (chrome-extension://) and from Cloudflare Pages sites.
  */
 
 function isAllowedOrigin(origin: string): boolean {
