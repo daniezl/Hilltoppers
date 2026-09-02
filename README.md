@@ -81,7 +81,7 @@ For developers who want to build and run the project locally, see [SETUP.md](./S
 |---|---|
 | `ios/` | The iOS app and its widget — one Xcode project, `ios/SJA_re.xcodeproj` |
 | `chrome-extension/` | The Chrome extension |
-| `schedule/` | Schedule data (special days, breaks, menu) and the scripts that update it. Hand-edited JSON, served from Cloudflare Pages, read by both apps |
+| `data/` | Everything both apps download: special days, breaks, dining menu, iOS universal-link file. `data/public/` is served as-is from Cloudflare Pages; `data/scripts/` keeps it current |
 | `worker/` | The ideas-board API (Cloudflare Worker). The only server-side code |
 | `ideas-site/` | Website for the ideas board — paused, see its README |
 

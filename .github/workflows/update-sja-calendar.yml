@@ -25,7 +25,7 @@ jobs:
 
       - name: Sync calendar into schedule overrides
         id: sync
-        working-directory: schedule
+        working-directory: data
         env:
           SJA_REPORT_FILE: ${{ runner.temp }}/sja-calendar-report.md
         run: node scripts/fetch_sja_calendar.mjs
@@ -40,5 +40,5 @@ jobs:
           body-path: ${{ runner.temp }}/sja-calendar-report.md
           commit-message: "chore: sync special days from SJA calendar"
           add-paths: |
-            schedule/data/special_days.json
-            schedule/data/special_periods.json
+            data/public/special_days.json
+            data/public/special_periods.json

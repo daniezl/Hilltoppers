@@ -6,7 +6,7 @@ import { load } from "cheerio";
 const execFileAsync = promisify(execFile);
 
 const MENU_URL = "https://menus.tenkites.com/eliorna/d0358";
-const OUT = "data/menu.json";
+const OUT = "public/menu.json";
 
 const uniq = (arr) => [...new Set(arr.map((s) => s.trim()).filter(Boolean))];
 const norm = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");

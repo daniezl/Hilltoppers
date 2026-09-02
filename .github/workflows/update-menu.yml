@@ -10,7 +10,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: schedule
+    working-directory: data
 
 jobs:
   update-menu:
@@ -30,6 +30,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add schedule/data/menu.json
+          git add data/public/menu.json
           git diff --staged --quiet || git commit -m "chore: update menu.json"
           git push
