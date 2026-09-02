@@ -5,9 +5,7 @@ import {
   registerWithEmail,
   reloadCurrentUser,
   sendVerificationEmail,
-  signInWithApple,
   signInWithEmail,
-  signInWithGoogle,
   signOut as signOutUser
 } from '../firebase/auth';
 import type { AuthUser } from '../firebase/auth';
@@ -181,28 +179,6 @@ const Login: React.FC = () => {
       window.location.href = classSettingsUrl;
     });
   }, [authInitialized, authUser, needsEmailVerification, redirecting, classSettingsUrl]);
-
-  const handleOAuth = async (provider: 'google' | 'apple') => {
-    if (busy) {
-      return;
-    }
-    setFeedback(null);
-    setRedirecting(false);
-    setBusy(true);
-    try {
-      if (provider === 'google') {
-        await signInWithGoogle();
-      } else {
-        await signInWithApple();
-      }
-      setFeedback({ type: 'success', message: 'Signed in successfully.' });
-    } catch (error) {
-      console.error('[login] OAuth sign-in failed', error);
-      setFeedback({ type: 'error', message: mapAuthError(error) });
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const handleEmailSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -409,20 +385,6 @@ const Login: React.FC = () => {
         ) : null}
 
         <div className="login__content">
-          {/* Temporarily hidden OAuth buttons */}
-          {/* <div className="login__oauth">
-            <button type="button" className="primary" onClick={() => void handleOAuth('google')} disabled={busy}>
-              Continue with Google
-            </button>
-            <button type="button" className="secondary" onClick={() => void handleOAuth('apple')} disabled={busy}>
-              Continue with Apple
-            </button>
-          </div>
-
-          <div className="login__divider">
-            <span>or</span>
-          </div> */}
-
           {!needsEmailVerification && (
           <form className="login__form" onSubmit={handleEmailSubmit} method="post">
             <label>

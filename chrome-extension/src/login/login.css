@@ -133,29 +133,6 @@
   gap: 20px;
 }
 
-.login__oauth {
-  display: grid;
-  gap: 12px;
-}
-
-.login__divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.login__divider::before,
-.login__divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
 .login__form {
   display: grid;
   gap: 12px;

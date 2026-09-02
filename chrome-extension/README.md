@@ -62,7 +62,7 @@ The extension now supports loading special_days and special_periods from Cloudfl
 VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
 ```
 
-If `VITE_CLOUDFLARE_SCHEDULE_URL` is not set, the extension will return empty data (using default weekday schedules).
+If `VITE_CLOUDFLARE_SCHEDULE_URL` is not set, the extension falls back to `https://hilltoppers.pages.dev`, so it works without any `.env.local` entry. Set it only to point at a different deployment.
 
 ## Project Structure
 

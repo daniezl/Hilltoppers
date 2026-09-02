@@ -1,17 +1,12 @@
 # Hilltoppers Worker
 
-Two unrelated things live here:
+The ideas board API, and the only server-side code in the project. Schedule
+data does not go through here: it is static JSON in `hilltoppers-pages/data/`,
+served from Cloudflare Pages and read directly by the iOS app and the extension.
 
-- **Ideas board** (`/api/ideas/*`) — live, backs the ideas section of the
-  extension popup. See below.
-- **Schedule admin** (`/api/admin/*`) — the older half, and effectively dead.
-  Nothing reads the KV data it writes; the source of truth for special days is
-  the git-tracked `hilltoppers-pages/data/special_days.json` served from
-  Cloudflare Pages, which is what the iOS app and the extension actually fetch.
-
----
-
-# Ideas board
+The Worker is still deployed under its historical name `schedule-admin-api`.
+Renaming it changes its URL, which the extension has baked in, so that is a
+separate change.
 
 Students vote on and submit feature ideas without needing a GitHub account.
 Each idea is a GitHub issue; this Worker holds the votes, because a reaction
@@ -83,8 +78,7 @@ A signed-out `GET /api/ideas` returning ideas normally while every vote comes
 back 401 is the same symptom seen from the other side: listing does not need a
 token, so it keeps working.
 
-These are public routes and must stay outside Cloudflare Access, which should
-only cover `/api/admin/*`.
+These are public routes; do not put them behind Cloudflare Access.
 
 ## Sign-in methods
 
@@ -94,93 +88,3 @@ the extension has it would split accounts: a Google sign-in gets a different
 uid from the password account holding that person's votes. Apple is not usable
 at all — the project answers `OPERATION_NOT_ALLOWED : Code flow is not enabled
 for Apple`.
-
----
-
-# Schedule admin (legacy)
-
-## Setup
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Create a KV namespace:
-```bash
-npx wrangler kv namespace create SCHEDULE_KV
-```
-
-3. Update `wrangler.toml` with your KV namespace ID
-
-4. Set environment variables in Cloudflare Dashboard or via CLI:
-```bash
-wrangler secret put EDITORS
-wrangler secret put ADMINS
-```
-
-Or set them as plain environment variables (not secrets) in the Cloudflare dashboard.
-
-## Development
-
-```bash
-npm run dev
-```
-
-## Deployment
-
-```bash
-npm run deploy
-```
-
-## Environment Variables
-
-- `EDITORS`: Comma-separated list of editor email addresses (e.g., `editor1@example.com,editor2@example.com`)
-- `ADMINS`: Comma-separated list of admin email addresses (e.g., `admin@example.com`)
-- `CLOUDFLARE_ACCESS_AUD`: (Optional) Cloudflare Access audience tag for JWT verification
-- `SCHEDULE_KV`: KV namespace binding (configured in wrangler.toml)
-
-## Authentication
-
-The worker trusts Cloudflare Access for authentication. It extracts the user email from:
-
-1. `Cf-Access-Authenticated-User-Email` header (primary method)
-2. `Cf-Access-Jwt-Assertion` header (fallback, parses JWT payload)
-
-## Authorization
-
-Roles are determined by email allowlists:
-
-- If email is in `ADMINS` → `admin` role
-- If email is in `EDITORS` → `editor` role
-- Otherwise → unauthorized (403)
-
-## API Endpoints
-
-### Public Endpoints
-
-- `GET /api/special_days.json` - Get published schedules (no auth required)
-
-### Protected Endpoints (require authentication)
-
-- `GET /api/admin/user` - Get current user info
-- `GET /api/admin/drafts` - List all drafts (editor+)
-- `POST /api/admin/drafts` - Save a draft (editor+)
-- `DELETE /api/admin/drafts/:dateKey` - Delete a draft (editor+)
-- `POST /api/admin/publish` - Publish a draft (admin only)
-- `POST /api/admin/rollback` - Rollback a published schedule (admin only)
-
-## KV Storage Structure
-
-- `draft:YYYY-MM-DD` - Draft schedule data
-- `published:YYYY-MM-DD` - Published schedule data
-- `special_days` - Aggregate JSON object of all published schedules
-
-## Cloudflare Access Setup
-
-1. In Cloudflare Zero Trust, create an Access application
-2. Protect routes: `/admin/*` and `/api/admin/*`
-3. Configure identity providers (Google, Microsoft, Email OTP)
-4. Set access policies to allow authorized users
-5. The worker will automatically receive authentication headers
-

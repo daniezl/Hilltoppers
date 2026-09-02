@@ -6,14 +6,12 @@ compatibility_date = "2024-01-01"
 [dev]
 port = 8787
 
-# 生产环境配置
-[env.production]
-vars = { ENVIRONMENT = "production" }
-
-# KV Namespace 配置
+# 只有一个环境。以前有个 [env.production]，没人读它的变量，但它让每次
+# deploy 都弹 "multiple environments" 警告，还让 --env production 会部署成
+# 另一个 Worker。
+#
+# KV：缓存 GitHub issue 列表，以及每人每天的提交计数
 # 使用命令创建: npx wrangler kv namespace create SCHEDULE_KV
-# 然后将输出的 id 填入下面
-# 开发环境和生产环境使用同一个 KV namespace
 [[kv_namespaces]]
 binding = "SCHEDULE_KV"
 id = "0dc72530532c41f3b79647f91bac9766"
@@ -33,14 +31,7 @@ GITHUB_REPO = "daniezl/Hilltoppers"
 # Firebase 项目 ID，用于校验 ID token 的 iss/aud（不是密钥）
 FIREBASE_PROJECT_ID = "schedule-59d28"
 
-# 环境变量说明：
-# - EDITORS: 编辑器邮箱列表（逗号分隔），通过 wrangler secret put EDITORS 设置
-# - ADMINS: 管理员邮箱列表（逗号分隔），通过 wrangler secret put ADMINS 设置
-# - CLOUDFLARE_ACCESS_AUD: (可选) Cloudflare Access audience tag，用于 JWT 验证
+# Secrets（不在这个文件里）：
 # - GITHUB_TOKEN: fine-grained PAT，只需 Hilltoppers 仓库的 Issues 读写权限
 #                 通过 npx wrangler secret put GITHUB_TOKEN 设置
-#
-# 设置环境变量：
-# 方式 1 (推荐): npx wrangler secret put EDITORS
-# 方式 2: 在 Cloudflare Dashboard → Workers → Settings → Variables 中设置
 

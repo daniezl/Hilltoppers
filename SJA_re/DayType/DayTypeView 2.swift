@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  DayTypeView 2.swift
 //  SJA_re
 //
 //  Created by Daniel Zhang on 4/23/25.
