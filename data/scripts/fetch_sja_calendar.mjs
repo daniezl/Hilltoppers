@@ -27,8 +27,8 @@
 import fs from "node:fs/promises";
 
 const ICS_URL = "https://stjacademy.org/?feed=eo-events";
-const SPECIAL_DAYS_PATH = "data/special_days.json";
-const SPECIAL_PERIODS_PATH = "data/special_periods.json";
+const SPECIAL_DAYS_PATH = "public/special_days.json";
+const SPECIAL_PERIODS_PATH = "public/special_periods.json";
 const SOURCE_TAG = "sja-calendar";
 
 // The feed normally carries ~110 events. A much smaller number means the request

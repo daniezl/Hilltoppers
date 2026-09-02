@@ -1,6 +1,6 @@
 # special_days.json Format Guide
 
-How to write entries in `data/special_days.json`.
+How to write entries in `public/special_days.json`.
 
 This file is the source of truth for special days, edited by hand and committed to
 git. Cloudflare Pages serves it as a static asset, and both the iOS app and the

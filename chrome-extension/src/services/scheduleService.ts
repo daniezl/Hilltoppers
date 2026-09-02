@@ -62,7 +62,7 @@ function mapBlocks(raw: RawBlock[]): Block[] {
   });
 }
 
-// Static assets from Cloudflare Pages, backed by git (`hilltoppers-pages/data/`).
+// Static assets from Cloudflare Pages, backed by git (`data/public/`).
 // special_days.json is hand-edited there and that file is the source of truth —
 // the admin panel / Worker KV path was never used and writes nothing we read.
 const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_SCHEDULE_URL || 'https://hilltoppers.pages.dev';

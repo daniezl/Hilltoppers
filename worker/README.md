@@ -1,7 +1,7 @@
 # Hilltoppers Worker
 
 The ideas board API, and the only server-side code in the project. Schedule
-data does not go through here: it is static JSON in `hilltoppers-pages/data/`,
+data does not go through here: it is static JSON in `data/public/`,
 served from Cloudflare Pages and read directly by the iOS app and the extension.
 
 The Worker is still deployed under its historical name `schedule-admin-api`.
