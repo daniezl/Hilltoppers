@@ -2,7 +2,7 @@ import Foundation
 
 /// 排程数据的读取地址。
 ///
-/// 唯一数据源是 git 里的 `hilltoppers-pages/data/special_days.json`，手工编辑后由
+/// 唯一数据源是 git 里的 `schedule/data/special_days.json`，手工编辑后由
 /// Cloudflare Pages 以静态文件提供。
 struct ScheduleConfig {
     // Cloudflare Pages URL - 从 Info.plist 读取，如果没有则使用默认值（作为后备）
