@@ -4,11 +4,12 @@
 
 ### Firebase 配置
 
-1. 从 Firebase Console 下载 `GoogleService-Info.plist` 文件
-2. 将文件复制到 `ios/SJA_re/` 目录
-3. 确保文件名为 `GoogleService-Info.plist`（不是 `.example` 文件）
+不需要做任何事。`ios/SJA_re/GoogleService-Info.plist` 已经在仓库里，clone 下来
+直接就能编译。
 
-**注意**：`GoogleService-Info.plist` 包含敏感信息（API keys），不应提交到 Git。
+这个文件里是 Firebase 的客户端配置（API key、project ID、bundle ID），和扩展
+打包进去的那套 web config 是同一类东西，本来就是公开的，不是密钥。真正防止
+别人乱写数据的是 Firestore 的 Security Rules，不是藏这个文件。
 
 ### Cloudflare 配置
 
@@ -48,8 +49,7 @@ VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
 ### iOS 应用
 
 1. 在 Xcode 中打开 `ios/SJA_re.xcodeproj`
-2. 确保已配置 `GoogleService-Info.plist`
-3. 选择目标设备并运行
+2. 选择目标设备并运行
 
 ### Chrome 扩展
 
