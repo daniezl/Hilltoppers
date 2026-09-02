@@ -55,10 +55,7 @@ const NewIdea: React.FC<Props> = ({ user, onSubmitted }) => {
       <main className="container narrow">
         <div className="detail-card center">
           <h1 className="detail-title">Thanks — it&apos;s in.</h1>
-          <p className="muted">
-            Someone will read it before it goes on the board, so it won&apos;t show up right away.
-            If it fits, you&apos;ll see it there soon.
-          </p>
+          <p className="muted">It&apos;ll appear on the board once someone has read it.</p>
           <Link className="pill-button" to="/">
             Back to the board
           </Link>
@@ -73,10 +70,7 @@ const NewIdea: React.FC<Props> = ({ user, onSubmitted }) => {
         <Link className="back-link" to="/">
           ← All ideas
         </Link>
-        <SignInPanel
-          heading="Sign in to share an idea"
-          blurb="Nothing gets posted under your full name — just your first name and last initial."
-        />
+        <SignInPanel heading="Sign in to share an idea" />
       </main>
     );
   }
@@ -92,8 +86,7 @@ const NewIdea: React.FC<Props> = ({ user, onSubmitted }) => {
         <div className="detail-card center">
           <h1 className="detail-title">Confirm your email first</h1>
           <p className="muted">
-            Check {user.email} for a confirmation link. Open it, then come back and reload this
-            page. You can already vote — this is only needed to post an idea.
+            Check {user.email} for a confirmation link, then reload this page.
           </p>
           <button
             type="button"

@@ -8,8 +8,10 @@
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
+// `jwk`, not `jwks`: the plural spelling is a 404, and fetching an error page
+// instead of the key set fails every verification as though the token were bad.
 const JWKS = createRemoteJWKSet(
-  new URL('https://www.googleapis.com/service_accounts/v1/jwks/securetoken@system.gserviceaccount.com')
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
 );
 
 export interface AppUser {
@@ -66,8 +68,11 @@ export async function verifyFirebaseToken(
       emailVerified: payload.email_verified === true,
       displayName: shortenName(typeof payload.name === 'string' ? payload.name : '')
     };
-  } catch {
-    // Bad signature, expired, or wrong project. All are just "not signed in".
+  } catch (error) {
+    // An expired or wrong-project token is ordinary and means "not signed in".
+    // Being unable to reach the keys at all is not, and looks identical from the
+    // outside, so leave a trace rather than reporting a silent 401 either way.
+    console.warn('[auth] ID token rejected', error);
     return null;
   }
 }

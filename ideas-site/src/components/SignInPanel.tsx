@@ -74,9 +74,6 @@ const SignInPanel: React.FC<Props> = ({ heading, blurb }) => {
               placeholder="Alex Rivera"
               onChange={(event) => setName(event.target.value)}
             />
-            <span className="field-hint">
-              Ideas you post show your first name and last initial, nothing more.
-            </span>
           </label>
         ) : null}
 
@@ -133,10 +130,6 @@ const SignInPanel: React.FC<Props> = ({ heading, blurb }) => {
         >
           {mode === 'signIn' ? 'Create one' : 'Sign in'}
         </button>
-      </p>
-
-      <p className="muted small">
-        Use the same account as the extension and your votes stay together.
       </p>
     </div>
   );

@@ -19,10 +19,7 @@ const SignIn: React.FC<Props> = ({ signedIn }) => {
       <Link className="back-link" to="/">
         ← All ideas
       </Link>
-      <SignInPanel
-        heading="Sign in"
-        blurb="Signing in is only used to keep votes to one per person and to put a name on ideas you post."
-      />
+      <SignInPanel heading="Sign in" />
     </main>
   );
 };

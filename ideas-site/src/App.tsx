@@ -57,7 +57,7 @@ const App: React.FC = () => {
   const handleVote = useCallback(
     async (idea: Idea) => {
       if (!user) {
-        setToast('Sign in first so we can count one vote per person.');
+        setToast('Sign in to vote.');
         return;
       }
 
