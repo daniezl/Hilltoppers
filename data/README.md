@@ -36,5 +36,9 @@ A Cloudflare Pages project named `hilltoppers`, connected to this repository:
 | Build command | *(none)* |
 | Build output directory | `public` |
 
+The output directory is **relative to the root directory** — the value is
+`public`, not `data/public`. The latter makes Pages look for
+`data/data/public` and fail with "build output directory not found".
+
 Three places know this folder's layout: those two dashboard settings and the
 two workflow files. Rename anything here and all of them move together.
