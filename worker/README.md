@@ -64,6 +64,28 @@ assignee → Being built, otherwise Open for votes.
 - `POST /api/ideas/handoff` — signed in; returns a single-use code that carries
   the session to the site
 - `POST /api/ideas/handoff/redeem` — trades that code back for the ID token
+- `GET /api/ideas/health` — what this build can reach; 200 when all of it, 503
+  otherwise
+
+## When everything says "Please sign in first"
+
+That message is what the API returns whenever it cannot verify a token, so a
+Worker that has lost access to Firebase's signing keys is indistinguishable
+from a genuinely signed-out visitor, and the obvious place to look is the
+client, which will be fine. Check the Worker first:
+
+```
+curl https://schedule-admin-api.danielzhang089.workers.dev/api/ideas/health
+```
+
+`firebaseKeys.url` is worth reading even when it says `ok`, because it tells
+you which build is actually live. The keys are published at
+`…/service_accounts/v1/jwk/…`; the plural `jwks` is a 404, and pointing at it
+rejects every token while looking like an auth problem.
+
+A signed-out `GET /api/ideas` returning ideas normally while every vote comes
+back 401 is the same symptom seen from the other side: listing does not need a
+token, so it keeps working.
 
 These are public routes and must stay outside Cloudflare Access, which should
 only cover `/api/admin/*`.

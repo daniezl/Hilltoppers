@@ -82,14 +82,20 @@ function stripMetadata(body: string): string {
     .trim();
 }
 
-async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
-  const url =
+export function issuesUrl(env: Env): string {
+  return (
     `https://api.github.com/repos/${env.GITHUB_REPO}/issues` +
-    `?labels=${encodeURIComponent(BOARD_LABEL)}&state=all&per_page=100&sort=created&direction=desc`;
+    `?labels=${encodeURIComponent(BOARD_LABEL)}&state=all&per_page=100&sort=created&direction=desc`
+  );
+}
 
-  const res = await fetch(url, { headers: githubHeaders(env) });
+async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
+  const res = await fetch(issuesUrl(env), { headers: githubHeaders(env) });
   if (!res.ok) {
-    throw new Error(`GitHub API returned ${res.status}`);
+    // The status alone does not say whether the token lacks Issues access, has
+    // expired, or hit a limit, and this is the only place that ever sees the
+    // explanation.
+    throw new Error(`GitHub API returned ${res.status}: ${(await res.text()).slice(0, 300)}`);
   }
 
   const raw = (await res.json()) as any[];
@@ -114,13 +120,33 @@ async function fetchIssuesFromGitHub(env: Env): Promise<CachedIdea[]> {
 async function getCachedIssues(env: Env): Promise<CachedIdea[]> {
   const cached = await env.SCHEDULE_KV.get(CACHE_KEY);
   if (cached) {
-    return JSON.parse(cached) as CachedIdea[];
+    try {
+      return JSON.parse(cached) as CachedIdea[];
+    } catch (error) {
+      // A cache entry that will not parse used to throw from here and be
+      // reported as GitHub being unreachable, which is the wrong place to look.
+      console.warn('[ideas] Discarding unparseable cache entry', error);
+    }
   }
   const issues = await fetchIssuesFromGitHub(env);
   await env.SCHEDULE_KV.put(CACHE_KEY, JSON.stringify(issues), {
     expirationTtl: CACHE_TTL_SECONDS
   });
   return issues;
+}
+
+/**
+ * Runs the whole list path so a failure can be attributed. The public error is
+ * deliberately vague, and it covers the cache read, the parse, the GitHub call
+ * and the cache write, which are four different things to go wrong.
+ */
+export async function probeIdeasPipeline(env: Env): Promise<{ ok: boolean; detail: string }> {
+  try {
+    const issues = await getCachedIssues(env);
+    return { ok: true, detail: `${issues.length} issues` };
+  } catch (error) {
+    return { ok: false, detail: String(error).slice(0, 400) };
+  }
 }
 
 /**
@@ -153,12 +179,21 @@ export async function handleGetIdeas(request: Request, env: Env): Promise<Respon
     return json({ error: 'Could not reach GitHub right now.' }, 502, request);
   }
 
-  const voteCounts = await loadVoteCounts(env);
-
   // Listing works signed out; the token only decides whether we can say which
   // ideas the caller has already voted for.
   const user = await verifyFirebaseToken(request, env.FIREBASE_PROJECT_ID);
-  const myVotes = user ? await loadUserVotes(env, user.uid) : new Set<number>();
+
+  let voteCounts: Map<number, number>;
+  let myVotes: Set<number>;
+  try {
+    voteCounts = await loadVoteCounts(env);
+    myVotes = user ? await loadUserVotes(env, user.uid) : new Set<number>();
+  } catch (error) {
+    // Unguarded, a D1 hiccup threw out of the handler as a bare 500, which the
+    // site showed as the same "could not load" as an unreachable GitHub.
+    console.error('[ideas] Failed to read votes', error);
+    return json({ error: 'Could not read the votes right now.' }, 502, request);
+  }
 
   const ideas: Idea[] = issues.map((issue) => ({
     ...issue,

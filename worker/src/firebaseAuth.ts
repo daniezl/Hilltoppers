@@ -10,9 +10,29 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 // `jwk`, not `jwks`: the plural spelling is a 404, and fetching an error page
 // instead of the key set fails every verification as though the token were bad.
-const JWKS = createRemoteJWKSet(
-  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
-);
+export const JWKS_URL =
+  'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+
+const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
+
+/**
+ * Reports whether the signing keys are actually reachable. A wrong URL here
+ * rejects every token while looking exactly like "not signed in", so it needs
+ * to be checkable from outside without a valid token to hand.
+ */
+export async function probeJwks(): Promise<{ ok: boolean; url: string; detail: string }> {
+  try {
+    const response = await fetch(JWKS_URL);
+    if (!response.ok) {
+      return { ok: false, url: JWKS_URL, detail: `HTTP ${response.status}` };
+    }
+    const { keys } = (await response.json()) as { keys?: unknown[] };
+    const count = Array.isArray(keys) ? keys.length : 0;
+    return { ok: count > 0, url: JWKS_URL, detail: `${count} keys` };
+  } catch (error) {
+    return { ok: false, url: JWKS_URL, detail: String(error) };
+  }
+}
 
 export interface AppUser {
   uid: string;
