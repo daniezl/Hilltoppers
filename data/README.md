@@ -21,7 +21,7 @@ is not meant to be served.
 Both run in GitHub Actions (`.github/workflows/`) with this folder as the
 working directory, and write into `public/` by relative path:
 
-- `fetch_menu.mjs` — pushes `menu.json` straight to `redesign`
+- `fetch_menu.mjs` — pushes `menu.json` straight to `main`
 - `fetch_sja_calendar.mjs` — opens a pull request for `special_days.json` /
   `special_periods.json`, because those are hand-curated
 
@@ -31,10 +31,14 @@ A Cloudflare Pages project named `hilltoppers`, connected to this repository:
 
 | Setting | Value |
 |---|---|
-| Production branch | `redesign` |
+| Production branch | `main` |
 | Root directory | `data` |
 | Build command | *(none)* |
 | Build output directory | `public` |
+
+The output directory is **relative to the root directory** — the value is
+`public`, not `data/public`. The latter makes Pages look for
+`data/data/public` and fail with "build output directory not found".
 
 Three places know this folder's layout: those two dashboard settings and the
 two workflow files. Rename anything here and all of them move together.
