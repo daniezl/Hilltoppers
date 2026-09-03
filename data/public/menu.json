@@ -1,47 +1,53 @@
 {
-  "updatedAt": "2026-09-02T23:57:32.199Z",
+  "updatedAt": "2026-09-03T04:11:02.282Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-02",
+  "menuDate": "2026-09-03",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Sausage & Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Egg Bacon and Cheese Croissant",
-        "Sausage, Egg & Cheese Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Halal Chicken Sausage",
-        "Potato Hashbrown Patty",
-        "Waffles Belgian",
-        "Scrambled Eggs"
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
+        "Scrambled Eggs",
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Vegan Chorizo",
-        "Kansas City BBQ Pulled Pork",
-        "Sweet Potato Hash",
-        "Jalapeno Poppers"
+        "Chicken Stew",
+        "Mediterranean Vegetable Stew",
+        "White Rice",
+        "Roasted Cauliflower",
+        "Grilled Zucchini"
       ],
       "globalFare": [
-        "Vegetable Potsticker",
-        "Fried Chicken Potsticker",
-        "Brown Rice"
+        "Beef Tex Mex Casserole",
+        "Vegetarian Picadillo",
+        "Black Beans & Rice",
+        "Corn with Peppers and Onions"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken Brazilian Stroganoff",
-        "Mushroom Stroganoff",
-        "Seasoned White Rice"
+        "Beef and Mac Casserole",
+        "Garlic Breadstick",
+        "Sauce Tomato Cream"
       ],
       "globalFare": [
-        "Baked Fish",
-        "Capellini",
-        "Fresh Roasted Green Beans",
-        "Roasted Cauliflower",
-        "Sauce Garlic Parmesan"
+        "Beef Bulgogi",
+        "Vegan Chorizo",
+        "Korean Baked Cheese Corn",
+        "Edamame Steamed",
+        "Waffle Fries",
+        "Gochujang Sauce"
       ]
     }
   }
