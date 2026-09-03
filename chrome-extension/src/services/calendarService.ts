@@ -111,7 +111,8 @@ export interface WeekDay {
   weekday: number;
   letter: string;
   isToday: boolean;
-  isPast: boolean;
+  /** True when this column had to wrap forward because its day this week is over. */
+  isNextWeek: boolean;
   isWeekend: boolean;
   events: CalendarEvent[];
   hasEvents: boolean;
@@ -150,28 +151,39 @@ export function eventsOn(events: CalendarEvent[], dayKey: string): CalendarEvent
   return events.filter((e) => e.start <= dayKey && dayKey <= e.end).sort(compareEvents);
 }
 
-/** The Sunday–Saturday week containing `now`. */
+/**
+ * Seven Sunday-first columns, each showing the next occurrence of its weekday.
+ * Columns whose day this week is already over wrap forward to next week, so the
+ * strip always covers today plus the six days after it while keeping Sunday on
+ * the left. On a Thursday that reads: next Sun/Mon/Tue/Wed, then Thu/Fri/Sat.
+ */
 export function buildWeek(events: CalendarEvent[], now: Date): WeekDay[] {
   const today = schoolDay(now);
   // Luxon weekdays run Monday=1 … Sunday=7; the strip starts on Sunday.
-  const weekStart = today.minus({ days: today.weekday % 7 });
-  const todayKey = toKey(today);
+  const todayColumn = today.weekday % 7;
+  const weekStart = today.minus({ days: todayColumn });
 
   return DAY_LETTERS.map((letter, index) => {
-    const day = weekStart.plus({ days: index });
+    const isNextWeek = index < todayColumn;
+    const day = weekStart.plus({ days: index + (isNextWeek ? 7 : 0) });
     const key = toKey(day);
     const dayEvents = eventsOn(events, key);
     return {
       key,
       weekday: index,
       letter,
-      isToday: key === todayKey,
-      isPast: key < todayKey,
+      isToday: index === todayColumn,
+      isNextWeek,
       isWeekend: index === 0 || index === 6,
       events: dayEvents,
       hasEvents: dayEvents.length > 0
     };
   });
+}
+
+/** How many leading columns wrapped to next week — also today's column index. */
+export function wrappedColumnCount(week: WeekDay[]): number {
+  return week.filter((d) => d.isNextWeek).length;
 }
 
 /**

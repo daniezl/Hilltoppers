@@ -327,6 +327,49 @@ header {
   margin: 0 0 14px;
 }
 
+.week-grid {
+  position: relative;
+}
+
+/* Caption row over the strip. Always present so the popup doesn't jump on the
+   one day (Sunday) that has nothing to say. */
+.week-caption {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 14px;
+  margin-bottom: 2px;
+}
+
+.week-caption-label {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a0a7b0;
+  white-space: nowrap;
+}
+
+.week-caption-label.next {
+  text-align: right;
+  padding-right: 8px;
+}
+
+.week-caption-label.this {
+  text-align: left;
+  padding-left: 8px;
+}
+
+/* Hairline just before today, running from the caption down through the glyphs. */
+.week-divider {
+  position: absolute;
+  top: 0;
+  bottom: 6px;
+  width: 1px;
+  background: rgba(17, 17, 17, 0.12);
+  transform: translateX(-0.5px);
+}
+
 .week-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
