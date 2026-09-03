@@ -118,22 +118,27 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
           if (day.hasEvents) classes.push('has-events');
           if (pointerIndex === index) classes.push('active');
 
-          const interactive = day.hasEvents;
-          const glyph = day.hasEvents ? '!' : day.letter;
-
+          // A marked day is a real button: hovering shows it in the bubble, clicking
+          // opens the first event's page, same as clicking that row in the bubble.
           return (
-            <div
-              key={day.key}
-              role="listitem"
-              className={classes.join(' ')}
-              aria-label={dayAriaLabel(day)}
-              title={interactive ? undefined : WEEKDAY_NAMES[day.weekday]}
-              tabIndex={interactive ? 0 : undefined}
-              onMouseEnter={interactive ? () => setHoverIndex(index) : undefined}
-              onFocus={interactive ? () => setHoverIndex(index) : undefined}
-              onBlur={interactive ? () => setHoverIndex(null) : undefined}
-            >
-              <span className="week-day-glyph" aria-hidden="true">{glyph}</span>
+            <div key={day.key} role="listitem" className={classes.join(' ')}>
+              {day.hasEvents ? (
+                <button
+                  type="button"
+                  className="week-day-glyph"
+                  aria-label={dayAriaLabel(day)}
+                  onMouseEnter={() => setHoverIndex(index)}
+                  onFocus={() => setHoverIndex(index)}
+                  onBlur={() => setHoverIndex(null)}
+                  onClick={() => openEvent(day.events[0])}
+                >
+                  !
+                </button>
+              ) : (
+                <span className="week-day-glyph" title={WEEKDAY_NAMES[day.weekday]} aria-label={dayAriaLabel(day)}>
+                  {day.letter}
+                </span>
+              )}
             </div>
           );
         })}

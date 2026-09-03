@@ -336,7 +336,6 @@ header {
   display: flex;
   justify-content: center;
   padding: 2px 0 6px;
-  outline: none;
 }
 
 .week-day-glyph {
@@ -369,7 +368,18 @@ header {
   transform: scale(1.1);
 }
 
-.week-day:focus-visible .week-day-glyph {
+/* Marked days render as buttons; strip the UA chrome but keep the glyph styling. */
+button.week-day-glyph {
+  appearance: none;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+button.week-day-glyph:focus-visible {
   box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.28);
 }
 
