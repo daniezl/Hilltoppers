@@ -120,14 +120,20 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
 
           // A marked day is a real button: hovering shows it in the bubble, clicking
           // opens the first event's page, same as clicking that row in the bubble.
+          // Hovering a day with nothing on it drops back to the default, so the
+          // bubble never describes a column the cursor has already left.
           return (
-            <div key={day.key} role="listitem" className={classes.join(' ')}>
+            <div
+              key={day.key}
+              role="listitem"
+              className={classes.join(' ')}
+              onMouseEnter={() => setHoverIndex(day.hasEvents ? index : null)}
+            >
               {day.hasEvents ? (
                 <button
                   type="button"
                   className="week-day-glyph"
                   aria-label={dayAriaLabel(day)}
-                  onMouseEnter={() => setHoverIndex(index)}
                   onFocus={() => setHoverIndex(index)}
                   onBlur={() => setHoverIndex(null)}
                   onClick={() => openEvent(day.events[0])}
@@ -135,7 +141,7 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
                   !
                 </button>
               ) : (
-                <span className="week-day-glyph" title={WEEKDAY_NAMES[day.weekday]} aria-label={dayAriaLabel(day)}>
+                <span className="week-day-glyph" aria-label={dayAriaLabel(day)}>
                   {day.letter}
                 </span>
               )}
