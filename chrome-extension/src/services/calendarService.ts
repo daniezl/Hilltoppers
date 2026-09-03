@@ -105,8 +105,6 @@ export async function saveCachedCalendarEvents(events: CalendarEvent[]): Promise
 // exercised without a browser.
 // ---------------------------------------------------------------------------
 
-export type DayMarker = 'alert' | 'dot' | null;
-
 export interface WeekDay {
   key: string;
   /** 0 = Sunday … 6 = Saturday, matching the school's own Sunday-first grid. */
@@ -116,7 +114,7 @@ export interface WeekDay {
   isPast: boolean;
   isWeekend: boolean;
   events: CalendarEvent[];
-  marker: DayMarker;
+  hasEvents: boolean;
 }
 
 export interface BubbleTarget {
@@ -152,11 +150,6 @@ export function eventsOn(events: CalendarEvent[], dayKey: string): CalendarEvent
   return events.filter((e) => e.start <= dayKey && dayKey <= e.end).sort(compareEvents);
 }
 
-export function markerFor(events: CalendarEvent[]): DayMarker {
-  if (events.length === 0) return null;
-  return events.some((e) => e.kind === 'schedule' || e.kind === 'break') ? 'alert' : 'dot';
-}
-
 /** The Sunday–Saturday week containing `now`. */
 export function buildWeek(events: CalendarEvent[], now: Date): WeekDay[] {
   const today = schoolDay(now);
@@ -176,7 +169,7 @@ export function buildWeek(events: CalendarEvent[], now: Date): WeekDay[] {
       isPast: key < todayKey,
       isWeekend: index === 0 || index === 6,
       events: dayEvents,
-      marker: markerFor(dayEvents)
+      hasEvents: dayEvents.length > 0
     };
   });
 }

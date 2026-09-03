@@ -360,16 +360,11 @@ header {
   opacity: 0.45;
 }
 
-/* "!" = the school day itself is different; "•" = something is happening. */
-.week-day.alert .week-day-glyph {
+/* A day with anything on it swaps its letter for a circled "!". */
+.week-day.has-events .week-day-glyph {
   border: 1.5px solid currentColor;
   font-size: 13px;
   font-weight: 800;
-}
-
-.week-day.dot .week-day-glyph {
-  font-size: 20px;
-  line-height: 1;
 }
 
 .week-day.today .week-day-glyph {

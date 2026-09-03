@@ -115,11 +115,11 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
           if (day.isToday) classes.push('today');
           if (day.isPast) classes.push('past');
           if (day.isWeekend) classes.push('weekend');
-          if (day.marker) classes.push('has-events', day.marker);
+          if (day.hasEvents) classes.push('has-events');
           if (pointerIndex === index) classes.push('active');
 
-          const interactive = day.marker !== null;
-          const glyph = day.marker === 'alert' ? '!' : day.marker === 'dot' ? '•' : day.letter;
+          const interactive = day.hasEvents;
+          const glyph = day.hasEvents ? '!' : day.letter;
 
           return (
             <div
