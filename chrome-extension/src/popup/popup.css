@@ -340,24 +340,17 @@ header {
   margin-bottom: 2px;
 }
 
+/* Each caption starts 8px inside the left edge of its own group of columns. */
 .week-caption-label {
+  padding-left: 8px;
   font-size: 10px;
   font-weight: 600;
   line-height: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-align: left;
   color: #a0a7b0;
   white-space: nowrap;
-}
-
-.week-caption-label.next {
-  text-align: right;
-  padding-right: 8px;
-}
-
-.week-caption-label.this {
-  text-align: left;
-  padding-left: 8px;
 }
 
 /* Hairline just before today, running from the caption down through the glyphs. */

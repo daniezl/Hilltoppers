@@ -245,13 +245,25 @@ export function targetForWeekDay(day: WeekDay, index: number): BubbleTarget {
   return { dayKey: day.key, events: day.events, weekIndex: index, isToday: day.isToday };
 }
 
+/**
+ * "Today", "Tomorrow", then the weekday name for the rest of this Sunday-first
+ * week and "Next Monday" for the week after — the same split the strip's
+ * NEXT WEEK / THIS WEEK captions draw. Further out falls back to a day count.
+ */
 export function relativeLabel(dayKey: string, now: Date): string {
-  const diff = Math.round(fromKey(dayKey).diff(schoolDay(now), 'days').days);
+  const today = schoolDay(now);
+  const day = fromKey(dayKey);
+  const diff = Math.round(day.diff(today, 'days').days);
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Tomorrow';
   if (diff === -1) return 'Yesterday';
-  if (diff > 1) return `In ${diff} days`;
-  return `${-diff} days ago`;
+  if (diff < 0) return `${-diff} days ago`;
+
+  const weeksAhead = Math.floor((diff + (today.weekday % 7)) / 7);
+  const name = day.toFormat('cccc');
+  if (weeksAhead === 0) return name;
+  if (weeksAhead === 1) return `Next ${name}`;
+  return `In ${diff} days`;
 }
 
 export function formatShortDate(dayKey: string): string {
