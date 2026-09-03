@@ -107,8 +107,49 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
   if (target?.isToday) bubbleClasses.push('today');
   if (pointerIndex !== null) bubbleClasses.push('pointed');
 
+  const bubble = (
+    <div
+      className={bubbleClasses.join(' ')}
+      style={pointerIndex !== null ? ({ '--pointer-index': pointerIndex } as React.CSSProperties) : undefined}
+    >
+      {target ? (
+        <>
+          <span className="calendar-bubble-label">{label}</span>
+          <ul className="calendar-bubble-list">
+            {visibleEvents.map((event) => {
+              const time = formatEventTime(event, timeFormat);
+              return (
+                <li key={event.id}>
+                  <a
+                    className="calendar-bubble-row"
+                    href={event.url ?? undefined}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openEvent(event);
+                    }}
+                    title={event.description ? `${event.title}\n\n${event.description}` : event.title}
+                  >
+                    <span className="calendar-bubble-title">{event.title}</span>
+                    {time ? <span className="calendar-bubble-time">{time}</span> : null}
+                  </a>
+                </li>
+              );
+            })}
+            {hiddenCount > 0 ? (
+              <li className="calendar-bubble-more">+{hiddenCount} more</li>
+            ) : null}
+          </ul>
+        </>
+      ) : (
+        <span className="calendar-bubble-empty">Nothing coming up</span>
+      )}
+    </div>
+  );
+
+  // The bubble sits above the strip and points down at the day it describes.
   return (
     <section className="calendar-strip" aria-label="This week" onMouseLeave={() => setHoverIndex(null)}>
+      {bubble}
       <div className="week-row" role="list">
         {week.map((day, index) => {
           const classes = ['week-day'];
@@ -137,43 +178,6 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
             </div>
           );
         })}
-      </div>
-
-      <div
-        className={bubbleClasses.join(' ')}
-        style={pointerIndex !== null ? ({ '--pointer-index': pointerIndex } as React.CSSProperties) : undefined}
-      >
-        {target ? (
-          <>
-            <span className="calendar-bubble-label">{label}</span>
-            <ul className="calendar-bubble-list">
-              {visibleEvents.map((event) => {
-                const time = formatEventTime(event, timeFormat);
-                return (
-                  <li key={event.id}>
-                    <a
-                      className="calendar-bubble-row"
-                      href={event.url ?? undefined}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        openEvent(event);
-                      }}
-                      title={event.description ? `${event.title}\n\n${event.description}` : event.title}
-                    >
-                      <span className="calendar-bubble-title">{event.title}</span>
-                      {time ? <span className="calendar-bubble-time">{time}</span> : null}
-                    </a>
-                  </li>
-                );
-              })}
-              {hiddenCount > 0 ? (
-                <li className="calendar-bubble-more">+{hiddenCount} more</li>
-              ) : null}
-            </ul>
-          </>
-        ) : (
-          <span className="calendar-bubble-empty">Nothing coming up</span>
-        )}
       </div>
     </section>
   );

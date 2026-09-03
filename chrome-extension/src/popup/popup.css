@@ -324,7 +324,7 @@ header {
 /* Week strip: seven days, Sunday first, with a bubble for the day in focus. */
 
 .calendar-strip {
-  margin: 0 0 14px;
+  margin: -4px 0 12px;
 }
 
 .week-row {
@@ -335,7 +335,7 @@ header {
 .week-day {
   display: flex;
   justify-content: center;
-  padding: 2px 0 6px;
+  padding: 6px 0 2px;
   outline: none;
 }
 
@@ -383,7 +383,7 @@ header {
 
 .calendar-bubble {
   position: relative;
-  margin-top: 4px;
+  margin-bottom: 4px;
   padding: 8px 10px;
   background: #ffffff;
   border: 1px solid rgba(17, 17, 17, 0.18);
@@ -395,12 +395,13 @@ header {
   border-color: rgba(26, 127, 55, 0.45);
 }
 
-/* Two stacked triangles: the outer one draws the border, the inner one fills. */
+/* Two stacked triangles hanging off the bottom edge, pointing down at the day:
+   the outer one draws the border, the inner one fills. */
 .calendar-bubble.pointed::before,
 .calendar-bubble.pointed::after {
   content: '';
   position: absolute;
-  bottom: 100%;
+  top: 100%;
   left: calc((var(--pointer-index) + 0.5) * 100% / 7);
   transform: translateX(-50%);
   border-style: solid;
@@ -409,18 +410,18 @@ header {
 }
 
 .calendar-bubble.pointed::before {
-  border-width: 0 6px 6px 6px;
-  border-bottom-color: rgba(17, 17, 17, 0.18);
+  border-width: 6px 6px 0 6px;
+  border-top-color: rgba(17, 17, 17, 0.18);
 }
 
 .calendar-bubble.pointed::after {
-  margin-bottom: -1px;
-  border-width: 0 5px 5px 5px;
-  border-bottom-color: #ffffff;
+  margin-top: -1px;
+  border-width: 5px 5px 0 5px;
+  border-top-color: #ffffff;
 }
 
 .calendar-bubble.today.pointed::before {
-  border-bottom-color: rgba(26, 127, 55, 0.45);
+  border-top-color: rgba(26, 127, 55, 0.45);
 }
 
 .calendar-bubble-label {
