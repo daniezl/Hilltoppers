@@ -1,5 +1,30 @@
 import { getCurrentUser } from '../firebase/auth';
 
+/**
+ * IDEAS IS PAUSED. This is the one switch.
+ *
+ * The ideas board (vote on feature ideas from the popup, backed by GitHub
+ * issues and a Cloudflare Worker) is complete and worked, but is switched off
+ * while the rest of the project is being restructured. Nothing here is broken
+ * and nothing is half-finished — it is off on purpose, from this one line.
+ *
+ * While false: the Ideas section does not render in the popup, and no request
+ * to the Worker is ever made. All of the code below stays compiled and
+ * type-checked, so it cannot rot the way commented-out code does.
+ *
+ * To turn it back on:
+ *   1. Set this to true.
+ *   2. Re-add "https://schedule-admin-api.danielzhang089.workers.dev/*" to
+ *      host_permissions in manifest.json (removed so a paused feature does not
+ *      hold a permission).
+ *   3. Deploy the Worker if it was taken down (worker/README.md), then
+ *      npm run build.
+ *
+ * Do not delete this code to "clean up". The Worker, its D1 votes table and the
+ * moderation flow in worker/ are the other half; this is the client.
+ */
+export const IDEAS_ENABLED = false;
+
 export type IdeaStatus = 'open' | 'in-progress' | 'shipped' | 'declined';
 
 export interface Idea {

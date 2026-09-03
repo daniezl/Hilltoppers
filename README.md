@@ -26,16 +26,14 @@ Chrome toolbar icon.
 
 **Menu** — what's in the dining hall today (extension).
 
-**Ideas** — vote on what gets built next, right in the extension. See below.
-
 ## Have an idea?
 
-You do not need a GitHub account.
+Open an [issue](https://github.com/daniezl/Hilltoppers/issues/new) and
+describe it the way you would explain it to a friend — no technical language
+needed. Ideas that other students want get the `enhancement` label.
 
-Open the extension, expand **Ideas**, and vote for what you want. Every idea
-there is something students asked for. If yours is not on the list yet, open an
-[issue](https://github.com/daniezl/Hilltoppers/issues/new) and describe it the
-way you would explain it to a friend — no technical language needed.
+*(An in-extension ideas board where you could vote without a GitHub account is
+built but paused; see `worker/`.)*
 
 ## Want to help build it?
 
@@ -47,7 +45,7 @@ changes touch only one.
 | [`ios/`](./ios) | The iPhone app and its home-screen widget | Swift, SwiftUI | Open `ios/SJA_re.xcodeproj` in Xcode |
 | [`chrome-extension/`](./chrome-extension) | The Chrome extension | TypeScript, React | `cd chrome-extension && npm install && npm run dev` |
 | [`data/`](./data) | Special days, breaks, the menu — the JSON both apps download | JSON | Edit `data/public/special_days.json`; format in [`DATA_FORMAT.md`](./data/DATA_FORMAT.md) |
-| [`worker/`](./worker) | The ideas-board API. The only server code in the project | TypeScript, Cloudflare Workers | `cd worker && npm install && npm run dev` |
+| [`worker/`](./worker) | The ideas-board API. The only server code in the project. **Paused** — see its README | TypeScript, Cloudflare Workers | — |
 | [`ideas-site/`](./ideas-site) | A website for the ideas board. **Paused** — see its README | TypeScript, React | — |
 
 The most common change is a schedule fix: a special day was missed or has the
@@ -64,12 +62,14 @@ Anything that needs Firebase or Cloudflare credentials is described in
   (edited by hand,          (static CDN)   └─► Chrome extension
    or by GitHub Actions)
 
-  GitHub issues ──► worker/ (votes in D1) ──► Chrome extension "Ideas"
+  GitHub issues ──► worker/ (votes in D1) ──► Chrome extension "Ideas"   (paused)
 ```
 
 The schedule never touches a server: it is static JSON that both apps read
 directly. The Worker exists only for the ideas board, because votes need to be
-counted somewhere.
+counted somewhere — and while that board is paused, no code we run is serving
+anything. (Firebase handles sign-in and preference sync; that is Google's
+infrastructure, not ours.)
 
 ### Working on it
 

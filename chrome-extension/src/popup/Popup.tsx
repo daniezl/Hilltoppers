@@ -24,6 +24,7 @@ import {
 } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
 import {
+  IDEAS_ENABLED,
   fetchIdeas,
   isNewIdea,
   loadCachedIdeas,
@@ -431,7 +432,9 @@ const Popup: React.FC = () => {
   }, [menuExpanded, selectedDiningPeriod]);
 
   useEffect(() => {
-    if (!ideasExpanded) {
+    // The flag is checked here as well as at render, so that even a persisted
+    // "expanded" state cannot trigger a request while Ideas is paused.
+    if (!IDEAS_ENABLED || !ideasExpanded) {
       return () => {};
     }
 
@@ -1324,6 +1327,8 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
+      {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
+      {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
@@ -1418,6 +1423,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
+      )}
     </main>
   );
 };

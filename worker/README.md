@@ -1,10 +1,18 @@
 # Hilltoppers Worker
 
+> **Paused.** The ideas board is switched off while the project is being
+> restructured. The Worker may still be deployed — leaving it up costs nothing
+> and keeps the votes in D1 — but no client calls it: the extension's Ideas
+> section is behind `IDEAS_ENABLED = false` in
+> `chrome-extension/src/services/ideasService.ts`, and the site in
+> `ideas-site/` is paused too. Nothing here is broken. To resume, flip that one
+> flag and follow the steps in its comment.
+
 The ideas board API, and the only server-side code in the project. Schedule
 data does not go through here: it is static JSON in `data/public/`,
 served from Cloudflare Pages and read directly by the iOS app and the extension.
 
-The Worker is still deployed under its historical name `schedule-admin-api`.
+The Worker is deployed under its historical name `schedule-admin-api`.
 Renaming it changes its URL, which the extension has baked in, so that is a
 separate change.
 
@@ -31,8 +39,9 @@ The only thing you need in hand is a fine-grained GitHub token with
 **Issues: Read and write** on `daniezl/Hilltoppers` and nothing else. The
 script tells you when to paste it.
 
-The companion website (`ideas-site/`) is paused; see its README. The popup is
-the only client for now, so nothing beyond this script is needed.
+Both clients — the extension's Ideas section and the website in
+`ideas-site/` — are paused. Nothing calls this API until one of them is
+switched back on.
 
 ## Moderation
 
