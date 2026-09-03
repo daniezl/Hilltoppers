@@ -105,18 +105,17 @@ export async function saveCachedCalendarEvents(events: CalendarEvent[]): Promise
 // exercised without a browser.
 // ---------------------------------------------------------------------------
 
-export type DayMarker = 'alert' | 'dot' | null;
-
 export interface WeekDay {
   key: string;
   /** 0 = Sunday … 6 = Saturday, matching the school's own Sunday-first grid. */
   weekday: number;
   letter: string;
   isToday: boolean;
-  isPast: boolean;
+  /** True when this column had to wrap forward because its day this week is over. */
+  isNextWeek: boolean;
   isWeekend: boolean;
   events: CalendarEvent[];
-  marker: DayMarker;
+  hasEvents: boolean;
 }
 
 export interface BubbleTarget {
@@ -152,33 +151,39 @@ export function eventsOn(events: CalendarEvent[], dayKey: string): CalendarEvent
   return events.filter((e) => e.start <= dayKey && dayKey <= e.end).sort(compareEvents);
 }
 
-export function markerFor(events: CalendarEvent[]): DayMarker {
-  if (events.length === 0) return null;
-  return events.some((e) => e.kind === 'schedule' || e.kind === 'break') ? 'alert' : 'dot';
-}
-
-/** The Sunday–Saturday week containing `now`. */
+/**
+ * Seven Sunday-first columns, each showing the next occurrence of its weekday.
+ * Columns whose day this week is already over wrap forward to next week, so the
+ * strip always covers today plus the six days after it while keeping Sunday on
+ * the left. On a Thursday that reads: next Sun/Mon/Tue/Wed, then Thu/Fri/Sat.
+ */
 export function buildWeek(events: CalendarEvent[], now: Date): WeekDay[] {
   const today = schoolDay(now);
   // Luxon weekdays run Monday=1 … Sunday=7; the strip starts on Sunday.
-  const weekStart = today.minus({ days: today.weekday % 7 });
-  const todayKey = toKey(today);
+  const todayColumn = today.weekday % 7;
+  const weekStart = today.minus({ days: todayColumn });
 
   return DAY_LETTERS.map((letter, index) => {
-    const day = weekStart.plus({ days: index });
+    const isNextWeek = index < todayColumn;
+    const day = weekStart.plus({ days: index + (isNextWeek ? 7 : 0) });
     const key = toKey(day);
     const dayEvents = eventsOn(events, key);
     return {
       key,
       weekday: index,
       letter,
-      isToday: key === todayKey,
-      isPast: key < todayKey,
+      isToday: index === todayColumn,
+      isNextWeek,
       isWeekend: index === 0 || index === 6,
       events: dayEvents,
-      marker: markerFor(dayEvents)
+      hasEvents: dayEvents.length > 0
     };
   });
+}
+
+/** How many leading columns wrapped to next week — also today's column index. */
+export function wrappedColumnCount(week: WeekDay[]): number {
+  return week.filter((d) => d.isNextWeek).length;
 }
 
 /**
@@ -240,17 +245,30 @@ export function targetForWeekDay(day: WeekDay, index: number): BubbleTarget {
   return { dayKey: day.key, events: day.events, weekIndex: index, isToday: day.isToday };
 }
 
+/**
+ * "Today", "Tomorrow", then the weekday name for the rest of this Sunday-first
+ * week and "Next Monday" for the week after — the same split the strip's
+ * NEXT WEEK / THIS WEEK captions draw. Further out falls back to a day count.
+ */
 export function relativeLabel(dayKey: string, now: Date): string {
-  const diff = Math.round(fromKey(dayKey).diff(schoolDay(now), 'days').days);
+  const today = schoolDay(now);
+  const day = fromKey(dayKey);
+  const diff = Math.round(day.diff(today, 'days').days);
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Tomorrow';
   if (diff === -1) return 'Yesterday';
-  if (diff > 1) return `In ${diff} days`;
-  return `${-diff} days ago`;
+  if (diff < 0) return `${-diff} days ago`;
+
+  const weeksAhead = Math.floor((diff + (today.weekday % 7)) / 7);
+  const name = day.toFormat('cccc');
+  if (weeksAhead === 0) return name;
+  if (weeksAhead === 1) return `Next ${name}`;
+  return `In ${diff} days`;
 }
 
-export function formatShortDate(dayKey: string): string {
-  return fromKey(dayKey).toFormat('ccc, MMM d');
+/** "Sep 7" — the weekday is already in the relative label. */
+export function formatMonthDay(dayKey: string): string {
+  return fromKey(dayKey).toFormat('MMM d');
 }
 
 export function formatEventTime(event: CalendarEvent, format: '12h' | '24h'): string | null {

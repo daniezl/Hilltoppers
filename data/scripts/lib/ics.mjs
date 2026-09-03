@@ -189,8 +189,9 @@ export const RE_NEEDS_HUMAN =
   /schedule|no class|abbreviated|half day|early release|exam|capstone|spirit week|winter carnival|spring day|in-service|advisory|conference|testing|orientation|dismissal|delay/i;
 
 /**
- * Does this change a student's school day? Drives the "!" vs "•" marker in the
- * extension. Tighter than RE_NEEDS_HUMAN: bare "advisory" would also catch the
+ * Does this change a student's school day? Sets `kind` in events.json. The
+ * extension currently marks every event day the same way, so this is metadata
+ * for now. Tighter than RE_NEEDS_HUMAN: bare "advisory" would also catch the
  * evening "Program Advisory Committees" meeting.
  */
 export const RE_AFFECTS_DAY =

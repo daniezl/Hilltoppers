@@ -3,12 +3,13 @@ import {
   buildWeek,
   fetchCalendarEvents,
   formatEventTime,
-  formatShortDate,
+  formatMonthDay,
   loadCachedCalendarEvents,
   pickDefaultTarget,
   relativeLabel,
   saveCachedCalendarEvents,
   targetForWeekDay,
+  wrappedColumnCount,
   type BubbleTarget,
   type CalendarEvent,
   type WeekDay
@@ -24,8 +25,11 @@ interface CalendarStripProps {
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MAX_BUBBLE_ROWS = 3;
 
+// "NEXT WEEK" / "THIS WEEK" need about 60px; one 41px column can't hold them.
+const MIN_COLUMNS_FOR_CAPTION = 2;
+
 function dayAriaLabel(day: WeekDay): string {
-  const name = WEEKDAY_NAMES[day.weekday];
+  const name = `${WEEKDAY_NAMES[day.weekday]}${day.isNextWeek ? ' next week' : ''}`;
   if (day.events.length === 0) return name;
   const titles = day.events.map((e) => e.title).join('; ');
   return `${name}: ${titles}`;
@@ -93,13 +97,6 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
     hoverIndex !== null && week[hoverIndex] ? targetForWeekDay(week[hoverIndex], hoverIndex) : defaultTarget;
 
   const pointerIndex = target?.weekIndex ?? null;
-  const beyondWeek = target !== null && pointerIndex === null;
-  const label = target
-    ? beyondWeek
-      ? `${relativeLabel(target.dayKey, now)} · ${formatShortDate(target.dayKey)}`
-      : relativeLabel(target.dayKey, now)
-    : null;
-
   const visibleEvents = target ? target.events.slice(0, MAX_BUBBLE_ROWS) : [];
   const hiddenCount = target ? Math.max(0, target.events.length - MAX_BUBBLE_ROWS) : 0;
 
@@ -107,36 +104,68 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
   if (target?.isToday) bubbleClasses.push('today');
   if (pointerIndex !== null) bubbleClasses.push('pointed');
 
+  // Columns left of today have wrapped to next week; a hairline just before today
+  // separates them, captioned on whichever sides are wide enough to hold a word.
+  const wrapped = wrappedColumnCount(week);
+  const thisWeekColumns = week.length - wrapped;
+  const dividerStyle = { left: `calc(${wrapped} * 100% / ${week.length})` } as React.CSSProperties;
+
   return (
-    <section className="calendar-strip" aria-label="This week" onMouseLeave={() => setHoverIndex(null)}>
-      <div className="week-row" role="list">
-        {week.map((day, index) => {
-          const classes = ['week-day'];
-          if (day.isToday) classes.push('today');
-          if (day.isPast) classes.push('past');
-          if (day.isWeekend) classes.push('weekend');
-          if (day.marker) classes.push('has-events', day.marker);
-          if (pointerIndex === index) classes.push('active');
+    <section className="calendar-strip" aria-label="Next seven days" onMouseLeave={() => setHoverIndex(null)}>
+      <div className="week-grid">
+        <div className="week-caption" aria-hidden="true">
+          {wrapped >= MIN_COLUMNS_FOR_CAPTION ? (
+            <span className="week-caption-label next" style={{ gridColumn: `1 / span ${wrapped}` }}>
+              Next week
+            </span>
+          ) : null}
+          {thisWeekColumns >= MIN_COLUMNS_FOR_CAPTION ? (
+            <span className="week-caption-label this" style={{ gridColumn: `${wrapped + 1} / -1` }}>
+              This week
+            </span>
+          ) : null}
+        </div>
+        {wrapped > 0 ? <span className="week-divider" style={dividerStyle} aria-hidden="true" /> : null}
+        <div className="week-row" role="list">
+          {week.map((day, index) => {
+            const classes = ['week-day'];
+            if (day.isToday) classes.push('today');
+            if (day.isNextWeek) classes.push('next-week');
+            if (day.isWeekend) classes.push('weekend');
+            if (day.hasEvents) classes.push('has-events');
+            if (pointerIndex === index) classes.push('active');
 
-          const interactive = day.marker !== null;
-          const glyph = day.marker === 'alert' ? '!' : day.marker === 'dot' ? '•' : day.letter;
-
-          return (
-            <div
-              key={day.key}
-              role="listitem"
-              className={classes.join(' ')}
-              aria-label={dayAriaLabel(day)}
-              title={interactive ? undefined : WEEKDAY_NAMES[day.weekday]}
-              tabIndex={interactive ? 0 : undefined}
-              onMouseEnter={interactive ? () => setHoverIndex(index) : undefined}
-              onFocus={interactive ? () => setHoverIndex(index) : undefined}
-              onBlur={interactive ? () => setHoverIndex(null) : undefined}
-            >
-              <span className="week-day-glyph" aria-hidden="true">{glyph}</span>
-            </div>
-          );
-        })}
+            // A marked day is a real button: hovering shows it in the bubble, clicking
+            // opens the first event's page, same as clicking that row in the bubble.
+            // Hovering a day with nothing on it drops back to the default, so the
+            // bubble never describes a column the cursor has already left.
+            return (
+              <div
+                key={day.key}
+                role="listitem"
+                className={classes.join(' ')}
+                onMouseEnter={() => setHoverIndex(day.hasEvents ? index : null)}
+              >
+                {day.hasEvents ? (
+                  <button
+                    type="button"
+                    className="week-day-glyph"
+                    aria-label={dayAriaLabel(day)}
+                    onFocus={() => setHoverIndex(index)}
+                    onBlur={() => setHoverIndex(null)}
+                    onClick={() => openEvent(day.events[0])}
+                  >
+                    !
+                  </button>
+                ) : (
+                  <span className="week-day-glyph" aria-label={dayAriaLabel(day)}>
+                    {day.letter}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div
@@ -145,7 +174,10 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
       >
         {target ? (
           <>
-            <span className="calendar-bubble-label">{label}</span>
+            <span className="calendar-bubble-label">
+              <span>{relativeLabel(target.dayKey, now)}</span>
+              <span className="calendar-bubble-date">{formatMonthDay(target.dayKey)}</span>
+            </span>
             <ul className="calendar-bubble-list">
               {visibleEvents.map((event) => {
                 const time = formatEventTime(event, timeFormat);
