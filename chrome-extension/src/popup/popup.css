@@ -321,6 +321,175 @@ header {
   background: #f39c3d;
 }
 
+/* Week strip: seven days, Sunday first, with a bubble for the day in focus. */
+
+.calendar-strip {
+  margin: 0 0 14px;
+}
+
+.week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.week-day {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0 6px;
+  outline: none;
+}
+
+.week-day-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5560;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.week-day.weekend .week-day-glyph {
+  color: #a0a7b0;
+}
+
+.week-day.past .week-day-glyph {
+  opacity: 0.45;
+}
+
+/* "!" = the school day itself is different; "•" = something is happening. */
+.week-day.alert .week-day-glyph {
+  border: 1.5px solid currentColor;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.week-day.dot .week-day-glyph {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.week-day.today .week-day-glyph {
+  background: rgba(26, 127, 55, 0.16);
+  color: #1a7f37;
+  opacity: 1;
+}
+
+.week-day.active .week-day-glyph {
+  transform: scale(1.1);
+}
+
+.week-day:focus-visible .week-day-glyph {
+  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.28);
+}
+
+.calendar-bubble {
+  position: relative;
+  margin-top: 4px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  transition: border-color 0.18s ease;
+}
+
+.calendar-bubble.today {
+  border-color: rgba(26, 127, 55, 0.45);
+}
+
+/* Two stacked triangles: the outer one draws the border, the inner one fills. */
+.calendar-bubble.pointed::before,
+.calendar-bubble.pointed::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: calc((var(--pointer-index) + 0.5) * 100% / 7);
+  transform: translateX(-50%);
+  border-style: solid;
+  border-color: transparent;
+  transition: left 0.18s ease, border-color 0.18s ease;
+}
+
+.calendar-bubble.pointed::before {
+  border-width: 0 6px 6px 6px;
+  border-bottom-color: rgba(17, 17, 17, 0.18);
+}
+
+.calendar-bubble.pointed::after {
+  margin-bottom: -1px;
+  border-width: 0 5px 5px 5px;
+  border-bottom-color: #ffffff;
+}
+
+.calendar-bubble.today.pointed::before {
+  border-bottom-color: rgba(26, 127, 55, 0.45);
+}
+
+.calendar-bubble-label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7d8591;
+}
+
+.calendar-bubble.today .calendar-bubble-label {
+  color: #1a7f37;
+}
+
+.calendar-bubble-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.calendar-bubble-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  color: #161b22;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.calendar-bubble-row:hover .calendar-bubble-title {
+  color: #1a7f37;
+}
+
+.calendar-bubble-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-bubble-time {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7d8591;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-bubble-more,
+.calendar-bubble-empty {
+  font-size: 12px;
+  color: #7d8591;
+}
+
 .schedule-list {
   display: flex;
   flex-direction: column;

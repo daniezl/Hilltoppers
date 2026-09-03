@@ -25,8 +25,25 @@
  */
 
 import fs from "node:fs/promises";
+import {
+  RE_BREAK,
+  RE_CLOSED,
+  RE_LATE_START,
+  RE_NEEDS_HUMAN,
+  RE_PROGRAM_DAY,
+  SCHOOL_TIME_ZONE,
+  addDays,
+  compareYmd,
+  eachDay,
+  eventBodyText,
+  eventSpan,
+  fetchIcs,
+  isWeekend,
+  parseEvents,
+  todayInSchoolZone,
+  unescapeIcsText,
+} from "./lib/ics.mjs";
 
-const ICS_URL = "https://stjacademy.org/?feed=eo-events";
 const SPECIAL_DAYS_PATH = "public/special_days.json";
 const SPECIAL_PERIODS_PATH = "public/special_periods.json";
 const SOURCE_TAG = "sja-calendar";
@@ -39,150 +56,8 @@ const MIN_EXPECTED_EVENTS = 20;
 const REVIEW_HORIZON_DAYS = 45;
 
 // ---------------------------------------------------------------------------
-// Date helpers. Everything is a "YYYY-MM-DD" string in school-local terms; the
-// arithmetic runs in UTC so it never shifts across a DST boundary.
-// ---------------------------------------------------------------------------
-
-const SCHOOL_TIME_ZONE = "America/New_York";
-
-function todayInSchoolZone() {
-  return new Date().toLocaleDateString("en-CA", { timeZone: SCHOOL_TIME_ZONE });
-}
-
-function toUtcDate(ymd) {
-  const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
-}
-
-function toYmd(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function addDays(ymd, amount) {
-  const date = toUtcDate(ymd);
-  date.setUTCDate(date.getUTCDate() + amount);
-  return toYmd(date);
-}
-
-/**
- * Zero-pads a date for comparison only. Some hand-written entries use "2026-2-20";
- * both clients normalize that when reading, so the stored text is left alone and
- * only ordering/comparison goes through here.
- */
-function normalizeYmd(value) {
-  if (typeof value !== "string") return "";
-  const match = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (!match) return value;
-  return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
-}
-
-function compareYmd(a, b) {
-  const left = normalizeYmd(a);
-  const right = normalizeYmd(b);
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-
-function isWeekend(ymd) {
-  const weekday = toUtcDate(ymd).getUTCDay();
-  return weekday === 0 || weekday === 6;
-}
-
-function eachDay(firstYmd, lastYmd) {
-  const days = [];
-  for (let cur = firstYmd; cur <= lastYmd; cur = addDays(cur, 1)) days.push(cur);
-  return days;
-}
-
-// ---------------------------------------------------------------------------
-// iCal parsing
-// ---------------------------------------------------------------------------
-
-/** Content lines are wrapped at 75 octets; continuations start with space/tab. */
-function unfoldIcs(raw) {
-  return raw.replace(/\r\n/g, "\n").replace(/\n[ \t]/g, "");
-}
-
-function unescapeIcsText(value) {
-  return value.replace(/\\([\\;,nN])/g, (_, ch) =>
-    ch === "n" || ch === "N" ? "\n" : ch
-  );
-}
-
-function parseEvents(raw) {
-  const body = unfoldIcs(raw);
-  const events = [];
-  const blockPattern = /BEGIN:VEVENT\n([\s\S]*?)\nEND:VEVENT/g;
-  let match;
-
-  while ((match = blockPattern.exec(body)) !== null) {
-    const props = {};
-    for (const line of match[1].split("\n")) {
-      const colon = line.indexOf(":");
-      if (colon === -1) continue;
-      const [name, ...params] = line.slice(0, colon).split(";");
-      props[name.toUpperCase()] = {
-        value: line.slice(colon + 1),
-        params: params.join(";"),
-      };
-    }
-    events.push(props);
-  }
-  return events;
-}
-
-function parseIcsDate(prop) {
-  if (!prop) return null;
-  const match = prop.value.trim().match(/^(\d{4})(\d{2})(\d{2})/);
-  if (!match) return null;
-  return {
-    ymd: `${match[1]}-${match[2]}-${match[3]}`,
-    dateOnly: /VALUE=DATE(?![-\w])/i.test(prop.params),
-  };
-}
-
-/**
- * Inclusive first/last day an event covers.
- *
- * All-day events use an exclusive DTEND (Thanksgiving Break 11/25 -> 11/28 means
- * 11/25 through 11/27). Timed events end at a real moment, so DTEND's own date is
- * part of the event — the school enters Winter Break that way, as a timed event
- * running 2/19 12:00 -> 3/2 13:00.
- */
-function eventSpan(props) {
-  const start = parseIcsDate(props.DTSTART);
-  if (!start) return null;
-
-  const end = parseIcsDate(props.DTEND);
-  if (!end) return { first: start.ymd, last: start.ymd };
-
-  const last = start.dateOnly ? addDays(end.ymd, -1) : end.ymd;
-  return { first: start.ymd, last: last < start.ymd ? start.ymd : last };
-}
-
-// ---------------------------------------------------------------------------
 // Classification
 // ---------------------------------------------------------------------------
-
-const RE_LATE_START = /late start/i;
-const RE_BREAK = /\bbreak\b/i;
-
-/**
- * "No Classes" as a suffix means the school is closed:
- *   "Labor Day – No Classes", "Faculty In-Service – No Classes", "No Classes"
- */
-const RE_CLOSED = /(?:^|[\s–—-])no classes\s*$/i;
-
-/**
- * "No Classes" as a prefix means regular classes are cancelled but there is
- * still a program running that needs its own block times:
- *   "No Classes – Exams", "No Classes – Spring Day", "No Classes – Capstone/..."
- * Treating these as no_school would tell students to stay home on a school day.
- */
-const RE_PROGRAM_DAY = /^\s*no classes\s*[–—-]/i;
-
-/** Titles worth surfacing to a human even though we can't classify them. */
-const RE_NEEDS_HUMAN =
-  /schedule|no class|abbreviated|half day|early release|exam|capstone|spirit week|winter carnival|spring day|in-service|advisory|conference|testing|orientation|dismissal|delay/i;
 
 function classify(events, today) {
   const dayProposals = new Map(); // ymd -> { type, details }
@@ -221,9 +96,7 @@ function classify(events, today) {
     // X-ALT-DESC carries the full event body. Some days only reveal that they are
     // abnormal there — "Walk for a Healthier Community" reads "Abbreviated
     // Schedule" in the body and gives no hint in the title.
-    const body = unescapeIcsText(
-      props["X-ALT-DESC"]?.value ?? props.DESCRIPTION?.value ?? ""
-    ).replace(/<[^>]+>/g, " ");
+    const body = eventBodyText(props);
 
     if (RE_BREAK.test(title)) {
       if (dates.length > 1) {
@@ -546,16 +419,6 @@ async function readJson(path, fallback) {
     if (error.code === "ENOENT") return fallback;
     throw new Error(`${path} is not valid JSON: ${error.message}`);
   }
-}
-
-async function fetchIcs() {
-  const response = await fetch(ICS_URL, {
-    headers: { "User-Agent": "Hilltoppers-schedule-sync (+https://github.com/daniezl/Hilltoppers)" },
-  });
-  if (!response.ok) {
-    throw new Error(`Calendar feed returned HTTP ${response.status}`);
-  }
-  return response.text();
 }
 
 async function emitGithubOutput(changed) {
