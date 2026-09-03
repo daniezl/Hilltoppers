@@ -348,16 +348,9 @@ header {
   border-radius: 50%;
   font-size: 12px;
   font-weight: 600;
-  color: #4a5560;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
-}
-
-.week-day.weekend .week-day-glyph {
+  /* One muted grey for every day but today, so the green disc is the only anchor. */
   color: #a0a7b0;
-}
-
-.week-day.past .week-day-glyph {
-  opacity: 0.45;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 /* A day with anything on it swaps its letter for a circled "!". */
@@ -370,7 +363,6 @@ header {
 .week-day.today .week-day-glyph {
   background: rgba(26, 127, 55, 0.16);
   color: #1a7f37;
-  opacity: 1;
 }
 
 .week-day.active .week-day-glyph {
