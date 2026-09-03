@@ -3,7 +3,7 @@ import {
   buildWeek,
   fetchCalendarEvents,
   formatEventTime,
-  formatShortDate,
+  formatMonthDay,
   loadCachedCalendarEvents,
   pickDefaultTarget,
   relativeLabel,
@@ -97,13 +97,6 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
     hoverIndex !== null && week[hoverIndex] ? targetForWeekDay(week[hoverIndex], hoverIndex) : defaultTarget;
 
   const pointerIndex = target?.weekIndex ?? null;
-  const beyondWeek = target !== null && pointerIndex === null;
-  const label = target
-    ? beyondWeek
-      ? `${relativeLabel(target.dayKey, now)} · ${formatShortDate(target.dayKey)}`
-      : relativeLabel(target.dayKey, now)
-    : null;
-
   const visibleEvents = target ? target.events.slice(0, MAX_BUBBLE_ROWS) : [];
   const hiddenCount = target ? Math.max(0, target.events.length - MAX_BUBBLE_ROWS) : 0;
 
@@ -181,7 +174,10 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
       >
         {target ? (
           <>
-            <span className="calendar-bubble-label">{label}</span>
+            <span className="calendar-bubble-label">
+              <span>{relativeLabel(target.dayKey, now)}</span>
+              <span className="calendar-bubble-date">{formatMonthDay(target.dayKey)}</span>
+            </span>
             <ul className="calendar-bubble-list">
               {visibleEvents.map((event) => {
                 const time = formatEventTime(event, timeFormat);

@@ -266,8 +266,9 @@ export function relativeLabel(dayKey: string, now: Date): string {
   return `In ${diff} days`;
 }
 
-export function formatShortDate(dayKey: string): string {
-  return fromKey(dayKey).toFormat('ccc, MMM d');
+/** "Sep 7" — the weekday is already in the relative label. */
+export function formatMonthDay(dayKey: string): string {
+  return fromKey(dayKey).toFormat('MMM d');
 }
 
 export function formatEventTime(event: CalendarEvent, format: '12h' | '24h'): string | null {
