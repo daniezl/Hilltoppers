@@ -62,6 +62,10 @@ Anything that needs Firebase or Cloudflare credentials is described in
   (edited by hand,          (static CDN)   └─► Chrome extension
    or by GitHub Actions)
 
+  school website ──► data/scripts/fetch_day_type.mjs ──► day_type.json
+  (Daily Bulletin)   (GitHub Action, every 30 min)       (Green/White per day;
+                                                          apps not reading it yet)
+
   GitHub issues ──► worker/ (votes in D1) ──► Chrome extension "Ideas"   (paused)
 ```
 
