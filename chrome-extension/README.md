@@ -34,35 +34,41 @@ After you edit extension code, run **`npm run build`** in this directory (`chrom
    - Open `chrome://extensions` and enable **Developer mode**.
    - Click **Load unpacked** and choose the `dist/` directory.
 
-## Firebase Configuration
+## Configuration
 
-Create a `.env.local` file in `chrome-extension/` (the path is already ignored by git) and populate it with the web config values from `ios/SJA_re/GoogleService-Info.plist`:
+There is nothing to set up. The Firebase project and the schedule data URL are
+committed as defaults in `src/firebase/config.ts` and
+`src/services/scheduleService.ts`, so `npm ci && npm run build` produces a
+working extension.
+
+Firebase web config identifies a project rather than granting access to it, and
+it has always shipped inside the built bundle; Firestore Security Rules are what
+protect the data. Committing it removes a setup step and, more importantly,
+removes a failure mode: a build made without the old `.env.local` was silently
+broken — no sign-in, no preference sync, and the day colour stopped being
+predicted forward, so the popup showed the previous school day's colour.
+
+### Optional: analytics
+
+The one value not committed is `VITE_FIREBASE_MEASUREMENT_API_SECRET`. That one
+is a real secret — it lets the holder write events into our GA4 property. Put it
+in `.env.local` (already gitignored) to turn analytics on:
 
 ```
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-VITE_FIREBASE_MEASUREMENT_ID=...
 VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 ```
 
-When these values are absent the extension falls back to static JSON schedules and skips Firestore calls. Providing both `VITE_FIREBASE_MEASUREMENT_ID` and `VITE_FIREBASE_MEASUREMENT_API_SECRET` enables analytics reporting through the GA4 Measurement Protocol; omit them if you want analytics disabled during development. Remember to restrict your API key to the published extension identifier in the Google Cloud Console before release.
+Without it analytics is silently off and nothing else changes.
 
-## Cloudflare Schedule Configuration
+### Optional: pointing at a different backend
 
-The extension now supports loading special_days and special_periods from Cloudflare Pages. To enable this:
+Every committed default is still overridable by its `VITE_*` variable — set
+`VITE_FIREBASE_PROJECT_ID`, `VITE_CLOUDFLARE_SCHEDULE_URL` and so on in
+`.env.local` to build against a different Firebase project or a different copy
+of the schedule data. Names are in `config.ts`.
 
-1. Set up Cloudflare Pages (see `CLOUDFLARE_SETUP_GUIDE.md` in the project root)
-2. Add the Cloudflare URL to your `.env.local` file:
-
-```
-VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
-```
-
-If `VITE_CLOUDFLARE_SCHEDULE_URL` is not set, the extension falls back to `https://hilltoppers.pages.dev`, so it works without any `.env.local` entry. Set it only to point at a different deployment.
+Before a release, restrict the API key to the published extension identifier in
+the Google Cloud Console.
 
 ## Project Structure
 
