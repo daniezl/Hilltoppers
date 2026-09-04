@@ -21,28 +21,26 @@ Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键�
 
 ## Chrome 扩展设置
 
-### Firebase 配置
+不需要做任何事。Firebase 和 Cloudflare 的配置都以默认值写在代码里
+（`chrome-extension/src/firebase/config.ts` 和 `scheduleService.ts`），
+`npm ci && npm run build` 出来的扩展直接可用。
 
-创建 `chrome-extension/.env.local` 文件：
+### 可选：分析上报
+
+唯一没有写进仓库的是 GA4 的 `VITE_FIREBASE_MEASUREMENT_API_SECRET` —— 它是真正
+的密钥，拿到它就能往我们的 GA4 属性里写事件。不设置的话分析静默关闭，其他功能
+不受影响，日常开发不需要它。
+
+要开就在 `chrome-extension/.env.local`（已被 git 忽略）里加一行：
 
 ```
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-VITE_FIREBASE_MEASUREMENT_ID=...
 VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 ```
 
-### Cloudflare 配置
+### 可选：指向别的后端
 
-在 `chrome-extension/.env.local` 文件中添加：
-
-```
-VITE_CLOUDFLARE_SCHEDULE_URL=https://hilltoppers.pages.dev
-```
+同一批 `VITE_*` 变量仍然可以覆盖默认值，用于指向另一个 Firebase 项目或另一份
+课表数据。变量名见 `config.ts`。
 
 ## 开发环境
 
