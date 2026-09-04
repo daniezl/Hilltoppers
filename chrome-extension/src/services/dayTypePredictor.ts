@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon';
 import { EST_ZONE } from '../types/schedule';
 import { fetchSpecialDaysDict, fetchSpecialPeriods } from './scheduleService';
-import { isFirebaseConfigured } from '../firebase/config';
 
 const GREEN_LABEL = 'Green Day';
 const WHITE_LABEL = 'White Day';
@@ -31,9 +30,11 @@ async function isSchoolDay(date: DateTime, specials: Record<string, string>, per
 }
 
 export async function predictDayType(dbDayType: string, dbDate: Date, testDate?: Date): Promise<string> {
-  if (!isFirebaseConfigured()) {
-    return dbDayType;
-  }
+  // This used to return early when Firebase was not configured — a leftover
+  // from when the calendar lived in Firestore. The calendar comes from Pages
+  // now, so that check only ever meant "a build without .env.local shows
+  // yesterday's colour whenever the bulletin is a day behind", which it
+  // usually is.
   const today = DateTime.fromJSDate(testDate ?? new Date(), { zone: EST_ZONE }).startOf('day');
   const base = DateTime.fromJSDate(dbDate, { zone: EST_ZONE }).startOf('day');
 

@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon';
 import { Block, EST_ZONE, SubBlock } from '../types/schedule';
-import { isFirebaseConfigured } from '../firebase/config';
 import { resolveBulletinDayType } from './dayTypeResolver';
 
 interface RawSubBlock {
