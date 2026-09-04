@@ -1,53 +1,49 @@
 {
-  "updatedAt": "2026-09-04T01:14:05.490Z",
+  "updatedAt": "2026-09-04T06:27:21.416Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-03",
+  "menuDate": "2026-09-04",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg and Cheese Bagel",
+        "Sandwich Bagel Egg Cheese & Sausage",
+        "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
       ],
       "globalFare": [
-        "Pork Bacon",
-        "Cinnamon French Toast Homemade",
+        "Potato Hashbrown Patty",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Chicken Stew",
-        "Mediterranean Vegetable Stew",
-        "White Rice",
-        "Roasted Cauliflower",
-        "Grilled Zucchini"
+        "Meatballs",
+        "Cheese Ravioli",
+        "Steamed Broccoli & Carrots",
+        "Pesto Cream Sauce",
+        "Marinara Sauce"
       ],
       "globalFare": [
-        "Beef Tex Mex Casserole",
-        "Vegetarian Picadillo",
-        "Black Beans & Rice",
-        "Corn with Peppers and Onions"
+        "Grilled Chicken Panini",
+        "Turkey Day Panini",
+        "Grilled Vegetable Panini",
+        "Chip Potato Homemade f/ Frzn"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Beef and Mac Casserole",
-        "Garlic Breadstick",
-        "Sauce Tomato Cream"
+        "Meatless Stuffed Bell Peppers",
+        "Honey Mustard Pork Chop",
+        "Scalloped Potatoes",
+        "Cauliflower with Peas and Carrots"
       ],
       "globalFare": [
-        "Beef Bulgogi",
-        "Vegan Chorizo",
-        "Korean Baked Cheese Corn",
-        "Edamame Steamed",
-        "Waffle Fries",
-        "Gochujang Sauce"
+        "Teriyaki Glazed Chicken Breast",
+        "Paprika Chicken",
+        "Rice Pilaf Chicken with Orzo from Mix",
+        "Seasoned White Rice",
+        "Roasted Root Vegetable Medley"
       ]
     }
   }
