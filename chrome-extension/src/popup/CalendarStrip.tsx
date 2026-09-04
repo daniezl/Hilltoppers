@@ -17,8 +17,6 @@ import {
 
 interface CalendarStripProps {
   now: Date;
-  /** True once the last block of the day has ended (or on a day with no blocks). */
-  schoolDayOver: boolean;
   timeFormat: '12h' | '24h';
 }
 
@@ -44,7 +42,7 @@ function openEvent(event: CalendarEvent) {
   }
 }
 
-const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeFormat }) => {
+const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
   const [events, setEvents] = useState<CalendarEvent[] | null>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
@@ -84,9 +82,9 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, schoolDayOver, timeF
   );
 
   const defaultTarget = useMemo(
-    () => (events ? pickDefaultTarget(events, week, now, schoolDayOver) : null),
+    () => (events ? pickDefaultTarget(events, week, now) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [events, week, minuteKey, schoolDayOver]
+    [events, week, minuteKey]
   );
 
   if (!events || events.length === 0) {

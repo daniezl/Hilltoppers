@@ -187,34 +187,19 @@ export function wrappedColumnCount(week: WeekDay[]): number {
 }
 
 /**
- * Whether an event today still deserves the default slot. Timed events count
- * until they end; all-day events count until the school day is over, since
- * "Late Start Schedule" means nothing at 9pm but tonight's concert still does.
- */
-function stillRelevantToday(event: CalendarEvent, now: Date, schoolDayOver: boolean): boolean {
-  if (!event.startTime) {
-    return !schoolDayOver;
-  }
-  const end = event.endTime ?? event.startTime;
-  const [hour, minute] = end.split(':').map(Number);
-  const endsAt = schoolDay(now).set({ hour, minute });
-  return endsAt.toMillis() > now.getTime();
-}
-
-/**
- * What the bubble shows when nothing is hovered: today while today still has
- * something ahead, otherwise the next day that has anything on it.
+ * What the bubble shows when nothing is hovered: today whenever today has
+ * anything on it — even if it already happened — otherwise the next day that
+ * has anything on it.
  */
 export function pickDefaultTarget(
   events: CalendarEvent[],
   week: WeekDay[],
-  now: Date,
-  schoolDayOver: boolean
+  now: Date
 ): BubbleTarget | null {
   const todayKey = toKey(schoolDay(now));
   const todayEvents = eventsOn(events, todayKey);
 
-  if (todayEvents.some((e) => stillRelevantToday(e, now, schoolDayOver))) {
+  if (todayEvents.length > 0) {
     return {
       dayKey: todayKey,
       events: todayEvents,

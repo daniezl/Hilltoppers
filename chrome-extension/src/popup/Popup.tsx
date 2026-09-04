@@ -761,10 +761,6 @@ const Popup: React.FC = () => {
 
   const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
-  // Drives when the week strip stops pointing at today. A day with no blocks at
-  // all (holiday, weekend) never "ends", so today's event stays in view all day.
-  const schoolDayOver = !isNoSchool && !currentBlock && !nextBlock;
-
   const handleOpenClassSettings = () => {
     const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
       ? chrome.runtime.getURL('class-settings.html')
@@ -996,7 +992,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      <CalendarStrip now={now} schoolDayOver={schoolDayOver} timeFormat={schedulePrefs.timeFormat} />
+      <CalendarStrip now={now} timeFormat={schedulePrefs.timeFormat} />
       {!isNoSchool && !isNetworkFailed && (
         <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
