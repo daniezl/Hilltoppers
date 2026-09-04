@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: "20"
 
-      - run: npm install
+      - run: npm ci
       - run: node scripts/fetch_menu.mjs
 
       # A calendar hiccup should not hold up the menu. The daily

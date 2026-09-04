@@ -1,0 +1,42 @@
+name: Update day_type.json
+
+# Reads the Daily Bulletin and publishes which colour each upcoming day is.
+# Runs often because the bulletin appears at an unpredictable time of morning;
+# the script only writes when the answer changes, so most runs commit nothing.
+# A failed run means the school changed its page — the previous file stays
+# published and the apps keep working from it.
+
+on:
+  schedule:
+    - cron: "*/30 10-22 * * 1-5" # every 30 min, 6am–6pm Vermont, weekdays
+    - cron: "0 12 * * 0,6"       # once on weekend mornings, to keep the horizon moving
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: data
+
+jobs:
+  update-day-type:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+      - run: node scripts/fetch_day_type.mjs
+
+      - name: Commit & push if changed
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/public/day_type.json
+          git diff --staged --quiet || git commit -m "chore: update day_type.json"
+          git push

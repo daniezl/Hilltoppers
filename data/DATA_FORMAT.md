@@ -6,6 +6,33 @@ This file is the source of truth for special days, edited by hand and committed 
 git. Cloudflare Pages serves it as a static asset, and both the iOS app and the
 Chrome extension fetch it directly from there.
 
+## Dates
+
+Always `yyyy-mm-dd` with two-digit month and day: `2026-01-05`, not `2026-1-5`.
+Some code compares these as strings, and `"2026-09-04" <= "2026-1-5"` is true.
+The same applies to `start` / `end` in `special_periods.json`.
+
+## Day colour
+
+Whether a day is Green or White is worked out **once**, by
+`scripts/fetch_day_type.mjs`, and published as `public/day_type.json`. The
+rules it applies:
+
+1. A day is a **school day** unless it is a weekend, falls inside a period in
+   `special_periods.json`, or has `"type": "no_school"` here. An entry of any
+   other type makes it a school day even on a weekend.
+2. Each school day **flips** the colour of the previous school day. The
+   starting point is the most recent Daily Bulletin.
+3. **`"color": "green"` or `"color": "white"` on an entry overrides the flip for
+   that day, and the sequence continues from it.** "May 18 is White" means May
+   19 is Green. Use this when the school announces a colour that breaks the
+   pattern.
+4. The bulletin's own date takes the bulletin's colour regardless of `color`.
+
+`color` is only needed when the pattern is broken. Most special days — late
+starts, custom schedules — do not need it; they are still ordinary school days
+in the alternation.
+
 ## Grade-Specific Blocks
 
 Add a `"grades"` field to any block that only applies to certain grades. Blocks without `"grades"` are shown to all students.
