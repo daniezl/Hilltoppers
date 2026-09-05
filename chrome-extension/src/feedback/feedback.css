@@ -7,6 +7,7 @@
   --border: #d0d7de;
   --accent: #1a7f37;
   --accent-muted: rgba(26, 127, 55, 0.12);
+  --on-accent: #ffffff;
   --danger: #bc4c2c;
 }
 
@@ -20,6 +21,8 @@
     --border: #2d333c;
     --accent: #6bd48a;
     --accent-muted: rgba(107, 212, 138, 0.18);
+    /* The dark palette's accent is light, so its button text has to go dark. */
+    --on-accent: #0f1115;
     --danger: #f3a38b;
   }
 }
@@ -145,7 +148,7 @@ body, html {
 .feedback__primary {
   border: none;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .feedback__primary:hover:not(:disabled) {

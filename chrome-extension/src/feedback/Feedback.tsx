@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   FEEDBACK_AUDIENCE,
+  FEEDBACK_HEADING,
   FEEDBACK_MAX_LENGTH,
   FeedbackError,
   submitFeedback
@@ -50,20 +51,21 @@ const Feedback: React.FC = () => {
 
   return (
     <main className="feedback">
-      <h1>Something wrong or missing?</h1>
+      <h1>{FEEDBACK_HEADING}</h1>
       <p className="feedback__lead">
-        Tell {FEEDBACK_AUDIENCE} what&rsquo;s off, or what you wish it did.
+        Tell {FEEDBACK_AUDIENCE} what you&rsquo;d change &mdash; a small fix, or something you wish
+        it did.
       </p>
 
       <form onSubmit={handleSubmit} className="feedback__form">
         <label className="feedback__field">
-          <span className="feedback__label">What happened, or what should it do?</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             placeholder={'The schedule was wrong on\u2026\nIt would be nice if\u2026'}
             rows={7}
             autoFocus
+            aria-label={FEEDBACK_HEADING}
             disabled={status === 'sending'}
             aria-describedby={remaining < 300 ? 'feedback-remaining' : undefined}
           />

@@ -9,7 +9,9 @@ import { waitForAuthReady } from '../firebase/auth';
  */
 export const FEEDBACK_AUDIENCE: 'me' | 'us' = 'me';
 
-export const FEEDBACK_PROMPT = `Something wrong or missing? Tell ${FEEDBACK_AUDIENCE} \u2192`;
+export const FEEDBACK_HEADING = 'What would make this better?';
+
+export const FEEDBACK_PROMPT = `${FEEDBACK_HEADING} Tell ${FEEDBACK_AUDIENCE} \u2192`;
 
 export const FEEDBACK_MAX_LENGTH = 2000;
 
