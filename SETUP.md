@@ -42,6 +42,25 @@ VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 同一批 `VITE_*` 变量仍然可以覆盖默认值，用于指向另一个 Firebase 项目或另一份
 课表数据。变量名见 `config.ts`。
 
+### Ask 问答框：Worker 上的 DeepSeek 密钥
+
+popup 里 Menu 下面的输入框（"Ask about SJA…"）把问题发给 Cloudflare Worker 的
+`POST /api/ask`，由 Worker 检索学校文档并让 DeepSeek 作答。扩展这边不需要任何
+配置；需要配置的是 Worker，而且只有一个密钥：
+
+```bash
+cd worker
+npx wrangler secret put DEEPSEEK_API_KEY   # 在 platform.deepseek.com 申请
+npx wrangler deploy
+```
+
+没设密钥时接口返回 503，popup 显示 "Ask is not set up on this server yet."，
+其他功能不受影响。文档语料 `corpus.json` 由 GitHub Action
+（`update-corpus.yml`）每天生成几次并发布到 Pages，第一次部署前先手动跑一遍
+Action（或 `cd data && node scripts/fetch_corpus.mjs` 后 push），否则 Worker
+拿不到语料。想加新的文档来源，改 `data/corpus_sources.json`；细节见
+`worker/README.md` 的 Ask 一节和 `data/README.md`。
+
 ### Firestore 规则：`feedback` 集合
 
 popup 底部的 "Something wrong or missing? Tell me →" 打开 `feedback.html`，提交
