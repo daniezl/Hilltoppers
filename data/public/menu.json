@@ -1,49 +1,33 @@
 {
-  "updatedAt": "2026-09-05T03:57:45.517Z",
+  "updatedAt": "2026-09-05T08:17:30.031Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-04",
+  "menuDate": "2026-09-05",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Egg and Cheese Bagel",
-        "Sandwich Bagel Egg Cheese & Sausage",
-        "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
-      ],
-      "globalFare": [
-        "Potato Hashbrown Patty",
-        "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Meatballs",
-        "Cheese Ravioli",
-        "Steamed Broccoli & Carrots",
-        "Pesto Cream Sauce",
-        "Marinara Sauce"
+        "Plant-Based Chik'n Tenders",
+        "Nashville Hot Chicken Sandwich",
+        "Southern Style Biscuit",
+        "French Fry Seasoning"
       ],
-      "globalFare": [
-        "Grilled Chicken Panini",
-        "Turkey Day Panini",
-        "Grilled Vegetable Panini",
-        "Chip Potato Homemade f/ Frzn"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Meatless Stuffed Bell Peppers",
-        "Honey Mustard Pork Chop",
-        "Scalloped Potatoes",
-        "Cauliflower with Peas and Carrots"
+        "Smoked Gouda Cheese Sauce",
+        "Balsamic Glazed Chicken",
+        "Macaroni & Cheese",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Teriyaki Glazed Chicken Breast",
-        "Paprika Chicken",
-        "Rice Pilaf Chicken with Orzo from Mix",
-        "Seasoned White Rice",
-        "Roasted Root Vegetable Medley"
+        "Bacon Jam Burger",
+        "Vegan Veggie Patty",
+        "Seasoned Fries",
+        "Corn On The Cob"
       ]
     }
   }
