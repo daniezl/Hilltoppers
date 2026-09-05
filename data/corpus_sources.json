@@ -1,0 +1,28 @@
+{
+  "_comment": "Documents the Ask assistant reads, beyond the Daily Bulletin and the newsletter archive, which fetch_corpus.mjs discovers on its own. `pages` are HTML pages on stjacademy.org; `pdfs` are downloaded and text-extracted. `newsletters` are extra Constant Contact 'View as Webpage' links for issues the archive page has not listed yet — the newest few are usually missing. Policy documents carry no date on purpose: they are current until replaced here.",
+  "pages": [
+    {
+      "title": "SJA Dress Code",
+      "url": "https://stjacademy.org/a-culture-of-caring-and-respect/dress-code/"
+    },
+    {
+      "title": "mySJA — Student and Parent Resources",
+      "url": "https://stjacademy.org/mysja/"
+    },
+    {
+      "title": "Athletic Policies & Expectations",
+      "url": "https://stjacademy.org/athletics/athletic-policies-expectations/"
+    }
+  ],
+  "pdfs": [
+    {
+      "title": "Student Handbook (2026–2027, as linked from mySJA)",
+      "url": "https://stjacademy.org/wp-content/uploads/2025/07/25-26-STUDENT-HANDBOOK-FINAL-Version45.pdf"
+    },
+    {
+      "title": "Introduction to Boarding Life",
+      "url": "https://stjacademy.org/wp-content/uploads/2025/05/Introduction_To_Boarding_Life_2025d.pdf"
+    }
+  ],
+  "newsletters": []
+}

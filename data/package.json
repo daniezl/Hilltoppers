@@ -2,7 +2,11 @@
  "name": "hilltoppers-data",
  "private": true,
  "type": "module",
+ "scripts": {
+  "test": "node --test \"scripts/**/*.test.mjs\""
+ },
  "dependencies": {
- "cheerio": "^1.0.0"
+  "cheerio": "^1.0.0",
+  "unpdf": "^1.8.1"
  }
 }
