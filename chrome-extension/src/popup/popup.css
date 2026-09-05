@@ -189,6 +189,35 @@ header {
   transform: scale(0.92);
 }
 
+/* Quiet one-liner at the very bottom; same voice as the hover labels. */
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.feedback-link {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  color: #7d8591;
+  padding: 4px 0 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.feedback-link:hover {
+  color: #111111;
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.feedback-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.15);
+}
+
 .status {
   background: #ffffff;
   border: 1px solid rgba(17, 17, 17, 0.18);

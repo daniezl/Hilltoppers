@@ -17,6 +17,7 @@ export default defineConfig({
         options: path.resolve(rootDir, 'options.html'),
         classSettings: path.resolve(rootDir, 'class-settings.html'),
         login: path.resolve(rootDir, 'login.html'),
+        feedback: path.resolve(rootDir, 'feedback.html'),
         background: path.resolve(rootDir, 'src/background/background.ts')
       },
       output: {

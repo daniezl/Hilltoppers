@@ -34,6 +34,20 @@ import {
   sortForPopup,
   type Idea
 } from '../services/ideasService';
+import { FEEDBACK_PROMPT } from '../services/feedbackService';
+
+/** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
+function openExtensionPage(page: string) {
+  const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
+    ? chrome.runtime.getURL(page)
+    : page;
+
+  if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
+    chrome.tabs.create({ url: targetUrl });
+  } else {
+    window.open(targetUrl, '_blank', 'noopener');
+  }
+}
 
 interface SchedulePayload {
   dateKey: string;
@@ -761,17 +775,8 @@ const Popup: React.FC = () => {
 
   const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
-  const handleOpenClassSettings = () => {
-    const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
-      ? chrome.runtime.getURL('class-settings.html')
-      : 'class-settings.html';
-
-    if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
-      chrome.tabs.create({ url: targetUrl });
-    } else {
-      window.open(targetUrl, '_blank', 'noopener');
-    }
-  };
+  const handleOpenClassSettings = () => openExtensionPage('class-settings.html');
+  const handleOpenFeedback = () => openExtensionPage('feedback.html');
 
   const handleGradePromptConfirm = () => {
     if (pendingGradeSelection == null) return;
@@ -1426,6 +1431,11 @@ const Popup: React.FC = () => {
         )}
       </section>
       )}
+      <footer className="popup-footer">
+        <button type="button" className="feedback-link" onClick={handleOpenFeedback}>
+          {FEEDBACK_PROMPT}
+        </button>
+      </footer>
     </main>
   );
 };

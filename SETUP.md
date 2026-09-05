@@ -42,6 +42,32 @@ VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 同一批 `VITE_*` 变量仍然可以覆盖默认值，用于指向另一个 Firebase 项目或另一份
 课表数据。变量名见 `config.ts`。
 
+### Firestore 规则：`feedback` 集合
+
+popup 底部的 "Something wrong or missing? Tell me →" 打开 `feedback.html`，提交
+写进 Firestore 的 `feedback` 集合。它是**只写不读**的：任何人（包括未登录）都能
+新建一条，谁也读不了，只有在 Firebase 控制台里能看。这是刻意的 —— 人只会把
+真话打进一个只有作者看的框里。
+
+在 Firebase 控制台 → Firestore → Rules 里加上这一段，没有它每次提交都会被拒：
+
+```
+match /feedback/{id} {
+  allow create: if request.resource.data.message is string
+    && request.resource.data.message.size() > 0
+    && request.resource.data.message.size() <= 2000
+    && request.resource.data.keys().hasOnly(
+         ['message', 'contact', 'uid', 'email', 'extensionVersion', 'createdAt']);
+  allow read, update, delete: if false;
+}
+```
+
+字段含义见 `chrome-extension/src/services/feedbackService.ts`。`uid` / `email`
+只在提交者恰好登录了的时候有值，方便回信；`contact` 是他们自己填的。
+
+"Tell me" 里的 me 由 `FEEDBACK_AUDIENCE` 一个常量控制，有第二个人一起看这些
+反馈的时候把它改成 `'us'` 即可。
+
 ## 开发环境
 
 ### iOS 应用
