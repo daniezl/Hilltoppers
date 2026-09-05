@@ -52,7 +52,7 @@ const Feedback: React.FC = () => {
     <main className="feedback">
       <h1>Something wrong or missing?</h1>
       <p className="feedback__lead">
-        Tell {FEEDBACK_AUDIENCE} what&rsquo;s off, or what you wish it did. Nobody else sees this.
+        Tell {FEEDBACK_AUDIENCE} what&rsquo;s off, or what you wish it did.
       </p>
 
       <form onSubmit={handleSubmit} className="feedback__form">

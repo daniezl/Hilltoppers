@@ -192,7 +192,7 @@ header {
 /* Quiet one-liner at the very bottom; same voice as the hover labels. */
 .popup-footer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   margin-top: 14px;
 }
 
@@ -202,7 +202,7 @@ header {
   font: inherit;
   font-size: 11px;
   color: #7d8591;
-  padding: 4px 8px;
+  padding: 4px 0 4px 8px;
   border-radius: 6px;
   cursor: pointer;
   transition: color 0.2s ease, background 0.2s ease;
