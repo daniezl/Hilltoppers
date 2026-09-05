@@ -1,21 +1,27 @@
 /**
- * Cloudflare Worker for the Hilltoppers ideas board.
+ * Cloudflare Worker for Hilltoppers — the only server-side code in the project.
  *
- * GitHub issues hold the ideas; this Worker holds the votes and verifies who is
- * voting. It is the only server-side code in the project. Schedule data does
- * not go through here — it is static JSON served from Cloudflare Pages, which
- * the iOS app and the extension read directly.
+ * Two jobs:
+ *   - /api/ask: answers questions about the school from its own documents
+ *     (corpus.json on Pages + DeepSeek). See ask.ts.
+ *   - /api/ideas: the ideas board. GitHub issues hold the ideas; this Worker
+ *     holds the votes and verifies who is voting. Paused on the client side.
+ *
+ * Schedule data does not go through here — it is static JSON served from
+ * Cloudflare Pages, which the iOS app and the extension read directly.
  */
 
+import { handleAsk } from './ask';
 import { handleCreateIdea, handleGetIdeas, handleVote } from './ideas';
 import { handleHealth } from './health';
 import { json, preflight } from './http';
 
 const VOTE_PATH = /^\/api\/ideas\/\d+\/vote$/;
 const HEALTH_PATH = '/api/ideas/health';
+const ASK_PATH = '/api/ask';
 
 export interface Env {
-  /** Caches the GitHub issue list and holds per-day submission counts. */
+  /** Caches the GitHub issue list and holds per-day submission and question counts. */
   SCHEDULE_KV: KVNamespace;
   /** One row per (issue, uid): the one-vote-per-account rule. */
   IDEAS_DB: D1Database;
@@ -24,13 +30,23 @@ export interface Env {
   GITHUB_REPO: string;
   /** Checked against the iss/aud claims of every Firebase ID token. */
   FIREBASE_PROJECT_ID: string;
+  /** DeepSeek platform key (secret). Ask returns 503 until it is set. */
+  DEEPSEEK_API_KEY?: string;
+  /** DeepSeek model id, e.g. deepseek-v4-flash. */
+  DEEPSEEK_MODEL: string;
+  /** Unset in production. `wrangler dev --var DEEPSEEK_URL:http://…` points at a mock. */
+  DEEPSEEK_URL?: string;
+  /** Where corpus.json, events.json and day_type.json are published. */
+  CORPUS_URL: string;
+  EVENTS_URL: string;
+  DAY_TYPE_URL: string;
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
 
-    if (path !== '/api/ideas' && path !== HEALTH_PATH && !VOTE_PATH.test(path)) {
+    if (path !== '/api/ideas' && path !== HEALTH_PATH && path !== ASK_PATH && !VOTE_PATH.test(path)) {
       return json({ error: 'Not found' }, 404, request);
     }
 
@@ -38,7 +54,11 @@ export default {
       return preflight(request);
     }
 
-    if (path === HEALTH_PATH) {
+    if (path === ASK_PATH) {
+      if (request.method === 'POST') {
+        return handleAsk(request, env);
+      }
+    } else if (path === HEALTH_PATH) {
       if (request.method === 'GET') {
         return handleHealth(request, env);
       }

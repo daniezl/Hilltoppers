@@ -14,11 +14,9 @@ import { getCurrentUser } from '../firebase/auth';
  *
  * To turn it back on:
  *   1. Set this to true.
- *   2. Re-add "https://schedule-admin-api.danielzhang089.workers.dev/*" to
- *      host_permissions in manifest.json (removed so a paused feature does not
- *      hold a permission).
- *   3. Deploy the Worker if it was taken down (worker/README.md), then
- *      npm run build.
+ *   2. Deploy the Worker if it was taken down (worker/README.md), then
+ *      npm run build. The Worker's host permission is already in
+ *      manifest.json — the Ask box uses the same Worker.
  *
  * Do not delete this code to "clean up". The Worker, its D1 votes table and the
  * moderation flow in worker/ are the other half; this is the client.
