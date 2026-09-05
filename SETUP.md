@@ -44,7 +44,7 @@ VITE_FIREBASE_MEASUREMENT_API_SECRET=...
 
 ### Firestore 规则：`feedback` 集合
 
-popup 底部的 "Something wrong or missing? Tell me →" 打开 `feedback.html`，提交
+popup 底部的 "What would make this extension better? Tell me" 打开 `feedback.html`，提交
 写进 Firestore 的 `feedback` 集合。它是**只写不读**的：任何人（包括未登录）都能
 新建一条，谁也读不了，只有在 Firebase 控制台里能看。这是刻意的 —— 人只会把
 真话打进一个只有作者看的框里。
