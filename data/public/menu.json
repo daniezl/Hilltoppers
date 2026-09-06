@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-06T00:09:43.299Z",
+  "updatedAt": "2026-09-06T04:59:31.995Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-05",
+  "menuDate": "2026-09-06",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,25 +9,20 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Nashville Hot Chicken Sandwich",
-        "Southern Style Biscuit",
-        "French Fry Seasoning"
+        "Smoked Baja Turkey Melt",
+        "Tomato & Garden Vegetable Soup"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Smoked Gouda Cheese Sauce",
-        "Balsamic Glazed Chicken",
-        "Macaroni & Cheese",
-        "Brussel Sprouts"
+        "Apricot & Ginger Glazed Salmon",
+        "Tofu BBQ with Rice",
+        "Fresh Roasted Broccoli",
+        "Maple Orange Sweet Potatoes"
       ],
       "globalFare": [
-        "Bacon Jam Burger",
-        "Vegan Veggie Patty",
-        "Seasoned Fries",
-        "Corn On The Cob"
+        "Beef Bourguignon w/Fettuccine"
       ]
     }
   }
