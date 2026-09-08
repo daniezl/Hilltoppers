@@ -1,0 +1,45 @@
+name: Update corpus.json
+
+# Rebuilds the documents the Ask assistant reads: today's Daily Bulletin is
+# added to the archive, newly listed SJA News issues are fetched, and the
+# handbook / dress code / other pages are re-read. The script only writes when
+# something changed, so most runs commit nothing.
+#
+# Runs after the day-type job has had a chance to see the bulletin, since the
+# bulletin appears at an unpredictable time of morning.
+
+on:
+  schedule:
+    - cron: "15 12,15,20 * * 1-5" # 8:15am, 11:15am, 4:15pm Vermont, weekdays
+    - cron: "0 13 * * 0,6"        # once on weekend mornings for newsletters and pages
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: data
+
+jobs:
+  update-corpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+      - run: node scripts/fetch_corpus.mjs
+
+      - name: Commit & push if changed
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/public/corpus.json data/corpus/
+          git diff --staged --quiet || git commit -m "chore: update corpus.json"
+          git pull --rebase origin main
+          git push

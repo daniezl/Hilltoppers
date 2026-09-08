@@ -31,7 +31,16 @@ GITHUB_REPO = "daniezl/Hilltoppers"
 # Firebase 项目 ID，用于校验 ID token 的 iss/aud（不是密钥）
 FIREBASE_PROJECT_ID = "schedule-59d28"
 
+# /api/ask 读的文件，都是 data/public/ 里发布到 Pages 的静态 JSON
+CORPUS_URL = "https://hilltoppers.pages.dev/corpus.json"
+EVENTS_URL = "https://hilltoppers.pages.dev/events.json"
+DAY_TYPE_URL = "https://hilltoppers.pages.dev/day_type.json"
+# DeepSeek 模型。旧名 deepseek-chat 已于 2026-07 停用，别改回去。
+DEEPSEEK_MODEL = "deepseek-v4-flash"
+
 # Secrets（不在这个文件里）：
 # - GITHUB_TOKEN: fine-grained PAT，只需 Hilltoppers 仓库的 Issues 读写权限
 #                 通过 npx wrangler secret put GITHUB_TOKEN 设置
+# - DEEPSEEK_API_KEY: platform.deepseek.com 申请，/api/ask 没有它会返回 503
+#                 通过 npx wrangler secret put DEEPSEEK_API_KEY 设置
 

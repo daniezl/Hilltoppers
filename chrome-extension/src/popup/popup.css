@@ -1129,6 +1129,233 @@ button.week-day-glyph:focus-visible {
   box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.12);
 }
 
+/* Ask box: one line under the Menu, an answer card when there is one. */
+
+.ask {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ask-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ask-bar:hover {
+  border-color: rgba(17, 17, 17, 0.24);
+}
+
+.ask-bar:focus-within {
+  border-color: rgba(26, 127, 55, 0.5);
+  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.12);
+}
+
+.ask-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: #161b22;
+  padding: 5px 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.ask-input::placeholder {
+  color: #a0a7b0;
+}
+
+.ask-input:disabled {
+  color: #7d8591;
+}
+
+.ask-send {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: #1a7f37;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
+}
+
+.ask-send svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ask-send:hover:not(:disabled) {
+  background: #15682d;
+}
+
+.ask-send:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+/* Stays green when there is nothing to send, just quieter. */
+.ask-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ask-bar.loading .ask-send:disabled {
+  opacity: 0.85;
+}
+
+.ask-send:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.35);
+}
+
+.ask-spinner {
+  animation: dining-loading-spin 0.75s linear infinite;
+}
+
+.ask-error {
+  margin: 0 2px;
+}
+
+.ask-answer {
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.ask-answer-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #161b22;
+  white-space: pre-wrap;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Citation numbers: tiny green superscripts that open the source. */
+.ask-cite {
+  display: inline-block;
+  vertical-align: super;
+  margin: 0 1px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(26, 127, 55, 0.12);
+  color: #1f6f2b;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  text-decoration: none;
+}
+
+.ask-cite:hover {
+  background: rgba(26, 127, 55, 0.24);
+}
+
+.ask-sources {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid rgba(17, 17, 17, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.ask-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 2px 8px 2px 3px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 999px;
+  background: #fbfcff;
+  color: #4a5560;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.ask-source:hover {
+  border-color: rgba(26, 127, 55, 0.35);
+  background: rgba(26, 127, 55, 0.06);
+  color: #1f6f2b;
+}
+
+.ask-source-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(26, 127, 55, 0.12);
+  color: #1f6f2b;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ask-source-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ask-answer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ask-answer-note {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 10px;
+  color: #a0a7b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ask-clear {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #7d8591;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.ask-clear:hover {
+  color: #111111;
+  background: rgba(17, 17, 17, 0.06);
+}
+
 /* Ideas board */
 
 .ideas-list {

@@ -24,6 +24,7 @@ import {
 } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
 import CalendarStrip from './CalendarStrip';
+import AskBox from './AskBox';
 import {
   IDEAS_ENABLED,
   fetchIdeas,
@@ -1334,6 +1335,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
+      <AskBox />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
       {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>

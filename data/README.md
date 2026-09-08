@@ -18,7 +18,25 @@ is not meant to be served.
   School) each of the next 30 days is, computed from the Daily Bulletin plus
   the two files above. Generated; do not edit by hand. **Not yet read by either
   app** — see below.
+- [`corpus.json`](./public/corpus.json) — every school document the
+  extension's Ask box can quote from (Daily Bulletin archive, SJA News
+  issues, student handbook, dress code…), cut into short passages with their
+  source and date. Read by the Worker's `/api/ask`. Generated; do not edit by
+  hand. Which pages and PDFs go in is listed in
+  [`corpus_sources.json`](./corpus_sources.json).
 - `.well-known/apple-app-site-association` — iOS universal links.
+
+## `corpus/` — archives the school site does not keep
+
+The Daily Bulletin page only ever shows today's bulletin, and the newsletter
+archive page lags the inbox by weeks. `corpus/bulletins.json` (one entry per
+date) and `corpus/newsletters.json` (one per issue URL) are where
+`fetch_corpus.mjs` keeps what it has already read, so the history survives
+between Action runs. Committed, generated, not served.
+
+To add an SJA News issue the archive page has not listed yet, open the email,
+copy its "View as Webpage" link (`myemail.constantcontact.com/…`) into the
+`newsletters` list in `corpus_sources.json`, and the next run picks it up.
 
 ## `scripts/` — keeps `public/` current
 
@@ -31,6 +49,8 @@ working directory, and write into `public/` by relative path:
   [DATA_FORMAT.md](./DATA_FORMAT.md#day-colour).
 - `fetch_sja_calendar.mjs` — opens a pull request for `special_days.json` /
   `special_periods.json`, because those are hand-curated
+- `fetch_corpus.mjs` — pushes `corpus.json` and the `corpus/` archives
+  straight to `main`. `npm test` runs the parser tests in `scripts/lib/`.
 
 ### `day_type.json` is running in parallel for now
 
