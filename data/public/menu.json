@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-08T00:07:24.071Z",
+  "updatedAt": "2026-09-08T05:04:51.572Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-07",
+  "menuDate": "2026-09-08",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -16,40 +16,43 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Fresh Blueberries",
-        "Potato Hashbrown Patty",
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Pork Sausage Patty",
-        "Blueberry Pancakes"
+        "Oven Roasted Red Bliss Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Loaded Mac & Cheese Bowl",
-        "Ham Diced",
-        "Macaroni & Cheese",
-        "Broccoli",
-        "Bacon Bits",
-        "Cheese Sauce"
+        "Ramen Noodles Spicy Veg",
+        "Beef Meatball Teriyaki",
+        "Teriyaki Tofu",
+        "Sesame Snap Peas"
       ],
       "globalFare": [
-        "Brown Rice Royale",
-        "Chicken & Broccoli Asian",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Asian Marinated Tofu"
+        "Buffalo Chicken Bites",
+        "Buffalo Chicken",
+        "Brown Rice",
+        "Fresh Steamed Baby Carrots",
+        "Roasted Buffalo Cauliflower"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken Parmesan",
-        "Capellini",
-        "Carrot Baby Cut"
+        "Crabcakes with Lemon Cream Sauce",
+        "Sundried Tomato Fettuccine",
+        "Garlic Shrimp",
+        "Fresh Roasted Broccoli & Cauliflower",
+        "Caesar Salad"
       ],
       "globalFare": [
-        "Vegan Chorizo",
-        "Mac N Cheese Pork Belly Slider",
+        "Vegetarian Chili",
+        "Nacho Bar",
+        "Refried Beans",
+        "Tortilla Chips",
         "Seasoned White Rice",
-        "Asian Style Snap Peas"
+        "Corn with Peppers and Onions",
+        "Nacho Cheese Sauce"
       ]
     }
   }
