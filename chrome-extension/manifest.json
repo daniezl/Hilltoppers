@@ -17,7 +17,8 @@
   "options_page": "options.html",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "idle"
   ],
   "host_permissions": [
     "https://firestore.googleapis.com/*",
