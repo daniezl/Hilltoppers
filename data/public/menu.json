@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-08T23:35:25.259Z",
+  "updatedAt": "2026-09-09T04:12:09.572Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-08",
+  "menuDate": "2026-09-09",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -16,43 +16,46 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Oven Roasted Red Bliss Potatoes"
+        "Chicken Sausage Patty",
+        "Pancakes",
+        "Tater Tots",
+        "Banana",
+        "Toasted Pecans"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Ramen Noodles Spicy Veg",
-        "Beef Meatball Teriyaki",
-        "Teriyaki Tofu",
-        "Sesame Snap Peas"
+        "Grilled Chicken Breast",
+        "Baked Ham",
+        "Honey Wheat Dinner Roll",
+        "Steamed Potatoes",
+        "Buttered Corn",
+        "Peas & Carrots",
+        "Corn Chowder"
       ],
       "globalFare": [
-        "Buffalo Chicken Bites",
-        "Buffalo Chicken",
-        "Brown Rice",
-        "Fresh Steamed Baby Carrots",
-        "Roasted Buffalo Cauliflower"
+        "Jerk Pork Loin",
+        "Blackened Tofu",
+        "Cornbread Muffin",
+        "Sweet Potato Waffle Fries",
+        "Red Peppers",
+        "Sauteed Squash & Zucchini"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Crabcakes with Lemon Cream Sauce",
-        "Sundried Tomato Fettuccine",
-        "Garlic Shrimp",
-        "Fresh Roasted Broccoli & Cauliflower",
-        "Caesar Salad"
+        "Stuffing Mix",
+        "Cajun Turkey Cutlet",
+        "Mashed Sweet Potatoes",
+        "Cornbread Stuffing",
+        "Green Beans"
       ],
       "globalFare": [
-        "Vegetarian Chili",
-        "Nacho Bar",
-        "Refried Beans",
-        "Tortilla Chips",
-        "Seasoned White Rice",
-        "Corn with Peppers and Onions",
-        "Nacho Cheese Sauce"
+        "Chicken & Broccoli Stir Fry",
+        "Tofu Vegetable Stir Fry",
+        "Jasmine Rice",
+        "Stir Fry Vegetables"
       ]
     }
   }
