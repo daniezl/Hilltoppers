@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { EST_ZONE } from '../types/schedule';
 import { predictDayType } from './dayTypePredictor';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 const BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const MONTH_NAMES = [
@@ -53,7 +54,7 @@ async function fetchBulletinHtml(): Promise<string> {
     'Upgrade-Insecure-Requests': '1'
   };
 
-  const response = await fetch(BULLETIN_URL, { headers, redirect: 'follow' });
+  const response = await fetchWithTimeout(BULLETIN_URL, { headers, redirect: 'follow' });
   if (!response.ok) {
     throw new Error(`Bulletin request failed: ${response.status}`);
   }

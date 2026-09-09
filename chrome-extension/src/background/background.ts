@@ -231,6 +231,16 @@ async function schedulePreciseIconUpdate(): Promise<void> {
   }
 }
 
+// Every size the manifest declares. Handing setIcon a single 128px file on a
+// toolbar that draws at 16/32px makes Chrome downscale on each swap, which is
+// where the "icon didn't change" flicker after wake showed up.
+const STATIC_ICON_PATHS = {
+  16: 'icons/icon16.png',
+  32: 'icons/icon32.png',
+  48: 'icons/icon48.png',
+  128: 'icons/icon128.png'
+};
+
 async function updateActionIcon(): Promise<void> {
   const { label, tooltip, kind, useStaticIcon } = determineCountdown();
   try {
@@ -239,14 +249,10 @@ async function updateActionIcon(): Promise<void> {
       if (imageData) {
         await chrome.action.setIcon({ imageData });
       } else {
-        await chrome.action.setIcon({ path: {
-          128: 'icons/icon128.png'
-        }});
+        await chrome.action.setIcon({ path: STATIC_ICON_PATHS });
       }
     } else {
-      await chrome.action.setIcon({ path: {
-        128: 'icons/icon128.png'
-      }});
+      await chrome.action.setIcon({ path: STATIC_ICON_PATHS });
     }
     await chrome.action.setTitle({ title: tooltip });
     
@@ -485,8 +491,41 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
 });
 
+/**
+ * Redraw the toolbar icon from whatever schedule is already cached, without
+ * waiting on the network. The icon only needs today's blocks and the clock;
+ * it should never sit behind a fetch.
+ */
+function redrawIconFromCache(reason: string): void {
+  updateActionIcon().catch((error) => {
+    console.debug(`[background] Icon redraw (${reason}) failed`, error);
+  });
+}
+
+// Chrome reports 'active' on the first input after a Chromebook wakes from
+// sleep. Alarms that were due while asleep fire late (or not at all), so this
+// is the earliest reliable moment to bring the icon back in line with the
+// clock — and, if we slept across midnight, to fetch the new day's schedule.
+if (typeof chrome !== 'undefined' && chrome.idle?.onStateChanged) {
+  chrome.idle.onStateChanged.addListener((state) => {
+    if (state !== 'active') return;
+    redrawIconFromCache('wake');
+    ensureIconAlarm();
+    ensureRefreshAlarm();
+    if (cachedDateKey !== getTodayKey()) {
+      refreshSchedule().catch((error) => {
+        console.debug('[background] Refresh after wake failed', error);
+      });
+    }
+  });
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'getScheduleCache') {
+    // The popup opening is a signal the user is looking at the toolbar right
+    // now, so make sure the icon reflects the current minute before anything
+    // slower (the refresh below) gets a chance to run.
+    redrawIconFromCache('popup opened');
     if (cachedTimestamp) {
       const cacheAge = Date.now() - cachedTimestamp;
       const cacheAgeMinutes = Math.round(cacheAge / 60000);

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { Block, EST_ZONE, SubBlock } from '../types/schedule';
 import { resolveBulletinDayType } from './dayTypeResolver';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 interface RawSubBlock {
   name: string;
@@ -81,7 +82,7 @@ function getAssetUrl(path: string): string {
 async function fetchSpecialDays(): Promise<Record<string, SpecialDayRecord> | null> {
   const url = `${CLOUDFLARE_BASE_URL}/special_days.json`;
   try {
-    const response = await fetch(url, { cache: 'no-cache' });
+    const response = await fetchWithTimeout(url, { cache: 'no-cache' });
     if (!response.ok) {
       console.warn(`[scheduleService] special_days fetch failed: HTTP ${response.status}`);
       return null;
@@ -97,7 +98,7 @@ async function fetchSpecialPeriodsList(): Promise<Array<{ start: string; end: st
   const url = `${CLOUDFLARE_BASE_URL}/special_periods.json`;
   if (!url) return null;
   try {
-    const response = await fetch(url, { cache: 'no-cache' });
+    const response = await fetchWithTimeout(url, { cache: 'no-cache' });
     if (!response.ok) {
       console.warn(`[scheduleService] special_periods fetch failed: HTTP ${response.status}`);
       return null;
