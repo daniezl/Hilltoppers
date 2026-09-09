@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, existsSync } from 'fs';
+import { cpSync, mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,4 +28,17 @@ for (const { from, to } of copies) {
   mkdirSync(destinationDir, { recursive: true });
   cpSync(from, to, { recursive: true });
   console.log(`[postbuild] Copied ${from} → ${to}`);
+}
+
+// A build that is not the store release gets a label after its version, e.g.
+// "1.4.3 (PR #41)". Someone who loads an unpacked copy next to the store copy
+// sees two identical entries in chrome://extensions otherwise. `version_name`
+// is display-only; the numeric `version` Chrome compares stays untouched.
+const buildLabel = (process.env.EXTENSION_BUILD_LABEL ?? '').trim();
+if (buildLabel) {
+  const manifestPath = path.join(distDir, 'manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  manifest.version_name = `${manifest.version} (${buildLabel})`;
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+  console.log(`[postbuild] Set version_name to "${manifest.version_name}"`);
 }
