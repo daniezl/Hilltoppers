@@ -1,0 +1,78 @@
+name: Build extension
+
+# Builds the Chrome extension and attaches the ready-to-load `dist/` folder to
+# the run as a zip, so a change can be tried without a local Node install:
+# download the zip, unzip it, and pick the folder in chrome://extensions →
+# "Load unpacked". Nothing is published from here; releases still go through
+# the Chrome Web Store by hand.
+
+on:
+  pull_request:
+    paths:
+      - "chrome-extension/**"
+      - ".github/workflows/build-extension.yml"
+  push:
+    branches: [main]
+    paths:
+      - "chrome-extension/**"
+      - ".github/workflows/build-extension.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: chrome-extension
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: chrome-extension/package-lock.json
+
+      - run: npm ci
+
+      # The label shows up after the version in chrome://extensions, so a
+      # test build is never mistaken for the store copy (see postbuild.mjs).
+      - name: Pick a build label
+        id: label
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            echo "label=PR #$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "slug=pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            echo "label=$REF_NAME ${SHA:0:7}" >> "$GITHUB_OUTPUT"
+            echo "slug=$(echo "$REF_NAME" | tr '/' '-')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - run: npm run build
+        env:
+          EXTENSION_BUILD_LABEL: ${{ steps.label.outputs.label }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hilltoppers-extension-${{ steps.label.outputs.slug }}
+          path: chrome-extension/dist
+          if-no-files-found: error
+
+      - name: Say where the zip is
+        run: |
+          {
+            echo "### Try this build"
+            echo
+            echo "1. Download **hilltoppers-extension-${{ steps.label.outputs.slug }}** from the Artifacts box below and unzip it."
+            echo "2. Open \`chrome://extensions\`, turn on **Developer mode** (top right), click **Load unpacked**, and pick the unzipped folder."
+            echo "3. Turn off the store copy of Hilltoppers while testing, so you know which one you are looking at. This build shows as version **$(node -p "require('./dist/manifest.json').version_name")**."
+          } >> "$GITHUB_STEP_SUMMARY"
