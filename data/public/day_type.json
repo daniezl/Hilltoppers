@@ -1,20 +1,19 @@
 {
-  "updatedAt": "2026-09-08T14:21:44.117Z",
+  "updatedAt": "2026-09-09T14:22:30.747Z",
   "source": "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/",
   "bulletin": {
-    "date": "2026-09-08",
-    "weekday": "Tuesday",
-    "dayType": "Green Day",
+    "date": "2026-09-09",
+    "weekday": "Wednesday",
+    "dayType": "White Day",
     "headings": [
-      "Green Day"
+      "White Day"
     ]
   },
   "anchor": {
-    "date": "2026-09-08",
-    "dayType": "Green Day"
+    "date": "2026-09-09",
+    "dayType": "White Day"
   },
   "days": {
-    "2026-09-08": "Green Day",
     "2026-09-09": "White Day",
     "2026-09-10": "Green Day",
     "2026-09-11": "White Day",
@@ -44,6 +43,7 @@
     "2026-10-05": "White Day",
     "2026-10-06": "Green Day",
     "2026-10-07": "White Day",
-    "2026-10-08": "Green Day"
+    "2026-10-08": "Green Day",
+    "2026-10-09": "No School"
   }
 }
