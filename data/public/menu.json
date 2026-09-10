@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-10T02:45:31.137Z",
+  "updatedAt": "2026-09-10T06:32:23.057Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-09",
+  "menuDate": "2026-09-10",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -16,108 +16,47 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Pork Bacon",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Pancakes",
-        "Tater Tots",
-        "Banana",
-        "Toasted Pecans"
+        "Black Forest Ham",
+        "Breakfast Quesadilla",
+        "Home Fried Potatoes",
+        "Bacon Bits"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Baked Ham",
-        "Honey Wheat Dinner Roll",
-        "Steamed Potatoes",
-        "Buttered Corn",
-        "Peas & Carrots",
-        "Corn Chowder"
+        "BBQ Chicken",
+        "Vegan Chorizo",
+        "Sautéed Garden Fresh Green Beans",
+        "Seasoned French Fries"
       ],
       "globalFare": [
-        "Jerk Pork Loin",
-        "Blackened Tofu",
-        "Cornbread Muffin",
-        "Sweet Potato Waffle Fries",
-        "Red Peppers",
-        "Sauteed Squash & Zucchini"
+        "Halal Chicken Sausage",
+        "Scrambled Eggs with Cheese",
+        "Pancakes",
+        "Oven Roasted Red Potatoes"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Stuffing Mix",
-        "Cajun Turkey Cutlet",
-        "Mashed Sweet Potatoes",
-        "Cornbread Stuffing",
-        "Green Beans"
+        "Country Style Braised Beef Tips",
+        "BLT Chopped Salad",
+        "Vegetarian Hamburger Steak",
+        "Roasted Potato Wedges",
+        "Roasted Cauliflower",
+        "Carrot Charred"
       ],
       "globalFare": [
-        "Chicken & Broccoli Stir Fry",
-        "Tofu Vegetable Stir Fry",
-        "Jasmine Rice",
-        "Stir Fry Vegetables"
+        "Citrus Herb Salmon Filet BW",
+        "Lemon White Rice",
+        "Fresh Roasted Broccoli",
+        "Lemon Pepper Peas with Dill"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-10T02:37:47.689Z",
   "days": {
-    "2026-09-09": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Sliced Smoked Ham",
-          "Cheese Omelet",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Chicken Sausage Patty",
-          "Pancakes",
-          "Tater Tots",
-          "Banana",
-          "Toasted Pecans"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Grilled Chicken Breast",
-          "Baked Ham",
-          "Honey Wheat Dinner Roll",
-          "Steamed Potatoes",
-          "Buttered Corn",
-          "Peas & Carrots",
-          "Corn Chowder"
-        ],
-        "globalFare": [
-          "Jerk Pork Loin",
-          "Blackened Tofu",
-          "Cornbread Muffin",
-          "Sweet Potato Waffle Fries",
-          "Red Peppers",
-          "Sauteed Squash & Zucchini"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Stuffing Mix",
-          "Cajun Turkey Cutlet",
-          "Mashed Sweet Potatoes",
-          "Cornbread Stuffing",
-          "Green Beans"
-        ],
-        "globalFare": [
-          "Chicken & Broccoli Stir Fry",
-          "Tofu Vegetable Stir Fry",
-          "Jasmine Rice",
-          "Stir Fry Vegetables"
-        ]
-      }
-    },
     "2026-09-10": {
       "breakfast": {
         "classicKitchen": [
