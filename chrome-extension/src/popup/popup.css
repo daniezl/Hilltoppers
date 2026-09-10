@@ -350,210 +350,6 @@ header {
   background: #f39c3d;
 }
 
-/* Week strip: seven days, Sunday first, with a bubble for the day in focus. */
-
-.calendar-strip {
-  margin: 0 0 14px;
-}
-
-.week-grid {
-  position: relative;
-}
-
-/* Caption row over the strip. Always present so the popup doesn't jump on the
-   one day (Sunday) that has nothing to say. */
-.week-caption {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  height: 14px;
-  margin-bottom: 2px;
-}
-
-/* Each caption starts 8px inside the left edge of its own group of columns. */
-.week-caption-label {
-  padding-left: 8px;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 14px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-align: left;
-  color: #a0a7b0;
-  white-space: nowrap;
-}
-
-/* Hairline just before today, running from the caption down through the glyphs. */
-.week-divider {
-  position: absolute;
-  top: 0;
-  bottom: 6px;
-  width: 1px;
-  background: rgba(17, 17, 17, 0.12);
-  transform: translateX(-0.5px);
-}
-
-.week-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.week-day {
-  display: flex;
-  justify-content: center;
-  padding: 2px 0 6px;
-}
-
-.week-day-glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 600;
-  /* One muted grey for every day but today, so the green disc is the only anchor. */
-  color: #a0a7b0;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
-}
-
-/* A day with anything on it swaps its letter for a circled "!". */
-.week-day.has-events .week-day-glyph {
-  border: 1.5px solid currentColor;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.week-day.today .week-day-glyph {
-  background: rgba(26, 127, 55, 0.16);
-  color: #1a7f37;
-}
-
-.week-day.active .week-day-glyph {
-  transform: scale(1.1);
-}
-
-/* Marked days render as buttons; strip the UA chrome but keep the glyph styling. */
-button.week-day-glyph {
-  appearance: none;
-  padding: 0;
-  background: transparent;
-  font-family: inherit;
-  line-height: inherit;
-  cursor: pointer;
-  outline: none;
-}
-
-button.week-day-glyph:focus-visible {
-  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.28);
-}
-
-.calendar-bubble {
-  position: relative;
-  margin-top: 4px;
-  padding: 8px 10px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 8px;
-  transition: border-color 0.18s ease;
-}
-
-.calendar-bubble.today {
-  border-color: rgba(26, 127, 55, 0.45);
-}
-
-/* Two stacked triangles: the outer one draws the border, the inner one fills. */
-.calendar-bubble.pointed::before,
-.calendar-bubble.pointed::after {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: calc((var(--pointer-index) + 0.5) * 100% / 7);
-  transform: translateX(-50%);
-  border-style: solid;
-  border-color: transparent;
-  transition: left 0.18s ease, border-color 0.18s ease;
-}
-
-.calendar-bubble.pointed::before {
-  border-width: 0 6px 6px 6px;
-  border-bottom-color: rgba(17, 17, 17, 0.18);
-}
-
-.calendar-bubble.pointed::after {
-  margin-bottom: -1px;
-  border-width: 0 5px 5px 5px;
-  border-bottom-color: #ffffff;
-}
-
-.calendar-bubble.today.pointed::before {
-  border-bottom-color: rgba(26, 127, 55, 0.45);
-}
-
-.calendar-bubble-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 3px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7d8591;
-}
-
-.calendar-bubble.today .calendar-bubble-label {
-  color: #1a7f37;
-}
-
-.calendar-bubble-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.calendar-bubble-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 0;
-  color: #161b22;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  text-decoration: none;
-}
-
-.calendar-bubble-row:hover .calendar-bubble-title {
-  color: #1a7f37;
-}
-
-.calendar-bubble-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.calendar-bubble-time {
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 500;
-  color: #7d8591;
-  font-variant-numeric: tabular-nums;
-}
-
-.calendar-bubble-more,
-.calendar-bubble-empty {
-  font-size: 12px;
-  color: #7d8591;
-}
-
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -743,6 +539,98 @@ button.week-day-glyph:focus-visible {
 
 .dining-list.collapsed .dining-content {
   display: none;
+}
+
+/* Events: the next couple of things on the school calendar, then a way out to
+   the school's own page for everything else. Same shell as Menu. */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.events-content {
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.events-list.collapsed .events-content {
+  display: none;
+}
+
+/* One card per event, built like a dining column: a small grey caption over
+   the thing itself. Stacked rather than side by side — event titles are
+   sentences, and half a popup's width would wrap most of them. */
+.events-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-card {
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: 6px;
+  background: #fbfcff;
+  overflow: hidden;
+}
+
+/* The padding lives on the link, not the card, so the whole card is the
+   target rather than just the text inside it. */
+.event-card-link {
+  display: block;
+  padding: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+a.event-card-link:hover {
+  background: rgba(26, 127, 55, 0.06);
+}
+
+a.event-card-link:hover .event-title {
+  color: #1a7f37;
+}
+
+a.event-card-link:focus-visible {
+  outline: 2px solid #1a7f37;
+  outline-offset: -2px;
+}
+
+.event-when {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7d8591;
+  font-weight: 700;
+}
+
+.event-title {
+  margin: 0;
+  font-size: 13px;
+  color: #161b22;
+  font-weight: 600;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+
+.events-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #7d8591;
+}
+
+.events-meta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #7d8591;
 }
 
 .schedule-toggle {

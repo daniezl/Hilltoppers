@@ -24,7 +24,15 @@ import {
   DEFAULT_SCHEDULE_PREFERENCES
 } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
-import CalendarStrip from './CalendarStrip';
+import {
+  fetchCalendarEvents,
+  loadCachedCalendarEvents,
+  pickUpcomingEvents,
+  relativeLabel,
+  saveCachedCalendarEvents,
+  type CalendarEvent,
+  type UpcomingEvent
+} from '../services/calendarService';
 import {
   IDEAS_ENABLED,
   fetchIdeas,
@@ -73,6 +81,15 @@ interface DiningMenuPayload {
 const DINING_MENU_URL = 'https://stjacademy.campus-dining.com/menus/';
 const DAILY_BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch', 'Dinner'];
+
+const UPCOMING_EVENT_COUNT = 2;
+
+/**
+ * The school's homepage, with a text fragment that scrolls to its calendar
+ * band. Chrome resolves `#:~:text=` against the loaded page, so this lands on
+ * the calendar without the school having to give that section an anchor.
+ */
+const SJA_CALENDAR_URL = `https://stjacademy.org/#:~:text=${encodeURIComponent('SJA Calendar')}`;
 const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
 
 function getDishSearchUrl(dishName: string): string {
@@ -132,6 +149,9 @@ const Popup: React.FC = () => {
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [prefsLoaded, setPrefsLoaded] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [eventsExpanded, setEventsExpanded] = useState<boolean>(false);
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[] | null>(null);
+  const [eventsError, setEventsError] = useState<string | null>(null);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
   const [menuLoading, setMenuLoading] = useState<boolean>(true);
@@ -335,6 +355,42 @@ const Popup: React.FC = () => {
   useEffect(() => {
     latestMenuDataRef.current = menuData;
   }, [menuData]);
+
+  // Events load on first expand: the section is collapsed by default, and the
+  // school calendar changes far too slowly to be worth fetching before then.
+  useEffect(() => {
+    if (!eventsExpanded) {
+      return () => {};
+    }
+
+    let cancelled = false;
+    const show = (events: CalendarEvent[]) => {
+      if (!cancelled) setUpcomingEvents(pickUpcomingEvents(events, new Date(), UPCOMING_EVENT_COUNT));
+    };
+
+    loadCachedCalendarEvents()
+      .then((cached) => {
+        if (cached && cached.length > 0) show(cached);
+      })
+      .catch(() => {});
+
+    fetchCalendarEvents()
+      .then((events) => {
+        show(events);
+        if (!cancelled) setEventsError(null);
+        return saveCachedCalendarEvents(events);
+      })
+      .catch((err) => {
+        console.warn('[popup] Failed to load calendar events', err);
+        // Whatever the cache had is better than an error message.
+        if (!cancelled) setUpcomingEvents((prev) => (prev === null ? [] : prev));
+        if (!cancelled) setEventsError('Calendar unavailable');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [eventsExpanded]);
 
   useEffect(() => {
     if (!menuExpanded) {
@@ -998,7 +1054,6 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      <CalendarStrip now={now} timeFormat={schedulePrefs.timeFormat} />
       {!isNoSchool && !isNetworkFailed && (
         <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
@@ -1123,6 +1178,86 @@ const Popup: React.FC = () => {
         )}
         </section>
       )}
+      <section className={`events-list ${eventsExpanded ? '' : 'collapsed'}`}>
+        <button
+          type="button"
+          className="schedule-toggle"
+          aria-expanded={eventsExpanded}
+          onClick={() => setEventsExpanded((prev) => !prev)}
+        >
+          <span className="toggle-title">
+            <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 8v4l2.5 2.5M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Events</span>
+          </span>
+          <span className={`chevron ${eventsExpanded ? 'open' : ''}`} aria-hidden="true" />
+        </button>
+        {eventsExpanded && (
+          <div className="events-content">
+            {upcomingEvents === null ? (
+              <p className="events-empty">Loading…</p>
+            ) : upcomingEvents.length === 0 ? (
+              <p className="events-empty">{eventsError ?? 'Nothing coming up'}</p>
+            ) : (
+              <ul className="events-items">
+                {upcomingEvents.map(({ event, dayKey }) => {
+                  const body = (
+                    <>
+                      <p className="event-when">{relativeLabel(dayKey, now)}</p>
+                      <p className="event-title">{event.title}</p>
+                    </>
+                  );
+                  return (
+                    <li key={event.id} className="event-card">
+                      {event.url ? (
+                        <a
+                          className="event-card-link"
+                          href={event.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          title="Open on the school website"
+                        >
+                          {body}
+                        </a>
+                      ) : (
+                        <div className="event-card-link">{body}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <p className="events-meta">
+              <a
+                className="dining-link"
+                href={SJA_CALENDAR_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <svg className="dining-link-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>SJA Calendar</span>
+              </a>
+            </p>
+          </div>
+        )}
+      </section>
       <section className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
