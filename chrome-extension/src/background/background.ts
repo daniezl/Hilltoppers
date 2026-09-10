@@ -7,7 +7,9 @@ import {
   type DiningMenuResult,
   loadDiningMenuFirstItems
 } from '../services/diningMenuService';
-import { Block, EST_ZONE, parseBlockTime } from '../types/schedule';
+import {
+  Block, EST_ZONE, parseBlockTime, findLunchSubBlock, type LunchWave
+} from '../types/schedule';
 import { type TimeFormat } from '../storage/schedulePreferences';
 import { isWithinSchoolHours, getNextSchoolHoursStart } from '../utils/timeUtils';
 
@@ -25,6 +27,7 @@ let cachedDayType: string | null = null;
 let cachedDetails: string | null = null;
 let cachedNetworkFailed = false;
 let cachedTimeFormat: TimeFormat = '12h';
+let cachedLunchWave: LunchWave | null = null;
 let cachedTimestamp: number | null = null;
 let refreshInFlight: Promise<void> | null = null;
 // Keyed by period and day, since the popup can page through the menu for the
@@ -80,6 +83,40 @@ function formatDurationText(minutes: number): string {
   return `${mins}m`;
 }
 
+/**
+ * The worker keeps its own copy of the preferences the icon depends on. It reads
+ * chrome.storage.sync directly instead of going through storage/
+ * schedulePreferences, which pulls in Firebase.
+ */
+function applyIconPreferences(stored: unknown): boolean {
+  const prefs = (stored ?? {}) as { timeFormat?: TimeFormat; lunchWave?: LunchWave };
+  const nextTimeFormat = prefs.timeFormat === '24h' ? '24h' : '12h';
+  const nextLunchWave = prefs.lunchWave ?? null;
+  const changed = nextTimeFormat !== cachedTimeFormat || nextLunchWave !== cachedLunchWave;
+  cachedTimeFormat = nextTimeFormat;
+  cachedLunchWave = nextLunchWave;
+  return changed;
+}
+
+function loadIconPreferences(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
+      resolve();
+      return;
+    }
+    chrome.storage.sync.get(['schedulePreferences'], (result) => {
+      applyIconPreferences(result?.schedulePreferences);
+      resolve();
+    });
+  });
+}
+
+/** The user's own lunch wave inside a block, as a real time, if it has one. */
+function getMyLunch(block: Block, baseDate: Date): { name: string; start: Date } | null {
+  const sub = findLunchSubBlock(block, cachedLunchWave);
+  return sub ? { name: sub.name, start: parseBlockTime(sub.start, baseDate) } : null;
+}
+
 function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDate()): {
   label: string;
   tooltip: string;
@@ -104,6 +141,20 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
     const endMs = end.getTime();
 
     if (nowMs >= startMs && nowMs < endMs) {
+      // While the user's lunch is still ahead inside this block, the icon counts
+      // to lunch rather than to the end of the block, matching the popup card.
+      const myLunch = getMyLunch(block, baseDate);
+      if (myLunch && nowMs < myLunch.start.getTime()) {
+        const minutesUntilLunch = (myLunch.start.getTime() - nowMs) / 60000;
+        const lunchDisplay = formatTime(myLunch.start, cachedTimeFormat);
+        return {
+          label: formatCountdownLabel(minutesUntilLunch),
+          tooltip: `${myLunch.name} starts in ${formatDurationText(minutesUntilLunch)} (${lunchDisplay})`,
+          kind: 'current',
+          useStaticIcon: minutesUntilLunch > 99
+        };
+      }
+
       const remainingMinutes = (endMs - nowMs) / 60000;
       const label = formatCountdownLabel(remainingMinutes);
       const endDisplay = formatTime(end, cachedTimeFormat);
@@ -196,9 +247,12 @@ async function schedulePreciseIconUpdate(): Promise<void> {
       const startMs = start.getTime();
       const endMs = end.getTime();
       
-      // If we're in a block, next transition is when it ends
+      // If we're in a block, next transition is when it ends — or when the
+      // user's lunch starts, since the icon switches over at that moment.
       if (nowMs >= startMs && nowMs < endMs) {
-        nextTransitionMs = endMs;
+        const myLunch = getMyLunch(block, baseDate);
+        const lunchStartMs = myLunch?.start.getTime();
+        nextTransitionMs = lunchStartMs && nowMs < lunchStartMs ? lunchStartMs : endMs;
         break;
       }
       
@@ -563,7 +617,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === 'preferencesUpdated') {
-    refreshSchedule().finally(() => sendResponse({ ok: true }));
+    loadIconPreferences()
+      .then(() => refreshSchedule())
+      .finally(() => sendResponse({ ok: true }));
     return true;
   }
   if (message?.type === 'requestScheduleRefresh') {
@@ -604,28 +660,33 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return false;
 });
 
-// Listen for schedule preferences changes (e.g., time format)
+// Listen for schedule preferences changes (time format, chosen lunch wave)
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync' && changes.schedulePreferences) {
-      const newPrefs = changes.schedulePreferences.newValue;
-      if (newPrefs?.timeFormat && newPrefs.timeFormat !== cachedTimeFormat) {
-        cachedTimeFormat = newPrefs.timeFormat;
-        console.info('[background] Time format updated to', cachedTimeFormat);
+      if (applyIconPreferences(changes.schedulePreferences.newValue)) {
+        console.info('[background] Preferences updated', {
+          timeFormat: cachedTimeFormat,
+          lunchWave: cachedLunchWave
+        });
         updateActionIcon().catch((error) => {
-          console.debug('[background] Failed to update icon after time format change', error);
+          console.debug('[background] Failed to update icon after preference change', error);
         });
       }
     }
   });
 }
 
-// Initial kick-off when the service worker spins up.
-refreshSchedule().catch((error) => {
-  console.error('[background] Initial refresh failed', error);
+// Initial kick-off when the service worker spins up. Preferences come first: the
+// worker is restarted often, and the icon cannot pick the right countdown until
+// it knows which lunch wave the user is in.
+loadIconPreferences().finally(() => {
+  refreshSchedule().catch((error) => {
+    console.error('[background] Initial refresh failed', error);
+  });
+  updateActionIcon().catch((error) => {
+    console.debug('[background] Initial icon update failed', error);
+  });
 });
 ensureRefreshAlarm();
 ensureIconAlarm();
-updateActionIcon().catch((error) => {
-  console.debug('[background] Initial icon update failed', error);
-});

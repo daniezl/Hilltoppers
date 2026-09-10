@@ -34,6 +34,39 @@ export interface Block {
   grades?: number[];
 }
 
+export type LunchWave = 1 | 2 | 3 | 4 | 5;
+
+export const LUNCH_WAVES: LunchWave[] = [1, 2, 3, 4, 5];
+
+export const LUNCH_WAVE_LABELS: Record<LunchWave, string> = {
+  1: '1st Lunch',
+  2: '2nd Lunch',
+  3: '3rd Lunch',
+  4: '4th Lunch',
+  5: '5th Lunch'
+};
+
+/**
+ * Lunch sub-blocks are named "1st Lunch" … "5th Lunch" in the schedule JSON.
+ * Returns the wave number, or null when the name does not start with one.
+ */
+export function lunchWaveFromName(name: string): LunchWave | null {
+  const parsed = parseInt(name, 10);
+  return (LUNCH_WAVES as number[]).includes(parsed) ? (parsed as LunchWave) : null;
+}
+
+/**
+ * The sub-block for a given lunch wave inside a block, if it has one. Lives here
+ * rather than in the popup because the service worker needs it too, and storage/
+ * schedulePreferences pulls in Firebase, which must stay out of the worker.
+ */
+export function findLunchSubBlock(block: Block, wave: LunchWave | null | undefined): SubBlock | null {
+  if (wave == null) {
+    return null;
+  }
+  return (block.subBlocks ?? []).find((sub) => lunchWaveFromName(sub.name) === wave) ?? null;
+}
+
 export const EST_ZONE = 'America/New_York';
 
 export function getCurrentSchoolYear(): number {
