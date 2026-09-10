@@ -1208,12 +1208,31 @@ const Popup: React.FC = () => {
               <p className="events-empty">{eventsError ?? 'Nothing coming up'}</p>
             ) : (
               <ul className="events-items">
-                {upcomingEvents.map(({ event, dayKey }) => (
-                  <li key={event.id} className="event-card">
-                    <p className="event-when">{relativeLabel(dayKey, now)}</p>
-                    <p className="event-title">{event.title}</p>
-                  </li>
-                ))}
+                {upcomingEvents.map(({ event, dayKey }) => {
+                  const body = (
+                    <>
+                      <p className="event-when">{relativeLabel(dayKey, now)}</p>
+                      <p className="event-title">{event.title}</p>
+                    </>
+                  );
+                  return (
+                    <li key={event.id} className="event-card">
+                      {event.url ? (
+                        <a
+                          className="event-card-link"
+                          href={event.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          title="Open on the school website"
+                        >
+                          {body}
+                        </a>
+                      ) : (
+                        <div className="event-card-link">{body}</div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
             <p className="events-meta">
