@@ -1344,6 +1344,29 @@ const Popup: React.FC = () => {
         </button>
         {menuExpanded && (
           <div className="dining-content">
+            {menuDateIndex >= 0 && menuDates.length > 1 && (
+              <div className="menu-day-picker">
+                <button
+                  type="button"
+                  className="menu-day-step"
+                  onClick={() => stepMenuDay(-1)}
+                  disabled={menuDateIndex === 0}
+                  aria-label="Previous day's menu"
+                >
+                  <span className="chevron chevron-prev" aria-hidden="true" />
+                </button>
+                <span className="menu-day-label">{relativeLabel(shownMenuDate, now)}</span>
+                <button
+                  type="button"
+                  className="menu-day-step"
+                  onClick={() => stepMenuDay(1)}
+                  disabled={menuDateIndex === menuDates.length - 1}
+                  aria-label="Next day's menu"
+                >
+                  <span className="chevron chevron-next" aria-hidden="true" />
+                </button>
+              </div>
+            )}
             <div className="dining-period-tabs" role="tablist" aria-label="Menu period">
               {DINING_PERIODS.map((period) => (
                 <button
@@ -1513,31 +1536,6 @@ const Popup: React.FC = () => {
                 </svg>
                 <span>Menu Website</span>
               </a>
-              {menuDateIndex >= 0 && menuDates.length > 1 && (
-                <span className="menu-day-picker">
-                  <button
-                    type="button"
-                    className="menu-day-step"
-                    onClick={() => stepMenuDay(-1)}
-                    disabled={menuDateIndex === 0}
-                    aria-label="Previous day's menu"
-                  >
-                    <span className="chevron chevron-prev" aria-hidden="true" />
-                  </button>
-                  <span className="menu-day-label">
-                    {relativeLabel(shownMenuDate, now)}
-                  </span>
-                  <button
-                    type="button"
-                    className="menu-day-step"
-                    onClick={() => stepMenuDay(1)}
-                    disabled={menuDateIndex === menuDates.length - 1}
-                    aria-label="Next day's menu"
-                  >
-                    <span className="chevron chevron-next" aria-hidden="true" />
-                  </button>
-                </span>
-              )}
             </p>
           </div>
         )}

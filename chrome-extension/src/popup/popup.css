@@ -370,6 +370,53 @@ header {
   padding: 12px;
 }
 
+/* The day on show, a full-width bar across the top of the card. It borrows the
+   colours of the selected period pill below it, so picking a day and picking a
+   meal read as the same kind of choice. */
+.menu-day-picker {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(26, 127, 55, 0.25);
+  border-radius: 8px;
+  background: rgba(26, 127, 55, 0.1);
+  padding: 3px;
+  margin-bottom: 8px;
+}
+
+.menu-day-step {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.menu-day-step:hover:not(:disabled) {
+  background: rgba(26, 127, 55, 0.12);
+}
+
+.menu-day-step:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.menu-day-step .chevron {
+  border-top-color: #1f6f2b;
+}
+
+.menu-day-label {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f6f2b;
+}
+
 .dining-period-tabs {
   display: flex;
   align-items: center;
@@ -477,50 +524,9 @@ header {
 }
 
 .dining-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   margin: 8px 0 0;
   font-size: 12px;
   color: #7d8591;
-}
-
-/* Which day's menu is showing, with the same triangle the section headers
-   use. Sits opposite the Menu Website link on its row. */
-.menu-day-picker {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.menu-day-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  padding: 4px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.menu-day-step:hover:not(:disabled) {
-  background: rgba(17, 17, 17, 0.06);
-}
-
-.menu-day-step:disabled {
-  cursor: default;
-  opacity: 0.3;
-}
-
-.menu-day-label {
-  min-width: 58px;
-  text-align: center;
-  font-weight: 600;
-  color: #2f3842;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Match Menu Website row: icon 14px + gap 5px, then text. */
