@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T12:10:13.839Z",
+  "updatedAt": "2026-09-10T16:38:23.940Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-10",
   "menus": {
@@ -55,7 +55,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-10T02:37:47.689Z",
+  "daysUpdatedAt": "2026-09-10T16:38:23.940Z",
   "days": {
     "2026-09-10": {
       "breakfast": {
@@ -396,6 +396,56 @@
           "Crispy Roasted Tofu",
           "Beer Battered French Fries",
           "Whole Kernel Corn"
+        ]
+      }
+    },
+    "2026-09-17": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes",
+          "Bacon"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Smothered Chicken",
+          "Baked Beans",
+          "Oven Roasted Red Potatoes",
+          "Steamed Green Beans and Carrots"
+        ],
+        "globalFare": [
+          "Whole Grain Breaded Fish Stick",
+          "Crispy Roasted Tofu",
+          "Spicy Butter Peas",
+          "Rice Pilaf Chicken with Orzo from Mix"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Meatless Stuffed Bell Peppers",
+          "Herb Infused Couscous",
+          "Glazed Brussels Sprouts with Bacon"
+        ],
+        "globalFare": [
+          "Potato Cheddar Onion Pierogies",
+          "Kielbasa",
+          "Harvard Beets",
+          "Sauerkraut"
         ]
       }
     }
