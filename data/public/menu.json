@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T01:21:44.466Z",
+  "updatedAt": "2026-09-10T02:39:38.537Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-09",
   "menus": {
@@ -57,6 +57,408 @@
         "Jasmine Rice",
         "Stir Fry Vegetables"
       ]
+    }
+  },
+  "daysUpdatedAt": "2026-09-10T02:37:47.689Z",
+  "days": {
+    "2026-09-09": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Chicken Sausage Patty",
+          "Pancakes",
+          "Tater Tots",
+          "Banana",
+          "Toasted Pecans"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Baked Ham",
+          "Honey Wheat Dinner Roll",
+          "Steamed Potatoes",
+          "Buttered Corn",
+          "Peas & Carrots",
+          "Corn Chowder"
+        ],
+        "globalFare": [
+          "Jerk Pork Loin",
+          "Blackened Tofu",
+          "Cornbread Muffin",
+          "Sweet Potato Waffle Fries",
+          "Red Peppers",
+          "Sauteed Squash & Zucchini"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Stuffing Mix",
+          "Cajun Turkey Cutlet",
+          "Mashed Sweet Potatoes",
+          "Cornbread Stuffing",
+          "Green Beans"
+        ],
+        "globalFare": [
+          "Chicken & Broccoli Stir Fry",
+          "Tofu Vegetable Stir Fry",
+          "Jasmine Rice",
+          "Stir Fry Vegetables"
+        ]
+      }
+    },
+    "2026-09-10": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Pork Bacon",
+          "Scrambled Eggs",
+          "Black Forest Ham",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes",
+          "Bacon Bits"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "BBQ Chicken",
+          "Vegan Chorizo",
+          "Sautéed Garden Fresh Green Beans",
+          "Seasoned French Fries"
+        ],
+        "globalFare": [
+          "Halal Chicken Sausage",
+          "Scrambled Eggs with Cheese",
+          "Pancakes",
+          "Oven Roasted Red Potatoes"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Country Style Braised Beef Tips",
+          "BLT Chopped Salad",
+          "Vegetarian Hamburger Steak",
+          "Roasted Potato Wedges",
+          "Roasted Cauliflower",
+          "Carrot Charred"
+        ],
+        "globalFare": [
+          "Citrus Herb Salmon Filet BW",
+          "Lemon White Rice",
+          "Fresh Roasted Broccoli",
+          "Lemon Pepper Peas with Dill"
+        ]
+      }
+    },
+    "2026-09-11": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Mild Pork Sausage Link",
+          "Chocolate Chip Pancakes",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Crispy Chicken Sandwich",
+          "Chip Potato Homemade f/ Frzn",
+          "Peas and Carrots"
+        ],
+        "globalFare": [
+          "Taco Meat",
+          "Soft Shell Beef Taco",
+          "Rice Brown Spanish",
+          "Black Refried Beans",
+          "Roasted Confetti Corn"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Buttered Pasta",
+          "Fresh Roasted Broccoli",
+          "Fresh Steamed Baby Carrots",
+          "Roasted Cauliflower",
+          "Sauteed Mushrooms",
+          "Sauteed Zucchini and Squash"
+        ],
+        "globalFare": [
+          "Saute Breaded Pork Chops",
+          "Crispy Roasted Tofu",
+          "Seasoned White Rice",
+          "Sauteed Green Cabbage & Shallots"
+        ]
+      }
+    },
+    "2026-09-12": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Ham Club Baguette Sandwich",
+          "Loaded Bacon Ranch Fries",
+          "Mixed Vegetables"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sandwich Egg & Cheese English Muffin",
+          "Egg Bacon and Cheese English Muffin",
+          "Ham Egg & Cheese English Muffin Sandwich",
+          "Sausage Patty 2 Oz",
+          "Hashbrown Patty"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Cajun Honey Roast Pork Loin",
+          "Stuffed Pepper",
+          "Red Beans & Rice",
+          "Butternut Squash"
+        ],
+        "globalFare": [
+          "Chicken Marsala",
+          "Creamy Basil & Sun Dried Tomatoes Pasta",
+          "Sauteed Mushrooms",
+          "Sauteed Zucchini"
+        ]
+      }
+    },
+    "2026-09-13": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Chipotle Chicken Breast",
+          "Flour Tortilla",
+          "Cilantro Lime Rice",
+          "Cumin Black Beans",
+          "Corn with Peppers and Onions"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Sandwich Egg & Cheese English Muffin",
+          "Egg Bacon and Cheese English Muffin",
+          "Ham Egg & Cheese English Muffin Sandwich",
+          "Home Fried Potatoes",
+          "Bacon"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Bbq Flank Steak",
+          "BBQ Cauliflower",
+          "Brabant Potatoes",
+          "Roasted Baby Carrots with Dill"
+        ],
+        "globalFare": [
+          "Fried Chicken Tenders",
+          "Seasoned White Rice"
+        ]
+      }
+    },
+    "2026-09-14": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Sausage Patty",
+          "Blueberry Pancake",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Meatball",
+          "Meatballs TVP Vegan GF",
+          "Tricolor Cheese Tortellini",
+          "Broccoli & Carrots",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Chili Dog",
+          "Sauteed Peppers & Onions",
+          "Seasoned Tater Tots",
+          "Chili con Carne",
+          "Full O'Beans Chili"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Tradition Wht Brd Stuffing Mix",
+          "Herb Baked Chicken Breast",
+          "Mashed Potatoes",
+          "Seasoned Corn on the Cob",
+          "Broccoli Salad",
+          "Chicken Gravy"
+        ],
+        "globalFare": [
+          "Cajun Shrimp Etouffee",
+          "Parmesan Polenta",
+          "Pinto Beans w/Pizzazz",
+          "Peas and Carrots"
+        ]
+      }
+    },
+    "2026-09-15": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Asian Pork Noodle Bowl",
+          "Ramen Noodles",
+          "Green Beans",
+          "Broccoli",
+          "Shredded Carrots",
+          "Salad Mushroom Marinated"
+        ],
+        "globalFare": [
+          "Grilled Chicken with Pineapple Salsa",
+          "Brown Rice",
+          "Black Refried Beans",
+          "Corn with Peppers and Onions",
+          "Cheese Queso Hatch"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Meatball",
+          "Garden Primavera with Cheese",
+          "Caprese Salad",
+          "Fresh Roasted Broccoli & Cauliflower",
+          "Alfredo Sauce",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Chicken Rice Bowl",
+          "Asian Marinated Tofu",
+          "Shredded Napa Cabbage",
+          "Shredded Carrots",
+          "Sliced Mushrooms",
+          "Fresh Sugar Snap Peas"
+        ]
+      }
+    },
+    "2026-09-16": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Chicken Sausage Patty",
+          "Pancakes",
+          "Hashbrown Patty",
+          "Banana",
+          "Toasted Pecans"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Tradition Wht Brd Stuffing Mix",
+          "Oven Roasted Turkey Breast",
+          "Garlic Mashed Potatoes",
+          "Peas and Carrots",
+          "Poultry Gravy"
+        ],
+        "globalFare": [
+          "Potsticker Vegetable 1 Oz Fzn App",
+          "Chicken Stir Fry",
+          "Baked Sesame Tofu",
+          "Brown Rice",
+          "Stir Fry Vegetables"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Lentil Mushroom Balls",
+          "Meatloaf",
+          "Red Skin Mashed Potatoes",
+          "Mixed Vegetables"
+        ],
+        "globalFare": [
+          "Amazing Crusted Chicken Breast",
+          "Crispy Roasted Tofu",
+          "Beer Battered French Fries",
+          "Whole Kernel Corn"
+        ]
+      }
     }
   }
 }
