@@ -10,7 +10,10 @@ import {
 } from '../storage/blockPreferences';
 import {
   DEFAULT_SCHEDULE_PREFERENCES,
+  LUNCH_WAVES,
+  LUNCH_WAVE_LABELS,
   loadSchedulePreferences,
+  lunchWaveFromName,
   saveSchedulePreferences,
   syncSchedulePreferencesFromRemote,
   type SchedulePreferences
@@ -431,6 +434,16 @@ const ClassSettings: React.FC = () => {
     return String(gradeFromGraduationYear(schedulePrefs.graduationYear));
   }, [schedulePrefs.graduationYear]);
 
+  const handleLunchWaveChange = (value: string) => {
+    const wave = lunchWaveFromName(value);
+    setSchedulePrefs((prev) => {
+      // Drop the key instead of storing undefined: Firestore rejects undefined field values.
+      const { lunchWave: _previous, ...rest } = prev;
+      return wave == null ? rest : { ...rest, lunchWave: wave };
+    });
+    setHasUnsavedChanges(true);
+  };
+
   const handleReset = () => {
     const confirmed = window.confirm(
       'Are you sure you want to reset all settings to defaults? This will erase all your custom block names and preferences.'
@@ -574,6 +587,19 @@ const ClassSettings: React.FC = () => {
                 <option value="">Not set</option>
                 {ALL_GRADES.map((g) => (
                   <option key={g} value={g}>{GRADE_LABELS[g]} ({g}th)</option>
+                ))}
+              </select>
+            </div>
+            <div className="class-settings__field">
+              <label htmlFor="lunch-wave">My lunch</label>
+              <select
+                id="lunch-wave"
+                value={schedulePrefs.lunchWave ?? ''}
+                onChange={(e) => handleLunchWaveChange(e.target.value)}
+              >
+                <option value="">Not set</option>
+                {LUNCH_WAVES.map((wave) => (
+                  <option key={wave} value={wave}>{LUNCH_WAVE_LABELS[wave]}</option>
                 ))}
               </select>
             </div>

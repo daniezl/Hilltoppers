@@ -19,6 +19,7 @@ import {
   loadSchedulePreferences,
   saveSchedulePreferences,
   syncSchedulePreferencesFromRemote,
+  lunchWaveFromName,
   type SchedulePreferences,
   DEFAULT_SCHEDULE_PREFERENCES
 } from '../storage/schedulePreferences';
@@ -1087,14 +1088,23 @@ const Popup: React.FC = () => {
                     </div>
                     {hasSubBlocks && isExpanded ? (
                       <ul className="subblock-list">
-                        {subBlocksForBlock.map((sub) => (
-                          <li key={sub.id ?? sub.name}>
-                            <span className="subblock-name">{sub.name}</span>
-                            <span className="subblock-time">
-                              {toDisplayTime(parseBlockTime(sub.start, baseDate), schedulePrefs.timeFormat)} – {toDisplayTime(parseBlockTime(sub.end, baseDate), schedulePrefs.timeFormat)}
-                            </span>
-                          </li>
-                        ))}
+                        {subBlocksForBlock.map((sub) => {
+                          const isMyLunch =
+                            schedulePrefs.lunchWave != null &&
+                            lunchWaveFromName(sub.name) === schedulePrefs.lunchWave;
+                          return (
+                            <li
+                              key={sub.id ?? sub.name}
+                              className={isMyLunch ? 'my-lunch' : undefined}
+                              aria-current={isMyLunch ? 'true' : undefined}
+                            >
+                              <span className="subblock-name">{sub.name}</span>
+                              <span className="subblock-time">
+                                {toDisplayTime(parseBlockTime(sub.start, baseDate), schedulePrefs.timeFormat)} – {toDisplayTime(parseBlockTime(sub.end, baseDate), schedulePrefs.timeFormat)}
+                              </span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : null}
                   </li>

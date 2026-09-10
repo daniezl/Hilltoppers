@@ -989,6 +989,16 @@ button.week-day-glyph:focus-visible {
   font-weight: 600;
 }
 
+/* The lunch the user picked in Class settings. Other waves stay gray. */
+.subblock-list li.my-lunch {
+  color: #161b22;
+}
+
+.subblock-list li.my-lunch .subblock-name,
+.subblock-list li.my-lunch .subblock-time {
+  font-weight: 700;
+}
+
 .block-right {
   display: inline-flex;
   align-items: center;
