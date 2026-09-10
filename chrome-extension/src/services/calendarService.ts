@@ -177,14 +177,3 @@ export function relativeLabel(dayKey: string, now: Date): string {
   return `In ${diff} days`;
 }
 
-/** "Sep 7" — the weekday is already in the relative label. */
-export function formatMonthDay(dayKey: string): string {
-  return fromKey(dayKey).toFormat('MMM d');
-}
-
-export function formatEventTime(event: CalendarEvent, format: '12h' | '24h'): string | null {
-  if (!event.startTime) return null;
-  const [hour, minute] = event.startTime.split(':').map(Number);
-  const time = DateTime.fromObject({ hour, minute }, { zone: EST_ZONE });
-  return format === '24h' ? time.toFormat('HH:mm') : time.toFormat('h:mm a');
-}

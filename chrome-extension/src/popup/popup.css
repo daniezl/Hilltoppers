@@ -580,23 +580,13 @@ header {
   background: #fbfcff;
 }
 
-/* "Tomorrow" is what gets scanned for; the date follows for the days where
-   a weekday name alone still needs placing. */
 .event-when {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
   margin: 0 0 4px;
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #7d8591;
   font-weight: 700;
-}
-
-.event-date {
-  font-weight: 600;
-  color: #a0a7b0;
 }
 
 .event-title {

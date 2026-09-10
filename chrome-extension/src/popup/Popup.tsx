@@ -26,7 +26,6 @@ import {
 import { logAppOpen } from '../firebase/analytics';
 import {
   fetchCalendarEvents,
-  formatMonthDay,
   loadCachedCalendarEvents,
   pickUpcomingEvents,
   relativeLabel,
@@ -1211,10 +1210,7 @@ const Popup: React.FC = () => {
               <ul className="events-items">
                 {upcomingEvents.map(({ event, dayKey }) => (
                   <li key={event.id} className="event-card">
-                    <p className="event-when">
-                      {relativeLabel(dayKey, now)}
-                      <span className="event-date">{formatMonthDay(dayKey)}</span>
-                    </p>
+                    <p className="event-when">{relativeLabel(dayKey, now)}</p>
                     <p className="event-title">{event.title}</p>
                   </li>
                 ))}
