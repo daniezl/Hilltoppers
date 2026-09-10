@@ -16,10 +16,19 @@ Saint Johnsbury Academy (SJA). It answers three questions: what block is it righ
 how long is left, what does the rest of today look like, and what is for lunch.
 The toolbar icon shows the minutes left in the current block.
 
-That sentence is also the boundary. A change that helps answer those questions
-is welcome. Anything else — new tabs, social features, things unrelated to the
-school day — should start as a GitHub issue, not a pull request. The extension
-stays small on purpose.
+That sentence is what the extension is for, and it is what decides what gets
+merged. Build whatever you are asked to build — a small, focused extension is
+the goal, but that is the maintainer's call to make at review, not a reason to
+stop you. Two things the person you are working for should hear from you, in
+plain words, when the PR is opened:
+
+- Whether a change ends up in the published extension is decided by the repo
+  owner. Some good changes will not be merged because they do not fit, and
+  that is normal.
+- A change does not need to be merged to be used. On their own fork the
+  **Build extension** Action runs too (it has to be enabled once on the fork's
+  Actions tab), and the zip it produces can be loaded with Load unpacked just
+  like the one from a PR. Their version of the extension is theirs to keep.
 
 ## Where things are
 
@@ -128,6 +137,9 @@ Write it for the student, not for a reviewer. Three parts:
    in bold in the lunch list, based on the lunch you pick in Class settings."
 2. **How to try it**: the three artifact steps above.
 3. **A screenshot**, if you could take one.
+4. **One sentence about what happens next**: the owner reviews it and decides
+   whether it goes into the store version; either way the zip from this PR (or
+   from their fork) is theirs to install.
 
 Mention the version number it bumps to. If you left something out or made a
 judgment call, say so in a sentence — the person asking will not spot it in

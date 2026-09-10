@@ -6,9 +6,38 @@ import { isFirebaseConfigured } from '../firebase/config';
 export type TimeFormat = '12h' | '24h';
 
 export interface SchedulePreferences {
+  /**
+   * Legacy. Always written as 1 and never read: it was saved as a default for
+   * every user before there was a way to pick a lunch, so a stored 1 does not
+   * mean "1st Lunch". Kept because the iOS app decodes it as a required Int.
+   * The lunch the user actually chose lives in `lunchWave`.
+   */
   lunchPeriod: number;
   timeFormat: TimeFormat;
   graduationYear?: number;
+  /** The user's lunch wave, 1–5 ("1st Lunch" … "5th Lunch"). Absent until chosen. */
+  lunchWave?: LunchWave;
+}
+
+export type LunchWave = 1 | 2 | 3 | 4 | 5;
+
+export const LUNCH_WAVES: LunchWave[] = [1, 2, 3, 4, 5];
+
+export const LUNCH_WAVE_LABELS: Record<LunchWave, string> = {
+  1: '1st Lunch',
+  2: '2nd Lunch',
+  3: '3rd Lunch',
+  4: '4th Lunch',
+  5: '5th Lunch'
+};
+
+/**
+ * Lunch sub-blocks are named "1st Lunch" … "5th Lunch" in the schedule JSON.
+ * Returns the wave number, or null when the name does not start with one.
+ */
+export function lunchWaveFromName(name: string): LunchWave | null {
+  const parsed = parseInt(name, 10);
+  return (LUNCH_WAVES as number[]).includes(parsed) ? (parsed as LunchWave) : null;
 }
 
 export const DEFAULT_SCHEDULE_PREFERENCES: SchedulePreferences = {
