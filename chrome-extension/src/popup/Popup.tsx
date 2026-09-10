@@ -718,10 +718,9 @@ const Popup: React.FC = () => {
     return menuData.dateKey === wanted;
   }, [menuData?.dateKey, selectedMenuDate]);
 
-  const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
+  const { currentBlock, nextBlock, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;
     let next: Block | undefined;
-    let remaining = 0;
     let nextStartsIn = 0;
 
     for (let i = 0; i < filteredBlocks.length; i += 1) {
@@ -735,7 +734,6 @@ const Popup: React.FC = () => {
           const nextStart = parseBlockTime(filteredBlocks[nextIndex].start, baseDate);
           nextStartsIn = Math.max(0, nextStart.getTime() - now.getTime());
         }
-        remaining = Math.max(0, times.end.getTime() - now.getTime());
         break;
       }
       if (now < times.start) {
@@ -745,15 +743,15 @@ const Popup: React.FC = () => {
       }
     }
 
-    return { currentBlock: current, nextBlock: next, remainingMs: remaining, nextStartsInMs: nextStartsIn };
+    return { currentBlock: current, nextBlock: next, nextStartsInMs: nextStartsIn };
   }, [filteredBlocks, baseDate, now]);
 
   /**
-   * The user's own lunch wave, while it is happening. Lunch is a sub-block of a
-   * class block (C Block on most days), so the class stays "current" underneath
-   * and the card goes back to it once the wave ends.
+   * The user's own lunch wave within the block that is running, and where the
+   * clock sits relative to it. Lunch is a sub-block of a class block (C Block on
+   * most days), so that class stays "current" underneath the whole time.
    */
-  const activeLunch = useMemo(() => {
+  const myLunch = useMemo(() => {
     if (!currentBlock || schedulePrefs.lunchWave == null) {
       return null;
     }
@@ -765,21 +763,39 @@ const Popup: React.FC = () => {
     }
     const start = parseBlockTime(mine.start, baseDate);
     const end = parseBlockTime(mine.end, baseDate);
-    if (now < start || now >= end) {
-      return null;
-    }
-    return { name: mine.name, start, end };
+    const phase = now < start ? 'before' : now < end ? 'during' : 'after';
+    return { name: mine.name, start, end, phase } as const;
   }, [currentBlock, schedulePrefs.lunchWave, baseDate, now]);
 
-  const formattedRemaining = useMemo(() => {
+  /**
+   * What the status card counts down to. A lunch block runs in three stretches:
+   * waiting for your wave, your wave, and the class after it, each with its own
+   * target so the number always belongs to whatever the card is naming.
+   */
+  const currentCountdown = useMemo(() => {
     if (!currentBlock) {
+      return null;
+    }
+    const blockTimes = getBlockTimes(currentBlock, baseDate);
+
+    if (myLunch?.phase === 'before') {
+      return { label: 'lunch in', from: blockTimes.start, to: myLunch.start };
+    }
+    if (myLunch?.phase === 'during') {
+      return { label: 'ends in', from: myLunch.start, to: myLunch.end };
+    }
+    if (myLunch?.phase === 'after') {
+      return { label: 'ends in', from: myLunch.end, to: blockTimes.end };
+    }
+    return { label: 'ends in', from: blockTimes.start, to: blockTimes.end };
+  }, [currentBlock, baseDate, myLunch]);
+
+  const formattedRemaining = useMemo(() => {
+    if (!currentBlock || !currentCountdown) {
       return '00:00';
     }
-    if (activeLunch) {
-      return formatCountdown(Math.max(0, activeLunch.end.getTime() - now.getTime()));
-    }
-    return formatCountdown(remainingMs);
-  }, [currentBlock?.id, remainingMs, activeLunch, now]);
+    return formatCountdown(Math.max(0, currentCountdown.to.getTime() - now.getTime()));
+  }, [currentBlock?.id, currentCountdown, now]);
 
   const formattedNextStart = useMemo(() => {
     if (!nextBlock) {
@@ -808,10 +824,8 @@ const Popup: React.FC = () => {
     percent: number;
     isBreak: boolean;
   } | null>(() => {
-    if (currentBlock) {
-      const times = activeLunch
-        ? { start: activeLunch.start, end: activeLunch.end }
-        : getBlockTimes(currentBlock, baseDate);
+    if (currentBlock && currentCountdown) {
+      const times = { start: currentCountdown.from, end: currentCountdown.to };
       const total = times.end.getTime() - times.start.getTime();
       const elapsed = now.getTime() - times.start.getTime();
       const percent = Math.min(Math.max(elapsed / total, 0), 1);
@@ -853,7 +867,7 @@ const Popup: React.FC = () => {
     }
 
     return null;
-  }, [currentBlock, nextBlock, baseDate, now, schedulePrefs.timeFormat, activeLunch]);
+  }, [currentBlock, nextBlock, baseDate, now, schedulePrefs.timeFormat, currentCountdown]);
 
   const dayTypeLabel = schedule.dayType;
 
@@ -1068,11 +1082,13 @@ const Popup: React.FC = () => {
           <div className="status-current">
             <div className="current-details">
               <p className="current-name">
-                {activeLunch?.name ?? currentDisplay?.label ?? currentBlock.name}
+                {myLunch?.phase === 'during'
+                  ? myLunch.name
+                  : currentDisplay?.label ?? currentBlock.name}
               </p>
             </div>
             <span className="time-remaining">
-              <span className="time-label">ends in</span>
+              <span className="time-label">{currentCountdown?.label ?? 'ends in'}</span>
               <span className="time-value">{formattedRemaining}</span>
             </span>
           </div>
