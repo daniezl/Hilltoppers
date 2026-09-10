@@ -27,10 +27,14 @@ let cachedNetworkFailed = false;
 let cachedTimeFormat: TimeFormat = '12h';
 let cachedTimestamp: number | null = null;
 let refreshInFlight: Promise<void> | null = null;
-const diningMenuCache: Partial<Record<DiningPeriod, DiningMenuResult>> = {};
-const diningRefreshTimestamps: Partial<Record<DiningPeriod, number>> = {};
-const diningRefreshInFlight: Partial<Record<DiningPeriod, Promise<void>>> = {};
-const lastForcedDiningRefreshDateByPeriod: Partial<Record<DiningPeriod, string>> = {};
+// Keyed by period and day, since the popup can page through the menu for the
+// days ahead. An empty day means "whatever the file calls today".
+const diningSlotKey = (period: DiningPeriod, dateKey?: string): string =>
+  `${period}|${dateKey ?? ''}`;
+const diningMenuCache: Record<string, DiningMenuResult | undefined> = {};
+const diningRefreshTimestamps: Record<string, number | undefined> = {};
+const diningRefreshInFlight: Record<string, Promise<void> | undefined> = {};
+const lastForcedDiningRefreshDateBySlot: Record<string, string | undefined> = {};
 // Menu is static on Cloudflare; keep a short TTL to reduce repeat fetches while staying near publish cadence (~30m).
 const DINING_CACHE_TTL_MS = 30 * 60 * 1000;
 
@@ -326,26 +330,31 @@ async function refreshSchedule(): Promise<void> {
   await refreshInFlight;
 }
 
-async function refreshDiningMenu(period: DiningPeriod, forceRefresh = false): Promise<void> {
-  if (diningRefreshInFlight[period]) {
-    await diningRefreshInFlight[period];
+async function refreshDiningMenu(
+  period: DiningPeriod,
+  dateKey?: string,
+  forceRefresh = false
+): Promise<void> {
+  const slot = diningSlotKey(period, dateKey);
+  if (diningRefreshInFlight[slot]) {
+    await diningRefreshInFlight[slot];
     return;
   }
 
   const now = Date.now();
-  const cachedMenu = diningMenuCache[period];
-  const cachedTimestamp = diningRefreshTimestamps[period];
+  const cachedMenu = diningMenuCache[slot];
+  const cachedTimestamp = diningRefreshTimestamps[slot];
   if (!forceRefresh && cachedMenu && cachedTimestamp && now - cachedTimestamp < DINING_CACHE_TTL_MS) {
     return;
   }
 
-  diningRefreshInFlight[period] = (async () => {
-    const previousMenu = diningMenuCache[period] ?? null;
-    const previousTimestamp = diningRefreshTimestamps[period] ?? null;
+  diningRefreshInFlight[slot] = (async () => {
+    const previousMenu = diningMenuCache[slot] ?? null;
+    const previousTimestamp = diningRefreshTimestamps[slot] ?? null;
     try {
-      const nextMenu = await loadDiningMenuFirstItems(period);
-      diningMenuCache[period] = nextMenu;
-      diningRefreshTimestamps[period] = Date.now();
+      const nextMenu = await loadDiningMenuFirstItems(period, dateKey);
+      diningMenuCache[slot] = nextMenu;
+      diningRefreshTimestamps[slot] = Date.now();
       if (typeof chrome !== 'undefined') {
         chrome.runtime.sendMessage(
           {
@@ -371,26 +380,27 @@ async function refreshDiningMenu(period: DiningPeriod, forceRefresh = false): Pr
       }
 
       if (previousMenu && previousTimestamp) {
-        diningMenuCache[period] = previousMenu;
-        diningRefreshTimestamps[period] = previousTimestamp;
+        diningMenuCache[slot] = previousMenu;
+        diningRefreshTimestamps[slot] = previousTimestamp;
       } else {
         throw error;
       }
     } finally {
-      delete diningRefreshInFlight[period];
+      delete diningRefreshInFlight[slot];
     }
   })();
 
-  await diningRefreshInFlight[period];
+  await diningRefreshInFlight[slot];
 }
 
-function shouldForceDiningRefreshToday(period: DiningPeriod): boolean {
+function shouldForceDiningRefreshToday(period: DiningPeriod, dateKey?: string): boolean {
+  const slot = diningSlotKey(period, dateKey);
   const todayKey = getTodayKey();
-  if (lastForcedDiningRefreshDateByPeriod[period] === todayKey) {
+  if (lastForcedDiningRefreshDateBySlot[slot] === todayKey) {
     return false;
   }
-  // Mark once per day per period to cap forced-refresh traffic.
-  lastForcedDiningRefreshDateByPeriod[period] = todayKey;
+  // Mark once per day per slot to cap forced-refresh traffic.
+  lastForcedDiningRefreshDateBySlot[slot] = todayKey;
   return true;
 }
 
@@ -569,20 +579,24 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message?.type === 'getDiningMenuCache') {
     const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
-    sendResponse(diningMenuCache[period] ?? null);
+    const dateKey = message?.date as string | undefined;
+    sendResponse(diningMenuCache[diningSlotKey(period, dateKey)] ?? null);
     return true;
   }
   if (message?.type === 'requestDiningMenuRefresh') {
     const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
-    const forceRefresh = shouldForceDiningRefreshToday(period);
-    refreshDiningMenu(period, forceRefresh)
-      .then(() => sendResponse({ ok: true, payload: diningMenuCache[period] ?? null }))
+    const dateKey = message?.date as string | undefined;
+    const slot = diningSlotKey(period, dateKey);
+    const forceRefresh = shouldForceDiningRefreshToday(period, dateKey);
+    refreshDiningMenu(period, dateKey, forceRefresh)
+      .then(() => sendResponse({ ok: true, payload: diningMenuCache[slot] ?? null }))
       .catch((error) => {
         console.error('[background] Dining menu refresh failed', error);
         sendResponse({
           ok: false,
           error: (error as Error)?.message ?? 'dining_refresh_failed',
-          payload: diningMenuCache[period] ?? null
+          code: (error as { code?: string })?.code,
+          payload: diningMenuCache[slot] ?? null
         });
       });
     return true;

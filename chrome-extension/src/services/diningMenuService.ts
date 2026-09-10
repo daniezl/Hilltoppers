@@ -18,7 +18,11 @@ export class DiningMenuError extends Error {
 
 export interface DiningMenuResult {
   period: DiningPeriod;
+  /** The day this menu is for, YYYY-MM-DD. */
+  dateKey: string;
   dateLabel: string | null;
+  /** Every day the file holds a menu for, ascending — the picker's range. */
+  availableDates: string[];
   sourceUrl: string;
   globalFareFirst: string | null;
   classicKitchenFirst: string | null;
@@ -41,6 +45,8 @@ type RawMenuJson = {
   source?: unknown;
   menuDate?: unknown;
   menus?: Record<string, RawMenuEntry>;
+  /** Keyed by YYYY-MM-DD. Absent in files written before the day picker. */
+  days?: Record<string, Record<string, RawMenuEntry>>;
 };
 
 function normalizeItems(value: unknown): string[] {
@@ -109,9 +115,32 @@ async function safeFetchJson(url: string): Promise<RawMenuJson> {
   }
 }
 
-export async function loadDiningMenuFirstItems(period: DiningPeriod = 'Lunch'): Promise<DiningMenuResult> {
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The days the file carries a menu for, ascending. */
+function listDates(data: RawMenuJson): string[] {
+  const days = data.days;
+  if (days && typeof days === 'object') {
+    const keys = Object.keys(days).filter((key) => YMD.test(key));
+    if (keys.length > 0) return keys.sort();
+  }
+  return typeof data.menuDate === 'string' && YMD.test(data.menuDate) ? [data.menuDate] : [];
+}
+
+export async function loadDiningMenuFirstItems(
+  period: DiningPeriod = 'Lunch',
+  dateKey?: string
+): Promise<DiningMenuResult> {
   const data = await safeFetchJson(MENU_JSON_URL);
-  const menus = data.menus;
+  const availableDates = listDates(data);
+  // Asking for a day the file has dropped falls back to the first one it has,
+  // which is today — better than an error when a popup was left open overnight.
+  const resolvedDate =
+    dateKey && availableDates.includes(dateKey)
+      ? dateKey
+      : availableDates[0] ?? (typeof data.menuDate === 'string' ? data.menuDate : '');
+
+  const menus = data.days?.[resolvedDate] ?? data.menus;
   if (!menus || typeof menus !== 'object') {
     throw new DiningMenuError('parse', 'menu.json is missing the menus object');
   }
@@ -136,7 +165,9 @@ export async function loadDiningMenuFirstItems(period: DiningPeriod = 'Lunch'): 
 
   return {
     period,
-    dateLabel: toDateLabel(data.menuDate),
+    dateKey: resolvedDate,
+    dateLabel: toDateLabel(resolvedDate),
+    availableDates,
     sourceUrl: typeof data.source === 'string' && data.source.trim().length > 0 ? data.source : MENU_JSON_URL,
     globalFareFirst,
     classicKitchenFirst,
