@@ -822,6 +822,17 @@ a.event-card-link:focus-visible {
   gap: 6px;
 }
 
+/* Sits beside the chevron rather than centred, which is where space-between
+   would otherwise put a third child. */
+.toggle-note {
+  margin-left: auto;
+  margin-right: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5560;
+  font-variant-numeric: tabular-nums;
+}
+
 .toggle-title-icon {
   width: 14px;
   height: 14px;
