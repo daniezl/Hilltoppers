@@ -768,9 +768,9 @@ const Popup: React.FC = () => {
   }, [currentBlock, schedulePrefs.lunchWave, baseDate, now]);
 
   /**
-   * What the status card counts down to. A lunch block runs in three stretches:
-   * waiting for your wave, your wave, and the class after it, each with its own
-   * target so the number always belongs to whatever the card is naming.
+   * What the status card counts down to. While your lunch is still ahead, the
+   * countdown points at it instead of at the end of the block; once it starts,
+   * the block's own countdown takes over again.
    */
   const currentCountdown = useMemo(() => {
     if (!currentBlock) {
@@ -780,12 +780,6 @@ const Popup: React.FC = () => {
 
     if (myLunch?.phase === 'before') {
       return { label: 'lunch in', from: blockTimes.start, to: myLunch.start };
-    }
-    if (myLunch?.phase === 'during') {
-      return { label: 'ends in', from: myLunch.start, to: myLunch.end };
-    }
-    if (myLunch?.phase === 'after') {
-      return { label: 'ends in', from: myLunch.end, to: blockTimes.end };
     }
     return { label: 'ends in', from: blockTimes.start, to: blockTimes.end };
   }, [currentBlock, baseDate, myLunch]);
