@@ -68,7 +68,9 @@ interface SchedulePayload {
 
 interface DiningMenuPayload {
   period: 'Breakfast' | 'Lunch' | 'Dinner';
+  dateKey: string;
   dateLabel: string | null;
+  availableDates: string[];
   sourceUrl: string;
   globalFareFirst: string | null;
   classicKitchenFirst: string | null;
@@ -154,6 +156,8 @@ const Popup: React.FC = () => {
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
+  // null means "whichever day the file calls today"; set once the arrows move.
+  const [selectedMenuDate, setSelectedMenuDate] = useState<string | null>(null);
   const [menuLoading, setMenuLoading] = useState<boolean>(true);
   const [menuError, setMenuError] = useState<string | null>(null);
   const [menuData, setMenuData] = useState<DiningMenuPayload | null>(null);
@@ -401,9 +405,15 @@ const Popup: React.FC = () => {
       if (requestId !== menuRequestIdRef.current) {
         return;
       }
-      safeSendMessage<{ ok: boolean; error?: string; payload?: DiningMenuPayload | null }>({
+      safeSendMessage<{
+        ok: boolean;
+        error?: string;
+        code?: string;
+        payload?: DiningMenuPayload | null;
+      }>({
         type: 'requestDiningMenuRefresh',
-        period
+        period,
+        date: selectedMenuDate ?? undefined
       })
         .then((response) => {
           if (requestId !== menuRequestIdRef.current) {
@@ -416,6 +426,13 @@ const Popup: React.FC = () => {
             return;
           }
           if (!response?.ok) {
+            // The kitchen simply does not serve some meals on some days, which
+            // is worth saying plainly instead of blaming the network.
+            if (response?.code === 'no_station' || response?.code === 'no_item') {
+              setMenuError(`No ${period.toLowerCase()} served this day`);
+              setMenuLoading(false);
+              return;
+            }
             // If refresh fails but we already have data for this period, keep it.
             if (latestMenuDataRef.current?.period === period) {
               setMenuError(null);
@@ -454,7 +471,8 @@ const Popup: React.FC = () => {
 
     safeSendMessage<DiningMenuPayload | null>({
       type: 'getDiningMenuCache',
-      period: selectedDiningPeriod
+      period: selectedDiningPeriod,
+      date: selectedMenuDate ?? undefined
     })
       .then((payload) => {
         if (menuRequestId !== menuRequestIdRef.current) {
@@ -487,6 +505,9 @@ const Popup: React.FC = () => {
         if (!payload || payload.period !== selectedDiningPeriod) {
           return;
         }
+        if (selectedMenuDate && payload.dateKey !== selectedMenuDate) {
+          return;
+        }
         setMenuData(payload);
         setMenuError(null);
         setMenuLoading(false);
@@ -501,7 +522,7 @@ const Popup: React.FC = () => {
     }
 
     return () => {};
-  }, [menuExpanded, selectedDiningPeriod]);
+  }, [menuExpanded, selectedDiningPeriod, selectedMenuDate]);
 
   useEffect(() => {
     // The flag is checked here as well as at render, so that even a persisted
@@ -672,13 +693,30 @@ const Popup: React.FC = () => {
     return DateTime.fromJSDate(baseDate, { zone: EST_ZONE }).toFormat('ccc, MMM d');
   }, [baseDate]);
 
-  const isMenuForToday = useMemo(() => {
-    if (!menuData?.dateLabel) {
+  const menuDates = menuData?.availableDates ?? [];
+  // Track the day that was asked for rather than the one already loaded, so the
+  // arrows keep stepping while a day is still on its way in.
+  const shownMenuDate = selectedMenuDate ?? menuData?.dateKey ?? '';
+  const menuDateIndex = menuDates.indexOf(shownMenuDate);
+
+  const stepMenuDay = (delta: number) => {
+    const nextDate = menuDateIndex >= 0 ? menuDates[menuDateIndex + delta] : undefined;
+    if (!nextDate) return;
+    hasManualDiningSelectionRef.current = true;
+    setMenuLoading(true);
+    setMenuError(null);
+    setSelectedMenuDate(nextDate);
+  };
+
+  // A payload for some other day means the file went stale overnight, or a step
+  // is still in flight. Either way it is not the menu that was asked for.
+  const isMenuForSelectedDay = useMemo(() => {
+    if (!menuData?.dateKey) {
       return false;
     }
-    const todayLabel = DateTime.now().setZone(EST_ZONE).toFormat('cccc, LLLL d');
-    return menuData.dateLabel === todayLabel;
-  }, [menuData?.dateLabel]);
+    const wanted = selectedMenuDate ?? DateTime.now().setZone(EST_ZONE).toFormat('yyyy-MM-dd');
+    return menuData.dateKey === wanted;
+  }, [menuData?.dateKey, selectedMenuDate]);
 
   const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;
@@ -1378,7 +1416,7 @@ const Popup: React.FC = () => {
               </p>
             ) : (
               <>
-                {isMenuForToday ? (
+                {isMenuForSelectedDay ? (
                   <div className="dining-grid">
                     <article className="dining-column">
                       <p className="dining-item">
@@ -1475,6 +1513,31 @@ const Popup: React.FC = () => {
                 </svg>
                 <span>Menu Website</span>
               </a>
+              {menuDateIndex >= 0 && menuDates.length > 1 && (
+                <span className="menu-day-picker">
+                  <button
+                    type="button"
+                    className="menu-day-step"
+                    onClick={() => stepMenuDay(-1)}
+                    disabled={menuDateIndex === 0}
+                    aria-label="Previous day's menu"
+                  >
+                    <span className="chevron chevron-prev" aria-hidden="true" />
+                  </button>
+                  <span className="menu-day-label">
+                    {relativeLabel(shownMenuDate, now)}
+                  </span>
+                  <button
+                    type="button"
+                    className="menu-day-step"
+                    onClick={() => stepMenuDay(1)}
+                    disabled={menuDateIndex === menuDates.length - 1}
+                    aria-label="Next day's menu"
+                  >
+                    <span className="chevron chevron-next" aria-hidden="true" />
+                  </button>
+                </span>
+              )}
             </p>
           </div>
         )}

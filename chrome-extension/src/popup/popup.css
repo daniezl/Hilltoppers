@@ -477,9 +477,50 @@ header {
 }
 
 .dining-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 8px 0 0;
   font-size: 12px;
   color: #7d8591;
+}
+
+/* Which day's menu is showing, with the same triangle the section headers
+   use. Sits opposite the Menu Website link on its row. */
+.menu-day-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.menu-day-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.menu-day-step:hover:not(:disabled) {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.menu-day-step:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.menu-day-label {
+  min-width: 58px;
+  text-align: center;
+  font-weight: 600;
+  color: #2f3842;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Match Menu Website row: icon 14px + gap 5px, then text. */
@@ -729,6 +770,16 @@ a.event-card-link:focus-visible {
 
 .chevron.open {
   transform: rotate(180deg);
+}
+
+/* The same triangle turned on its side, so the day picker reads as part of
+   the same family as the section headers. */
+.chevron-prev {
+  transform: rotate(90deg);
+}
+
+.chevron-next {
+  transform: rotate(-90deg);
 }
 
 .error {
