@@ -5,6 +5,7 @@ import { isFirebaseConfigured } from '../firebase/config';
 
 const GREEN_LABEL = 'Green Day';
 const WHITE_LABEL = 'White Day';
+const NO_SCHOOL_LABEL = 'No School';
 
 function isWeekend(date: DateTime): boolean {
   return date.weekday === 6 || date.weekday === 7;
@@ -51,4 +52,46 @@ export async function predictDayType(dbDayType: string, dbDate: Date, testDate?:
   }
 
   return predictIsGreen ? GREEN_LABEL : WHITE_LABEL;
+}
+
+/**
+ * Day types for `days` consecutive days starting at `anchorDate`, whose own type
+ * is already known. Green and White alternate on school days only, so holidays
+ * and weekends report "No School" and leave the alternation where it was.
+ *
+ * `anchorLabel` must be a Green or White label — on a day that is neither there
+ * is nothing to count from, and the caller should skip the projection entirely.
+ */
+export async function predictDayTypeRange(
+  anchorLabel: string,
+  anchorDate: Date,
+  days: number
+): Promise<Record<string, string>> {
+  const start = DateTime.fromJSDate(anchorDate, { zone: EST_ZONE }).startOf('day');
+  const end = start.plus({ days: days - 1 });
+
+  const [specials, periods] = await Promise.all([
+    fetchSpecialDaysDict(start.toJSDate(), end.toJSDate()),
+    fetchSpecialPeriods(start.toJSDate(), end.toJSDate())
+  ]);
+
+  const result: Record<string, string> = {};
+  let isGreen = anchorLabel.toLowerCase().includes('green');
+  let cursor = start;
+
+  for (let offset = 0; offset < days; offset += 1) {
+    const key = cursor.toFormat('yyyy-LL-dd');
+    if (await isSchoolDay(cursor, specials, periods)) {
+      // The anchor already carries its own colour; every school day after it flips.
+      if (offset > 0) {
+        isGreen = !isGreen;
+      }
+      result[key] = isGreen ? GREEN_LABEL : WHITE_LABEL;
+    } else {
+      result[key] = NO_SCHOOL_LABEL;
+    }
+    cursor = cursor.plus({ days: 1 });
+  }
+
+  return result;
 }

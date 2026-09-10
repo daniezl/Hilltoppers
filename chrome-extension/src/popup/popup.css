@@ -353,11 +353,12 @@ header {
   white-space: nowrap;
 }
 
-/* Hairline just before today, running from the caption down through the glyphs. */
+/* Hairline just before today, running from the caption down through the glyphs.
+   Stops at the glyphs' baseline, matching .week-day's bottom padding. */
 .week-divider {
   position: absolute;
   top: 0;
-  bottom: 6px;
+  bottom: 8px;
   width: 1px;
   background: rgba(17, 17, 17, 0.12);
   transform: translateX(-0.5px);
@@ -369,9 +370,12 @@ header {
 }
 
 .week-day {
+  position: relative;
   display: flex;
   justify-content: center;
-  padding: 2px 0 6px;
+  /* The bottom padding is the underline's lane: enough that the bar clears the
+     glyph's circle instead of touching it. */
+  padding: 2px 0 8px;
 }
 
 .week-day-glyph {
@@ -383,30 +387,72 @@ header {
   border-radius: 50%;
   font-size: 12px;
   font-weight: 600;
-  /* One muted grey for every day but today, so the green disc is the only anchor. */
   color: #a0a7b0;
   transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-/* A day with anything on it swaps its letter for a circled "!". */
+/* A day with anything on it swaps its letter for a "!". No ring — the circle is
+   today's alone now — so the heavier glyph has to carry it. */
 .week-day.has-events .week-day-glyph {
-  border: 1.5px solid currentColor;
   font-size: 13px;
   font-weight: 800;
 }
 
+/* Today is the one circled day. Neutral on purpose: green and white belong to
+   the day-type underline, so a coloured disc here would read as a day type. */
 .week-day.today .week-day-glyph {
-  background: rgba(26, 127, 55, 0.16);
-  color: #1a7f37;
+  background: rgba(17, 17, 17, 0.09);
+  color: #2f3842;
+}
+
+/* Each day's colour is a bar under its letter, revealed only while that day is
+   hovered and wiped in from the left. It hangs off the column rather than the
+   glyph so it clears today's disc instead of tucking under it. Centred with a
+   margin, not a translate, so the transform is free to carry the wipe. */
+.week-day.green-day::after,
+.week-day.white-day::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -8px;
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s ease;
+}
+
+/* Keyboard users get the same reveal when a day takes focus. */
+.week-day.green-day:hover::after,
+.week-day.white-day:hover::after,
+.week-day.green-day:focus-within::after,
+.week-day.white-day:focus-within::after {
+  transform: scaleX(1);
+}
+
+.week-day.green-day::after {
+  background: #1a7f37;
+}
+
+/* A white bar needs its own edge or it disappears into the popup's #f7f8fb.
+   4px keeps enough white inside the hairline to still read as white. */
+.week-day.white-day::after {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.25);
 }
 
 .week-day.active .week-day-glyph {
   transform: scale(1.1);
 }
 
-/* Marked days render as buttons; strip the UA chrome but keep the glyph styling. */
+/* Marked days render as buttons; strip the UA chrome but keep the glyph styling.
+   `border: none` matters: appearance:none leaves Chrome's default button border,
+   which the glyph's border-radius would draw as a ring around the "!". */
 button.week-day-glyph {
   appearance: none;
+  border: none;
   padding: 0;
   background: transparent;
   font-family: inherit;

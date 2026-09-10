@@ -14,9 +14,12 @@ import {
   type CalendarEvent,
   type WeekDay
 } from '../services/calendarService';
+import { predictDayTypeRange } from '../services/dayTypePredictor';
 
 interface CalendarStripProps {
   now: Date;
+  /** Today's day type, used as the anchor the week's Green/White run counts from. */
+  todayDayType: string | null;
   timeFormat: '12h' | '24h';
 }
 
@@ -26,11 +29,14 @@ const MAX_BUBBLE_ROWS = 3;
 // "NEXT WEEK" / "THIS WEEK" need about 60px; one 41px column can't hold them.
 const MIN_COLUMNS_FOR_CAPTION = 2;
 
-function dayAriaLabel(day: WeekDay): string {
+// The Green/White colour is announced too, so the strip doesn't carry that
+// distinction in colour alone.
+function dayAriaLabel(day: WeekDay, dayType?: string): string {
   const name = `${WEEKDAY_NAMES[day.weekday]}${day.isNextWeek ? ' next week' : ''}`;
-  if (day.events.length === 0) return name;
+  const named = dayType === 'Green Day' || dayType === 'White Day' ? `${name}, ${dayType}` : name;
+  if (day.events.length === 0) return named;
   const titles = day.events.map((e) => e.title).join('; ');
-  return `${name}: ${titles}`;
+  return `${named}: ${titles}`;
 }
 
 function openEvent(event: CalendarEvent) {
@@ -42,9 +48,10 @@ function openEvent(event: CalendarEvent) {
   }
 }
 
-const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
+const CalendarStrip: React.FC<CalendarStripProps> = ({ now, todayDayType, timeFormat }) => {
   const [events, setEvents] = useState<CalendarEvent[] | null>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [dayTypes, setDayTypes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -87,6 +94,34 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
     [events, week, minuteKey]
   );
 
+  // Colour every column by its Green/White type, counted forward from today.
+  // Today's own type is the only anchor we have, so on a day that is neither
+  // (weekend, holiday) the strip simply stays uncoloured.
+  const todayKey = week.find((d) => d.isToday)?.key ?? null;
+
+  useEffect(() => {
+    const anchor = todayDayType?.toLowerCase() ?? '';
+    if (!todayKey || (!anchor.includes('green') && !anchor.includes('white'))) {
+      setDayTypes({});
+      return undefined;
+    }
+
+    let cancelled = false;
+    predictDayTypeRange(todayDayType as string, now, week.length)
+      .then((types) => {
+        if (!cancelled) setDayTypes(types);
+      })
+      .catch((err) => {
+        console.warn('[calendar] Failed to project day types', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // `now` only matters here at day granularity, which `todayKey` already tracks.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayDayType, todayKey, week.length]);
+
   if (!events || events.length === 0) {
     return null;
   }
@@ -108,6 +143,10 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
   const thisWeekColumns = week.length - wrapped;
   const dividerStyle = { left: `calc(${wrapped} * 100% / ${week.length})` } as React.CSSProperties;
 
+  // How far the Monday-to-Friday school week has run. Deliberately independent of
+  // where today sits in the strip: the columns left of today belong to next week,
+  // so filling up to today's column would shade days that haven't happened.
+
   return (
     <section className="calendar-strip" aria-label="Next seven days" onMouseLeave={() => setHoverIndex(null)}>
       <div className="week-grid">
@@ -127,6 +166,9 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
         <div className="week-row" role="list">
           {week.map((day, index) => {
             const classes = ['week-day'];
+            const dayType = dayTypes[day.key];
+            if (dayType === 'Green Day') classes.push('green-day');
+            else if (dayType === 'White Day') classes.push('white-day');
             if (day.isToday) classes.push('today');
             if (day.isNextWeek) classes.push('next-week');
             if (day.isWeekend) classes.push('weekend');
@@ -148,7 +190,7 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
                   <button
                     type="button"
                     className="week-day-glyph"
-                    aria-label={dayAriaLabel(day)}
+                    aria-label={dayAriaLabel(day, dayType)}
                     onFocus={() => setHoverIndex(index)}
                     onBlur={() => setHoverIndex(null)}
                     onClick={() => openEvent(day.events[0])}
@@ -156,7 +198,7 @@ const CalendarStrip: React.FC<CalendarStripProps> = ({ now, timeFormat }) => {
                     !
                   </button>
                 ) : (
-                  <span className="week-day-glyph" aria-label={dayAriaLabel(day)}>
+                  <span className="week-day-glyph" aria-label={dayAriaLabel(day, dayType)}>
                     {day.letter}
                   </span>
                 )}

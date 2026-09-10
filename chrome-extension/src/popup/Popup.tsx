@@ -992,7 +992,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      <CalendarStrip now={now} timeFormat={schedulePrefs.timeFormat} />
+      <CalendarStrip now={now} todayDayType={dayTypeLabel} timeFormat={schedulePrefs.timeFormat} />
       {!isNoSchool && !isNetworkFailed && (
         <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
