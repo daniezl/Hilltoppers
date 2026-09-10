@@ -587,11 +587,6 @@ header {
   padding: 8px;
   color: inherit;
   text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-a.event-card-link:hover {
-  background: rgba(26, 127, 55, 0.06);
 }
 
 a.event-card-link:hover .event-title {
