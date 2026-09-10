@@ -561,46 +561,50 @@ header {
   display: none;
 }
 
+/* One card per event, built like a dining column: a small grey caption over
+   the thing itself. Stacked rather than side by side — event titles are
+   sentences, and half a popup's width would wrap most of them. */
 .events-items {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.events-items li {
+.event-card {
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: 6px;
+  padding: 8px;
+  background: #fbfcff;
+}
+
+/* "Tomorrow" is what gets scanned for; the date follows for the days where
+   a weekday name alone still needs placing. */
+.event-when {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 5px 0;
-  font-size: 13px;
+  gap: 6px;
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7d8591;
+  font-weight: 700;
 }
 
-.events-items li + li {
-  border-top: 1px solid rgba(17, 17, 17, 0.08);
-}
-
-/* "Tomorrow" is the part being scanned for, so it leads and holds its width
-   against the title next to it. */
-.event-when {
-  flex: 0 0 auto;
-  min-width: 62px;
+.event-date {
   font-weight: 600;
-  color: #2f3842;
+  color: #a0a7b0;
 }
 
 .event-title {
-  flex: 1 1 auto;
-  color: #555f6a;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.event-time {
-  flex: 0 0 auto;
-  font-size: 12px;
-  color: #7d8591;
-  font-variant-numeric: tabular-nums;
+  margin: 0;
+  font-size: 13px;
+  color: #161b22;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .events-empty {
