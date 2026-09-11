@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-11T04:07:50.496Z",
+  "updatedAt": "2026-09-11T09:04:51.193Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-11",
   "menus": {
@@ -54,7 +54,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-10T16:38:23.940Z",
+  "daysUpdatedAt": "2026-09-11T09:04:51.193Z",
   "days": {
     "2026-09-11": {
       "breakfast": {
@@ -392,6 +392,56 @@
           "Kielbasa",
           "Harvard Beets",
           "Sauerkraut"
+        ]
+      }
+    },
+    "2026-09-18": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Mild Pork Sausage Link",
+          "Chocolate Chip Pancakes",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Bean Burrito",
+          "Beef and Bean Burrito",
+          "Aztec Corn",
+          "Fajita Vegetables"
+        ],
+        "globalFare": [
+          "Crispy Chicken Bacon Ranch Wrap",
+          "Seasoned Fries",
+          "Sauteed Broccolini"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Roasted Pork Loin",
+          "Baked Sweet Potato",
+          "Green Beans with Oregano"
+        ],
+        "globalFare": [
+          "Tofu Extra Firm 4 Oz Square",
+          "Mongolian Beef Stir Fry",
+          "Jasmine Rice",
+          "Shredded Carrots",
+          "Mushroom Medium White Fresh",
+          "Snow Peas"
         ]
       }
     }
