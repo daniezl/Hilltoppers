@@ -718,9 +718,10 @@ const Popup: React.FC = () => {
     return menuData.dateKey === wanted;
   }, [menuData?.dateKey, selectedMenuDate]);
 
-  const { currentBlock, nextBlock, nextStartsInMs } = useMemo(() => {
+  const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;
     let next: Block | undefined;
+    let remaining = 0;
     let nextStartsIn = 0;
 
     for (let i = 0; i < filteredBlocks.length; i += 1) {
@@ -734,6 +735,7 @@ const Popup: React.FC = () => {
           const nextStart = parseBlockTime(filteredBlocks[nextIndex].start, baseDate);
           nextStartsIn = Math.max(0, nextStart.getTime() - now.getTime());
         }
+        remaining = Math.max(0, times.end.getTime() - now.getTime());
         break;
       }
       if (now < times.start) {
@@ -743,15 +745,29 @@ const Popup: React.FC = () => {
       }
     }
 
-    return { currentBlock: current, nextBlock: next, nextStartsInMs: nextStartsIn };
+    return { currentBlock: current, nextBlock: next, remainingMs: remaining, nextStartsInMs: nextStartsIn };
   }, [filteredBlocks, baseDate, now]);
 
+  const formattedRemaining = useMemo(() => {
+    if (!currentBlock) {
+      return '00:00';
+    }
+    return formatCountdown(remainingMs);
+  }, [currentBlock?.id, remainingMs]);
+
+  const formattedNextStart = useMemo(() => {
+    if (!nextBlock) {
+      return '00:00';
+    }
+    return formatCountdown(nextStartsInMs);
+  }, [nextBlock?.id, nextStartsInMs]);
+
   /**
-   * The user's own lunch wave within the block that is running, and where the
-   * clock sits relative to it. Lunch is a sub-block of a class block (C Block on
-   * most days), so that class stays "current" underneath the whole time.
+   * Sits on the Schedule row while the user's own lunch is still ahead. Lunch is
+   * a sub-block of a class block, so the class stays current underneath; naming
+   * the wave keeps it clear which of the five the countdown belongs to.
    */
-  const myLunch = useMemo(() => {
+  const lunchCountdown = useMemo(() => {
     if (!currentBlock || schedulePrefs.lunchWave == null) {
       return null;
     }
@@ -762,37 +778,11 @@ const Popup: React.FC = () => {
       return null;
     }
     const start = parseBlockTime(mine.start, baseDate);
-    const end = parseBlockTime(mine.end, baseDate);
-    const phase = now < start ? 'before' : now < end ? 'during' : 'after';
-    return { name: mine.name, start, end, phase } as const;
-  }, [currentBlock, schedulePrefs.lunchWave, baseDate, now]);
-
-  const formattedRemaining = useMemo(() => {
-    if (!currentBlock) {
-      return '00:00';
-    }
-    const { end } = getBlockTimes(currentBlock, baseDate);
-    return formatCountdown(Math.max(0, end.getTime() - now.getTime()));
-  }, [currentBlock, baseDate, now]);
-
-  /**
-   * Sits on the Schedule row while the user's own lunch is still ahead. Names the
-   * wave, so it is clear which of the five the countdown belongs to.
-   */
-  const lunchCountdown = useMemo(() => {
-    if (myLunch?.phase !== 'before') {
+    if (now >= start) {
       return null;
     }
-    const remaining = formatCountdown(Math.max(0, myLunch.start.getTime() - now.getTime()));
-    return `${myLunch.name} in ${remaining}`;
-  }, [myLunch, now]);
-
-  const formattedNextStart = useMemo(() => {
-    if (!nextBlock) {
-      return '00:00';
-    }
-    return formatCountdown(nextStartsInMs);
-  }, [nextBlock?.id, nextStartsInMs]);
+    return `${mine.name} in ${formatCountdown(start.getTime() - now.getTime())}`;
+  }, [currentBlock, schedulePrefs.lunchWave, baseDate, now]);
 
   const currentDisplay = useMemo(() => {
     if (!currentBlock) {
@@ -1071,11 +1061,7 @@ const Popup: React.FC = () => {
         {currentBlock ? (
           <div className="status-current">
             <div className="current-details">
-              <p className="current-name">
-                {myLunch?.phase === 'during'
-                  ? myLunch.name
-                  : currentDisplay?.label ?? currentBlock.name}
-              </p>
+              <p className="current-name">{currentDisplay?.label ?? currentBlock.name}</p>
             </div>
             <span className="time-remaining">
               <span className="time-label">ends in</span>
