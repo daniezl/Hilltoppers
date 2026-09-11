@@ -2,7 +2,6 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
 import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
-import type { LunchWave } from '../types/schedule';
 
 export type TimeFormat = '12h' | '24h';
 
@@ -20,8 +19,26 @@ export interface SchedulePreferences {
   lunchWave?: LunchWave;
 }
 
-export type { LunchWave };
-export { LUNCH_WAVES, LUNCH_WAVE_LABELS, lunchWaveFromName } from '../types/schedule';
+export type LunchWave = 1 | 2 | 3 | 4 | 5;
+
+export const LUNCH_WAVES: LunchWave[] = [1, 2, 3, 4, 5];
+
+export const LUNCH_WAVE_LABELS: Record<LunchWave, string> = {
+  1: '1st Lunch',
+  2: '2nd Lunch',
+  3: '3rd Lunch',
+  4: '4th Lunch',
+  5: '5th Lunch'
+};
+
+/**
+ * Lunch sub-blocks are named "1st Lunch" … "5th Lunch" in the schedule JSON.
+ * Returns the wave number, or null when the name does not start with one.
+ */
+export function lunchWaveFromName(name: string): LunchWave | null {
+  const parsed = parseInt(name, 10);
+  return (LUNCH_WAVES as number[]).includes(parsed) ? (parsed as LunchWave) : null;
+}
 
 export const DEFAULT_SCHEDULE_PREFERENCES: SchedulePreferences = {
   lunchPeriod: 1,

@@ -775,12 +775,16 @@ const Popup: React.FC = () => {
     return formatCountdown(Math.max(0, end.getTime() - now.getTime()));
   }, [currentBlock, baseDate, now]);
 
-  /** Sits on the Schedule row while the user's own lunch is still ahead. */
+  /**
+   * Sits on the Schedule row while the user's own lunch is still ahead. Names the
+   * wave, so it is clear which of the five the countdown belongs to.
+   */
   const lunchCountdown = useMemo(() => {
     if (myLunch?.phase !== 'before') {
       return null;
     }
-    return formatCountdown(Math.max(0, myLunch.start.getTime() - now.getTime()));
+    const remaining = formatCountdown(Math.max(0, myLunch.start.getTime() - now.getTime()));
+    return `${myLunch.name} in ${remaining}`;
   }, [myLunch, now]);
 
   const formattedNextStart = useMemo(() => {
@@ -1146,7 +1150,7 @@ const Popup: React.FC = () => {
               <span>Schedule</span>
             </span>
             {lunchCountdown ? (
-              <span className="toggle-note">Lunch in {lunchCountdown}</span>
+              <span className="toggle-note">{lunchCountdown}</span>
             ) : null}
             <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
           </button>
