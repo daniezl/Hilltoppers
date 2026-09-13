@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-13T00:11:29.272Z",
+  "updatedAt": "2026-09-13T05:15:58.917Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-12",
+  "menuDate": "2026-09-13",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,73 +9,37 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Ham Club Baguette Sandwich",
-        "Loaded Bacon Ranch Fries",
-        "Mixed Vegetables"
+        "Chipotle Chicken Breast",
+        "Flour Tortilla",
+        "Cilantro Lime Rice",
+        "Cumin Black Beans",
+        "Corn with Peppers and Onions"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
         "Sandwich Egg & Cheese English Muffin",
         "Egg Bacon and Cheese English Muffin",
         "Ham Egg & Cheese English Muffin Sandwich",
-        "Sausage Patty 2 Oz",
-        "Hashbrown Patty"
+        "Home Fried Potatoes",
+        "Bacon"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Cajun Honey Roast Pork Loin",
-        "Stuffed Pepper",
-        "Red Beans & Rice",
-        "Butternut Squash"
+        "Bbq Flank Steak",
+        "BBQ Cauliflower",
+        "Brabant Potatoes",
+        "Roasted Baby Carrots with Dill"
       ],
       "globalFare": [
-        "Chicken Marsala",
-        "Creamy Basil & Sun Dried Tomatoes Pasta",
-        "Sauteed Mushrooms",
-        "Sauteed Zucchini"
+        "Fried Chicken Tenders",
+        "Seasoned White Rice"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-13T00:11:29.272Z",
   "days": {
-    "2026-09-12": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Ham Club Baguette Sandwich",
-          "Loaded Bacon Ranch Fries",
-          "Mixed Vegetables"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Buttermilk Pancake(s)",
-          "Sandwich Egg & Cheese English Muffin",
-          "Egg Bacon and Cheese English Muffin",
-          "Ham Egg & Cheese English Muffin Sandwich",
-          "Sausage Patty 2 Oz",
-          "Hashbrown Patty"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Cajun Honey Roast Pork Loin",
-          "Stuffed Pepper",
-          "Red Beans & Rice",
-          "Butternut Squash"
-        ],
-        "globalFare": [
-          "Chicken Marsala",
-          "Creamy Basil & Sun Dried Tomatoes Pasta",
-          "Sauteed Mushrooms",
-          "Sauteed Zucchini"
-        ]
-      }
-    },
     "2026-09-13": {
       "breakfast": {
         "classicKitchen": [],
