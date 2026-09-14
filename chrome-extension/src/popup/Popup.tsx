@@ -33,16 +33,6 @@ import {
   type CalendarEvent,
   type UpcomingEvent
 } from '../services/calendarService';
-import {
-  IDEAS_ENABLED,
-  fetchIdeas,
-  isNewIdea,
-  loadCachedIdeas,
-  saveCachedIdeas,
-  setVote,
-  sortForPopup,
-  type Idea
-} from '../services/ideasService';
 import { FEEDBACK_PROMPT } from '../services/feedbackService';
 
 /** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
@@ -164,11 +154,6 @@ const Popup: React.FC = () => {
   const [viewingGrade, setViewingGrade] = useState<GradeLevel | null>(null);
   const [showGradePrompt, setShowGradePrompt] = useState(false);
   const [pendingGradeSelection, setPendingGradeSelection] = useState<GradeLevel | null>(null);
-  const [ideasExpanded, setIdeasExpanded] = useState<boolean>(false);
-  const [ideas, setIdeas] = useState<Idea[] | null>(null);
-  const [ideasLoading, setIdeasLoading] = useState<boolean>(false);
-  const [ideasError, setIdeasError] = useState<string | null>(null);
-  const [voteError, setVoteError] = useState<string | null>(null);
   const hasResolvedInitial = useRef(false);
   const refreshRequestedRef = useRef(false);
   const menuRequestIdRef = useRef(0);
@@ -523,90 +508,6 @@ const Popup: React.FC = () => {
 
     return () => {};
   }, [menuExpanded, selectedDiningPeriod, selectedMenuDate]);
-
-  useEffect(() => {
-    // The flag is checked here as well as at render, so that even a persisted
-    // "expanded" state cannot trigger a request while Ideas is paused.
-    if (!IDEAS_ENABLED || !ideasExpanded) {
-      return () => {};
-    }
-
-    let cancelled = false;
-    setIdeasError(null);
-
-    // Render whatever was cached first so opening the section is instant, then
-    // replace it with fresh data.
-    (async () => {
-      const cached = await loadCachedIdeas();
-      if (!cancelled && cached && cached.length > 0) {
-        setIdeas(cached);
-      } else if (!cancelled) {
-        setIdeasLoading(true);
-      }
-
-      try {
-        const fresh = await fetchIdeas();
-        if (cancelled) {
-          return;
-        }
-        setIdeas(fresh);
-        setIdeasError(null);
-        void saveCachedIdeas(fresh);
-      } catch (err) {
-        console.error('[popup] Failed to load ideas', err);
-        if (!cancelled && !cached) {
-          setIdeasError('Ideas unavailable');
-        }
-      } finally {
-        if (!cancelled) {
-          setIdeasLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [ideasExpanded]);
-
-  const handleVote = async (idea: Idea) => {
-    const nextVoted = !idea.hasVoted;
-    setVoteError(null);
-
-    // Optimistic: a vote that waits for the round trip feels broken in a popup.
-    setIdeas((prev) =>
-      (prev ?? []).map((item) =>
-        item.number === idea.number
-          ? { ...item, hasVoted: nextVoted, votes: item.votes + (nextVoted ? 1 : -1) }
-          : item
-      )
-    );
-
-    try {
-      const result = await setVote(idea.number, nextVoted);
-      setIdeas((prev) => {
-        const next = (prev ?? []).map((item) =>
-          item.number === idea.number
-            ? { ...item, hasVoted: result.hasVoted, votes: result.votes }
-            : item
-        );
-        void saveCachedIdeas(next);
-        return next;
-      });
-    } catch (err) {
-      setIdeas((prev) =>
-        (prev ?? []).map((item) =>
-          item.number === idea.number
-            ? { ...item, hasVoted: idea.hasVoted, votes: idea.votes }
-            : item
-        )
-      );
-      const message = err instanceof Error ? err.message : 'Could not save your vote.';
-      setVoteError(message);
-    }
-  };
-
-  const popupIdeas = useMemo(() => (ideas ? sortForPopup(ideas) : []), [ideas]);
 
   const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
 
@@ -1572,103 +1473,6 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
-      {IDEAS_ENABLED && (
-      <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>
-        <button
-          type="button"
-          className="schedule-toggle"
-          aria-expanded={ideasExpanded}
-          onClick={() => setIdeasExpanded((prev) => !prev)}
-        >
-          <span className="toggle-title">
-            <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M9 18h6M10 21h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span>Ideas</span>
-          </span>
-          <span className={`chevron ${ideasExpanded ? 'open' : ''}`} aria-hidden="true" />
-        </button>
-        {ideasExpanded && (
-          <div className="ideas-content">
-            {ideasLoading && popupIdeas.length === 0 ? (
-              <p className="ideas-meta">
-                <span className="dining-meta-loading">
-                  <svg className="dining-loading-spinner" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M12 3a9 9 0 1 0 9 9"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span>Loading ideas…</span>
-                </span>
-              </p>
-            ) : ideasError ? (
-              <p className="dining-error">
-                <span>{ideasError}</span>
-              </p>
-            ) : popupIdeas.length === 0 ? (
-              <p className="ideas-empty">No ideas yet. Be the first to share one.</p>
-            ) : (
-              <ul className="ideas-items">
-                {popupIdeas.map((idea) => (
-                  <li key={idea.number} className="idea-row">
-                    {/* Points at the GitHub issue while the ideas site is paused. */}
-                    <a
-                      className="idea-title"
-                      href={idea.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      {isNewIdea(idea) ? <span className="idea-new">New</span> : null}
-                      {idea.status !== 'open' ? (
-                        <span className={`idea-status ${idea.status}`}>
-                          {idea.status === 'in-progress'
-                            ? 'Building'
-                            : idea.status === 'shipped'
-                              ? 'Done'
-                              : 'Not now'}
-                        </span>
-                      ) : null}
-                      {idea.title}
-                    </a>
-                    <button
-                      type="button"
-                      className={`idea-vote ${idea.hasVoted ? 'voted' : ''}`}
-                      aria-pressed={idea.hasVoted}
-                      aria-label={`${idea.hasVoted ? 'Remove vote from' : 'Vote for'} ${idea.title}`}
-                      onClick={() => handleVote(idea)}
-                    >
-                      <svg className="idea-vote-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path
-                          d="M12 5l7 8H5l7-8Z"
-                          fill={idea.hasVoted ? 'currentColor' : 'none'}
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span className="idea-vote-count">{idea.votes}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {voteError ? <p className="dining-error">{voteError}</p> : null}
-          </div>
-        )}
-      </section>
-      )}
       <footer className="popup-footer">
         <button type="button" className="feedback-link" onClick={handleOpenFeedback}>
           {FEEDBACK_PROMPT}
