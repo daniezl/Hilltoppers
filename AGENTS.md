@@ -76,7 +76,7 @@ npm run build     # must succeed; writes dist/
 
 - Run the build yourself if you can. `dist/` is what Chrome loads, and the
   change is not real until it builds.
-- `npx tsc --noEmit` reports ten pre-existing errors (`import.meta.env`
+- `npx tsc --noEmit` reports nine pre-existing errors (`import.meta.env`
   typing, two in `scheduleService.ts`). They are not yours. Do not fix them
   in a PR about something else.
 - `dist/` is git-ignored. Never commit it.

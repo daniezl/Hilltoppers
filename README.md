@@ -32,8 +32,8 @@ Open an [issue](https://github.com/daniezl/Hilltoppers/issues/new) and
 describe it the way you would explain it to a friend — no technical language
 needed. Ideas that other students want get the `enhancement` label.
 
-*(An in-extension ideas board where you could vote without a GitHub account is
-built but paused; see `worker/`.)*
+Or use the feedback link at the bottom of the extension popup, which needs no
+GitHub account.
 
 ## Want to help build it?
 
@@ -45,8 +45,6 @@ changes touch only one.
 | [`ios/`](./ios) | The iPhone app and its home-screen widget | Swift, SwiftUI | Open `ios/SJA_re.xcodeproj` in Xcode |
 | [`chrome-extension/`](./chrome-extension) | The Chrome extension | TypeScript, React | `cd chrome-extension && npm install && npm run dev` |
 | [`data/`](./data) | Special days, breaks, the menu — the JSON both apps download | JSON | Edit `data/public/special_days.json`; format in [`DATA_FORMAT.md`](./data/DATA_FORMAT.md) |
-| [`worker/`](./worker) | The ideas-board API. The only server code in the project. **Paused** — see its README | TypeScript, Cloudflare Workers | — |
-| [`ideas-site/`](./ideas-site) | A website for the ideas board. **Paused** — see its README | TypeScript, React | — |
 
 The most common change is a schedule fix: a special day was missed or has the
 wrong times. That is one JSON file, no code, and it is live about a minute after
@@ -65,23 +63,20 @@ Anything that needs Firebase or Cloudflare credentials is described in
   school website ──► data/scripts/fetch_day_type.mjs ──► day_type.json
   (Daily Bulletin)   (GitHub Action, every 30 min)       (Green/White per day;
                                                           apps not reading it yet)
-
-  GitHub issues ──► worker/ (votes in D1) ──► Chrome extension "Ideas"   (paused)
 ```
 
 The schedule never touches a server: it is static JSON that both apps read
-directly. The Worker exists only for the ideas board, because votes need to be
-counted somewhere — and while that board is paused, no code we run is serving
-anything. (Firebase handles sign-in and preference sync; that is Google's
-infrastructure, not ours.)
+directly. We run no server code at all. (Firebase handles sign-in and
+preference sync, and feedback from the popup lands in Firestore; that is
+Google's infrastructure, not ours.)
 
 ### Working on it
 
 - One branch per change, named for what it does. Merged branches are deleted
   automatically.
 - Deploys are manual and separate from merging: the iOS app ships through
-  Xcode, the extension through the Chrome Web Store, the Worker with
-  `npx wrangler deploy`. Only `data/` deploys itself, on every merge to `main`.
+  Xcode, the extension through the Chrome Web Store. Only `data/` deploys
+  itself, on every merge to `main`.
 - A [GitHub Action](./.github/workflows) refreshes the dining menu every 30
   minutes and opens a pull request when the school calendar changes.
 
