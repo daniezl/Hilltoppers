@@ -16,7 +16,8 @@ import {
   lunchWaveFromName,
   saveSchedulePreferences,
   syncSchedulePreferencesFromRemote,
-  type SchedulePreferences
+  type SchedulePreferences,
+  type ThemeMode
 } from '../storage/schedulePreferences';
 import {
   ALL_GRADES, GRADE_LABELS, type GradeLevel,
@@ -419,6 +420,14 @@ const ClassSettings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  const handleThemeModeChange = (mode: ThemeMode) => {
+    setSchedulePrefs((prev) => ({
+      ...prev,
+      themeMode: mode
+    }));
+    setHasUnsavedChanges(true);
+  };
+
   const handleGradeLevelChange = (value: string) => {
     const grade = value ? (Number(value) as GradeLevel) : undefined;
     const gradYear = grade != null ? graduationYearFromGrade(grade) : undefined;
@@ -433,6 +442,19 @@ const ClassSettings: React.FC = () => {
     if (schedulePrefs.graduationYear == null) return '';
     return String(gradeFromGraduationYear(schedulePrefs.graduationYear));
   }, [schedulePrefs.graduationYear]);
+
+  const currentThemeMode = schedulePrefs.themeMode ?? 'system';
+  const currentThemeClass = useMemo(() => {
+    if (currentThemeMode === 'dark') {
+      return 'class-settings--dark';
+    }
+    if (currentThemeMode === 'light') {
+      return 'class-settings--light';
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'class-settings--dark'
+      : 'class-settings--light';
+  }, [currentThemeMode]);
 
   const handleLunchWaveChange = (value: string) => {
     const wave = lunchWaveFromName(value);
@@ -483,7 +505,7 @@ const ClassSettings: React.FC = () => {
   };
 
   return (
-    <main className="class-settings">
+    <main className={`class-settings ${currentThemeClass}`}>
       <header className="class-settings__topbar" aria-label="Account status">
         {!authInitialized ? (
           <span className="class-settings__topbar-text">Checking sign-in status…</span>
@@ -575,6 +597,18 @@ const ClassSettings: React.FC = () => {
               >
                 <option value="12h">12-hour</option>
                 <option value="24h">24-hour</option>
+              </select>
+            </div>
+            <div className="class-settings__field">
+              <label htmlFor="theme-mode">Theme</label>
+              <select
+                id="theme-mode"
+                value={currentThemeMode}
+                onChange={(e) => handleThemeModeChange(e.target.value as ThemeMode)}
+              >
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
               </select>
             </div>
             <div className="class-settings__field">
