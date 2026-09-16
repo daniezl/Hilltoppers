@@ -26,6 +26,7 @@ import {
 import { logAppOpen } from '../firebase/analytics';
 import { relativeLabel } from '../services/calendarService';
 import Calendar from './Calendar';
+import IframeExperiment from './IframeExperiment';
 import {
   IDEAS_ENABLED,
   fetchIdeas,
@@ -1479,6 +1480,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
+      <IframeExperiment />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
       {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>

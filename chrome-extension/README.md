@@ -85,3 +85,33 @@ the Google Cloud Console.
 - Integrate Firebase authentication if required for secure read access.
 - Port additional settings or analytics from the iOS app as needed.
 - Add automated tests using `vitest` to cover scheduling calculations and background refresh logic.
+
+## Iframe module experiment (experiment branch only)
+
+Version 1.4.19 adds a collapsed **Iframe experiment** section below Menu in the
+existing popup. It uses the same section header and chevron as the other modules.
+Expanding mounts an independently served iframe; collapsing removes it and stops
+its message timer. Reopening starts a fresh demo (the click count resets).
+No new extension permissions or real user data are involved.
+
+1. Run `npm run build` in `chrome-extension/`.
+2. From the repository root, run `node experiments/iframe-module/serve.mjs`.
+3. Load `chrome-extension/dist` through **Load unpacked** at `chrome://extensions`.
+   Turn off the store copy while testing. Open the toolbar popup.
+4. Expand **Iframe experiment** below Menu. Click the button inside the iframe;
+   the count below it should update.
+5. Change `experiments/iframe-module/revision.txt` to VERSION B, then click
+   **Reload module**. No extension rebuild or reload is needed. The module's
+   HTML and JS can also be edited independently.
+6. Try **Simulate failure**, wait six seconds, then **Reload module**. Also try
+   collapsing/reopening and using Calendar or Menu alongside the experiment.
+
+The module lives at http://127.0.0.1:4174 and is not bundled in dist. Port 4173
+serves a browser preview of the regular popup, which needs mocked Chrome APIs for
+realistic schedule data. Use the unpacked extension for the actual experiment.
+The iframe sandbox permits scripts and its remote origin, but not forms, popups
+or top navigation. Messages are checked against both origin and source window,
+with a per-mount session ID and constrained message types and heights. The only
+context sent is a fixed demo date and light theme matching the existing popup.
+There is no account, schedule or storage bridge. This prototype does not establish
+production HTTPS behavior, third-party module safety or Web Store approval.

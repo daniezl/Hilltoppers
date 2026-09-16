@@ -1441,3 +1441,44 @@ header {
     grid-template-columns: 1fr;
   }
 }
+
+/* The remote content mounts only while this experimental section is open. */
+.iframe-experiment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+.iframe-experiment-content {
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+.iframe-experiment iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+.iframe-experiment-status, .iframe-experiment-actions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #59636e;
+}
+.iframe-experiment-actions {
+  justify-content: flex-start;
+  padding-top: 0;
+}
+.iframe-experiment-actions button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
