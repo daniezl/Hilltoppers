@@ -93,10 +93,11 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
   kind: CountdownKind;
   useStaticIcon: boolean;
 } {
+  const isNoSchoolDay = cachedDayType?.toLowerCase().includes('no school') ?? false;
   if (!cachedSchedule.length) {
     const label = cachedDayType ? cachedDayType.slice(0, 2).toUpperCase() : '--';
     const tooltip = cachedDayType ?? 'No schedule available';
-    return { label, tooltip, kind: 'idle', useStaticIcon: true };
+    return { label, tooltip, kind: 'idle', useStaticIcon: !isNoSchoolDay };
   }
 
   const baseDate = getBaseDate();
@@ -139,7 +140,7 @@ function determineCountdown(now: Date = DateTime.now().setZone(EST_ZONE).toJSDat
     label: '--',
     tooltip: cachedDayType ? `${cachedDayType} · No remaining blocks` : 'Schedule complete',
     kind: 'idle',
-    useStaticIcon: true
+    useStaticIcon: !isNoSchoolDay
   };
 }
 
@@ -149,9 +150,10 @@ function createIconImageData(label: string, kind: CountdownKind): { [index: numb
     return null;
   }
 
+  const isNoSchoolDay = cachedDayType?.toLowerCase().includes('no school') ?? false;
   const isUpcoming = kind === 'upcoming';
-  const background = isUpcoming ? '#ffffff' : '#213e26';
-  const textColor = isUpcoming ? '#1f6f2b' : '#ffffff';
+  const background = isNoSchoolDay ? '#d1242f' : (isUpcoming ? '#ffffff' : '#213e26');
+  const textColor = isNoSchoolDay ? '#ffffff' : (isUpcoming ? '#1f6f2b' : '#ffffff');
   const sizes = [16, 32, 48, 128];
   const imageData: { [index: number]: ImageData } = {};
 
@@ -263,7 +265,7 @@ async function applyActionIcon(): Promise<void> {
 
   const { label, tooltip, kind, useStaticIcon } = determineCountdown();
   try {
-    if (!useStaticIcon && (kind === 'current' || kind === 'upcoming')) {
+    if (!useStaticIcon && (kind === 'current' || kind === 'upcoming' || kind === 'idle')) {
       const imageData = createIconImageData(label, kind);
       if (imageData) {
         await chrome.action.setIcon({ imageData });

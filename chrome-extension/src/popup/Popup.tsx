@@ -37,6 +37,7 @@ import {
   type Idea
 } from '../services/ideasService';
 import { FEEDBACK_PROMPT } from '../services/feedbackService';
+import { useExtensionTheme } from '../theme';
 
 /** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
 function openExtensionPage(page: string) {
@@ -885,6 +886,8 @@ const Popup: React.FC = () => {
     }
     return 'neutral';
   }, [dayTypeLabel]);
+
+  useExtensionTheme(schedulePrefs.themeMode, dayTypeLabel);
 
   if (error) {
     return <main className="popup"><p className="error">{error}</p></main>;

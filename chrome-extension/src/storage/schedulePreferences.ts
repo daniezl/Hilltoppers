@@ -4,6 +4,7 @@ import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
 
 export type TimeFormat = '12h' | '24h';
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface SchedulePreferences {
   /**
@@ -17,6 +18,8 @@ export interface SchedulePreferences {
   graduationYear?: number;
   /** The user's lunch wave, 1–5 ("1st Lunch" … "5th Lunch"). Absent until chosen. */
   lunchWave?: LunchWave;
+  /** Optional appearance preference for the class settings experience. */
+  themeMode?: ThemeMode;
 }
 
 export type LunchWave = 1 | 2 | 3 | 4 | 5;
@@ -42,7 +45,8 @@ export function lunchWaveFromName(name: string): LunchWave | null {
 
 export const DEFAULT_SCHEDULE_PREFERENCES: SchedulePreferences = {
   lunchPeriod: 1,
-  timeFormat: '12h'
+  timeFormat: '12h',
+  themeMode: 'system'
 };
 
 const PREF_KEY = 'schedulePreferences';

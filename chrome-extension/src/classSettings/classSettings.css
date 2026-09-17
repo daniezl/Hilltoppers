@@ -11,6 +11,38 @@
   --danger: #bc4c2c;
 }
 
+.class-settings--light {
+  color-scheme: light;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-muted: #f0f2f5;
+  --text: #111111;
+  --muted: #5b6570;
+  --border: #d0d7de;
+  --accent: #1a7f37;
+  --accent-muted: rgba(26, 127, 55, 0.12);
+  --danger: #bc4c2c;
+}
+
+.class-settings--dark {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --surface: #245c3a;
+  --surface-muted: #171717;
+  --text: #ffffff;
+  --muted: #d0d5d9;
+  --border: #343a3f;
+  --accent: #8be7a2;
+  --accent-muted: rgba(139, 231, 162, 0.18);
+  --danger: #ff9a9a;
+}
+
+.class-settings--dark .class-settings__panel,
+.class-settings--dark .class-settings__table,
+.class-settings--dark .class-settings__theme-control {
+  border-color: #8be7a2;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
@@ -334,6 +366,75 @@ body, html {
 
 .class-settings__field select {
   min-width: 120px;
+}
+
+.class-settings__theme-control {
+  margin: -4px 0 20px;
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-muted);
+}
+
+.class-settings__theme-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.class-settings__theme-heading h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.class-settings__theme-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.class-settings__theme-heading strong {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.class-settings__theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.class-settings__theme-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.class-settings__theme-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.class-settings__theme-option:hover,
+.class-settings__theme-option:has(input:focus-visible) {
+  border-color: var(--accent);
+}
+
+.class-settings__theme-option--selected {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+  color: var(--accent);
 }
 
 .class-settings__table {

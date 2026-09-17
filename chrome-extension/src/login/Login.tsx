@@ -10,6 +10,7 @@ import {
 } from '../firebase/auth';
 import type { AuthUser } from '../firebase/auth';
 import { logScreenView } from '../firebase/analytics';
+import { useExtensionTheme } from '../theme';
 import './login.css';
 
 type FeedbackType = 'success' | 'error' | 'info' | 'warning';
@@ -67,6 +68,7 @@ function mapAuthError(error: unknown): string {
 }
 
 const Login: React.FC = () => {
+  useExtensionTheme();
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signIn');
