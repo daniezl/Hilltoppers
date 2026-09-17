@@ -102,3 +102,70 @@ To update, load the new `dist` folder the same way.
 ## License
 
 *(to be chosen — see the note in the pull request)*
+
+## Ask SJA: the first independently hosted topping
+
+`chrome-extension/` embeds a URL and provides a fixed-size collapsible container.
+`toppings/ask-sja/` is independently deployable: its own static webpage, Worker
+API, corpus, rate limiters and DeepSeek secret. It has no imports or authentication
+dependency on the extension or the existing schedule-admin Worker. The public
+calendar and day-colour feed URLs can be changed in `wrangler.toml`.
+
+Live site: https://ask-sja-topping.danielzhang089.workers.dev/.
+Browsers contact that site only; its server calls DeepSeek. Test this domain on
+the school network rather than assuming a DeepSeek website block applies to it.
+
+```sh
+cd toppings/ask-sja
+npm ci
+npm run typecheck
+npm test
+npm run refresh:corpus
+npm run build
+npm run deploy
+npx wrangler secret put DEEPSEEK_API_KEY
+```
+
+The secret belongs to this independent Worker. Enter it at Wrangler's prompt,
+never in frontend code or Git. `DEEPSEEK_MODEL` is configurable; the default is
+`deepseek-flash`. Without a secret the API returns 503, never a fabricated answer.
+`npm run dev` serves http://localhost:8790; local secrets go in ignored `.dev.vars`.
+`DEEPSEEK_URL` is a local-test override, not set in the production configuration.
+
+### Conversation and sources
+
+The webpage keeps up to 20 turns locally with a six-hour expiry. Each request sends
+only the last three completed turns (six alternating user/assistant messages) plus
+the new question. No client-supplied system roles are accepted. User messages are
+limited to 500 characters; previous assistant answers to 3,000 characters each;
+request bodies to 48 KiB. Old citation numbers are removed from history before it
+reaches the model. Both search-query rewriting and answer generation receive the
+context. The answer must still be grounded in freshly retrieved passages, not in
+previous assistant claims. Backend logs contain retrieval metrics, not questions.
+
+Sources are collapsed under each answer, de-duplicated by document/date, while
+inline citation numbers remain linked. Bulletin labels display one publication
+date as `Daily Bulletin · Sep 16`; date-only fields are not timezone-converted.
+Enter sends, Shift+Enter adds a line and IME composition does not send. New chat
+clears context and aborts the in-flight browser request. Completed and failed turns
+are saved; interrupted requests require explicit retry after reopening. Embedded
+browser storage may differ from standalone storage or be unavailable.
+
+### Data and independent publishing
+
+The corpus fetcher and retrieval code originate in PR #34. Sources and archives
+live inside the topping project. The deployed corpus is a snapshot: run
+`refresh:corpus` and redeploy to update it. This prototype adds no automatic
+publishing schedule. Model requests are limited to 20/minute per network IP and
+60/minute on a shared key; Cloudflare's location-local counters are not a hard
+global spending cap. School users can share the same network IP.
+
+Publish changes with `npm run deploy` in `toppings/ask-sja`, then reload the topping
+from its **⋯** menu. The extension does not need rebuilding for webpage/backend
+changes. Host layout changes do require rebuilding the extension.
+
+Validation includes 21 Worker/retrieval tests, six document-parser tests,
+TypeScript and extension builds, plus browser checks for multi-turn payloads,
+IME/Enter handling, stable panel height, pinned composer, scrolling, source dates,
+source expansion, history restore, retry, new chat and the host options menu.
+Browser fixtures verify UI behavior separately from live model answers.

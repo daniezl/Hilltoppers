@@ -86,32 +86,33 @@ the Google Cloud Console.
 - Port additional settings or analytics from the iOS app as needed.
 - Add automated tests using `vitest` to cover scheduling calculations and background refresh logic.
 
-## Iframe module experiment (experiment branch only)
+## Ask SJA topping (independent-hosting prototype)
 
-Version 1.4.19 adds a collapsed **Iframe experiment** section below Menu in the
-existing popup. It uses the same section header and chevron as the other modules.
-Expanding mounts an independently served iframe; collapsing removes it and stops
-its message timer. Reopening starts a fresh demo (the click count resets).
-No new extension permissions or real user data are involved.
+Version 2.0.0 adds an optional conversational Ask SJA topping. Build, load `dist/`
+and click **Add Ask SJA topping** below Menu. The topping is collapsed on reopening
+and only loads its independent webpage when expanded. The **⋯** menu contains
+Open website, Reload and Remove topping. No new Chrome permissions are needed.
 
-1. Run `npm run build` in `chrome-extension/`.
-2. From the repository root, run `node experiments/iframe-module/serve.mjs`.
-3. Load `chrome-extension/dist` through **Load unpacked** at `chrome://extensions`.
-   Turn off the store copy while testing. Open the toolbar popup.
-4. Expand **Iframe experiment** below Menu. Click the button inside the iframe;
-   the count below it should update.
-5. Change `experiments/iframe-module/revision.txt` to VERSION B, then click
-   **Reload module**. No extension rebuild or reload is needed. The module's
-   HTML and JS can also be edited independently.
-6. Try **Simulate failure**, wait six seconds, then **Reload module**. Also try
-   collapsing/reopening and using Calendar or Menu alongside the experiment.
+The conversation scrolls inside a stable 360px panel; the composer stays at the
+bottom. Normal connection is silent. An unavailable service shows an overlay with
+retry after 12 seconds, without moving the rest of the popup. Reload and removal
+unmount the iframe. The bridge checks the exact origin, window and per-load session
+and accepts ready messages only; it shares no account, schedule or storage data.
+Forms and user-initiated source tabs are permitted by the iframe sandbox.
 
-The module lives at http://127.0.0.1:4174 and is not bundled in dist. Port 4173
-serves a browser preview of the regular popup, which needs mocked Chrome APIs for
-realistic schedule data. Use the unpacked extension for the actual experiment.
-The iframe sandbox permits scripts and its remote origin, but not forms, popups
-or top navigation. Messages are checked against both origin and source window,
-with a per-mount session ID and constrained message types and heights. The only
-context sent is a fixed demo date and light theme matching the existing popup.
-There is no account, schedule or storage bridge. This prototype does not establish
-production HTTPS behavior, third-party module safety or Web Store approval.
+The webpage and backend live in `../toppings/ask-sja` and are not bundled in the
+extension. The default URL is https://ask-sja-topping.danielzhang089.workers.dev/.
+For local development, build with
+`VITE_ASK_SJA_TOPPING_URL=http://127.0.0.1:8790/ npm run build`.
+
+Enter sends; Shift+Enter inserts a line. IME selection never sends. The input grows
+automatically to 94px before scrolling. Sources are collapsed by default, with
+one publication date per source. The composer’s ↺ button starts a new chat.
+Conversation history is stored by the topping, not the extension; it can be
+partitioned between embedded and standalone contexts. It expires after six hours,
+and unavailable storage means history will not survive closing. An interrupted
+response can be retried after reopening, but is not automatically sent again.
+
+The prototype does not establish Web Store approval or school-network access.
+Browser automation exercises the extension popup document in a tab; the toolbar's
+focus-driven closing behavior should also be checked manually.

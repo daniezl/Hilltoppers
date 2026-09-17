@@ -26,7 +26,8 @@ import {
 import { logAppOpen } from '../firebase/analytics';
 import { relativeLabel } from '../services/calendarService';
 import Calendar from './Calendar';
-import IframeExperiment from './IframeExperiment';
+import AskSjaTopping from './AskSjaTopping';
+import { useRevealExpandedSection } from './useRevealExpandedSection';
 import {
   IDEAS_ENABLED,
   fetchIdeas,
@@ -145,6 +146,9 @@ const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
+  const scheduleSection = useRevealExpandedSection(scheduleExpanded);
+  const calendarSection = useRevealExpandedSection(calendarExpanded);
+  const menuSection = useRevealExpandedSection(menuExpanded);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
   // null means "whichever day the file calls today"; set once the arrows move.
   const [selectedMenuDate, setSelectedMenuDate] = useState<string | null>(null);
@@ -1074,7 +1078,7 @@ const Popup: React.FC = () => {
         )}
       </section>
       {!isNoSchool && !isNetworkFailed && (
-        <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
+        <section ref={scheduleSection} className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
             type="button"
             className="schedule-toggle"
@@ -1200,7 +1204,7 @@ const Popup: React.FC = () => {
         )}
         </section>
       )}
-      <section className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
+      <section ref={calendarSection} className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
@@ -1234,7 +1238,7 @@ const Popup: React.FC = () => {
           />
         )}
       </section>
-      <section className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
+      <section ref={menuSection} className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
@@ -1480,7 +1484,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      <IframeExperiment />
+      <AskSjaTopping />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
       {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>

@@ -1442,43 +1442,19 @@ header {
   }
 }
 
-/* The remote content mounts only while this experimental section is open. */
-.iframe-experiment {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
-}
-.iframe-experiment-content {
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 8px;
-  background: #fff;
-  overflow: hidden;
-}
-.iframe-experiment iframe {
-  display: block;
-  width: 100%;
-  border: 0;
-}
-.iframe-experiment-status, .iframe-experiment-actions {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 12px;
-  font-size: 11px;
-  color: #59636e;
-}
-.iframe-experiment-actions {
-  justify-content: flex-start;
-  padding-top: 0;
-}
-.iframe-experiment-actions button {
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 6px;
-  padding: 5px 8px;
-  cursor: pointer;
-}
+.topping-section { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.topping-heading { position: relative; }
+.topping-heading .schedule-toggle { width: 100%; }
+.topping-heading .toggle-title { margin-right: 36px; }
+.topping-content { position: relative; height: min(360px, calc(100dvh - 72px)); border: 1px solid rgba(17,17,17,.18); border-radius: 8px; background: #fff; overflow: hidden; }
+.topping-content iframe { display: block; width: 100%; height: 100%; border: 0; }
+.topping-menu { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); z-index: 2; }
+.topping-menu-toggle { border: 0; background: transparent; color: #7b8680; cursor: pointer; width: 28px; height: 26px; font-size: 20px; line-height: 1; }
+.topping-menu-items { position: absolute; right: 0; top: 30px; min-width: 144px; padding: 4px; border: 1px solid #dce2de; border-radius: 8px; background: #fff; box-shadow: 0 5px 16px #17251d14; }
+.topping-menu-items a, .topping-menu-items button { display: block; width: 100%; text-align: left; border: 0; background: transparent; text-decoration: none; color: #56655a; font: inherit; font-size: 11px; padding: 8px; border-radius: 4px; cursor: pointer; }
+.topping-menu-items a:hover, .topping-menu-items button:hover { background: #f1f5f2; }
+.topping-unavailable { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; color: #68746c; font-size: 12px; }
+.topping-unavailable button { border: 1px solid #dce2de; border-radius: 6px; background: #fff; padding: 6px 10px; color: inherit; cursor: pointer; }
+.topping-add { margin-top: 14px; }
+.topping-add button { color: #647067; font: inherit; font-size: 11px; border: 0; background: transparent; padding: 0; cursor: pointer; }
+.topping-menu :focus-visible, .topping-add button:focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
