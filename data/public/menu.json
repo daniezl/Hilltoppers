@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T05:11:47.505Z",
+  "updatedAt": "2026-09-17T10:21:35.396Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-17",
   "menus": {
@@ -52,7 +52,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-16T18:22:51.937Z",
+  "daysUpdatedAt": "2026-09-17T10:21:35.396Z",
   "days": {
     "2026-09-17": {
       "breakfast": {
@@ -239,7 +239,9 @@
           "Furikake",
           "Huli Huli Chicken",
           "Broccoli & Mushroom Vegetarian Stir Fry",
-          "Black Beans"
+          "Black Beans",
+          "Sauteed Peppers & Onions",
+          "Seasoned French Fries"
         ]
       },
       "dinner": {
@@ -288,8 +290,7 @@
           "Honey Buttered Baby Carrots"
         ],
         "globalFare": [
-          "Jerk Pork Loin",
-          "Kidney Beans",
+          "Glazed Baked Ham",
           "Mashed Sweet Potatoes",
           "Sautéed Garlic Kale"
         ]
@@ -297,9 +298,7 @@
       "dinner": {
         "classicKitchen": [
           "Country Fried Steak",
-          "Baked Beans",
           "Scalloped Potatoes",
-          "Roasted Asparagus",
           "Fresh Roasted Green Beans"
         ],
         "globalFare": [
@@ -329,7 +328,6 @@
           "Grilled Chicken Breast",
           "Penne Pasta with Alfredo Sauce",
           "Garlic Bread",
-          "Noodles Rigate Penne Kitchen Essentials",
           "Fresh Roasted Broccoli"
         ],
         "globalFare": [
@@ -340,14 +338,63 @@
       },
       "dinner": {
         "classicKitchen": [
-          "Butternut Squash Risotto",
-          "Crispy Fried Cauliflower",
-          "Broccoli with Cheese",
-          "Sauteed Squash & Tomatoes"
+          "Corned Beef",
+          "Steamed Potatoes"
         ],
         "globalFare": [
           "Coconut Lime Tilapia",
           "French Bread"
+        ]
+      }
+    },
+    "2026-09-24": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Pork Bacon",
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Taco Meat",
+          "Potato Baked Bar",
+          "Vegetarian Picadillo",
+          "Mexican Potato Bar",
+          "Cumin Black Beans",
+          "Roasted Confetti Corn",
+          "Nacho Cheese Sauce"
+        ],
+        "globalFare": [
+          "Breaded Korean Chicken",
+          "Brown Rice",
+          "Stir Fry Vegetables"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Beef Pot Roast",
+          "Confetti Lentils",
+          "Red Skin Mashed Potatoes",
+          "Sauteed Carrots & Parsnips",
+          "Greek Salad"
+        ],
+        "globalFare": [
+          "Cous Cous Savory",
+          "Greek-Marinated Grilled Chicken",
+          "Pita Bread",
+          "Roasted Eggplant",
+          "Crispy Chickpeas"
         ]
       }
     }
