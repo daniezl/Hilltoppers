@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T05:43:41.597Z",
+  "updatedAt": "2026-09-18T10:59:27.441Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-18",
   "menus": {
@@ -52,7 +52,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-17T22:24:37.244Z",
+  "daysUpdatedAt": "2026-09-18T10:59:27.441Z",
   "days": {
     "2026-09-18": {
       "breakfast": {
@@ -345,6 +345,49 @@
           "Pita Bread",
           "Roasted Eggplant",
           "Crispy Chickpeas"
+        ]
+      }
+    },
+    "2026-09-25": {
+      "breakfast": {
+        "classicKitchen": [
+          "Egg Bacon & Cheese Bagel Sandwich",
+          "Egg and Cheese Bagel",
+          "Egg Sausage and Cheese Bagel"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Mild Pork Sausage Link",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Meatball Sub",
+          "Beer Battered Onion Ring",
+          "Green Beans & Peppers"
+        ],
+        "globalFare": [
+          "BBQ Chicken Wings",
+          "Honey Garlic Chicken Wings",
+          "Brown Rice",
+          "BBQ Lime Cauliflower Bites"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Poutine",
+          "Bacon Cheeseburger",
+          "Black Bean Patty",
+          "Seasoned Corn on the Cob"
+        ],
+        "globalFare": [
+          "Grilled Pesto-Marinated Chicken Breast",
+          "Garlic Breadstick",
+          "Cavatappi Pasta",
+          "Fresh Roasted Broccoli",
+          "Pesto Cream Sauce"
         ]
       }
     }
