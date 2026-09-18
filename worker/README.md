@@ -97,3 +97,40 @@ the extension has it would split accounts: a Google sign-in gets a different
 uid from the password account holding that person's votes. Apple is not usable
 at all — the project answers `OPERATION_NOT_ALLOWED : Code flow is not enabled
 for Apple`.
+
+
+## Topping Bar
+
+This is a separate Worker (`hilltoppers-topping-bar`) and D1 database
+(`hilltoppers-toppings`), configured in `wrangler.toppings.toml`. It shares only
+Firebase verification helpers with the paused Ideas service, not its bindings.
+Apply `npx wrangler d1 execute hilltoppers-toppings --config wrangler.toppings.toml
+--file=toppings-schema.sql --remote` before `npm run deploy:toppings`. The migration
+is idempotent and seeds Ask SJA with zero users and no ratings. Keep
+`TOPPING_EMAIL_DOMAINS` set to `student.stjacademy.org,stjacademy.org`.
+
+GET `/api/toppings` lists public cards sorted by unique browser registrations,
+with optional caller installation/rating fields. POST publishes immediately for
+verified school accounts with a public account name. The name is self-reported,
+not a verified legal identity. Email is never public. Ratings remain one per account, regardless of browser.
+Users is an estimated browser count, not an exact count of individual people.
+Older signed-in clients remain supported; upgrading while signed in replaces
+the old account registration with the browser registration. POST/DELETE `/:id/install`
+registers/unregisters a browser installation without authentication (identified by
+a UUID in `X-Topping-Install-ID`); POST `/:id/rating` replaces its 1–5 star rating
+(requires a verified account and an installation). DELETE `/:id` unpublishes the owner's listing.
+POST `/:id/report` records or updates a report from a verified account. Bodies are
+limited to 12 KB and each author may have at most 20 visible listings. API
+credentials are never forwarded to Topping URLs. Toppings receive no account or
+schedule data.
+
+Reports are stored in `topping_reports`; they do not send notifications. Review
+with `npx wrangler d1 execute hilltoppers-toppings --config wrangler.toppings.toml
+--remote --command="SELECT * FROM topping_reports ORDER BY created_at DESC"`.
+To take a listing down, set its `toppings.hidden` to 1 using its ID. The extension
+checks the catalog when opening and removes hidden listings locally; it cannot
+revoke already-loaded offline content. There is no automatic safety review of
+independently hosted code.
+
+Run `npm run typecheck` and `npm test` before deployment. Tests use a local D1
+simulator and mocked identity verification, never real student accounts.

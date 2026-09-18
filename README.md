@@ -169,3 +169,15 @@ TypeScript and extension builds, plus browser checks for multi-turn payloads,
 IME/Enter handling, stable panel height, pinned composer, scrolling, source dates,
 source expansion, history restore, retry, new chat and the host options menu.
 Browser fixtures verify UI behavior separately from live model answers.
+
+
+## Topping Bar
+
+The extension's **Topping Bar** link opens a catalog of independently hosted
+modules. Preview cards show community ratings and unique browser installations
+as Users; sorting defaults to most users. Publishing requires a verified SJA
+student or staff email and a public author name. The store lives in
+`chrome-extension/src/toppings/`; its independent Cloudflare Worker and D1
+configuration are in `worker/wrangler.toppings.toml`. See `worker/README.md` for
+deployment and report moderation. Creation instructions and starter templates
+are intentionally deferred.

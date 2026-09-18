@@ -192,31 +192,41 @@ header {
 /* Quiet one-liner at the very bottom; same voice as the hover labels. */
 .popup-footer {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.feedback-link {
-  border: none;
+.footer-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
   background: transparent;
+  color: #647067;
   font: inherit;
   font-size: 11px;
-  color: #7d8591;
-  padding: 4px 0 4px 8px;
-  border-radius: 6px;
+  line-height: 1.4;
+  white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.feedback-link:hover {
-  color: #111111;
-  background: rgba(17, 17, 17, 0.06);
+.footer-action svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.feedback-link:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.15);
-}
+.footer-action:hover { color: #1a7f37; }
+.footer-action:focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
+
 
 .status {
   background: #ffffff;
@@ -1446,6 +1456,7 @@ header {
 .topping-heading { position: relative; }
 .topping-heading .schedule-toggle { width: 100%; }
 .topping-heading .toggle-title { margin-right: 36px; }
+.topping-preview-badge { margin-left: 7px; border: 1px solid #bfd2c3; border-radius: 999px; padding: 2px 6px; color: #4f765c; font-size: 9px; font-weight: 700; letter-spacing: .4px; line-height: 1; text-transform: uppercase; }
 .topping-content { position: relative; height: min(360px, calc(100dvh - 72px)); border: 1px solid rgba(17,17,17,.18); border-radius: 8px; background: #fff; overflow: hidden; }
 .topping-content iframe { display: block; width: 100%; height: 100%; border: 0; }
 .topping-menu { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); z-index: 2; }
@@ -1455,6 +1466,4 @@ header {
 .topping-menu-items a:hover, .topping-menu-items button:hover { background: #f1f5f2; }
 .topping-unavailable { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; color: #68746c; font-size: 12px; }
 .topping-unavailable button { border: 1px solid #dce2de; border-radius: 6px; background: #fff; padding: 6px 10px; color: inherit; cursor: pointer; }
-.topping-add { margin-top: 14px; }
-.topping-add button { color: #647067; font: inherit; font-size: 11px; border: 0; background: transparent; padding: 0; cursor: pointer; }
-.topping-menu :focus-visible, .topping-add button:focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
+.topping-menu :focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }

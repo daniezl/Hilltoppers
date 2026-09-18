@@ -26,7 +26,7 @@ import {
 import { logAppOpen } from '../firebase/analytics';
 import { relativeLabel } from '../services/calendarService';
 import Calendar from './Calendar';
-import AskSjaTopping from './AskSjaTopping';
+import Toppings from './Toppings';
 import { useRevealExpandedSection } from './useRevealExpandedSection';
 import {
   IDEAS_ENABLED,
@@ -38,7 +38,7 @@ import {
   sortForPopup,
   type Idea
 } from '../services/ideasService';
-import { FEEDBACK_PROMPT } from '../services/feedbackService';
+import { openToppingBar } from '../services/toppingsService';
 
 /** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
 function openExtensionPage(page: string) {
@@ -1484,7 +1484,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
-      <AskSjaTopping />
+      <Toppings />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
       {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>
@@ -1583,8 +1583,13 @@ const Popup: React.FC = () => {
       </section>
       )}
       <footer className="popup-footer">
-        <button type="button" className="feedback-link" onClick={handleOpenFeedback}>
-          {FEEDBACK_PROMPT}
+        <button type="button" className="footer-action" onClick={openToppingBar}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          <span>Add a Topping</span>
+        </button>
+        <button type="button" className="footer-action" onClick={handleOpenFeedback}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2ZM8 9h8M8 13h5" /></svg>
+          <span>Share a suggestion</span>
         </button>
       </footer>
     </main>

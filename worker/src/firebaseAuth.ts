@@ -37,6 +37,8 @@ export async function probeJwks(): Promise<{ ok: boolean; url: string; detail: s
 export interface AppUser {
   uid: string;
   emailVerified: boolean;
+  email: string;
+  fullName: string;
   displayName: string;
 }
 
@@ -85,6 +87,8 @@ export async function verifyFirebaseToken(
 
     return {
       uid,
+      email: typeof payload.email === 'string' ? payload.email.toLowerCase() : '',
+      fullName: typeof payload.name === 'string' ? payload.name.trim().slice(0, 80) : '',
       emailVerified: payload.email_verified === true,
       displayName: shortenName(typeof payload.name === 'string' ? payload.name : '')
     };
