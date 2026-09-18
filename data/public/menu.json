@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-18T00:42:48.156Z",
+  "updatedAt": "2026-09-18T05:43:41.597Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-17",
+  "menuDate": "2026-09-18",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -18,92 +18,42 @@
       ],
       "globalFare": [
         "Scrambled Eggs",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Mild Pork Sausage Link",
+        "Chocolate Chip Pancakes",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Smothered Chicken",
-        "Baked Beans",
-        "Oven Roasted Red Potatoes",
-        "Steamed Green Beans and Carrots"
+        "Bean Burrito",
+        "Beef and Bean Burrito",
+        "Aztec Corn",
+        "Fajita Vegetables"
       ],
       "globalFare": [
-        "Whole Grain Breaded Fish Stick",
-        "Crispy Roasted Tofu",
-        "Spicy Butter Peas",
-        "Rice Pilaf Chicken with Orzo from Mix"
+        "Crispy Chicken Bacon Ranch Wrap",
+        "Seasoned Fries",
+        "Sauteed Broccolini"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Meatless Stuffed Bell Peppers",
-        "Herb Infused Couscous",
-        "Glazed Brussels Sprouts with Bacon"
+        "Roasted Pork Loin",
+        "Baked Sweet Potato",
+        "Green Beans with Oregano"
       ],
       "globalFare": [
-        "Potato Cheddar Onion Pierogies",
-        "Kielbasa",
-        "Harvard Beets",
-        "Sauerkraut"
+        "Tofu Extra Firm 4 Oz Square",
+        "Mongolian Beef Stir Fry",
+        "Jasmine Rice",
+        "Shredded Carrots",
+        "Mushroom Medium White Fresh",
+        "Snow Peas"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-17T22:24:37.244Z",
   "days": {
-    "2026-09-17": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Green Bell Pepper",
-          "Fresh Clipped Spinach",
-          "Cheese Omelet",
-          "Sliced Smoked Ham",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese",
-          "Fresh Red Bell Pepper(s)"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Breakfast Quesadilla",
-          "Home Fried Potatoes",
-          "Bacon"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Smothered Chicken",
-          "Baked Beans",
-          "Oven Roasted Red Potatoes",
-          "Steamed Green Beans and Carrots"
-        ],
-        "globalFare": [
-          "Whole Grain Breaded Fish Stick",
-          "Crispy Roasted Tofu",
-          "Spicy Butter Peas",
-          "Rice Pilaf Chicken with Orzo from Mix"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Grilled Chicken Breast",
-          "Meatless Stuffed Bell Peppers",
-          "Herb Infused Couscous",
-          "Glazed Brussels Sprouts with Bacon"
-        ],
-        "globalFare": [
-          "Potato Cheddar Onion Pierogies",
-          "Kielbasa",
-          "Harvard Beets",
-          "Sauerkraut"
-        ]
-      }
-    },
     "2026-09-18": {
       "breakfast": {
         "classicKitchen": [
