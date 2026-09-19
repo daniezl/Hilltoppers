@@ -40,7 +40,7 @@ import {
 } from '../services/ideasService';
 import { openToppingBar } from '../services/toppingsService';
 
-/** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
+/** Opens one of the extension's own pages in a tab. */
 function openExtensionPage(page: string) {
   const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
     ? chrome.runtime.getURL(page)
@@ -856,7 +856,6 @@ const Popup: React.FC = () => {
   const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
   const handleOpenClassSettings = () => openExtensionPage('class-settings.html');
-  const handleOpenFeedback = () => openExtensionPage('feedback.html');
 
   const handleGradePromptConfirm = () => {
     if (pendingGradeSelection == null) return;
@@ -1586,10 +1585,6 @@ const Popup: React.FC = () => {
         <button type="button" className="footer-action" onClick={openToppingBar}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           <span>Add a Topping</span>
-        </button>
-        <button type="button" className="footer-action" onClick={handleOpenFeedback}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2ZM8 9h8M8 13h5" /></svg>
-          <span>Share a suggestion</span>
         </button>
       </footer>
     </main>

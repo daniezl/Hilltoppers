@@ -4,8 +4,9 @@ import { onAuthState, type AuthUser } from '../firebase/auth';
 import { changeTopping, fetchToppings, toppingRequest, TOPPINGS_KEY, localToppings, savePreviewTopping, type Topping } from '../services/toppingsService';
 import './toppings.css';
 
-export default function ToppingBar() {
+export default function ToppingBar({ onAccount, active = true }: { onAccount?: () => void; active?: boolean }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [accountReady, setAccountReady] = useState(false);
   const [items, setItems] = useState<Topping[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,10 +26,15 @@ export default function ToppingBar() {
   const [sort, setSort] = useState('popular');
   const [creating, setCreating] = useState(false);
   const [previewAdded, setPreviewAdded] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [publishing, setPublishing] = useState(() => sessionStorage.getItem('resumeToppingPublish') === 'true');
+  useEffect(() => { sessionStorage.removeItem('resumeToppingPublish'); }, []);
   const [detail, setDetail] = useState<Topping | null>(null);
   const schoolAccount = !!user?.emailVerified && /@(student\.)?stjacademy\.org$/i.test(user.email || '');
-  const signIn = () => chrome.tabs.create({ url: chrome.runtime.getURL('login.html') });
+  const signIn = () => {
+    if (onAccount) { onAccount(); return; }
+    if (publishing) sessionStorage.setItem('resumeToppingPublish', 'true');
+    window.location.href = chrome.runtime.getURL('login.html?returnTo=toppings.html');
+  };
   async function refresh() {
     const list = await fetchToppings(); setItems(list);
     // Refresh metadata and remove withdrawn listings without auto-installing on other devices.
@@ -38,15 +44,15 @@ export default function ToppingBar() {
     }) });
     return list;
   }
-  useEffect(() => onAuthState(setUser), []);
+  useEffect(() => onAuthState(next => { setUser(next); setAccountReady(true); }), []);
   useEffect(() => {
     let active = true; setLoading(true);
     fetchToppings().then(list => { if (active) setItems(list); }).catch(e => { if(active) setError(e.message); }).finally(()=>{if(active)setLoading(false);});
     return () => { active = false; };
   }, [user?.uid]);
-  useEffect(() => { const close = (e: KeyboardEvent) => { if(e.key==='Escape'&&!busy){setDetail(null);setPublishing(false);setCreating(false);} }; window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close); },[busy]);
+  useEffect(() => { const close = (e: KeyboardEvent) => { if(active&&e.key==='Escape'&&!busy){setDetail(null);setPublishing(false);setCreating(false);} }; window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close); },[busy,active]);
   useEffect(() => {
-    if (!creating && !publishing && !detail) return;
+    if (!active || (!creating && !publishing && !detail)) return;
     const previous = document.activeElement as HTMLElement | null;
     const modal = document.querySelector<HTMLElement>('.modal');
     const controls = () => Array.from(modal?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input,select,textarea,summary') || []);
@@ -60,7 +66,7 @@ export default function ToppingBar() {
     };
     document.addEventListener('keydown', trap);
     return () => { document.removeEventListener('keydown', trap); previous?.focus(); };
-  }, [creating, publishing, detail?.id]);
+  }, [active, creating, publishing, detail?.id]);
   async function run(action: () => Promise<void>) {
     setBusy(true);setError('');
     try { await action(); const list = await refresh(); setDetail(old=>old ? list.find(t=>t.id===old.id)||null : null); }
@@ -97,7 +103,7 @@ export default function ToppingBar() {
   const visible = items.filter(t=>`${t.name} ${t.description} ${t.author}`.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>sort==='newest'?b.createdAt-a.createdAt:b.users-a.users||b.createdAt-a.createdAt);
   function stars(t: Topping) { return <span className="stars" aria-label={t.rating == null ? 'Not rated yet' : `${t.rating.toFixed(1)} out of 5 stars`}><span aria-hidden="true">★★★★★</span><span aria-hidden="true" style={{width:`${(t.rating||0)*20}%`}}>★★★★★</span></span>; }
   return <div className="bar-page">
-    <header className="bar-nav"><a className="brand" href="toppings.html"><span className="brand-icon">✳</span> Hilltoppers <span className="brand-divider">/</span> Topping Bar</a><div className="nav-actions"><button className="quiet" onClick={signIn}>{user ? user.displayName || 'My account' : 'Sign in'}</button><div className="action-with-note"><button className="primary" onClick={()=>setPublishing(true)}>Publish a Topping <span>↗</span></button><span className="action-note" role="status">{notes.publish}</span></div></div></header>
+    <header className="bar-nav"><a className="brand" href="toppings.html"><span className="brand-icon">✳</span> Topping Bar</a><div className="nav-actions"><button className="quiet" disabled={!accountReady} onClick={signIn}>{!accountReady ? 'Restoring account…' : user ? user.displayName || 'My account' : 'Sign in'}</button><div className="action-with-note"><button className="primary" onClick={()=>setPublishing(true)}>Publish a Topping <span>↗</span></button><span className="action-note" role="status">{notes.publish}</span></div></div></header>
     <main>
       <section className="community-intro">
         <div className="intro-item">

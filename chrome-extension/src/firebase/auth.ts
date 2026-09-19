@@ -1,6 +1,8 @@
 import {
   createUserWithEmailAndPassword,
-  getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   reload,
   sendEmailVerification,
@@ -8,7 +10,6 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   browserLocalPersistence,
-  setPersistence,
   type ActionCodeSettings,
   type Auth,
   type Unsubscribe,
@@ -26,13 +27,11 @@ function getOrInitAuth(): Auth {
   }
 
   if (!cachedAuth) {
-    cachedAuth = getAuth(getFirebaseApp());
-    
-    // Set persistence and configure for Chrome extension environment
-    setPersistence(cachedAuth, browserLocalPersistence).catch((error) => {
-      console.warn('[auth] Failed to set persistence', error);
+    // Keep one persistence policy across pages, with migration from older localStorage sessions.
+    cachedAuth = initializeAuth(getFirebaseApp(), {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence]
     });
-    
+
     if ('useDeviceLanguage' in cachedAuth && typeof cachedAuth.useDeviceLanguage === 'function') {
       cachedAuth.useDeviceLanguage();
     }
@@ -69,60 +68,16 @@ export function onAuthState(callback: (user: User | null) => void): Unsubscribe 
   return onAuthStateChanged(auth, callback);
 }
 
-let authReadyPromise: Promise<User | null> | null = null;
-
-/**
- * Resolves after Firebase Auth has restored its persisted session (or confirmed
- * there is none). `getCurrentUser()` returns `null` until the first
- * `onAuthStateChanged` callback fires, so any code path that needs to decide
- * between remote (Firestore) and local (chrome.storage) data should await this
- * first to avoid a race on cold popup opens.
- *
- * Falls back to `null` after a short timeout so we never block UI indefinitely.
- */
-export function waitForAuthReady(timeoutMs = 2500): Promise<User | null> {
-  if (authReadyPromise) {
-    return authReadyPromise;
-  }
+// Read the current user after restoration every time; never cache a user or a timed-out null.
+export async function waitForAuthReady(): Promise<User | null> {
   const auth = getAuthIfAvailable();
-  if (!auth) {
-    authReadyPromise = Promise.resolve(null);
-    return authReadyPromise;
-  }
-  if (auth.currentUser) {
-    authReadyPromise = Promise.resolve(auth.currentUser);
-    return authReadyPromise;
-  }
-  authReadyPromise = new Promise<User | null>((resolve) => {
-    let settled = false;
-    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
-    let unsubscribe: Unsubscribe = () => {};
+  if (!auth) return null;
+  await auth.authStateReady();
+  return auth.currentUser;
+}
 
-    const finish = (user: User | null) => {
-      if (settled) return;
-      settled = true;
-      if (timeoutHandle !== null) {
-        clearTimeout(timeoutHandle);
-      }
-      try {
-        unsubscribe();
-      } catch {
-        // ignore
-      }
-      resolve(user);
-    };
-
-    unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => finish(user),
-      () => finish(null)
-    );
-    timeoutHandle = setTimeout(() => {
-      console.warn('[auth] waitForAuthReady timed out; falling back to current value');
-      finish(auth.currentUser ?? null);
-    }, timeoutMs);
-  });
-  return authReadyPromise;
+export async function resetPassword(email: string): Promise<void> {
+  await sendPasswordResetEmail(getOrInitAuth(), email.trim());
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<UserCredential> {

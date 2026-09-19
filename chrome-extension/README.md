@@ -82,7 +82,12 @@ the Google Cloud Console.
 
 ## Next Steps
 
-- Integrate Firebase authentication if required for secure read access.
+- Account management lives in `login.html`; `returnTo` accepts only Class settings
+  or Topping Bar. Login never automatically redirects. Firebase restores sessions
+  from IndexedDB, with migration from the previous localStorage persistence.
+- Preference edits save locally first. Account-specific pending uploads survive
+  page closure and are retried on the next preference sync. A pending upload or
+  an edit made during a cloud read prevents older cloud data replacing local edits.
 - Port additional settings or analytics from the iOS app as needed.
 - Add automated tests using `vitest` to cover scheduling calculations and background refresh logic.
 

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   FEEDBACK_AUDIENCE,
-  FEEDBACK_HEADING,
   FEEDBACK_MAX_LENGTH,
   FeedbackError,
   submitFeedback
@@ -20,9 +19,7 @@ const Feedback: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!canSend) {
-      return;
-    }
+    if (!canSend) return;
     setStatus('sending');
     setError(null);
     try {
@@ -35,75 +32,58 @@ const Feedback: React.FC = () => {
     }
   };
 
-  if (status === 'sent') {
-    return (
-      <main className="feedback">
-        <h1>Got it. Thanks.</h1>
-        <p className="feedback__lead">
-          {FEEDBACK_AUDIENCE === 'me' ? 'I read' : 'We read'} every one of these.
-        </p>
-        <button type="button" className="feedback__secondary" onClick={() => setStatus('idle')}>
-          Send another
-        </button>
-      </main>
-    );
-  }
-
   return (
     <main className="feedback">
-      <h1>{FEEDBACK_HEADING}</h1>
-      <p className="feedback__lead">
-        Tell {FEEDBACK_AUDIENCE} what you&rsquo;d change &mdash; a small fix, or something you wish
-        it did.
-      </p>
+      <header className="feedback__header">
+        <h1>Suggestions</h1>
+      </header>
 
-      <form onSubmit={handleSubmit} className="feedback__form">
-        <label className="feedback__field">
-          <textarea
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            placeholder={'The schedule was wrong on\u2026\nIt would be nice if\u2026'}
-            rows={7}
-            autoFocus
-            aria-label={FEEDBACK_HEADING}
-            disabled={status === 'sending'}
-            aria-describedby={remaining < 300 ? 'feedback-remaining' : undefined}
-          />
-          {remaining < 300 ? (
-            <span
-              id="feedback-remaining"
-              className={`feedback__count ${remaining < 0 ? 'over' : ''}`}
-            >
-              {remaining} left
-            </span>
-          ) : null}
-        </label>
-
-        <label className="feedback__field">
-          <span className="feedback__label">
-            Name or email, if you&rsquo;d like a reply <span className="feedback__optional">(optional)</span>
-          </span>
-          <input
-            type="text"
-            value={contact}
-            onChange={(event) => setContact(event.target.value)}
-            autoComplete="off"
-            disabled={status === 'sending'}
-          />
-        </label>
-
-        {error ? (
-          <p className="feedback__error" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        <div className="feedback__actions">
-          <button type="submit" className="feedback__primary" disabled={!canSend}>
-            {status === 'sending' ? 'Sending\u2026' : 'Send'}
+      {status === 'sent' ? (
+        <section className="feedback__panel feedback__success" aria-live="polite">
+          <div>
+            <h2>Thanks.</h2>
+            <p>{FEEDBACK_AUDIENCE === 'me' ? 'I read' : 'We read'} every suggestion.</p>
+          </div>
+          <button type="button" className="feedback__secondary" onClick={() => setStatus('idle')}>
+            Send another
           </button>
-        </div>
-      </form>
+        </section>
+      ) : (
+        <section className="feedback__panel">
+          <form onSubmit={handleSubmit} className="feedback__form">
+            <label className="feedback__field">
+              <span className="feedback__label">Suggestion</span>
+              <textarea
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="What should we change or add?"
+                rows={7}
+                autoFocus
+                aria-label="Your suggestion"
+                disabled={status === 'sending'}
+                aria-describedby={remaining < 300 ? 'feedback-remaining' : undefined}
+              />
+              {remaining < 300 ? (
+                <span id="feedback-remaining" className={`feedback__count ${remaining < 0 ? 'over' : ''}`}>
+                  {remaining} left
+                </span>
+              ) : null}
+            </label>
+            <label className="feedback__field">
+              <span className="feedback__label">
+                Contact <span className="feedback__optional">Optional</span>
+              </span>
+              <input type="text" value={contact} onChange={(event) => setContact(event.target.value)} autoComplete="off" disabled={status === 'sending'}/>
+            </label>
+            {error ? <p className="feedback__error" role="alert">{error}</p> : null}
+            <div className="feedback__actions">
+              <button type="submit" className="feedback__primary" disabled={!canSend}>
+                {status === 'sending' ? 'Sending…' : 'Send'}
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
     </main>
   );
 };
