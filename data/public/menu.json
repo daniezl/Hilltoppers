@@ -1,109 +1,39 @@
 {
-  "updatedAt": "2026-09-18T23:32:39.760Z",
+  "updatedAt": "2026-09-19T04:09:32.045Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-18",
+  "menuDate": "2026-09-19",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Green Bell Pepper",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese",
-        "Fresh Red Bell Pepper(s)"
-      ],
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Bean Burrito",
-        "Beef and Bean Burrito",
-        "Aztec Corn",
-        "Fajita Vegetables"
+        "Bacon Grilled Cheese",
+        "Texas Grilled Cheese Sandwich",
+        "Grilled Ham & Cheese",
+        "Seasoned Vegetable",
+        "Cream of Tomato Basil Soup"
       ],
-      "globalFare": [
-        "Crispy Chicken Bacon Ranch Wrap",
-        "Seasoned Fries",
-        "Sauteed Broccolini"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Roasted Pork Loin",
-        "Baked Sweet Potato",
-        "Green Beans with Oregano"
+        "Salisbury Steak With Espanol Sauce",
+        "Stewed Chickpea",
+        "Red Skin Mashed Potatoes",
+        "Honey-Glazed Roasted Root Vegetables"
       ],
       "globalFare": [
-        "Tofu Extra Firm 4 Oz Square",
-        "Mongolian Beef Stir Fry",
-        "Jasmine Rice",
-        "Shredded Carrots",
-        "Mushroom Medium White Fresh",
-        "Snow Peas"
+        "Garlic Butter Baked Cod",
+        "Curried Rice w/Potato and Chickpeas",
+        "Rice Pilaf",
+        "Sauteed Broccolini"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-18T23:32:39.760Z",
   "days": {
-    "2026-09-18": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Green Bell Pepper",
-          "Fresh Clipped Spinach",
-          "Cheese Omelet",
-          "Sliced Smoked Ham",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese",
-          "Fresh Red Bell Pepper(s)"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Mild Pork Sausage Link",
-          "Chocolate Chip Pancakes",
-          "Hashbrown Patty"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Bean Burrito",
-          "Beef and Bean Burrito",
-          "Aztec Corn",
-          "Fajita Vegetables"
-        ],
-        "globalFare": [
-          "Crispy Chicken Bacon Ranch Wrap",
-          "Seasoned Fries",
-          "Sauteed Broccolini"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Roasted Pork Loin",
-          "Baked Sweet Potato",
-          "Green Beans with Oregano"
-        ],
-        "globalFare": [
-          "Tofu Extra Firm 4 Oz Square",
-          "Mongolian Beef Stir Fry",
-          "Jasmine Rice",
-          "Shredded Carrots",
-          "Mushroom Medium White Fresh",
-          "Snow Peas"
-        ]
-      }
-    },
     "2026-09-19": {
       "breakfast": {
         "classicKitchen": [],
