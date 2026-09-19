@@ -17,9 +17,21 @@ body { background: var(--bg); }
 .dashboard-brand { display: flex; align-items: center; gap: 10px; padding: 0 12px 18px; margin-bottom: 16px; border-bottom: 1px solid var(--border); font-size: 17px; font-weight: 650; letter-spacing: -.3px; }
 .dashboard-logo { width: 30px; height: 30px; flex: none; border-radius: 7px; }
 .dashboard-sidebar nav { display: grid; gap: 6px; }
-.dashboard-sidebar nav a { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 8px; color: #607367; font-size: 13px; text-decoration: none; min-width: 0; }
+.dashboard-sidebar nav a { position: relative; z-index: 1; display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 8px; color: #607367; font-size: 13px; font-weight: 400; text-decoration: none; min-width: 0; transition: color 220ms ease, font-weight 260ms cubic-bezier(.22, 1, .36, 1); }
 .dashboard-sidebar nav a:hover { background: #eaf0e5; color: #243c32; }
 .dashboard-sidebar nav a[aria-current="page"] { background: #e2ebdc; color: #345840; font-weight: 600; }
+.dashboard-primary { position: relative; }
+.dashboard-primary a[aria-current="page"], .dashboard-primary a[aria-current="page"]:hover { background: transparent; }
+.dashboard-nav-indicator {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  background: #e2ebdc;
+  pointer-events: none;
+  transition: transform 260ms cubic-bezier(.22, 1, .36, 1), width 180ms ease, height 180ms ease, opacity 120ms ease;
+}
 .dashboard-sidebar a:focus-visible { outline: 3px solid #78a88c; outline-offset: 2px; }
 .dashboard-sidebar svg { width: 19px; height: 19px; flex: none; }
 .dashboard-sidebar svg.dashboard-topping-icon { width: 20px; height: 20px; }
@@ -67,4 +79,7 @@ body { background: var(--bg); }
   .dashboard-content { margin: 0; padding: 26px 20px; }
   .dashboard .bar-nav .brand { font-size: 23px; }
   .dashboard .login__container { margin: 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-nav-indicator, .dashboard-sidebar nav a { transition: none; }
 }

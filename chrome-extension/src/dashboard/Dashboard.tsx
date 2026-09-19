@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ToppingBar from '../toppings/ToppingBar';
 import ClassSettings from '../classSettings/ClassSettings';
 import Login from '../login/Login';
@@ -52,6 +52,10 @@ export default function Dashboard() {
   const [ready, setReady] = useState(false);
   const [returnPage, setReturnPage] = useState(() => new URLSearchParams(location.search).get('returnTo') || '');
   const heading = useRef<HTMLDivElement>(null);
+  const primaryNav = useRef<HTMLElement>(null);
+  const [navIndicator, setNavIndicator] = useState<React.CSSProperties>({
+    width: 0, height: 0, opacity: 0, transform: 'translate(0px, 0px)'
+  });
   useEffect(() => onAuthState(next => { setUser(next); setReady(true); }), []);
   useEffect(() => {
     const change = () => {
@@ -65,6 +69,30 @@ export default function Dashboard() {
   useEffect(() => {
     document.title = `${titles[page]} · Hilltoppers`;
     heading.current?.focus({ preventScroll: true });
+  }, [page]);
+  useLayoutEffect(() => {
+    const nav = primaryNav.current;
+    if (!nav) return undefined;
+    const update = () => {
+      const active = nav.querySelector<HTMLElement>('a[aria-current="page"]');
+      if (!active) {
+        setNavIndicator(current => ({ ...current, opacity: 0 }));
+        return;
+      }
+      const navBox = nav.getBoundingClientRect();
+      const activeBox = active.getBoundingClientRect();
+      setNavIndicator({
+        width: activeBox.width,
+        height: activeBox.height,
+        opacity: 1,
+        transform: `translate(${activeBox.left - navBox.left}px, ${activeBox.top - navBox.top}px)`
+      });
+    };
+    update();
+    window.addEventListener('resize', update);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(nav);
+    return () => { window.removeEventListener('resize', update); observer?.disconnect(); };
   }, [page]);
   function navigate(next: string) {
     if (!(next in titles)) return;
@@ -84,7 +112,8 @@ export default function Dashboard() {
   return <div className="dashboard">
     <aside className="dashboard-sidebar" aria-label="Hilltoppers navigation">
       <div className="dashboard-brand"><img src="icons/icon128.png" alt="" className="dashboard-logo"/> Hilltoppers</div>
-      <nav className="dashboard-primary" aria-label="Explore">
+      <nav className="dashboard-primary" aria-label="Explore" ref={primaryNav}>
+        <span className="dashboard-nav-indicator" style={navIndicator} aria-hidden="true"/>
         <a href="toppings.html" onClick={follow('toppings.html')} aria-current={page === 'toppings.html' ? 'page' : undefined}><svg className="dashboard-topping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4.5"/><path d="M12 6.75v10.5M6.75 12h10.5"/></svg>Topping Bar</a>
         <a href="class-settings.html" onClick={follow('class-settings.html')} aria-current={page === 'class-settings.html' ? 'page' : undefined}><SettingsIcon/>Settings</a>
         <a href="feedback.html" onClick={follow('feedback.html')} aria-current={page === 'feedback.html' ? 'page' : undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5"/></svg>Suggestions</a>
