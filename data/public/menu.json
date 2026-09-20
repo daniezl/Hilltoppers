@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-20T00:00:25.207Z",
+  "updatedAt": "2026-09-20T05:17:53.057Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-19",
+  "menuDate": "2026-09-20",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,61 +9,30 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Bacon Grilled Cheese",
-        "Texas Grilled Cheese Sandwich",
-        "Grilled Ham & Cheese",
-        "Seasoned Vegetable",
-        "Cream of Tomato Basil Soup"
+        "Seasoned Tater Tots",
+        "Plant-Based Chik'n Tenders",
+        "Buttered Corn",
+        "Chicken Waffle Sandwich"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Salisbury Steak With Espanol Sauce",
-        "Stewed Chickpea",
-        "Red Skin Mashed Potatoes",
-        "Honey-Glazed Roasted Root Vegetables"
+        "Chicken Breast Florentine",
+        "Manicotti W/ Florentine Sauce",
+        "Green Peas",
+        "Grilled Balsamic Yellow Squash"
       ],
       "globalFare": [
-        "Garlic Butter Baked Cod",
-        "Curried Rice w/Potato and Chickpeas",
-        "Rice Pilaf",
-        "Sauteed Broccolini"
+        "Pork Ribs Baby Back BBQ",
+        "Beer Battered French Fries",
+        "Baked Beans",
+        "Seasoned Corn on the Cob"
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-19T13:03:30.251Z",
+  "daysUpdatedAt": "2026-09-20T05:17:53.057Z",
   "days": {
-    "2026-09-19": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Bacon Grilled Cheese",
-          "Texas Grilled Cheese Sandwich",
-          "Grilled Ham & Cheese",
-          "Seasoned Vegetable",
-          "Cream of Tomato Basil Soup"
-        ],
-        "globalFare": []
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Salisbury Steak With Espanol Sauce",
-          "Stewed Chickpea",
-          "Red Skin Mashed Potatoes",
-          "Honey-Glazed Roasted Root Vegetables"
-        ],
-        "globalFare": [
-          "Garlic Butter Baked Cod",
-          "Curried Rice w/Potato and Chickpeas",
-          "Rice Pilaf",
-          "Sauteed Broccolini"
-        ]
-      }
-    },
     "2026-09-20": {
       "breakfast": {
         "classicKitchen": [],
@@ -352,6 +321,40 @@
           "Poblano Stuffed Pork Loin",
           "Confetti Rice",
           "Green Beans With Tomatoes"
+        ]
+      }
+    },
+    "2026-09-27": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Battered Cod Sandwich",
+          "Potato Wedges",
+          "Sauteed Spinach"
+        ],
+        "globalFare": [
+          "Pork Bacon",
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Meatless Stuffed Bell Peppers",
+          "Chimichurri Flank Steak",
+          "Roasted Fingerling Potatoes",
+          "Roasted Garlic Butter Mushrooms"
+        ],
+        "globalFare": [
+          "Roasted Red Pepper Hummus",
+          "Naan Bread",
+          "Indian Baked Rice",
+          "Oven Roasted Cauliflower with Turmeric"
         ]
       }
     }
