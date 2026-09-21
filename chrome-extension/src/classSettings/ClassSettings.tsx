@@ -16,7 +16,8 @@ import {
   lunchWaveFromName,
   saveSchedulePreferences,
   syncSchedulePreferencesFromRemote,
-  type SchedulePreferences
+  type SchedulePreferences,
+  type ThemeMode
 } from '../storage/schedulePreferences';
 import {
   ALL_GRADES, GRADE_LABELS, type GradeLevel,
@@ -26,6 +27,7 @@ import { onAuthState, reloadCurrentUser, signOut as signOutUser } from '../fireb
 import type { AuthUser } from '../firebase/auth';
 import { logClassSettingsReset, logPreferenceSaved, logScreenView } from '../firebase/analytics';
 import { FirebaseError } from 'firebase/app';
+import { useExtensionTheme } from '../theme';
 
 interface SaveState {
   status: 'idle' | 'saving' | 'success' | 'error';
@@ -419,6 +421,14 @@ const ClassSettings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  const handleThemeModeChange = (mode: ThemeMode) => {
+    setSchedulePrefs((prev) => ({
+      ...prev,
+      themeMode: mode
+    }));
+    setHasUnsavedChanges(true);
+  };
+
   const handleGradeLevelChange = (value: string) => {
     const grade = value ? (Number(value) as GradeLevel) : undefined;
     const gradYear = grade != null ? graduationYearFromGrade(grade) : undefined;
@@ -433,6 +443,12 @@ const ClassSettings: React.FC = () => {
     if (schedulePrefs.graduationYear == null) return '';
     return String(gradeFromGraduationYear(schedulePrefs.graduationYear));
   }, [schedulePrefs.graduationYear]);
+
+  const currentThemeMode = schedulePrefs.themeMode ?? 'system';
+  const resolvedTheme = useExtensionTheme(currentThemeMode);
+  const currentThemeClass = resolvedTheme === 'dark'
+    ? 'class-settings--dark'
+    : 'class-settings--light';
 
   const handleLunchWaveChange = (value: string) => {
     const wave = lunchWaveFromName(value);
@@ -483,7 +499,7 @@ const ClassSettings: React.FC = () => {
   };
 
   return (
-    <main className="class-settings">
+    <main className={`class-settings ${currentThemeClass}`}>
       <header className="class-settings__topbar" aria-label="Account status">
         {!authInitialized ? (
           <span className="class-settings__topbar-text">Checking sign-in status…</span>
@@ -566,6 +582,29 @@ const ClassSettings: React.FC = () => {
         <div className="class-settings__form">
           <section className="class-settings__panel">
             <h2>Display Settings</h2>
+            <div className="class-settings__theme-control">
+              <div className="class-settings__theme-heading">
+                <div>
+                  <h3>Appearance</h3>
+                  <p>Choose how the class settings page looks.</p>
+                </div>
+                <strong>{currentThemeMode === 'dark' ? 'Dark mode' : currentThemeMode === 'light' ? 'Light mode' : 'System'}</strong>
+              </div>
+              <div className="class-settings__theme-options" role="radiogroup" aria-label="Theme">
+                {(['light', 'system', 'dark'] as ThemeMode[]).map((mode) => (
+                  <label key={mode} className={`class-settings__theme-option ${currentThemeMode === mode ? 'class-settings__theme-option--selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="theme-mode"
+                      value={mode}
+                      checked={currentThemeMode === mode}
+                      onChange={() => handleThemeModeChange(mode)}
+                    />
+                    <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <div className="class-settings__field">
               <label htmlFor="time-format">Time format</label>
               <select

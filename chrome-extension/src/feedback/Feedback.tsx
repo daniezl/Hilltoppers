@@ -6,10 +6,12 @@ import {
   FeedbackError,
   submitFeedback
 } from '../services/feedbackService';
+import { useExtensionTheme } from '../theme';
 
 type Status = 'idle' | 'sending' | 'sent';
 
 const Feedback: React.FC = () => {
+  useExtensionTheme();
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<Status>('idle');

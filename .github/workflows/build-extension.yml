@@ -1,4 +1,4 @@
-name: Build extension
+name: Build extension artifact
 
 # Builds the Chrome extension and attaches the ready-to-load `dist/` folder to
 # the run as a zip, so a change can be tried without a local Node install:
@@ -12,7 +12,7 @@ on:
       - "chrome-extension/**"
       - ".github/workflows/build-extension.yml"
   push:
-    branches: [main]
+    branches: [main, add-class-settings-theme-mode]
     paths:
       - "chrome-extension/**"
       - ".github/workflows/build-extension.yml"
@@ -61,9 +61,18 @@ jobs:
         env:
           EXTENSION_BUILD_LABEL: ${{ steps.label.outputs.label }}
 
+      - name: Verify theme build
+        shell: bash
+        run: |
+          test "$(node -p "require('./dist/manifest.json').version")" = "1.4.24"
+          if grep -R -- "--theme-card: #000000\|--surface: #000000" dist/assets; then
+            echo "The build still contains pure-black dark cards."
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
         with:
-          name: hilltoppers-extension-${{ steps.label.outputs.slug }}
+          name: HilltoppersDarkv10
           path: chrome-extension/dist
           if-no-files-found: error
 

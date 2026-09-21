@@ -196,6 +196,91 @@ header {
   margin-top: 14px;
 }
 
+/* The popup uses the shared theme tokens so day-specific backgrounds and
+   dark-mode surfaces stay consistent with the other extension pages. */
+:root[data-theme='dark'] .popup {
+  color: var(--theme-text);
+}
+
+:root[data-theme='dark'] .popup .status,
+:root[data-theme='dark'] .popup .dining-content,
+:root[data-theme='dark'] .popup .calendar-content,
+:root[data-theme='dark'] .popup .schedule-list ul,
+:root[data-theme='dark'] .popup .schedule-toggle,
+:root[data-theme='dark'] .popup .cal-day-panel,
+:root[data-theme='dark'] .popup .dining-column {
+  background: var(--theme-card);
+  color: var(--theme-text);
+  border-color: var(--theme-card-border);
+}
+
+:root[data-theme='dark'] .popup input,
+:root[data-theme='dark'] .popup select,
+:root[data-theme='dark'] .popup textarea {
+  background: var(--theme-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+:root[data-theme='dark'] .popup .current-name,
+:root[data-theme='dark'] .popup .block-name,
+:root[data-theme='dark'] .popup .block-time,
+:root[data-theme='dark'] .popup .dining-item,
+:root[data-theme='dark'] .popup .dining-more-list,
+:root[data-theme='dark'] .popup .cal-event-title,
+:root[data-theme='dark'] .popup .cal-blocks li {
+  color: var(--theme-text);
+}
+
+:root[data-theme='dark'] .popup .next-label,
+:root[data-theme='dark'] .popup .time-label,
+:root[data-theme='dark'] .popup .dining-station,
+:root[data-theme='dark'] .popup .dining-meta,
+:root[data-theme='dark'] .popup .cal-day-title,
+:root[data-theme='dark'] .popup .cal-event-time,
+:root[data-theme='dark'] .popup .events-empty,
+:root[data-theme='dark'] .popup .events-meta,
+:root[data-theme='dark'] .popup .loading-state {
+  color: var(--theme-text-muted);
+}
+
+:root[data-theme='dark'] .popup .schedule-list li + li,
+:root[data-theme='dark'] .popup .cal-event + .cal-event,
+:root[data-theme='dark'] .popup .cal-schedule,
+:root[data-theme='dark'] .popup .dining-item,
+:root[data-theme='dark'] .popup .dining-more-list li + li {
+  border-color: var(--theme-border-muted);
+}
+
+:root[data-theme='dark'] .popup .schedule-toggle:hover,
+:root[data-theme='dark'] .popup .menu-day-step:hover:not(:disabled),
+:root[data-theme='dark'] .popup .feedback-link:hover,
+:root[data-theme='dark'] .popup .settings-button:hover {
+  background: var(--theme-card-muted);
+  color: var(--theme-text);
+}
+
+:root[data-theme='dark'] .popup .day-type-pill.green {
+  background: var(--theme-accent-soft);
+  color: var(--theme-accent-strong);
+  border-color: var(--theme-accent);
+}
+
+:root[data-theme='dark'] .popup .day-type-pill.white,
+:root[data-theme='dark'] .popup .day-type-pill.neutral {
+  background: #24282c;
+  color: #ffffff;
+  border-color: #596168;
+}
+
+:root[data-theme='dark'] .popup .progress-bar-track {
+  background: var(--theme-accent-soft);
+}
+
+:root[data-theme='dark'] .popup .progress-bar-fill {
+  background: var(--theme-accent);
+}
+
 .feedback-link {
   border: none;
   background: transparent;
@@ -1440,4 +1525,107 @@ header {
   .dining-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Keep these overrides last: the popup has many older component rules, while
+   dark mode needs one final palette decision for every visible surface. */
+:root[data-theme='dark'] .popup {
+  color: var(--theme-text);
+}
+
+:root[data-theme='dark'] .popup .status,
+:root[data-theme='dark'] .popup .dining-content,
+:root[data-theme='dark'] .popup .dining-period-tabs,
+:root[data-theme='dark'] .popup .dining-column,
+:root[data-theme='dark'] .popup .calendar-content,
+:root[data-theme='dark'] .popup .cal-day-panel,
+:root[data-theme='dark'] .popup .schedule-toggle,
+:root[data-theme='dark'] .popup .schedule-list ul,
+:root[data-theme='dark'] .popup .grade-prompt-row,
+:root[data-theme='dark'] .popup .grade-prompt-continue,
+:root[data-theme='dark'] .popup .idea-vote {
+  background: var(--theme-card);
+  color: var(--theme-text);
+  border-color: var(--theme-card-border);
+}
+
+:root[data-theme='dark'] .popup .cal-day.cal-green,
+:root[data-theme='dark'] .popup .schedule-list li.current-block,
+:root[data-theme='dark'] .popup .schedule-list li.upcoming-block,
+:root[data-theme='dark'] .popup .dining-period-tab.active,
+:root[data-theme='dark'] .popup .idea-vote.voted {
+  background: var(--theme-accent-soft);
+  color: var(--theme-text);
+  border-color: var(--theme-accent);
+}
+
+:root[data-theme='dark'] .popup .cal-day.cal-white,
+:root[data-theme='dark'] .popup .cal-day.cal-no-school,
+:root[data-theme='dark'] .popup .day-type-pill.white,
+:root[data-theme='dark'] .popup .day-type-pill.neutral {
+  background: #24282c;
+  color: var(--theme-text);
+  border-color: #596168;
+}
+
+:root[data-theme='dark'] .popup input,
+:root[data-theme='dark'] .popup select,
+:root[data-theme='dark'] .popup textarea {
+  background: var(--theme-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+:root[data-theme='dark'] .popup .current-name,
+:root[data-theme='dark'] .popup .block-name,
+:root[data-theme='dark'] .popup .block-time,
+:root[data-theme='dark'] .popup .dining-item,
+:root[data-theme='dark'] .popup .dining-more-list,
+:root[data-theme='dark'] .popup .cal-event-title,
+:root[data-theme='dark'] .popup .cal-blocks li,
+:root[data-theme='dark'] .popup .cal-month,
+:root[data-theme='dark'] .popup .schedule-toggle,
+:root[data-theme='dark'] .popup .dining-period-tab,
+:root[data-theme='dark'] .popup .idea-vote {
+  color: var(--theme-text);
+}
+
+:root[data-theme='dark'] .popup .next-label,
+:root[data-theme='dark'] .popup .time-label,
+:root[data-theme='dark'] .popup .dining-station,
+:root[data-theme='dark'] .popup .dining-meta,
+:root[data-theme='dark'] .popup .cal-day-title,
+:root[data-theme='dark'] .popup .cal-event-time,
+:root[data-theme='dark'] .popup .events-empty,
+:root[data-theme='dark'] .popup .events-meta,
+:root[data-theme='dark'] .popup .loading-state,
+:root[data-theme='dark'] .popup .ideas-empty,
+:root[data-theme='dark'] .popup .ideas-meta {
+  color: var(--theme-text-muted);
+}
+
+:root[data-theme='dark'] .popup .schedule-list li + li,
+:root[data-theme='dark'] .popup .cal-event + .cal-event,
+:root[data-theme='dark'] .popup .cal-schedule,
+:root[data-theme='dark'] .popup .dining-item,
+:root[data-theme='dark'] .popup .dining-more-list li + li {
+  border-color: var(--theme-border-muted);
+}
+
+:root[data-theme='dark'] .popup .progress-bar-track {
+  background: var(--theme-accent-soft);
+}
+
+:root[data-theme='dark'] .popup .progress-bar-fill {
+  background: var(--theme-accent);
+}
+
+:root[data-theme='dark'] .popup .dining-link,
+:root[data-theme='dark'] .popup .cal-event > a:hover .cal-event-title,
+:root[data-theme='dark'] .popup .idea-vote.voted {
+  color: var(--theme-accent-strong);
+}
+
+:root[data-theme='dark'] .popup .chevron {
+  border-top-color: var(--theme-icon);
 }
