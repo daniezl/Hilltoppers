@@ -1,67 +1,60 @@
 {
-  "updatedAt": "2026-09-21T01:28:10.296Z",
+  "updatedAt": "2026-09-21T07:01:51.069Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-20",
+  "menuDate": "2026-09-21",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Seasoned Tater Tots",
-        "Plant-Based Chik'n Tenders",
-        "Buttered Corn",
-        "Chicken Waffle Sandwich"
+        "Lo Mein Noodles Wide",
+        "Potsticker Vegetable 1 Oz Fzn App",
+        "Pork With Orange & Ginger",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Mushroom Miso Broth"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Furikake",
+        "Huli Huli Chicken",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Black Beans",
+        "Sauteed Peppers & Onions",
+        "Seasoned French Fries"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken Breast Florentine",
-        "Manicotti W/ Florentine Sauce",
-        "Green Peas",
-        "Grilled Balsamic Yellow Squash"
+        "Seasoned Ground Beef",
+        "Roll Dinner Hawaiian",
+        "Red Skin Mashed Potatoes",
+        "Sautéed Corn and Onions",
+        "Peas & Carrots",
+        "Brown Gravy",
+        "Green Salad"
       ],
       "globalFare": [
-        "Pork Ribs Baby Back BBQ",
-        "Beer Battered French Fries",
-        "Baked Beans",
-        "Seasoned Corn on the Cob"
+        "Vegetable & Pork Potsticker",
+        "Potsticker Vegetable 1 Oz Fzn App",
+        "Chicken Potstickers",
+        "Vegetable Egg Roll",
+        "Sugar Snap Peas with Red Peppers",
+        "Fortune Cookie"
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-20T17:37:32.748Z",
+  "daysUpdatedAt": "2026-09-21T07:01:51.069Z",
   "days": {
-    "2026-09-20": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Seasoned Tater Tots",
-          "Plant-Based Chik'n Tenders",
-          "Buttered Corn",
-          "Chicken Waffle Sandwich"
-        ],
-        "globalFare": []
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Chicken Breast Florentine",
-          "Manicotti W/ Florentine Sauce",
-          "Green Peas",
-          "Grilled Balsamic Yellow Squash"
-        ],
-        "globalFare": [
-          "Pork Ribs Baby Back BBQ",
-          "Beer Battered French Fries",
-          "Baked Beans",
-          "Seasoned Corn on the Cob"
-        ]
-      }
-    },
     "2026-09-21": {
       "breakfast": {
         "classicKitchen": [
@@ -355,6 +348,41 @@
           "Naan Bread",
           "Indian Baked Rice",
           "Oven Roasted Cauliflower with Turmeric"
+        ]
+      }
+    },
+    "2026-09-28": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Chicken Pot Pie 10 Oz",
+          "Vegetarian Pot Pie",
+          "Oven Roasted Garlic Potatoes",
+          "Seasoned Vegetable"
+        ],
+        "globalFare": [
+          "Frozen Green Peas",
+          "BBQ Meatballs",
+          "Sweet and Sour Meatballs",
+          "Brown Rice",
+          "Whole Kernel Corn"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Raspberry Balsamic Chicken",
+          "Roasted Tofu",
+          "Roasted Carrots & Potatoes with Dill",
+          "Green Peas"
+        ],
+        "globalFare": [
+          "Garlic Shrimp",
+          "Lentil, Rice & Spinach Pilaf",
+          "Orzo with Lemon Butter",
+          "Sauteed Squash & Zucchini"
         ]
       }
     }
