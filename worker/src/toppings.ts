@@ -59,7 +59,7 @@ export async function handleToppings(request: Request, env: ToppingsEnv): Promis
     return respond({ ok: true });
   }
   if (path === '/api/toppings' && request.method === 'GET') {
-    const rows = await env.TOPPINGS_DB.prepare(`SELECT t.id, t.name, t.description, t.url, t.image,
+    const rows = await env.TOPPINGS_DB.prepare(`SELECT t.id, t.name, t.description, t.url, t.image, t.icon,
       t.author, t.graduation_year AS graduationYear, t.created_at AS createdAt,
       (SELECT COUNT(*) FROM topping_users u WHERE u.topping_id=t.id) AS users,
       (SELECT AVG(stars) FROM topping_ratings r WHERE r.topping_id=t.id) AS rating,
@@ -90,11 +90,13 @@ export async function handleToppings(request: Request, env: ToppingsEnv): Promis
       (body.graduationYear != null && (!Number.isInteger(body.graduationYear) || body.graduationYear < 1950 || body.graduationYear > 2100))) {
       return respond({ error: 'Enter a name, a short description, and valid HTTPS page and preview-image URLs.' }, 400);
     }
+    const icon = body.icon ?? 'sparkle';
+    if (!['sparkle','chat','book','calendar','clock','checklist','music','trophy','lightbulb','heart','bell','people'].includes(icon)) return respond({error:'Choose a valid icon.'},400);
     const id = crypto.randomUUID();
     const result = await env.TOPPINGS_DB.prepare(`INSERT INTO toppings
-      (id,name,description,url,image,author_uid,author,graduation_year,created_at)
-      SELECT ?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM toppings WHERE author_uid=? AND hidden=0)<20`)
-      .bind(id, body.name.trim(), body.description.trim(), body.url, body.image, user.uid, author, body.graduationYear ?? null, Date.now(), user.uid).run();
+      (id,name,description,url,image,author_uid,author,graduation_year,created_at,icon)
+      SELECT ?,?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM toppings WHERE author_uid=? AND hidden=0)<20`)
+      .bind(id, body.name.trim(), body.description.trim(), body.url, body.image, user.uid, author, body.graduationYear ?? null, Date.now(), icon, user.uid).run();
     if (!result.meta.changes) return respond({ error: 'You can have up to 20 published Toppings.' }, 429);
     return respond({ id }, 201);
   }

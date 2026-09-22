@@ -105,9 +105,14 @@ This is a separate Worker (`hilltoppers-topping-bar`) and D1 database
 (`hilltoppers-toppings`), configured in `wrangler.toppings.toml`. It shares only
 Firebase verification helpers with the paused Ideas service, not its bindings.
 Apply `npx wrangler d1 execute hilltoppers-toppings --config wrangler.toppings.toml
---file=toppings-schema.sql --remote` before `npm run deploy:toppings`. The migration
-is idempotent and seeds Ask SJA with zero users and no ratings. Keep
+--file=toppings-schema.sql --remote` before `npm run deploy:toppings`. The base schema seeds Ask SJA with zero users and no ratings. For an existing
+database without the `icon` column, first apply `topping-icon-migration.sql`
+with the same command (once only), then apply the base schema. Keep
 `TOPPING_EMAIL_DOMAINS` set to `student.stjacademy.org,stjacademy.org`.
+
+Published Toppings accept an `icon` ID: `sparkle` (default), `chat`, `book`,
+`calendar`, `clock`, `checklist`, `music`, `trophy`, `lightbulb`, `heart`, `bell`,
+or `people`. The extension uses it in the collapsed Topping header.
 
 GET `/api/toppings` lists public cards sorted by unique browser registrations,
 with optional caller installation/rating fields. POST publishes immediately for

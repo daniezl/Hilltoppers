@@ -243,3 +243,10 @@
 @media (prefers-reduced-motion: reduce) {
   .topping-install, .topping-install svg *, .topping-install-labels > span { transition: none; }
 }
+
+.topping-icon-picker { border: 0; margin: 0; padding: 0; min-width: 0; }
+.topping-icon-picker legend { font-size: 12px; font-weight: 500; margin-bottom: 10px; color: #52664f; }
+.topping-icon-picker > div { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 8px; }
+.topping-icon-picker button { display: grid; place-items: center; height: 44px; padding: 0; background: #f7f9f4; border: 1px solid #dce3d9; border-radius: 8px; color: #607367; }
+.topping-icon-picker button:hover { background: #edf2e9; }
+.topping-icon-picker button[aria-pressed="true"] { background: #e2ecdd; border-color: #577962; color: #365d45; box-shadow: inset 0 0 0 1px #577962; }

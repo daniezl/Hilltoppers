@@ -104,3 +104,12 @@ test('verified linked school email permits publishing under the school-derived a
  expect(catalog.toppings.find((t:any)=>t.author==='Yaoyu Zhang')).toBeTruthy();
  auth.user={...auth.user,uid:'not-linked'};expect((await request('','POST',listing)).status).toBe(403);
 });
+
+test('published icon survives the catalog and unknown icons are rejected',async()=>{
+ auth.user=student;
+ const r=await request('','POST',{...listing,icon:'book'});expect(r.status).toBe(201);
+ const {id}=await r.json() as any;
+ const catalog=await (await request()).json() as any;
+ expect(catalog.toppings.find((t:any)=>t.id===id).icon).toBe('book');
+ expect((await request('','POST',{...listing,icon:'https://example.org/icon.svg'})).status).toBe(400);
+});

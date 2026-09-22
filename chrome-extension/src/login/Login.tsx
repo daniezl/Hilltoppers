@@ -246,7 +246,6 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
         {schoolError && <p role="alert" className="login__error school-link-error">{schoolError}</p>}
         </div>
       </section>
-      <div className="account-name-row"><span>Name:</span><strong>{nameFromEmail(school?.email || user.email || '')}</strong></div>
       <div className="account-sign-out-row">
         <button className="danger account-action" disabled={busy} onClick={() => {
           if (!window.confirm('Sign out of Hilltoppers?')) return;

@@ -234,7 +234,3 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 @media (prefers-reduced-motion: reduce) {
  .school-link-button svg g, .school-link-button svg path, .school-link-labels > span, .school-code-cells span { transition: none; }
 }
-
-.account-name-row { display: flex; align-items: baseline; gap: 12px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-size: 13px; }
-.account-name-row > span { color: var(--muted); }
-.account-name-row > strong { color: var(--text); font-weight: 500; overflow-wrap: anywhere; min-width: 0; }

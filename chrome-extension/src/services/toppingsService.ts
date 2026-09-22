@@ -1,7 +1,7 @@
 import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 
 export interface Topping {
-  id: string; name: string; description: string; url: string; image: string;
+  id: string; icon?: string; name: string; description: string; url: string; image: string;
   author: string; graduationYear: number | null; createdAt: number;
   users: number; rating: number | null; ratingCount: number;
   installed: boolean; myRating: number | null; owned: boolean;
@@ -11,7 +11,7 @@ const API = 'https://hilltoppers-topping-bar.danielzhang089.workers.dev/api/topp
 export const TOPPINGS_KEY = 'installedToppings';
 export const PREVIEW_TOPPING_KEY = 'previewTopping';
 export const ASK_SJA: Topping = {
-  id: 'ask-sja', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
+  id: 'ask-sja', icon: 'chat', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
   url: 'https://ask-sja-topping.danielzhang089.workers.dev/', image: 'builtin:ask-sja',
   author: 'Yaoyu Zhang', graduationYear: 2027, createdAt: 0, users: 0, rating: null,
   ratingCount: 0, installed: false, myRating: null, owned: false

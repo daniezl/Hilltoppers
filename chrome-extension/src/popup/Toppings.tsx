@@ -1,3 +1,4 @@
+import ToppingIcon from '../toppings/ToppingIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { changeTopping, localToppings, fetchToppings, openToppingBar, PREVIEW_TOPPING_KEY, TOPPINGS_KEY, type Topping } from '../services/toppingsService';
 import { useRevealExpandedSection } from './useRevealExpandedSection';
@@ -71,9 +72,7 @@ function ToppingSection({ topping }: { topping: Topping }) {
     <button type="button" className="schedule-toggle" aria-expanded={expanded}
       aria-controls={`topping-${topping.id}`} onClick={() => setExpanded(value => !value)}>
       <span className="toggle-title">
-        <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2ZM8 9h8M8 13h5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <ToppingIcon className="toggle-title-icon" icon={topping.icon || (topping.id === 'ask-sja' ? 'chat' : 'sparkle')}/>
         <span>{topping.name}</span>
         {topping.preview && <span className="topping-preview-badge">Preview</span>}
       </span>
