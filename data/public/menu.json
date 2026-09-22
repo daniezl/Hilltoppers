@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T07:34:27.125Z",
+  "updatedAt": "2026-09-22T13:18:25.237Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-22",
   "menus": {
@@ -47,7 +47,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-21T19:42:58.005Z",
+  "daysUpdatedAt": "2026-09-22T13:18:25.237Z",
   "days": {
     "2026-09-22": {
       "breakfast": {
@@ -326,6 +326,41 @@
           "Lentil, Rice & Spinach Pilaf",
           "Orzo with Lemon Butter",
           "Sauteed Squash & Zucchini"
+        ]
+      }
+    },
+    "2026-09-29": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Nacho Bar",
+          "Spicy Refried Beans",
+          "Brown Rice",
+          "Roasted Confetti Corn",
+          "Nacho Cheese Sauce",
+          "Chili con Carne"
+        ],
+        "globalFare": [
+          "General Tso's Chicken",
+          "Braised Gochujang Tofu",
+          "Brown Rice",
+          "Stir Fry Vegetables"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Loaded Bacon Ranch Fries",
+          "Kansas City BBQ Pulled Pork",
+          "Baked Beans",
+          "Seasoned Corn on the Cob"
+        ],
+        "globalFare": [
+          "Garlic Thai Chicken",
+          "Capellini",
+          "Asian Style Snap Peas"
         ]
       }
     }
