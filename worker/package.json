@@ -9,7 +9,8 @@
     "setup:ideas": "node scripts/setup-ideas.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "deploy:toppings": "wrangler deploy --config wrangler.toppings.toml"
+    "deploy:toppings": "wrangler deploy --config wrangler.toppings.toml",
+    "deploy:email": "wrangler deploy --config wrangler.email.toml"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240117.0",

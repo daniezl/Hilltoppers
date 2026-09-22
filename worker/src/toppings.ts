@@ -1,5 +1,6 @@
 export interface ToppingsEnv {
   TOPPINGS_DB: D1Database;
+  SCHOOL_EMAIL_DB?: D1Database;
   FIREBASE_PROJECT_ID: string;
   TOPPING_EMAIL_DOMAINS: string;
 }
@@ -70,12 +71,18 @@ export async function handleToppings(request: Request, env: ToppingsEnv): Promis
     return respond({ toppings: rows.results });
   }
   if (!user) return respond({ error: 'Sign in to continue.' }, 401);
-  if (!user.emailVerified) return respond({ error: 'Verify your email before continuing.' }, 403);
+  const publishing = path === '/api/toppings' && request.method === 'POST';
+  if (!publishing && !user.emailVerified) return respond({ error: 'Verify your email before continuing.' }, 403);
   if (path === '/api/toppings' && request.method === 'POST') {
     const domains = (env.TOPPING_EMAIL_DOMAINS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
     if (!domains.length) return respond({ error: 'Publishing is not configured yet.' }, 503);
-    if (!domains.includes(user.email.split('@')[1])) return respond({ error: 'Use your verified school email to publish.' }, 403);
-    if (!user.fullName || /^anonymous$/i.test(user.fullName)) return respond({ error: 'Set your real name in your account before publishing.' }, 400);
+    let author = user.fullName;
+    if (!user.emailVerified || !domains.includes(user.email.split('@')[1])) {
+      const linked = await env.SCHOOL_EMAIL_DB?.prepare('SELECT email FROM school_links WHERE uid=?').bind(user.uid).first<{email:string}>();
+      if (!linked || !domains.includes(linked.email.split('@')[1])) return respond({ error: 'Link and verify your school email to publish.' }, 403);
+      author = linked.email.split('@')[0].split(/[._-]+/).filter(Boolean).map(part=>part[0].toUpperCase()+part.slice(1)).join(' ');
+    }
+    if (!author || /^anonymous$/i.test(author)) return respond({ error: 'Set your real name in your account before publishing.' }, 400);
     const body = await readBody(request);
     if (!body || typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.length > 48 ||
       typeof body.description !== 'string' || body.description.trim().length < 10 || body.description.length > 180 ||
@@ -87,7 +94,7 @@ export async function handleToppings(request: Request, env: ToppingsEnv): Promis
     const result = await env.TOPPINGS_DB.prepare(`INSERT INTO toppings
       (id,name,description,url,image,author_uid,author,graduation_year,created_at)
       SELECT ?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM toppings WHERE author_uid=? AND hidden=0)<20`)
-      .bind(id, body.name.trim(), body.description.trim(), body.url, body.image, user.uid, user.fullName, body.graduationYear ?? null, Date.now(), user.uid).run();
+      .bind(id, body.name.trim(), body.description.trim(), body.url, body.image, user.uid, author, body.graduationYear ?? null, Date.now(), user.uid).run();
     if (!result.meta.changes) return respond({ error: 'You can have up to 20 published Toppings.' }, 429);
     return respond({ id }, 201);
   }

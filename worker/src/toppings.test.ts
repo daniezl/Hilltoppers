@@ -93,3 +93,14 @@ test('authenticated upgrade replaces legacy account registration instead of doub
  await request('/'+id+'/install','POST');await guest('/'+id+'/install','POST');
  const t=(await (await guest()).json() as any).toppings.find((t:any)=>t.id===id);expect(t.users).toBe(1);
 });
+
+test('verified linked school email permits publishing under the school-derived author',async()=>{
+ await env.TOPPINGS_DB.prepare('CREATE TABLE IF NOT EXISTS school_links (uid TEXT PRIMARY KEY,email TEXT)').run();
+ env.SCHOOL_EMAIL_DB=env.TOPPINGS_DB;
+ auth.user={...student,uid:'linked-personal',email:'personal@example.org',emailVerified:false,fullName:'Untrusted name'};
+ await env.TOPPINGS_DB.prepare('INSERT INTO school_links VALUES (?,?)').bind(auth.user.uid,'yaoyu.zhang@student.stjacademy.org').run();
+ expect((await request('','POST',listing)).status).toBe(201);
+ const catalog=await (await request()).json() as any;
+ expect(catalog.toppings.find((t:any)=>t.author==='Yaoyu Zhang')).toBeTruthy();
+ auth.user={...auth.user,uid:'not-linked'};expect((await request('','POST',listing)).status).toBe(403);
+});

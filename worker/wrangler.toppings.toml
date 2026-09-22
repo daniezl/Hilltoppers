@@ -11,3 +11,8 @@ database_id = "87cca241-ec36-40e1-a5a4-a69a6bd9c66f"
 [vars]
 FIREBASE_PROJECT_ID = "schedule-59d28"
 TOPPING_EMAIL_DOMAINS = "student.stjacademy.org,stjacademy.org"
+
+[[d1_databases]]
+binding = "SCHOOL_EMAIL_DB"
+database_name = "hilltoppers-account-email"
+database_id = "521a503e-65d2-47ac-87eb-e9ea62a67293"

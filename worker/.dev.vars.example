@@ -8,3 +8,8 @@ ADMINS=admin@example.com
 # 可选：Cloudflare Access audience tag
 # CLOUDFLARE_ACCESS_AUD=your-aud-tag
 
+
+# Account email Worker (wrangler.email.toml), server-only secrets.
+# RESEND_API_KEY=your-dedicated-sending-only-key
+# OTP_SECRET=generate-a-random-secret-of-at-least-32-bytes
+# FIREBASE_SERVICE_ACCOUNT={"project_id":"schedule-59d28","client_email":"...","private_key":"..."}

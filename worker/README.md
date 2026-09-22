@@ -134,3 +134,68 @@ independently hosted code.
 
 Run `npm run typecheck` and `npm test` before deployment. Tests use a local D1
 simulator and mocked identity verification, never real student accounts.
+
+## Account email
+
+`wrangler.email.toml` runs the separate `hilltoppers-account-email` Worker.
+Firebase remains the account store. Resend sends both a Firebase action link
+and a six-digit code for password reset or email verification. School email linking uses a separate code-only flow and preserves the original
+Firebase sign-in email. This does not implement passwordless sign-in.
+
+Server secrets are `RESEND_API_KEY` (sending-only), `OTP_SECRET` (at least 32
+random bytes), and `FIREBASE_SERVICE_ACCOUNT` (JSON for this Firebase project).
+The service account needs `firebaseauth.users.sendEmail` to generate Firebase action links and
+`firebaseauth.users.get` to check whether a reset address is registered. Never put these values in the extension or commit them.
+Set each through `wrangler secret put NAME --config wrangler.email.toml`.
+`EMAIL_FROM` must use a domain verified in Resend. The current sender is
+`Hilltoppers <hilltoppers@daniezl.com>`.
+
+Initialize with `wrangler d1 execute hilltoppers-account-email --config
+wrangler.email.toml --file=email-schema.sql --remote`. Run `npm run typecheck`
+and `npm test`, then `npm run deploy:email` once the secrets are configured.
+Do not ship the extension client before the live service has been verified.
+
+POST `/api/account-email/send` accepts `purpose: reset` with `email`, or
+`purpose: verify` with a Firebase bearer token. Verification always uses the
+signed-in account's address. Both return an opaque `challengeId`. POST
+`/api/account-email/redeem` takes that ID and a six-digit `code` (and the same
+account's token for verification). It returns the Firebase `actionCode`, which
+the client applies through Firebase's password reset/email verification SDK.
+Unknown reset addresses return 404 with "No account found with this email."
+after an authenticated Firebase account lookup. Lookup or delivery failures
+remain service errors, never an unregistered-account message.
+
+Codes expire after 10 minutes, permit five attempts and can be redeemed once.
+Action codes are encrypted in D1 and OTPs are keyed hashes. Rate limits apply
+per recipient, IP and globally. Expired rows are removed hourly. Resend errors
+are reported as failures rather than successful sends. Tests mock Firebase and
+Resend and use a local D1 simulator; they do not send real email. Links retain
+Firebase's own expiration and one-time-use rules. A Resend delivery event means
+the destination server accepted the mail, not that it escaped spam/quarantine.
+
+POST `/api/account-email/check` accepts an email and returns `exists` for failed
+password sign-ins. It shares the IP rate limit and has a separate global lookup
+limit. It never sends mail or creates a reset challenge. If lookup fails, the
+client preserves Firebase's original login error instead of claiming absence.
+
+### School email binding
+
+POST `/api/account-email/school` returns the authenticated account's school
+email and verification status. School-domain sign-in accounts use Firebase's
+verification state directly. Other accounts can POST `/school/send` with a
+school email, then `/school/redeem` with the challenge ID and code. All three
+routes require the caller's Firebase token. Codes are bound to that UID, expire
+in ten minutes, allow five attempts and are consumed atomically with binding.
+Only `student.stjacademy.org` and `stjacademy.org` are accepted. Each UID and
+school email can have one binding. No Firebase login address or password is
+changed. Pending addresses are encrypted; confirmed bindings live in the
+private `school_links` table. POST `/school/unlink` removes only the authenticated caller’s binding and pending
+codes. The UI asks for confirmation. It cannot unlink a primary school login
+email. Unlinking revokes linked-school publishing eligibility without deleting
+existing Toppings or changing login credentials.
+
+The Topping Bar Worker reads the same database through `SCHOOL_EMAIL_DB` to
+recognize verified bindings for publishing. For linked accounts, the public
+author name is derived from the school email's local part; it is not a
+Microsoft directory lookup. Apply `email-schema.sql` before deploying the
+email and Topping Bar Workers with these routes/bindings.
