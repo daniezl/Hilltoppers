@@ -56,23 +56,25 @@ export async function localToppings(): Promise<Topping[]> {
   const preview = previewData[PREVIEW_TOPPING_KEY] as Topping | undefined;
   if (preview?.preview) {
     try {
-      const url = new URL(preview.url);
-      if ((url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '[::1]') &&
-          (url.protocol === 'http:' || url.protocol === 'https:')) installed.push(preview);
-    } catch { /* Ignore an invalid local preview saved by an older build. */ }
+      parsePreviewUrl(preview.url);
+      installed.push(preview);
+    } catch { /* Ignore unsupported preview URLs. */ }
   }
   return installed;
 }
+function parsePreviewUrl(address: string): URL {
+  try {
+    const url = new URL(address.trim());
+    const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if ((url.protocol === 'https:' || (localHost && url.protocol === 'http:')) && !url.username && !url.password) return url;
+  } catch { /* Use the same message for malformed and unsupported addresses. */ }
+  throw new Error('Enter an HTTPS URL or a local address such as http://localhost:5173.');
+}
 export async function savePreviewTopping(name: string, address: string): Promise<Topping> {
-  const raw = address.trim();
-  const url = new URL(/^[a-z][a-z\d+.-]*:/i.test(raw) ? raw : `http://${raw}`);
-  const localHost = url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '[::1]';
-  if (!localHost || (url.protocol !== 'http:' && url.protocol !== 'https:') || url.username || url.password) {
-    throw new Error('Use a local address such as http://localhost:5173.');
-  }
+  const url = parsePreviewUrl(address);
   const topping: Topping = {
     id: 'local-preview', name: name.trim() || 'Preview Topping',
-    description: 'A temporary Topping from your local development server.', url: url.href,
+    description: 'A temporary Topping preview.', url: url.href,
     image: '', author: 'Only you', graduationYear: null, createdAt: Date.now(), users: 0,
     rating: null, ratingCount: 0, installed: true, myRating: null, owned: true, preview: true
   };
