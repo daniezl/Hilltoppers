@@ -1,111 +1,54 @@
 {
-  "updatedAt": "2026-09-22T01:45:35.505Z",
+  "updatedAt": "2026-09-22T07:34:27.125Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-21",
+  "menuDate": "2026-09-22",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
-        "Egg and Cheese Biscuit",
-        "Sausage & Cheese Biscuit"
+        "Mild Shredded Cheddar Cheese",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Red Onions",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Lo Mein Noodles Wide",
-        "Potsticker Vegetable 1 Oz Fzn App",
-        "Pork With Orange & Ginger",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Mushroom Miso Broth"
+        "Fried Chicken Drumsticks",
+        "Red Quinoa & Garbanzo Beans",
+        "Rice Pilaf",
+        "Honey Buttered Baby Carrots"
       ],
       "globalFare": [
-        "Furikake",
-        "Huli Huli Chicken",
-        "Broccoli & Mushroom Vegetarian Stir Fry",
-        "Black Beans",
-        "Sauteed Peppers & Onions",
-        "Seasoned French Fries"
+        "Glazed Baked Ham",
+        "Mashed Sweet Potatoes",
+        "Sautéed Garlic Kale"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Roll Dinner Hawaiian",
-        "Red Skin Mashed Potatoes",
-        "Sautéed Corn and Onions",
-        "Peas & Carrots",
-        "Brown Gravy",
-        "Green Salad"
+        "Country Fried Steak",
+        "Scalloped Potatoes",
+        "Fresh Roasted Green Beans"
       ],
       "globalFare": [
-        "Vegetable & Pork Potsticker",
-        "Potsticker Vegetable 1 Oz Fzn App",
-        "Chicken Potstickers",
-        "Vegetable Egg Roll",
-        "Sugar Snap Peas with Red Peppers",
-        "Fortune Cookie"
+        "Roasted Tomatoes & Zucchini",
+        "Chicken, Shrimp, and Sausage Jambalaya",
+        "French Bread",
+        "Jasmine Rice"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-21T19:42:58.005Z",
   "days": {
-    "2026-09-21": {
-      "breakfast": {
-        "classicKitchen": [
-          "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
-          "Egg and Cheese Biscuit",
-          "Sausage & Cheese Biscuit"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Buttermilk Pancake(s)",
-          "Sausage Patty",
-          "Hashbrown Patty"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Lo Mein Noodles Wide",
-          "Potsticker Vegetable 1 Oz Fzn App",
-          "Pork With Orange & Ginger",
-          "Broccoli & Mushroom Vegetarian Stir Fry",
-          "Mushroom Miso Broth"
-        ],
-        "globalFare": [
-          "Furikake",
-          "Huli Huli Chicken",
-          "Broccoli & Mushroom Vegetarian Stir Fry",
-          "Black Beans",
-          "Sauteed Peppers & Onions",
-          "Seasoned French Fries"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Seasoned Ground Beef",
-          "Roll Dinner Hawaiian",
-          "Red Skin Mashed Potatoes",
-          "Sautéed Corn and Onions",
-          "Peas & Carrots",
-          "Brown Gravy",
-          "Green Salad"
-        ],
-        "globalFare": [
-          "Vegetable & Pork Potsticker",
-          "Potsticker Vegetable 1 Oz Fzn App",
-          "Chicken Potstickers",
-          "Vegetable Egg Roll",
-          "Sugar Snap Peas with Red Peppers",
-          "Fortune Cookie"
-        ]
-      }
-    },
     "2026-09-22": {
       "breakfast": {
         "classicKitchen": [
