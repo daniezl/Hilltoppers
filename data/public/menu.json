@@ -1,99 +1,47 @@
 {
-  "updatedAt": "2026-09-22T23:44:39.659Z",
+  "updatedAt": "2026-09-23T04:20:25.242Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-22",
+  "menuDate": "2026-09-23",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Red Onions",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Bacon Egg and Cheese Croissant",
+        "Egg and Cheese Croissant",
+        "Sausage and Egg Croissant"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Chicken Sausage Patty",
+        "Belgian Waffle w/ Powder Sugar & Syrup",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Fried Chicken Drumsticks",
-        "Red Quinoa & Garbanzo Beans",
-        "Rice Pilaf",
-        "Honey Buttered Baby Carrots"
+        "Grilled Chicken Breast",
+        "Penne Pasta with Alfredo Sauce",
+        "Garlic Bread",
+        "Fresh Roasted Broccoli"
       ],
       "globalFare": [
-        "Glazed Baked Ham",
-        "Mashed Sweet Potatoes",
-        "Sautéed Garlic Kale"
+        "Sloppy Joe Beef",
+        "Curly Fries",
+        "Buttered Corn"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Country Fried Steak",
-        "Scalloped Potatoes",
-        "Fresh Roasted Green Beans"
+        "Corned Beef",
+        "Steamed Potatoes"
       ],
       "globalFare": [
-        "Roasted Tomatoes & Zucchini",
-        "Chicken, Shrimp, and Sausage Jambalaya",
-        "French Bread",
-        "Jasmine Rice"
+        "Coconut Lime Tilapia",
+        "French Bread"
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-22T13:18:25.237Z",
+  "daysUpdatedAt": "2026-09-23T04:20:25.242Z",
   "days": {
-    "2026-09-22": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Cheese Omelet",
-          "Sliced Smoked Ham",
-          "Red Onions",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Cinnamon French Toast Homemade",
-          "Corned Beef Hash",
-          "Scrambled Eggs",
-          "Home Fried Potatoes"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Fried Chicken Drumsticks",
-          "Red Quinoa & Garbanzo Beans",
-          "Rice Pilaf",
-          "Honey Buttered Baby Carrots"
-        ],
-        "globalFare": [
-          "Glazed Baked Ham",
-          "Mashed Sweet Potatoes",
-          "Sautéed Garlic Kale"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Country Fried Steak",
-          "Scalloped Potatoes",
-          "Fresh Roasted Green Beans"
-        ],
-        "globalFare": [
-          "Roasted Tomatoes & Zucchini",
-          "Chicken, Shrimp, and Sausage Jambalaya",
-          "French Bread",
-          "Jasmine Rice"
-        ]
-      }
-    },
     "2026-09-23": {
       "breakfast": {
         "classicKitchen": [
@@ -361,6 +309,37 @@
           "Garlic Thai Chicken",
           "Capellini",
           "Asian Style Snap Peas"
+        ]
+      }
+    },
+    "2026-09-30": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Grilled Pesto-Marinated Chicken Breast",
+          "Baked Tofu Steak",
+          "Parmesan Orzo",
+          "California Blend Vegetables"
+        ],
+        "globalFare": [
+          "Black Bean Patty",
+          "Hamburger on a Bun",
+          "French Fries"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Tofu Vegetable Scramble",
+          "Red Skin Mashed Potatoes",
+          "Roasted Carrots"
+        ],
+        "globalFare": [
+          "Peppered Flank Steak",
+          "Beef Stew"
         ]
       }
     }
