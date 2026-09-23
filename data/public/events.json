@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-08-31T12:46:59Z",
+  "sourceUpdatedAt": "2026-09-23T18:17:20Z",
   "events": [
     {
       "id": "51741-1",
@@ -1047,6 +1047,30 @@
       "url": "https://stjacademy.org/events/event/no-classes/"
     },
     {
+      "id": "53684-1",
+      "title": "SJA Theatre Presents She Kills Monsters",
+      "start": "2026-11-12",
+      "end": "2026-11-12",
+      "allDay": false,
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/sja-theatre-presents-she-kills-monsters/"
+    },
+    {
+      "id": "53685-1",
+      "title": "SJA Theatre Presents She Kills Monsters",
+      "start": "2026-11-15",
+      "end": "2026-11-15",
+      "allDay": false,
+      "startTime": "14:00",
+      "endTime": "15:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/sja-theatre-presents-she-kills-monsters-2/"
+    },
+    {
       "id": "51420-1",
       "title": "Thanksgiving Break",
       "start": "2026-11-25",
@@ -1069,6 +1093,18 @@
       "kind": "schedule",
       "description": "",
       "url": "https://stjacademy.org/events/event/capstone-day-3/"
+    },
+    {
+      "id": "53686-1",
+      "title": "Holiday Concert",
+      "start": "2026-12-16",
+      "end": "2026-12-16",
+      "allDay": false,
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/holiday-concert/"
     },
     {
       "id": "51423-1",
