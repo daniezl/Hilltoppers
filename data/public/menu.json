@@ -1,85 +1,60 @@
 {
-  "updatedAt": "2026-09-24T00:46:54.870Z",
+  "updatedAt": "2026-09-24T05:59:00.102Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-23",
+  "menuDate": "2026-09-24",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Bacon Egg and Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Sausage and Egg Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Belgian Waffle w/ Powder Sugar & Syrup",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Penne Pasta with Alfredo Sauce",
-        "Garlic Bread",
-        "Fresh Roasted Broccoli"
+        "Taco Meat",
+        "Potato Baked Bar",
+        "Vegetarian Picadillo",
+        "Mexican Potato Bar",
+        "Cumin Black Beans",
+        "Roasted Confetti Corn",
+        "Nacho Cheese Sauce"
       ],
       "globalFare": [
-        "Sloppy Joe Beef",
-        "Curly Fries",
-        "Buttered Corn"
+        "Breaded Korean Chicken",
+        "Brown Rice",
+        "Stir Fry Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Corned Beef",
-        "Steamed Potatoes"
+        "Beef Pot Roast",
+        "Confetti Lentils",
+        "Red Skin Mashed Potatoes",
+        "Sauteed Carrots & Parsnips",
+        "Greek Salad"
       ],
       "globalFare": [
-        "Coconut Lime Tilapia",
-        "French Bread"
+        "Cous Cous Savory",
+        "Greek-Marinated Grilled Chicken",
+        "Pita Bread",
+        "Roasted Eggplant",
+        "Crispy Chickpeas"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-23T18:34:14.083Z",
   "days": {
-    "2026-09-23": {
-      "breakfast": {
-        "classicKitchen": [
-          "Bacon Egg and Cheese Croissant",
-          "Egg and Cheese Croissant",
-          "Sausage and Egg Croissant"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Chicken Sausage Patty",
-          "Belgian Waffle w/ Powder Sugar & Syrup",
-          "Hashbrown Patty"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Grilled Chicken Breast",
-          "Penne Pasta with Alfredo Sauce",
-          "Garlic Bread",
-          "Fresh Roasted Broccoli"
-        ],
-        "globalFare": [
-          "Sloppy Joe Beef",
-          "Curly Fries",
-          "Buttered Corn"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Corned Beef",
-          "Steamed Potatoes"
-        ],
-        "globalFare": [
-          "Coconut Lime Tilapia",
-          "French Bread"
-        ]
-      }
-    },
     "2026-09-24": {
       "breakfast": {
         "classicKitchen": [
