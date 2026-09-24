@@ -38,7 +38,6 @@ import {
   sortForPopup,
   type Idea
 } from '../services/ideasService';
-import { openToppingBar } from '../services/toppingsService';
 
 /** Opens one of the extension's own pages in a tab. */
 function openExtensionPage(page: string) {
@@ -1581,12 +1580,7 @@ const Popup: React.FC = () => {
         )}
       </section>
       )}
-      <footer className="popup-footer">
-        <button type="button" className="footer-action" onClick={openToppingBar}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          <span>Add a Topping</span>
-        </button>
-      </footer>
+
     </main>
   );
 };

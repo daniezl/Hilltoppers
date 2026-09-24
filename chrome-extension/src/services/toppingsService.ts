@@ -9,11 +9,12 @@ export interface Topping {
 }
 const API = 'https://hilltoppers-topping-bar.danielzhang089.workers.dev/api/toppings';
 export const TOPPINGS_KEY = 'installedToppings';
+export const TOPPING_ORDER_KEY = 'toppingOrder';
 export const PREVIEW_TOPPING_KEY = 'previewTopping';
 export const ASK_SJA: Topping = {
-  id: 'ask-sja', icon: 'chat', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
-  url: 'https://ask-sja-topping.danielzhang089.workers.dev/', image: 'builtin:ask-sja',
-  author: 'Yaoyu Zhang', graduationYear: 2027, createdAt: 0, users: 0, rating: null,
+  id: '2e318d5f-57cf-4799-8443-f5c41cf0a1e3', icon: 'chat', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
+  url: 'https://ask-sja-topping.danielzhang089.workers.dev/', image: `${API}/2e318d5f-57cf-4799-8443-f5c41cf0a1e3/image`,
+  author: 'Yaoyu Zhang', graduationYear: null, createdAt: 1790260441173, users: 0, rating: null,
   ratingCount: 0, installed: false, myRating: null, owned: false
 };
 let installIdPromise: Promise<string> | undefined;
@@ -45,9 +46,31 @@ export async function toppingRequest(path = '', method = 'GET', body?: unknown) 
   if (!response.ok) throw new Error(data.error || 'Could not reach Topping Bar.');
   return data;
 }
+const DEFAULT_TOPPING_INSTALLED = 'askSjaDefaultInstalledV2';
+async function ensureDefaultTopping() {
+  await navigator.locks.request('topping-default-install',async()=>{
+    const saved=await chrome.storage.local.get([DEFAULT_TOPPING_INSTALLED,TOPPINGS_KEY,TOPPING_ORDER_KEY]);
+    if(saved[DEFAULT_TOPPING_INSTALLED])return;
+    const existing:Topping[]=Array.isArray(saved[TOPPINGS_KEY])?saved[TOPPINGS_KEY].filter((t:Topping)=>t&&typeof t.id==='string'):[];
+    const current=existing.filter(t=>t.id!=='ask-sja');
+    if(!current.some(t=>t.id===ASK_SJA.id)){
+      const oldIndex=existing.findIndex(t=>t.id==='ask-sja');
+      current.splice(oldIndex<0?current.length:oldIndex,0,{...ASK_SJA,installed:true});
+    }
+    const order:string[]=Array.isArray(saved[TOPPING_ORDER_KEY])?saved[TOPPING_ORDER_KEY]:existing.map(t=>t.id);
+    // A one-time default, not a mandatory installation: respect later removals.
+    await chrome.storage.local.set({
+      [TOPPINGS_KEY]:current,
+      [TOPPING_ORDER_KEY]:[...new Set([...order.map(id=>id==='ask-sja'?ASK_SJA.id:id),...current.map(t=>t.id)])],
+      [DEFAULT_TOPPING_INSTALLED]:true,
+      askSjaToppingEnabled:false
+    });
+  });
+}
 export async function localToppings(): Promise<Topping[]> {
+  await ensureDefaultTopping();
   const [data, previewData] = await Promise.all([
-    chrome.storage.local.get([TOPPINGS_KEY, 'askSjaToppingEnabled']),
+    chrome.storage.local.get([TOPPINGS_KEY, TOPPING_ORDER_KEY, 'askSjaToppingEnabled']),
     chrome.storage.session.get(PREVIEW_TOPPING_KEY)
   ]);
   const installed = Array.isArray(data[TOPPINGS_KEY]) ? data[TOPPINGS_KEY].filter((t: Topping) => {
@@ -60,7 +83,17 @@ export async function localToppings(): Promise<Topping[]> {
       installed.push(preview);
     } catch { /* Ignore unsupported preview URLs. */ }
   }
-  return installed;
+  const order:string[]=Array.isArray(data[TOPPING_ORDER_KEY])?data[TOPPING_ORDER_KEY]:[];
+  const rank=new Map(order.map((id,index)=>[id,index]));
+  return installed.sort((a:Topping,b:Topping)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
+}
+export async function saveToppingOrder(ids:string[]) {
+  await navigator.locks.request('topping-counts',async()=>{
+    const current=await localToppings();
+    const allowed=new Set(current.map(t=>t.id));
+    const order=[...new Set([...ids,...current.map(t=>t.id)])].filter(id=>allowed.has(id));
+    await chrome.storage.local.set({[TOPPING_ORDER_KEY]:order});
+  });
 }
 function parsePreviewUrl(address: string): URL {
   try {
@@ -126,7 +159,7 @@ export async function changeTopping(topping: Topping, added: boolean) {
     if (added) current.push({ ...topping, installed: true });
     const saved = await chrome.storage.local.get(PENDING);
     await chrome.storage.local.set({
-      [TOPPINGS_KEY]: current, askSjaToppingEnabled: current.some(t => t.id === 'ask-sja'),
+      [TOPPINGS_KEY]: current, askSjaToppingEnabled: current.some(t => t.id === ASK_SJA.id),
       [PENDING]: { ...saved[PENDING], [topping.id]: added }
     });
   });

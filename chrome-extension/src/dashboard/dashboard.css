@@ -47,7 +47,7 @@ body { background: var(--bg); }
 .dashboard .bar-nav { padding: 0 0 24px; min-height: 46px; }
 .dashboard .bar-nav .brand { font-size: 25px; letter-spacing: -.7px; }
 .dashboard .bar-nav .brand-icon, .dashboard .bar-nav .brand-divider { display: none; }
-.dashboard .bar-nav .nav-actions > .quiet:not(.preview-entry) { display: none; }
+.dashboard .bar-nav .nav-actions > .account-entry { display: none; }
 .dashboard .community-intro { padding: 28px 0; gap: 24px; }
 .dashboard .intro-illustration { width: 48px; height: 48px; }
 .dashboard .community-intro h1, .dashboard .community-intro h2 { font-size: 16px; }

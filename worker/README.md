@@ -105,19 +105,19 @@ This is a separate Worker (`hilltoppers-topping-bar`) and D1 database
 (`hilltoppers-toppings`), configured in `wrangler.toppings.toml`. It shares only
 Firebase verification helpers with the paused Ideas service, not its bindings.
 Apply `npx wrangler d1 execute hilltoppers-toppings --config wrangler.toppings.toml
---file=toppings-schema.sql --remote` before `npm run deploy:toppings`. The base schema seeds Ask SJA with zero users and no ratings. For an existing
+--file=toppings-schema.sql --remote` before `npm run deploy:toppings`. The base schema creates tables without seeding a built-in listing. For an existing
 database without the `icon` column, first apply `topping-icon-migration.sql`
 with the same command (once only), then apply the base schema. Keep
 `TOPPING_EMAIL_DOMAINS` set to `student.stjacademy.org,stjacademy.org`.
 
-Published Toppings accept an `icon` ID: `sparkle` (default), `chat`, `book`,
+Published Toppings require an explicit `icon` ID: `sparkle`, `chat`, `book`,
 `calendar`, `clock`, `checklist`, `music`, `trophy`, `lightbulb`, `heart`, `bell`,
 or `people`. The extension uses it in the collapsed Topping header.
 
 GET `/api/toppings` lists public cards sorted by unique browser registrations,
-with optional caller installation/rating fields. POST publishes immediately for
-verified school accounts with a public account name. The name is self-reported,
-not a verified legal identity. Email is never public. Ratings remain one per account, regardless of browser.
+with optional caller installation/rating fields. POST creates a pending submission for verified school accounts or linked school
+emails. The server derives the author name from the verified school email,
+ignoring editable profile names. Email is never public. Ratings remain one per account, regardless of browser.
 Users is an estimated browser count, not an exact count of individual people.
 Older signed-in clients remain supported; upgrading while signed in replaces
 the old account registration with the browser registration. POST/DELETE `/:id/install`
@@ -204,3 +204,31 @@ recognize verified bindings for publishing. For linked accounts, the public
 author name is derived from the school email's local part; it is not a
 Microsoft directory lookup. Apply `email-schema.sql` before deploying the
 email and Topping Bar Workers with these routes/bindings.
+
+### Topping submissions and previews
+
+Before deploying the review workflow to an existing database, apply
+`topping-review-migration.sql` once with `wrangler d1 execute` and
+`--config wrangler.toppings.toml --remote`. Existing listings remain approved;
+new submissions default to pending. Fresh databases use `toppings-schema.sql`.
+`TOPPING_REVIEWER_EMAIL` identifies the reviewer and requires a verified Firebase
+email claim. GET `/api/toppings/submissions` returns the caller's submissions,
+plus pending submissions for the reviewer. POST `/:id/review` accepts
+`status: "approved"` or `"rejected"` only from that reviewer. Public catalog,
+installation and rating endpoints exclude pending and rejected submissions.
+
+The publishing form resizes PNG/JPEG/WebP uploads and sends `imageData` as a
+base64 data URL. The server caps the request at 720 KB, validates the image type
+and signature, and stores the image with its submission atomically in D1.
+`/:id/image` serves the image with a fixed image content type and `nosniff`.
+Preview image URLs are public, including during review; they contain random
+submission IDs. Legacy preview URLs are still accepted, but legacy clients also
+submit to the review queue and cannot override the author or approval status.
+
+The extension defaults to the owner-published Ask SJA listing
+`2e318d5f-57cf-4799-8443-f5c41cf0a1e3`. Each browser migrates once, replacing
+the legacy `ask-sja` installation without duplicates. Later user removals are
+respected. Installation counts register normally when the catalog is reachable.
+
+Short descriptions are optional (up to 180 characters); name, icon, webpage URL
+and preview image are required when submitting a Topping.

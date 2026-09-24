@@ -2,7 +2,7 @@ type Props = {
   installed: boolean;
   confirmation?: string;
   busy: boolean;
-  onClick: () => void;
+  onClick: (event: import('react').MouseEvent<HTMLButtonElement>) => void;
 };
 
 export default function ToppingInstallButton({ installed, confirmation, busy, onClick }: Props) {

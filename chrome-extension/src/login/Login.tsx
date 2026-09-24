@@ -171,7 +171,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
       });
     }}>
       <label htmlFor="email-code">Email code</label>
-      <input id="email-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} disabled={busy} onChange={e=>setCode(e.target.value.replace(/\D/g,''))}/>
+      <CodeInput id="email-code" value={code} disabled={busy} onChange={setCode}/>
       {!verifying && error && <p role="alert" className="login__error">{error}</p>}
       <button className="primary" disabled={busy}>{busy ? 'Please wait…' : verifying ? 'Verify email' : 'Continue'}</button>
       <button type="button" className="tertiary" disabled={busy || cooldown>0} onClick={()=>void perform(async()=>{

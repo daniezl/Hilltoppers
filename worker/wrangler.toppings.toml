@@ -10,6 +10,7 @@ database_id = "87cca241-ec36-40e1-a5a4-a69a6bd9c66f"
 
 [vars]
 FIREBASE_PROJECT_ID = "schedule-59d28"
+TOPPING_REVIEWER_EMAIL = "daniezl@outlook.com"
 TOPPING_EMAIL_DOMAINS = "student.stjacademy.org,stjacademy.org"
 
 [[d1_databases]]

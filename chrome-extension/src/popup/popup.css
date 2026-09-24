@@ -1467,3 +1467,36 @@ header {
 .topping-unavailable { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; color: #68746c; font-size: 12px; }
 .topping-unavailable button { border: 1px solid #dce2de; border-radius: 6px; background: #fff; padding: 6px 10px; color: inherit; cursor: pointer; }
 .topping-menu :focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
+
+.toppings-dock { margin-top:12px; }
+.toppings-strip { display:flex; align-items:center; width:max-content; max-width:100%; height:34px; margin:0; padding:0 5px; border:1px solid rgba(17,17,17,.12); border-radius:999px; background:#fff; box-sizing:border-box; }
+.toppings-strip-scroll { display:flex; align-items:center; min-width:0; overflow-x:auto; scrollbar-width:none; }
+.toppings-strip-scroll::-webkit-scrollbar { display:none; }
+.topping-chip, .toppings-add { display:grid; place-items:center; flex:none; width:34px; height:28px; padding:0; border:0; border-radius:999px; background:transparent; color:#68737d; cursor:pointer; }
+.topping-chip > svg { width:18px; height:18px; transition:transform 180ms cubic-bezier(.2,.8,.2,1); }
+.topping-chip:hover > svg { transform:translateY(-3px); }
+.topping-chip:hover, .toppings-add:hover { background:#f0f1f3; }
+.topping-chip[aria-expanded="true"] { color:#27313a; background:#e9ebee; }
+.toppings-add svg { transition:transform 300ms ease; transform-origin:center; width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
+.toppings-strip button:focus-visible { outline:2px solid #68737d; outline-offset:-2px; }
+.topping-name-tooltip { position:fixed; z-index:100; transform:translate(-50%,-100%); max-width:190px; padding:5px 9px; border-radius:6px; background:#fff; color:#4a5560; border:1px solid rgba(17,17,17,.1); font-size:11px; line-height:1.4; overflow-wrap:anywhere; pointer-events:none; text-align:center; box-shadow:0 5px 16px rgba(17,17,17,.12); animation:topping-tooltip-in 140ms ease-out; }
+.topping-panel { margin-top:8px; }
+.topping-panel[hidden] { display:none; }
+
+.toppings-divider { flex:none; width:1px; height:16px; margin:0 4px; background:rgba(17,17,17,.12); }
+.toppings-add:hover svg { transform:rotate(180deg); }
+@media (prefers-reduced-motion:reduce) { .toppings-add svg { transition:none; } .toppings-add:hover svg { transform:none; } }
+
+.toppings-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.toppings-row .toppings-strip { min-width:0; flex-shrink:1; }
+.toppings-row .topping-menu { position:relative; right:auto; top:auto; transform:none; flex:none; }
+.toppings-row .topping-menu-toggle { height:34px; }
+.toppings-row .topping-menu-toggle:disabled { opacity:.35; cursor:default; }
+@keyframes topping-tooltip-in { from { opacity:0; transform:translate(-50%,calc(-100% + 4px)); } to { opacity:1; transform:translate(-50%,-100%); } }
+@media (prefers-reduced-motion:reduce) { .topping-name-tooltip { animation:none; } }
+
+.toppings-row .topping-menu { animation:topping-options-in 180ms ease-out; }
+@keyframes topping-options-in { from { opacity:0; transform:translateY(4px) scale(.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) { .toppings-row .topping-menu { animation:none; } }
+
+@media (prefers-reduced-motion:reduce) { .topping-chip > svg { transition:none; } .topping-chip:hover > svg { transform:none; } }

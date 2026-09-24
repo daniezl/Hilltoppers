@@ -6,9 +6,9 @@ export default function ToppingGuide() {
     <ol>
       <li>Go to an AI agent (like Codex, Cursor, or Claude Code)</li>
       <li>Paste this link to your agent: <a href="https://github.com/daniezl/Hilltoppers" target="_blank" rel="noopener noreferrer">https://github.com/daniezl/Hilltoppers</a>, and say “I want to make a Topping, it should ____ .”</li>
-      <li>Preview it in the extension (top right corner of this page)</li>
+      <li>Preview it in the extension </li>
       <li>Deploy the website you built </li>
-      <li>Submit it in the Topping Bar (also top right corner)</li>
+      <li>Publish it in the Topping Bar </li>
     </ol>
     <h3>Rules</h3>
     <p><strong>A Topping must:</strong></p>

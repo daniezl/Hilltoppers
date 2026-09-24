@@ -250,3 +250,66 @@
 .topping-icon-picker button { display: grid; place-items: center; height: 44px; padding: 0; background: #f7f9f4; border: 1px solid #dce3d9; border-radius: 8px; color: #607367; }
 .topping-icon-picker button:hover { background: #edf2e9; }
 .topping-icon-picker button[aria-pressed="true"] { background: #e2ecdd; border-color: #577962; color: #365d45; box-shadow: inset 0 0 0 1px #577962; }
+
+.guide-actions, .submission-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+.guide-actions { justify-content:flex-end; border-top:1px solid #dce3d9; padding-top:20px; }
+.preview-image-input { display:grid; gap:10px; }
+.preview-image-frame > img { display:block; width:100%; max-height:130px; object-fit:contain; border:1px solid #dce3d9; border-radius:10px; background:#f0f4ed; }
+.preview-image-input input[type="file"] { width:100%; min-width:0; box-sizing:border-box; font-size:12px; padding:10px; }
+.preview-image-input input::file-selector-button { background:#e2ecdd; color:#365d45; border:0; border-radius:6px; padding:8px 12px; margin-right:12px; cursor:pointer; }
+.submissions-modal { max-width:640px; }
+.submission { border-top:1px solid #dce3d9; padding:22px 0; }
+.submission > img { width:100%; max-height:220px; object-fit:contain; background:#f0f4ed; border-radius:10px; }
+.submission-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
+.submission-heading h3 { margin:0; }
+.submission-heading span { font-size:12px; color:#607367; }
+.submission .author { margin:6px 0; }
+
+.preview-image-frame { position:relative; }
+.preview-image-frame .preview-image-remove { position:absolute; top:8px; right:8px; display:grid; place-items:center; width:40px; height:40px; padding:0; border:1px solid #dce3d9; border-radius:50%; background:#fafbf7; color:#365d45; box-shadow:0 2px 8px #243c3220; }
+.preview-image-frame .preview-image-remove:hover { background:#e2ecdd; }
+.preview-image-remove svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+
+.publish-actions { display:flex; justify-content:flex-end; }
+
+.installed-manager { margin:26px 0 32px; }
+.installed-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.installed-heading h2 { margin:0; font-size:20px; letter-spacing:-.4px; }
+.installed-heading > span, .installed-empty { color:#748176; font-size:12px; }
+.installed-list { list-style:none; margin:0; padding:0; border:1px solid #dce3d9; border-radius:12px; overflow:hidden; background:#fff; }
+.installed-list li { display:flex; align-items:center; gap:14px; padding:12px 16px; min-height:58px; border-bottom:1px solid #e7ece4; }
+.installed-list li:last-child { border-bottom:0; }
+.installed-list li.is-drop-target { background:#eef3e9; box-shadow:inset 0 2px #577962; }
+.installed-list li > svg { flex:none; color:#607367; }
+.installed-grip, .installed-remove { display:grid; place-items:center; flex:none; width:28px; height:30px; padding:0; border:0; background:transparent; color:#819080; }
+.installed-grip { cursor:grab; }
+.installed-grip:active { cursor:grabbing; }
+.installed-grip svg { width:20px; height:24px; fill:currentColor; }
+.installed-name { font-size:14px; font-weight:550; min-width:0; overflow-wrap:anywhere; }
+.installed-name small { margin-left:8px; color:#748176; font-size:10px; font-weight:400; }
+.installed-author { margin-left:auto; color:#748176; font-size:12px; text-align:right; }
+.installed-remove { font-size:22px; border-radius:6px; cursor:pointer; }
+.installed-remove:hover { color:#995445; background:#f7edeb; }
+@media(max-width:600px) { .installed-list li { gap:8px; padding:10px 8px; } .installed-author { max-width:30%; } }
+
+.modal .field-caption { display:inline-flex; align-items:center; gap:4px; color:inherit; font-size:inherit; line-height:18px; }
+.modal .required-mark { display:inline-block; color:#b84c45; font-size:18px; font-weight:600; line-height:1; transform:translateY(2px); }
+.preview-image-controls { display:flex; align-items:center; gap:10px; }
+.preview-image-controls input[type="text"] { flex:1; min-width:0; cursor:text; }
+.preview-image-controls > button { flex:none; padding:10px 12px; border:1px solid #dce3d9; border-radius:8px; }
+
+/* Keep label activation within the caption, not the space around an input. */
+.modal-field { display:grid; gap:7px; margin:16px 0; font-size:12px; color:#52664f; }
+.modal .modal-field > label { width:fit-content; margin:0; }
+.modal .preview-image-input > label { width:fit-content; }
+
+.own-submissions { margin-top:28px; }
+.own-submissions h2 { font-size:20px; font-weight:600; margin:0 0 16px; }
+.own-submissions > p { font-size:13px; color:#778371; }
+.own-submissions-list { border:1px solid #dce3d9; border-radius:12px; background:white; overflow:hidden; }
+.own-submission { display:flex; align-items:center; gap:12px; padding:16px; }
+.own-submission + .own-submission { border-top:1px solid #e8ede4; }
+.own-submission > svg { width:22px; height:22px; flex:none; color:#607367; }
+.own-submission a { font-size:14px; font-weight:550; text-decoration:none; overflow-wrap:anywhere; }
+.own-submission a:hover { text-decoration:underline; }
+.own-submission > span { margin-left:auto; font-size:12px; color:#778371; white-space:nowrap; }
