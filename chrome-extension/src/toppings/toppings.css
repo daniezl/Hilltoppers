@@ -313,3 +313,6 @@
 .own-submission a { font-size:14px; font-weight:550; text-decoration:none; overflow-wrap:anywhere; }
 .own-submission a:hover { text-decoration:underline; }
 .own-submission > span { margin-left:auto; font-size:12px; color:#778371; white-space:nowrap; }
+
+.review-entry { display:inline-flex; align-items:center; gap:7px; }
+.review-badge { display:inline-flex; align-items:center; justify-content:center; min-width:19px; height:19px; padding:0 5px; border-radius:999px; background:#c34e47; color:#fff; font-size:11px; font-weight:650; line-height:1; font-variant-numeric:tabular-nums; }
