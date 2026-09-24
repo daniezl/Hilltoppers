@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-24T05:59:00.102Z",
+  "updatedAt": "2026-09-24T11:37:44.070Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-24",
   "menus": {
@@ -53,7 +53,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-23T18:34:14.083Z",
+  "daysUpdatedAt": "2026-09-24T11:37:44.070Z",
   "days": {
     "2026-09-24": {
       "breakfast": {
@@ -315,6 +315,40 @@
         "globalFare": [
           "Peppered Flank Steak",
           "Beef Stew"
+        ]
+      }
+    },
+    "2026-10-01": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Chicken Fajita Meat",
+          "Seasoned Black Beans",
+          "Brown Rice",
+          "Sauteed Peppers & Onions"
+        ],
+        "globalFare": [
+          "Diced Ham",
+          "Roasted Carrots",
+          "Bacon Bits",
+          "Fire Roasted Corn Chowder"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Gnocchi with Roasted Cauliflower",
+          "Honey Glazed Pork Loin",
+          "Fresh Roasted Broccoli",
+          "White Cheese Sauce"
+        ],
+        "globalFare": [
+          "Teriyaki Glazed Chicken Breast",
+          "Adobo Marinated Egg",
+          "Asian Fried Rice",
+          "Seasoned Asian Vegetables"
         ]
       }
     }
