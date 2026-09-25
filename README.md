@@ -2,9 +2,12 @@
   <img width="120" alt="Hilltoppers icon" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
 </p>
 
-<h1 align="center">Hilltoppers</h1>
-
-<p align="center">Started by Daniel Zhang, Class of 2027. What comes next is up to you.</p>
+<h1 align="center">
+  Hilltoppers
+  <br>
+  <sub><sup>Started by Daniel Zhang, Class of 2027. What comes next is up to you.</sup></sub>
+  <br><br><br>
+</h1>
 
 Today's schedule, today's day color, and a timer to the end of the block — for
 students at Saint Johnsbury Academy. An iOS app and a Chrome extension, built
