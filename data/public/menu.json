@@ -1,111 +1,52 @@
 {
-  "updatedAt": "2026-09-25T01:48:44.386Z",
+  "updatedAt": "2026-09-25T07:29:57.277Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-24",
+  "menuDate": "2026-09-25",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg Bacon & Cheese Bagel Sandwich",
+        "Egg and Cheese Bagel",
+        "Egg Sausage and Cheese Bagel"
       ],
       "globalFare": [
-        "Pork Bacon",
-        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Taco Meat",
-        "Potato Baked Bar",
-        "Vegetarian Picadillo",
-        "Mexican Potato Bar",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce"
+        "Meatball Sub",
+        "Beer Battered Onion Ring",
+        "Green Beans & Peppers"
       ],
       "globalFare": [
-        "Breaded Korean Chicken",
+        "BBQ Chicken Wings",
+        "Honey Garlic Chicken Wings",
         "Brown Rice",
-        "Stir Fry Vegetables"
+        "BBQ Lime Cauliflower Bites"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Beef Pot Roast",
-        "Confetti Lentils",
-        "Red Skin Mashed Potatoes",
-        "Sauteed Carrots & Parsnips",
-        "Greek Salad"
+        "Poutine",
+        "Bacon Cheeseburger",
+        "Black Bean Patty",
+        "Seasoned Corn on the Cob"
       ],
       "globalFare": [
-        "Cous Cous Savory",
-        "Greek-Marinated Grilled Chicken",
-        "Pita Bread",
-        "Roasted Eggplant",
-        "Crispy Chickpeas"
+        "Grilled Pesto-Marinated Chicken Breast",
+        "Garlic Breadstick",
+        "Cavatappi Pasta",
+        "Fresh Roasted Broccoli",
+        "Pesto Cream Sauce"
       ]
     }
   },
   "daysUpdatedAt": "2026-09-25T01:48:44.386Z",
   "days": {
-    "2026-09-24": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Cheese Omelet",
-          "Sliced Smoked Ham",
-          "Sliced Mushrooms",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Pork Bacon",
-          "Cinnamon French Toast Homemade",
-          "Scrambled Eggs",
-          "Home Fried Potatoes"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Taco Meat",
-          "Potato Baked Bar",
-          "Vegetarian Picadillo",
-          "Mexican Potato Bar",
-          "Cumin Black Beans",
-          "Roasted Confetti Corn",
-          "Nacho Cheese Sauce"
-        ],
-        "globalFare": [
-          "Breaded Korean Chicken",
-          "Brown Rice",
-          "Stir Fry Vegetables"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Beef Pot Roast",
-          "Confetti Lentils",
-          "Red Skin Mashed Potatoes",
-          "Sauteed Carrots & Parsnips",
-          "Greek Salad"
-        ],
-        "globalFare": [
-          "Cous Cous Savory",
-          "Greek-Marinated Grilled Chicken",
-          "Pita Bread",
-          "Roasted Eggplant",
-          "Crispy Chickpeas"
-        ]
-      }
-    },
     "2026-09-25": {
       "breakfast": {
         "classicKitchen": [
