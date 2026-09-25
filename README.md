@@ -5,7 +5,7 @@
 <h1 align="center">
   Hilltoppers
   <br>
-  <sub><sup>Started by Daniel Zhang, Class of 2027. What comes next is up to you.</sup></sub>
+  <sub><sup>Started by Yaoyu (Daniel) Zhang, Class of 2027. What comes next is up to you.</sup></sub>
   <br>
   <sub><sup>Growing since April 2025.</sup></sub>
   <br><br><br>
