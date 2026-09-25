@@ -1046,6 +1046,51 @@ header {
   opacity: 1;
 }
 
+.schedule-heading {
+  position: relative;
+}
+
+.lunch-setup-prompt {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  color: #4a5560;
+}
+
+.lunch-setup-prompt button {
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.lunch-setup-link {
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.lunch-setup-link:hover {
+  text-decoration: underline;
+}
+
+.lunch-setup-dismiss {
+  min-width: 24px;
+  min-height: 28px;
+}
+
+.lunch-setup-dismiss:hover {
+  background: #f3f5f7;
+}
+
 .schedule-hint {
   margin: 10px 0 0;
   font-size: 13px;
