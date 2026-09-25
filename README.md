@@ -2,7 +2,7 @@
   <img width="120" alt="Hilltoppers icon" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
 </p>
 
-# Hilltoppers
+<h1 align="center">Hilltoppers</h1>
 
 Today's schedule, today's day color, and a timer to the end of the block — for
 students at Saint Johnsbury Academy. An iOS app and a Chrome extension, built
