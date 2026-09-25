@@ -33,8 +33,12 @@ textarea { flex: 1; display: block; width: 100%; min-width: 0; resize: none; ove
 textarea::placeholder { color: #929c95; }
 .composer-actions { display: flex; gap: 4px; align-items: center; }
 button { cursor: pointer; }
-#send { background: #267c43; color: white; border: 0; border-radius: 9px; width: 28px; height: 28px; font-size: 19px; line-height: 1; }
-#send:disabled { opacity: .32; cursor: default; }
+#send { display: grid; place-items: center; flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: #3f6b56; color: #fff; transition: background-color .15s ease, color .15s ease, transform .15s ease; }
+#send svg { display: block; }
+#send:not(:disabled):hover { background: #345b48; }
+#send:not(:disabled):active { transform: scale(.94); background: #2b4d3c; }
+#send:disabled { background: #f0f1f2; color: #a8adb1; cursor: default; }
+#send:focus-visible { outline: 2px solid #6f9580; outline-offset: 3px; }
 #new-chat { border: 0; background: transparent; color: #98a39b; width: 24px; height: 28px; font-size: 19px; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #267c43; outline-offset: 3px; }
 .disclosure { margin: 6px 0 0; text-align: left; color: #9ba29d; font-size: 9px; line-height: 1.4; }
@@ -44,4 +48,4 @@ html.embedded, .embedded body { height: 100%; background: #fff; overflow: hidden
 .embedded main { margin: 0; padding: 0; max-width: none; height: 100%; }
 .embedded .standalone-header { display: none; }
 .embedded .chat { height: 100%; min-height: 0; border: 0; border-radius: 0; }
-@media (prefers-reduced-motion: reduce) { .thinking i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .thinking i { animation: none; } #send { transition: none; } }
