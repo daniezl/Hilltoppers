@@ -10,6 +10,7 @@ export interface Env {
   DEEPSEEK_URL?: string;
   EVENTS_URL: string;
   DAY_TYPE_URL: string;
+  CORPUS_URL?: string;
 }
 
 export default {

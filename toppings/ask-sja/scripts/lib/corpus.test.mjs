@@ -98,3 +98,44 @@ test("dates: long dates in titles and newsletter slugs", () => {
     "2025-04-16"
   );
 });
+
+test("refresh preserves failed policy sources, archives bulletins and publishes the feed without churn", async () => {
+  const fs = await import('node:fs/promises');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { main } = await import('../fetch_corpus.mjs');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ask-corpus-'));
+  const cwd = process.cwd();
+  const originalFetch = globalThis.fetch;
+  const working = path.join(root, 'toppings/ask-sja');
+  await fs.mkdir(path.join(working, 'public'), { recursive: true });
+  const policy = { source: 'page', title: 'Policy', url: 'https://school.test/policy', date: null };
+  const pdf = { source: 'handbook', title: 'Handbook', url: 'https://school.test/book.pdf', date: null };
+  const previous = [...blocksToChunks([{ kind: 'para', text: 'Existing policy.' }], policy), ...blocksToChunks([{ kind: 'para', text: 'Existing handbook.' }], pdf)];
+  await fs.writeFile(path.join(working, 'public/corpus.json'), JSON.stringify({ updatedAt: 'old', chunks: previous }));
+  await fs.writeFile(path.join(working, 'corpus_sources.json'), JSON.stringify({ pages: [policy], pdfs: [pdf] }));
+  const today = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric' });
+  globalThis.fetch = async url => {
+    if (url.includes('daily-bulletin')) return new Response(`<div class="latest-article"><span class="date">${today}</span><h2>Today</h2><div class="peapod-stripper"><p>Chess club meets today.</p></div></div>`);
+    if (url.includes('/newsletter/')) return new Response('<main>No new issues</main>');
+    return new Response('', { status: 503 });
+  };
+  try {
+    process.chdir(working);
+    await main();
+    const first = await fs.readFile('public/corpus.json', 'utf8');
+    const archive = await fs.readFile('corpus/bulletins.json', 'utf8');
+    const result = JSON.parse(first);
+    assert.ok(result.chunks.some(c => c.text === 'Existing policy.'));
+    assert.ok(result.chunks.some(c => c.text === 'Existing handbook.'));
+    assert.ok(result.chunks.some(c => c.source === 'bulletin'));
+    assert.equal(await fs.readFile('../../data/public/ask-sja-corpus.json', 'utf8'), first);
+    await main();
+    assert.equal(await fs.readFile('public/corpus.json', 'utf8'), first);
+    assert.equal(await fs.readFile('corpus/bulletins.json', 'utf8'), archive);
+  } finally {
+    process.chdir(cwd);
+    globalThis.fetch = originalFetch;
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});

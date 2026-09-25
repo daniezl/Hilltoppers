@@ -12,6 +12,7 @@ run_worker_first = true
 DEEPSEEK_MODEL = "deepseek-flash"
 EVENTS_URL = "https://hilltoppers.pages.dev/events.json"
 DAY_TYPE_URL = "https://hilltoppers.pages.dev/day_type.json"
+CORPUS_URL = "https://hilltoppers.pages.dev/ask-sja-corpus.json"
 
 [[ratelimits]]
 name = "QUESTION_LIMITER"

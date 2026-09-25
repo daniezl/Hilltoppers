@@ -40,16 +40,34 @@ const SCHOOL_TIME_ZONE = 'America/New_York';
 let corpusCache: { index: Index; updatedAt: string; loadedAt: number; url: string } | null = null;
 let calendarCache: { text: string; loadedAt: number; url: string; today: string; dayTypeUrl: string } | null = null;
 
-async function loadIndex(env: Env): Promise<{ index: Index; updatedAt: string }> {
-  const url = 'https://ask-sja.internal/corpus.json';
+export async function loadIndex(env: Env): Promise<{ index: Index; updatedAt: string }> {
+  const bundledUrl = 'https://ask-sja.internal/corpus.json';
+  const url = env.CORPUS_URL || bundledUrl;
   if (corpusCache && corpusCache.url === url && Date.now() - corpusCache.loadedAt < CORPUS_TTL_MS) {
     return corpusCache;
   }
-  const res = await env.ASSETS.fetch(new Request(url));
-  if (!res.ok) throw new Error(`corpus.json returned ${res.status}`);
-  const corpus = (await res.json()) as Corpus;
-  if (!Array.isArray(corpus.chunks)) throw new Error('corpus.json has no chunks array');
-  corpusCache = { index: buildIndex(corpus), updatedAt: corpus.updatedAt, loadedAt: Date.now(), url };
+  async function read(res: Response) {
+    if (!res.ok) throw new Error(`corpus.json returned ${res.status}`);
+    const corpus = (await res.json()) as Corpus;
+    if (!corpus || typeof corpus.updatedAt !== 'string' || !Array.isArray(corpus.chunks) || !corpus.chunks.length ||
+        corpus.chunks.some(chunk => !chunk || typeof chunk.text !== 'string' || typeof chunk.id !== 'string')) {
+      throw new Error('Invalid or empty corpus');
+    }
+    return { index: buildIndex(corpus), updatedAt: corpus.updatedAt, loadedAt: Date.now(), url };
+  }
+  try {
+    corpusCache = await read(env.CORPUS_URL
+      ? await fetch(url, { signal: AbortSignal.timeout(8000), cf: { cacheTtl: 300, cacheEverything: true } } as RequestInit)
+      : await env.ASSETS.fetch(new Request(bundledUrl)));
+  } catch (error) {
+    console.warn('[ask] corpus refresh failed; keeping last available documents', error);
+    // A temporary data-site outage must not prevent students asking questions.
+    if (corpusCache?.url === url) {
+      corpusCache.loadedAt = Date.now();
+    } else {
+      corpusCache = await read(await env.ASSETS.fetch(new Request(bundledUrl)));
+    }
+  }
   return corpusCache;
 }
 
