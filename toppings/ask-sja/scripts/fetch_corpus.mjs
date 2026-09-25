@@ -17,7 +17,8 @@
  *   3. Pages and PDFs named in corpus_sources.json (handbook, dress code...).
  *      Re-read every run; they are small and change without notice.
  *
- * Failure behaviour: a source that cannot be fetched is logged and skipped so
+ * Failure behaviour: failed pages/PDFs retain their last published chunks, and
+ * bulletin/newsletter failures use the archive, so
  * one broken page does not blank the whole corpus, except that if *nothing*
  * could be fetched the previous public/corpus.json is left untouched.
  */
@@ -41,6 +42,7 @@ const SOURCES_FILE = "corpus_sources.json";
 const BULLETIN_CACHE = "corpus/bulletins.json";
 const NEWSLETTER_CACHE = "corpus/newsletters.json";
 const OUT = "public/corpus.json";
+const FEED_OUT = "../../data/public/ask-sja-corpus.json";
 
 // Bulletins older than this drop out of the published file (the cache keeps
 // them). Last year's "chess club meets Thursday" is noise, not an answer.
@@ -58,7 +60,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fetchText(url, accept = "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8", attempt = 0) {
   const res = await fetch(url, {
     headers: { "User-Agent": BROWSER_UA, Accept: accept, "Accept-Language": "en-US,en;q=0.9" },
-    redirect: "follow"
+    redirect: "follow", signal: AbortSignal.timeout(30000)
   });
   if (res.status === 429 && attempt < 2) {
     await sleep(4000 * (attempt + 1));
@@ -69,7 +71,7 @@ async function fetchText(url, accept = "text/html,application/xhtml+xml;q=0.9,*/
 }
 
 async function fetchBytes(url) {
-  const res = await fetch(url, { headers: { "User-Agent": BROWSER_UA }, redirect: "follow" });
+  const res = await fetch(url, { headers: { "User-Agent": BROWSER_UA }, redirect: "follow", signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return new Uint8Array(await res.arrayBuffer());
 }
@@ -116,6 +118,7 @@ async function updateBulletins() {
   const cache = await readJson(BULLETIN_CACHE, {});
   try {
     const bulletin = parseBulletinPage(await fetchText(BULLETIN_URL));
+    if (!bulletin.blocks.length) throw new Error("Bulletin is empty");
     const previous = cache[bulletin.date];
     cache[bulletin.date] = { heading: bulletin.heading, blocks: bulletin.blocks, fetchedAt: new Date().toISOString() };
     if (!previous) {
@@ -123,7 +126,9 @@ async function updateBulletins() {
     } else if (JSON.stringify(previous.blocks) !== JSON.stringify(bulletin.blocks)) {
       console.log(`Bulletin: ${bulletin.date} changed since last run; updated`);
     }
-    await writeJson(BULLETIN_CACHE, cache);
+    if (!previous || JSON.stringify(previous.blocks) !== JSON.stringify(bulletin.blocks) || previous.heading !== bulletin.heading) {
+      await writeJson(BULLETIN_CACHE, cache);
+    }
   } catch (err) {
     console.error(`Bulletin: ${err.message} — using cached bulletins only`);
   }
@@ -184,6 +189,7 @@ async function updateNewsletters(extraUrls) {
     try {
       if (added > 0) await sleep(400);
       const issue = parseNewsletter(await fetchText(url), url);
+      if (!issue.blocks.length) throw new Error("Newsletter is empty");
       if (!issue.date) {
         console.warn(`Newsletter: no date in ${url}; skipped`);
         continue;
@@ -225,21 +231,23 @@ export function parseSchoolPage(html, page) {
   return blocksToChunks(blocks, { source: "page", title: page.title, url: page.url, date: page.date ?? null });
 }
 
-async function fetchPages(pages) {
+async function fetchPages(pages, previous) {
   const chunks = [];
   for (const page of pages) {
     try {
       const pageChunks = parseSchoolPage(await fetchText(page.url), page);
+      if (!pageChunks.length) throw new Error("Page is empty");
       console.log(`Page: ${page.title} → ${pageChunks.length} chunks`);
       chunks.push(...pageChunks);
     } catch (err) {
-      console.error(`Page: ${page.title}: ${err.message}`);
+      console.error(`Page: ${page.title}: ${err.message} — keeping previous content`);
+      chunks.push(...previous.filter(chunk => chunk.source === "page" && chunk.url === page.url));
     }
   }
   return chunks;
 }
 
-async function fetchPdfs(pdfs) {
+async function fetchPdfs(pdfs, previous) {
   const chunks = [];
   for (const pdf of pdfs) {
     try {
@@ -251,10 +259,12 @@ async function fetchPdfs(pdfs) {
         url: pdf.url,
         date: pdf.date ?? null
       });
+      if (!pdfChunks.length) throw new Error("PDF is empty");
       console.log(`PDF: ${pdf.title} → ${text.length} pages, ${pdfChunks.length} chunks`);
       chunks.push(...pdfChunks);
     } catch (err) {
-      console.error(`PDF: ${pdf.title}: ${err.message}`);
+      console.error(`PDF: ${pdf.title}: ${err.message} — keeping previous content`);
+      chunks.push(...previous.filter(chunk => chunk.source === "handbook" && chunk.url === pdf.url));
     }
   }
   return chunks;
@@ -262,13 +272,15 @@ async function fetchPdfs(pdfs) {
 
 // ---------------------------------------------------------------------------
 
-async function main() {
+export async function main() {
   const sources = await readJson(SOURCES_FILE);
+  const existing = await readJson(OUT, null);
+  const previous = existing?.chunks ?? [];
 
   const bulletins = await updateBulletins();
   const newsletters = await updateNewsletters(sources.newsletters ?? []);
-  const pages = await fetchPages(sources.pages ?? []);
-  const pdfs = await fetchPdfs(sources.pdfs ?? []);
+  const pages = await fetchPages(sources.pages ?? [], previous);
+  const pdfs = await fetchPdfs(sources.pdfs ?? [], previous);
 
   const chunks = [...pages, ...pdfs, ...newsletters, ...bulletins];
   if (chunks.length === 0) {
@@ -281,14 +293,15 @@ async function main() {
     chunks
   };
 
-  const existing = await readJson(OUT, null);
   const strip = (o) => o && JSON.stringify({ ...o, updatedAt: undefined });
   if (existing && strip(existing) === strip(payload)) {
+    await writeJson(FEED_OUT, existing);
     console.log(`corpus.json unchanged (${chunks.length} chunks)`);
     return;
   }
 
   await writeJson(OUT, payload);
+  await writeJson(FEED_OUT, payload);
   const bytes = Buffer.byteLength(JSON.stringify(payload));
   console.log(`corpus.json updated — ${chunks.length} chunks, ${(bytes / 1024).toFixed(0)} KB`, payload.counts);
 }

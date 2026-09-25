@@ -154,9 +154,17 @@ browser storage may differ from standalone storage or be unavailable.
 ### Data and independent publishing
 
 The corpus fetcher and retrieval code originate in PR #34. Sources and archives
-live inside the topping project. The deployed corpus is a snapshot: run
-`refresh:corpus` and redeploy to update it. This prototype adds no automatic
-publishing schedule. Model requests are limited to 20/minute per network IP and
+live inside the topping project. The **Update Ask SJA sources** Action runs every 30 minutes and can also be run manually.
+It archives bulletins/newsletters and publishes `data/public/ask-sja-corpus.json`
+through the existing Cloudflare Pages data site. Ask SJA reads that feed using
+`CORPUS_URL`, refreshing its index every 15 minutes (the feed may also be cached
+for five minutes). Failed page/PDF fetches keep the previous content. If the
+feed is unavailable, Ask SJA keeps its last index or uses its bundled snapshot.
+Deploy the Worker once after switching to this feed; later source updates do not
+require Worker or extension deployments. `npm run refresh:corpus` updates both
+the public feed and bundled fallback. Fixed PDF links remain configured in
+`corpus_sources.json`; new editions need their links updated there. Newsletters
+not listed by the school can be added to its `newsletters` list. Model requests are limited to 20/minute per network IP and
 60/minute on a shared key; Cloudflare's location-local counters are not a hard
 global spending cap. School users can share the same network IP.
 
