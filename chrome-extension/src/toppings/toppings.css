@@ -316,3 +316,15 @@
 
 .review-entry { display:inline-flex; align-items:center; gap:7px; }
 .review-badge { display:inline-flex; align-items:center; justify-content:center; min-width:19px; height:19px; padding:0 5px; border-radius:999px; background:#c34e47; color:#fff; font-size:11px; font-weight:650; line-height:1; font-variant-numeric:tabular-nums; }
+
+.preview-crop { border:1px solid #dce3d9; padding:12px; border-radius:10px; background:#fff; }
+.preview-crop-heading { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:#607367; }
+.preview-crop canvas { display:block; width:100%; aspect-ratio:4/3; height:auto; cursor:grab; touch-action:none; border-radius:5px; background:#f0f4ed; }
+.preview-crop canvas:active { cursor:grabbing; }
+.preview-crop canvas:focus-visible { outline:3px solid #78a88c; outline-offset:3px; }
+.modal .preview-crop-zoom { display:flex; flex-direction:row; align-items:center; gap:12px; margin:14px 0; }
+.preview-crop-zoom input { flex:1; width:100%; padding:0; accent-color:#577962; }
+.preview-crop-actions { display:flex; justify-content:flex-end; gap:14px; }
+
+.preview-crop-heading strong { display:flex; align-items:center; gap:7px; color:#243c32; font-size:14px; }
+.modal .preview-crop-hint { margin:0 0 12px; font-size:12px; line-height:1.5; color:#607367; }
