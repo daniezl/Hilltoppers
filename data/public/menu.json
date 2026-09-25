@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-25T12:56:56.730Z",
+  "updatedAt": "2026-09-25T17:54:41.708Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-25",
   "menus": {
@@ -45,7 +45,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-25T01:48:44.386Z",
+  "daysUpdatedAt": "2026-09-25T17:54:41.708Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -290,6 +290,41 @@
           "Adobo Marinated Egg",
           "Asian Fried Rice",
           "Seasoned Asian Vegetables"
+        ]
+      }
+    },
+    "2026-10-02": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "TVP Vegan Meatballs",
+          "Spaghetti & Meatballs",
+          "Roasted Broccoli",
+          "Grilled Balsamic Yellow Squash",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Whole Grain Corn Dog",
+          "Waffle Fries",
+          "Peas & Carrots"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Western Turkey Burger",
+          "Vegan Veggie Patty",
+          "Potato Cheddar Bites",
+          "Roasted Green Beans"
+        ],
+        "globalFare": [
+          "Seasoned Ground Beef",
+          "Baked Ziti",
+          "Italian Sausage",
+          "Italian Vegetables",
+          "Marinara Sauce"
         ]
       }
     }
