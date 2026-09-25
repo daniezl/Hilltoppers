@@ -4,6 +4,8 @@
 
 <h1 align="center">Hilltoppers</h1>
 
+<p align="center">Started by Daniel Zhang, Class of 2027. What comes next is up to you.</p>
+
 Today's schedule, today's day color, and a timer to the end of the block — for
 students at Saint Johnsbury Academy. An iOS app and a Chrome extension, built
 by a student, open to anyone at SJA who wants to help.
