@@ -92,6 +92,11 @@ function getDishSearchUrl(dishName: string): string {
   return `${GOOGLE_SEARCH_URL}${encodeURIComponent(dishName)}`;
 }
 
+function ExpandableBlock({ expanded, className, children }: { expanded: boolean; className: string; children: React.ReactNode }) {
+  const section = useRevealExpandedSection<HTMLLIElement>(expanded);
+  return <li ref={section} className={className}>{children}</li>;
+}
+
 function safeSendMessage<T>(message: unknown): Promise<T> {
   return new Promise((resolve, reject) => {
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
@@ -1179,7 +1184,7 @@ const Popup: React.FC = () => {
                 };
 
                 return (
-                  <li key={block.id} className={className}>
+                  <ExpandableBlock key={block.id} className={className} expanded={hasSubBlocks && isExpanded}>
                     <div
                       className={`block-row${hasSubBlocks ? ' expandable' : ''}`}
                       onClick={hasSubBlocks ? toggleExpanded : undefined}
@@ -1205,7 +1210,8 @@ const Popup: React.FC = () => {
                         ) : null}
                       </div>
                     </div>
-                    {hasSubBlocks && isExpanded ? (
+                    {hasSubBlocks ? (
+                      <AnimatedCollapse expanded={isExpanded}>
                       <ul className="subblock-list">
                         {subBlocksForBlock.map((sub) => {
                           const isMyLunch =
@@ -1225,8 +1231,9 @@ const Popup: React.FC = () => {
                           );
                         })}
                       </ul>
+                      </AnimatedCollapse>
                     ) : null}
-                  </li>
+                  </ExpandableBlock>
                 );
               })}
             </ul>

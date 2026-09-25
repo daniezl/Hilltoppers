@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export function useRevealExpandedSection<T extends HTMLElement = HTMLElement>(expanded: boolean, selected?: string | null) {
+export function useRevealExpandedSection<T extends HTMLElement = HTMLElement>(expanded: boolean, selected?: string | null, bottomBoundary?: string) {
   const section = useRef<T>(null);
 
   useEffect(() => {
@@ -18,9 +18,17 @@ export function useRevealExpandedSection<T extends HTMLElement = HTMLElement>(ex
       const targetHeight = bounds.height + (content ? Number(content.dataset.expandHeight || 0) - content.getBoundingClientRect().height : 0);
       const top = bounds.top + window.scrollY;
       const viewport = document.documentElement.clientHeight;
-      const target = targetHeight > viewport - 24 || top - initialScroll < 12
+      let target = targetHeight > viewport - 24 || top - initialScroll < 12
         ? top - 12
         : Math.max(initialScroll, top + targetHeight - viewport + 12);
+      const boundary = bottomBoundary ? section.current.closest(bottomBoundary) : null;
+      if (boundary && targetHeight <= viewport - 24) {
+        const extraHeight = targetHeight - bounds.height;
+        const boundaryBottom = boundary.getBoundingClientRect().bottom + window.scrollY + extraHeight;
+        // Reveal the surrounding card's footer only while keeping the expanded
+        // section's heading and all of its content inside the viewport.
+        target = Math.min(top - 12, Math.max(target, boundaryBottom - viewport + 12));
+      }
       const progress = reduced ? 1 : Math.min(1, (time - start) / 240);
       const ease = 1 - Math.pow(1 - progress, 3);
       window.scrollTo({ top: initialScroll + (target - initialScroll) * ease, behavior: 'instant' });
@@ -34,7 +42,7 @@ export function useRevealExpandedSection<T extends HTMLElement = HTMLElement>(ex
       window.removeEventListener('wheel', stop);
       window.removeEventListener('touchstart', stop);
     };
-  }, [expanded, selected]);
+  }, [expanded, selected, bottomBoundary]);
 
   return section;
 }
