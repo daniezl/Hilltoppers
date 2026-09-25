@@ -16,10 +16,6 @@ by a student, open to anyone at SJA who wants to help.
 [**Get it on the App Store**](https://apps.apple.com/us/app/hilltoppers/id6749836752) ·
 [**Add to Chrome**](https://chromewebstore.google.com/detail/bcjpcmlikbccobbpheojlnmiaffilnaa)
 
-<img width="800" alt="The iOS app: schedule, day color, and widgets" src="https://github.com/user-attachments/assets/65a9984a-1077-4531-9f75-eccbf5774e27" />
-
-<img width="400" alt="The Chrome extension popup" src="https://github.com/user-attachments/assets/876722b8-1dae-4c1c-8d1c-870834710afa" />
-
 ## What it does
 
 **Schedule** — the real one for today, including the irregular days (ABDEC,
