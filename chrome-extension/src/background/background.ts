@@ -35,9 +35,9 @@ let iconUpdatePending = false;
 let iconUpdateInFlight: Promise<void> | null = null;
 let hydrationInFlight: Promise<void> | null = null;
 // Keyed by period and day, since the popup can page through the menu for the
-// days ahead. An empty day means "whatever the file calls today".
+// days ahead. Default requests use today in the school timezone.
 const diningSlotKey = (period: DiningPeriod, dateKey?: string): string =>
-  `${period}|${dateKey ?? ''}`;
+  `${period}|${dateKey ?? getTodayKey()}`;
 const diningMenuCache: Record<string, DiningMenuResult | undefined> = {};
 const diningRefreshTimestamps: Record<string, number | undefined> = {};
 const diningRefreshInFlight: Record<string, Promise<void> | undefined> = {};
@@ -448,7 +448,7 @@ async function refreshSchedule(): Promise<void> {
 
 async function refreshDiningMenu(
   period: DiningPeriod,
-  dateKey?: string,
+  dateKey: string = getTodayKey(),
   forceRefresh = false
 ): Promise<void> {
   const slot = diningSlotKey(period, dateKey);
@@ -703,13 +703,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message?.type === 'getDiningMenuCache') {
     const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
-    const dateKey = message?.date as string | undefined;
+    const dateKey = (message?.date as string | undefined) ?? getTodayKey();
     sendResponse(diningMenuCache[diningSlotKey(period, dateKey)] ?? null);
     return true;
   }
   if (message?.type === 'requestDiningMenuRefresh') {
     const period = ((message?.period as DiningPeriod | undefined) ?? 'Lunch');
-    const dateKey = message?.date as string | undefined;
+    const dateKey = (message?.date as string | undefined) ?? getTodayKey();
     const slot = diningSlotKey(period, dateKey);
     const forceRefresh = shouldForceDiningRefreshToday(period, dateKey);
     refreshDiningMenu(period, dateKey, forceRefresh)

@@ -154,7 +154,7 @@ const Popup: React.FC = () => {
   const calendarSection = useRevealExpandedSection(calendarExpanded);
   const menuSection = useRevealExpandedSection(menuExpanded);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
-  // null means "whichever day the file calls today"; set once the arrows move.
+  // null follows today in the school timezone; set once the arrows move.
   const [selectedMenuDate, setSelectedMenuDate] = useState<string | null>(null);
   const [menuLoading, setMenuLoading] = useState<boolean>(true);
   const [menuError, setMenuError] = useState<string | null>(null);
@@ -185,6 +185,9 @@ const Popup: React.FC = () => {
     }
     return parsed.toJSDate();
   }, []);
+
+  const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
+  const requestedMenuDate = selectedMenuDate ?? DateTime.fromJSDate(now, { zone: EST_ZONE }).toFormat('yyyy-MM-dd');
 
   const scheduleDate = useMemo(
     () =>
@@ -370,19 +373,24 @@ const Popup: React.FC = () => {
       }>({
         type: 'requestDiningMenuRefresh',
         period,
-        date: selectedMenuDate ?? undefined
+        date: requestedMenuDate
       })
         .then((response) => {
           if (requestId !== menuRequestIdRef.current) {
             return;
           }
-          if (response?.payload) {
+          if (response?.payload?.dateKey === requestedMenuDate && response.payload.period === period) {
             setMenuData(response.payload);
             setMenuError(null);
             setMenuLoading(false);
             return;
           }
           if (!response?.ok) {
+            if (response?.code === 'no_date') {
+              setMenuError('Menu not published for this day');
+              setMenuLoading(false);
+              return;
+            }
             // The kitchen simply does not serve some meals on some days, which
             // is worth saying plainly instead of blaming the network.
             if (response?.code === 'no_station' || response?.code === 'no_item') {
@@ -391,7 +399,7 @@ const Popup: React.FC = () => {
               return;
             }
             // If refresh fails but we already have data for this period, keep it.
-            if (latestMenuDataRef.current?.period === period) {
+            if (latestMenuDataRef.current?.period === period && latestMenuDataRef.current.dateKey === requestedMenuDate) {
               setMenuError(null);
               setMenuLoading(false);
               return;
@@ -400,7 +408,7 @@ const Popup: React.FC = () => {
             setMenuLoading(false);
             return;
           }
-          if (latestMenuDataRef.current?.period === period) {
+          if (latestMenuDataRef.current?.period === period && latestMenuDataRef.current.dateKey === requestedMenuDate) {
             setMenuError(null);
             setMenuLoading(false);
             return;
@@ -413,7 +421,7 @@ const Popup: React.FC = () => {
             return;
           }
           console.error('[popup] Failed to request dining menu refresh', err);
-          if (latestMenuDataRef.current?.period === period) {
+          if (latestMenuDataRef.current?.period === period && latestMenuDataRef.current.dateKey === requestedMenuDate) {
             setMenuError(null);
             setMenuLoading(false);
             return;
@@ -423,19 +431,21 @@ const Popup: React.FC = () => {
         });
     };
 
+    setMenuLoading(true);
+    setMenuError(null);
     const menuRequestId = menuRequestIdRef.current + 1;
     menuRequestIdRef.current = menuRequestId;
 
     safeSendMessage<DiningMenuPayload | null>({
       type: 'getDiningMenuCache',
       period: selectedDiningPeriod,
-      date: selectedMenuDate ?? undefined
+      date: requestedMenuDate
     })
       .then((payload) => {
         if (menuRequestId !== menuRequestIdRef.current) {
           return;
         }
-        if (payload) {
+        if (payload?.dateKey === requestedMenuDate && payload.period === selectedDiningPeriod) {
           setMenuData(payload);
           setMenuError(null);
           setMenuLoading(false);
@@ -462,7 +472,7 @@ const Popup: React.FC = () => {
         if (!payload || payload.period !== selectedDiningPeriod) {
           return;
         }
-        if (selectedMenuDate && payload.dateKey !== selectedMenuDate) {
+        if (payload.dateKey !== requestedMenuDate) {
           return;
         }
         setMenuData(payload);
@@ -474,14 +484,13 @@ const Popup: React.FC = () => {
     if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage?.addListener) {
       chrome.runtime.onMessage.addListener(handleDiningMessage);
       return () => {
+        menuRequestIdRef.current += 1;
         chrome.runtime.onMessage.removeListener(handleDiningMessage);
       };
     }
 
-    return () => {};
-  }, [menuExpanded, selectedDiningPeriod, selectedMenuDate]);
-
-  const [now, setNow] = useState<Date>(() => (debugTestTime ?? DateTime.now().setZone(EST_ZONE).toJSDate()));
+    return () => { menuRequestIdRef.current += 1; };
+  }, [menuExpanded, selectedDiningPeriod, requestedMenuDate]);
 
   useEffect(() => {
     if (debugTestTime) {
@@ -569,7 +578,7 @@ const Popup: React.FC = () => {
   const menuDates = menuData?.availableDates ?? [];
   // Track the day that was asked for rather than the one already loaded, so the
   // arrows keep stepping while a day is still on its way in.
-  const shownMenuDate = selectedMenuDate ?? menuData?.dateKey ?? '';
+  const shownMenuDate = requestedMenuDate;
   const menuDateIndex = menuDates.indexOf(shownMenuDate);
 
   const stepMenuDay = (delta: number) => {
@@ -583,13 +592,8 @@ const Popup: React.FC = () => {
 
   // A payload for some other day means the file went stale overnight, or a step
   // is still in flight. Either way it is not the menu that was asked for.
-  const isMenuForSelectedDay = useMemo(() => {
-    if (!menuData?.dateKey) {
-      return false;
-    }
-    const wanted = selectedMenuDate ?? DateTime.now().setZone(EST_ZONE).toFormat('yyyy-MM-dd');
-    return menuData.dateKey === wanted;
-  }, [menuData?.dateKey, selectedMenuDate]);
+  const isMenuForSelectedDay = menuData?.dateKey === requestedMenuDate &&
+    menuData?.period === selectedDiningPeriod;
 
   const { currentBlock, nextBlock, remainingMs, nextStartsInMs } = useMemo(() => {
     let current: Block | undefined;

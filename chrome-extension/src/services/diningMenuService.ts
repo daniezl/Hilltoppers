@@ -1,8 +1,12 @@
+import { DateTime } from 'luxon';
+import { EST_ZONE } from '../types/schedule';
+
 export type DiningPeriod = 'Breakfast' | 'Lunch' | 'Dinner';
 
 export type DiningFetchErrorCode =
   | 'network'
   | 'parse'
+  | 'no_date'
   | 'no_station'
   | 'no_item';
 
@@ -133,14 +137,14 @@ export async function loadDiningMenuFirstItems(
 ): Promise<DiningMenuResult> {
   const data = await safeFetchJson(MENU_JSON_URL);
   const availableDates = listDates(data);
-  // Asking for a day the file has dropped falls back to the first one it has,
-  // which is today — better than an error when a popup was left open overnight.
-  const resolvedDate =
-    dateKey && availableDates.includes(dateKey)
-      ? dateKey
-      : availableDates[0] ?? (typeof data.menuDate === 'string' ? data.menuDate : '');
+  // The feed can still include yesterday after midnight in the school timezone.
+  const resolvedDate = dateKey ?? DateTime.now().setZone(EST_ZONE).toFormat('yyyy-MM-dd');
+  if (!availableDates.includes(resolvedDate)) {
+    throw new DiningMenuError('no_date', `No menu published for ${resolvedDate}`);
+  }
 
-  const menus = data.days?.[resolvedDate] ?? data.menus;
+  const menus = data.days?.[resolvedDate] ??
+    (data.menuDate === resolvedDate ? data.menus : undefined);
   if (!menus || typeof menus !== 'object') {
     throw new DiningMenuError('parse', 'menu.json is missing the menus object');
   }
