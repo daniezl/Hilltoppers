@@ -192,31 +192,41 @@ header {
 /* Quiet one-liner at the very bottom; same voice as the hover labels. */
 .popup-footer {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.feedback-link {
-  border: none;
+.footer-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
   background: transparent;
+  color: #647067;
   font: inherit;
   font-size: 11px;
-  color: #7d8591;
-  padding: 4px 0 4px 8px;
-  border-radius: 6px;
+  line-height: 1.4;
+  white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.feedback-link:hover {
-  color: #111111;
-  background: rgba(17, 17, 17, 0.06);
+.footer-action svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.feedback-link:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.15);
-}
+.footer-action:hover { color: #1a7f37; }
+.footer-action:focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
+
 
 .status {
   background: #ffffff;
@@ -1441,3 +1451,52 @@ header {
     grid-template-columns: 1fr;
   }
 }
+
+.topping-section { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.topping-heading { position: relative; }
+.topping-heading .schedule-toggle { width: 100%; }
+.topping-heading .toggle-title { margin-right: 36px; }
+.topping-preview-badge { margin-left: 7px; border: 1px solid #bfd2c3; border-radius: 999px; padding: 2px 6px; color: #4f765c; font-size: 9px; font-weight: 700; letter-spacing: .4px; line-height: 1; text-transform: uppercase; }
+.topping-content { position: relative; height: min(360px, calc(100dvh - 72px)); border: 1px solid rgba(17,17,17,.18); border-radius: 8px; background: #fff; overflow: hidden; }
+.topping-content iframe { display: block; width: 100%; height: 100%; border: 0; }
+.topping-menu { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); z-index: 2; }
+.topping-menu-toggle { border: 0; background: transparent; color: #7b8680; cursor: pointer; width: 28px; height: 26px; font-size: 20px; line-height: 1; }
+.topping-menu-items { position: absolute; right: 0; top: 30px; min-width: 144px; padding: 4px; border: 1px solid #dce2de; border-radius: 8px; background: #fff; box-shadow: 0 5px 16px #17251d14; }
+.topping-menu-items a, .topping-menu-items button { display: block; width: 100%; text-align: left; border: 0; background: transparent; text-decoration: none; color: #56655a; font: inherit; font-size: 11px; padding: 8px; border-radius: 4px; cursor: pointer; }
+.topping-menu-items a:hover, .topping-menu-items button:hover { background: #f1f5f2; }
+.topping-unavailable { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; color: #68746c; font-size: 12px; }
+.topping-unavailable button { border: 1px solid #dce2de; border-radius: 6px; background: #fff; padding: 6px 10px; color: inherit; cursor: pointer; }
+.topping-menu :focus-visible { outline: 2px solid #1a7f37; outline-offset: 3px; }
+
+.toppings-dock { margin-top:12px; }
+.toppings-strip { display:flex; align-items:center; width:max-content; max-width:100%; height:34px; margin:0; padding:0 5px; border:1px solid rgba(17,17,17,.12); border-radius:999px; background:#fff; box-sizing:border-box; }
+.toppings-strip-scroll { display:flex; align-items:center; min-width:0; overflow-x:auto; scrollbar-width:none; }
+.toppings-strip-scroll::-webkit-scrollbar { display:none; }
+.topping-chip, .toppings-add { display:grid; place-items:center; flex:none; width:34px; height:28px; padding:0; border:0; border-radius:999px; background:transparent; color:#68737d; cursor:pointer; }
+.topping-chip > svg { width:18px; height:18px; transition:transform 180ms cubic-bezier(.2,.8,.2,1); }
+.topping-chip:hover > svg { transform:translateY(-3px); }
+.topping-chip:hover, .toppings-add:hover { background:#f0f1f3; }
+.topping-chip[aria-expanded="true"] { color:#27313a; background:#e9ebee; }
+.toppings-add svg { transition:transform 300ms ease; transform-origin:center; width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
+.toppings-strip button:focus-visible { outline:2px solid #68737d; outline-offset:-2px; }
+.topping-name-tooltip { position:fixed; z-index:100; transform:translate(-50%,-100%); max-width:190px; padding:5px 9px; border-radius:6px; background:#fff; color:#4a5560; border:1px solid rgba(17,17,17,.1); font-size:11px; line-height:1.4; overflow-wrap:anywhere; pointer-events:none; text-align:center; box-shadow:0 5px 16px rgba(17,17,17,.12); animation:topping-tooltip-in 140ms ease-out; }
+.topping-panel { margin-top:8px; }
+.topping-panel[hidden] { display:none; }
+
+.toppings-divider { flex:none; width:1px; height:16px; margin:0 4px; background:rgba(17,17,17,.12); }
+.toppings-add:hover svg { transform:rotate(180deg); }
+@media (prefers-reduced-motion:reduce) { .toppings-add svg { transition:none; } .toppings-add:hover svg { transform:none; } }
+
+.toppings-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.toppings-row .toppings-strip { min-width:0; flex-shrink:1; }
+.toppings-row .topping-menu { position:relative; right:auto; top:auto; transform:none; flex:none; }
+.toppings-row .topping-menu-toggle { height:34px; }
+.toppings-row .topping-menu-toggle:disabled { opacity:.35; cursor:default; }
+@keyframes topping-tooltip-in { from { opacity:0; transform:translate(-50%,calc(-100% + 4px)); } to { opacity:1; transform:translate(-50%,-100%); } }
+@media (prefers-reduced-motion:reduce) { .topping-name-tooltip { animation:none; } }
+
+.toppings-row .topping-menu { animation:topping-options-in 180ms ease-out; }
+@keyframes topping-options-in { from { opacity:0; transform:translateY(4px) scale(.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) { .toppings-row .topping-menu { animation:none; } }
+
+@media (prefers-reduced-motion:reduce) { .topping-chip > svg { transition:none; } .topping-chip:hover > svg { transform:none; } }

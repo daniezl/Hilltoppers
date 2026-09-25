@@ -25,7 +25,7 @@ export function corsHeaders(request: Request): Record<string, string> {
     // header), so falling back to '*' is safe for unknown origins.
     'Access-Control-Allow-Origin': origin && isAllowedOrigin(origin) ? origin : '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Topping-Install-ID',
     'Access-Control-Max-Age': '86400'
   };
 }

@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
-import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
+import { savePreferences, syncPreferences } from './preferenceSync';
 import { isFirebaseConfigured } from '../firebase/config';
 
 export type TimeFormat = '12h' | '24h';
@@ -149,28 +149,13 @@ export async function loadSchedulePreferences(): Promise<SchedulePreferences> {
  * Returns `null` when the user is not signed in or the remote doc has no
  * stored preferences.
  */
+const syncStore = { key: PREF_KEY, readLocal: loadFromSyncStorage, writeLocal: saveToSyncStorage,
+  readRemote: loadFromRemote, writeRemote: saveToRemote };
+
 export async function syncSchedulePreferencesFromRemote(): Promise<SchedulePreferences | null> {
-  const user = await waitForAuthReady();
-  if (!user) {
-    return null;
-  }
-  const remote = await loadFromRemote(user.uid);
-  if (!remote) {
-    return null;
-  }
-  try {
-    await saveToSyncStorage(remote);
-  } catch (error) {
-    console.warn('[schedulePreferences] Failed to cache remote preferences locally', error);
-  }
-  return remote;
+  return syncPreferences(syncStore);
 }
 
 export async function saveSchedulePreferences(preferences: SchedulePreferences): Promise<void> {
-  await saveToSyncStorage(preferences);
-
-  const user = getCurrentUser();
-  if (user) {
-    await saveToRemote(user.uid, preferences);
-  }
+  await savePreferences(syncStore, preferences);
 }

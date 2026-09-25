@@ -14,6 +14,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: path.resolve(rootDir, 'popup.html'),
+        toppings: path.resolve(rootDir, 'toppings.html'),
+        sourceCode: path.resolve(rootDir, 'source-code.html'),
+        iosApp: path.resolve(rootDir, 'ios-app.html'),
         options: path.resolve(rootDir, 'options.html'),
         classSettings: path.resolve(rootDir, 'class-settings.html'),
         login: path.resolve(rootDir, 'login.html'),

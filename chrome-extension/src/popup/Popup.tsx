@@ -26,6 +26,8 @@ import {
 import { logAppOpen } from '../firebase/analytics';
 import { relativeLabel } from '../services/calendarService';
 import Calendar from './Calendar';
+import Toppings from './Toppings';
+import { useRevealExpandedSection } from './useRevealExpandedSection';
 import {
   IDEAS_ENABLED,
   fetchIdeas,
@@ -36,9 +38,8 @@ import {
   sortForPopup,
   type Idea
 } from '../services/ideasService';
-import { FEEDBACK_PROMPT } from '../services/feedbackService';
 
-/** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
+/** Opens one of the extension's own pages in a tab. */
 function openExtensionPage(page: string) {
   const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
     ? chrome.runtime.getURL(page)
@@ -144,6 +145,9 @@ const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
+  const scheduleSection = useRevealExpandedSection(scheduleExpanded);
+  const calendarSection = useRevealExpandedSection(calendarExpanded);
+  const menuSection = useRevealExpandedSection(menuExpanded);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
   // null means "whichever day the file calls today"; set once the arrows move.
   const [selectedMenuDate, setSelectedMenuDate] = useState<string | null>(null);
@@ -851,7 +855,6 @@ const Popup: React.FC = () => {
   const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
   const handleOpenClassSettings = () => openExtensionPage('class-settings.html');
-  const handleOpenFeedback = () => openExtensionPage('feedback.html');
 
   const handleGradePromptConfirm = () => {
     if (pendingGradeSelection == null) return;
@@ -1073,7 +1076,7 @@ const Popup: React.FC = () => {
         )}
       </section>
       {!isNoSchool && !isNetworkFailed && (
-        <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
+        <section ref={scheduleSection} className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
           <button
             type="button"
             className="schedule-toggle"
@@ -1199,7 +1202,7 @@ const Popup: React.FC = () => {
         )}
         </section>
       )}
-      <section className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
+      <section ref={calendarSection} className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
@@ -1233,7 +1236,7 @@ const Popup: React.FC = () => {
           />
         )}
       </section>
-      <section className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
+      <section ref={menuSection} className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
@@ -1479,6 +1482,7 @@ const Popup: React.FC = () => {
           </div>
         )}
       </section>
+      <Toppings />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
       {IDEAS_ENABLED && (
       <section className={`ideas-list ${ideasExpanded ? '' : 'collapsed'}`}>
@@ -1576,11 +1580,7 @@ const Popup: React.FC = () => {
         )}
       </section>
       )}
-      <footer className="popup-footer">
-        <button type="button" className="feedback-link" onClick={handleOpenFeedback}>
-          {FEEDBACK_PROMPT}
-        </button>
-      </footer>
+
     </main>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BLOCK_NAMES,
   type BlockKey,
@@ -22,7 +22,7 @@ import {
   ALL_GRADES, GRADE_LABELS, type GradeLevel,
   gradeFromGraduationYear, graduationYearFromGrade
 } from '../types/schedule';
-import { onAuthState, reloadCurrentUser, signOut as signOutUser } from '../firebase/auth';
+import { onAuthState } from '../firebase/auth';
 import type { AuthUser } from '../firebase/auth';
 import { logClassSettingsReset, logPreferenceSaved, logScreenView } from '../firebase/analytics';
 import { FirebaseError } from 'firebase/app';
@@ -64,28 +64,19 @@ function mapSaveError(error: unknown): string {
   return 'Saving failed due to an unexpected error. Please try again.';
 }
 
-function mapSignOutError(error: unknown): string {
-  if (error instanceof FirebaseError) {
-    return `Unable to sign out right now (${error.code}). Please try again.`;
-  }
-  if (error instanceof Error) {
-    return `Unable to sign out: ${error.message}`;
-  }
-  return 'Unable to sign out right now. Please try again.';
-}
-
-const ClassSettings: React.FC = () => {
+const ClassSettings: React.FC<{ onAccount?: () => void }> = ({ onAccount }) => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>(INITIAL_SAVE_STATE);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
-  const [signOutPending, setSignOutPending] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const dirty = useRef(false);
+  dirty.current = hasUnsavedChanges;
 
-  const loginUrl = useMemo(() => resolveExtensionUrl('login.html'), []);
+  const loginUrl = useMemo(() => resolveExtensionUrl('login.html?returnTo=class-settings.html'), []);
 
   useEffect(() => {
     void logScreenView('ClassSettings');
@@ -115,16 +106,17 @@ const ClassSettings: React.FC = () => {
           loadBlockPreferences(),
           loadSchedulePreferences()
         ]);
-        if (!cancelled) {
+        if (!cancelled && !dirty.current) {
           setBlockPrefs(nextBlocks);
           setSchedulePrefs(nextSchedule);
         }
+        if (!cancelled) setLoading(false);
 
         const [remoteBlocks, remoteSchedule] = await Promise.all([
           syncBlockPreferencesFromRemote(),
           syncSchedulePreferencesFromRemote()
         ]);
-        if (!cancelled) {
+        if (!cancelled && !dirty.current) {
           if (remoteBlocks) setBlockPrefs(remoteBlocks);
           if (remoteSchedule) setSchedulePrefs(remoteSchedule);
         }
@@ -146,10 +138,10 @@ const ClassSettings: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, authUser?.uid, authUser?.emailVerified]);
+  }, [authInitialized, authUser?.uid]);
 
   useEffect(() => {
-    if (saveState.status === 'success' || saveState.status === 'error') {
+    if (saveState.status === 'success') {
       const timeout = window.setTimeout(() => {
         setSaveState((prev) => (prev.status === 'saving' ? prev : INITIAL_SAVE_STATE));
       }, 3000);
@@ -159,13 +151,6 @@ const ClassSettings: React.FC = () => {
   }, [saveState.status]);
 
   const blockRows = useMemo(() => (Object.keys(DEFAULT_BLOCK_NAMES) as BlockKey[]), []);
-
-  const identityLabel = useMemo(() => {
-    if (!authUser) {
-      return '';
-    }
-    return authUser.displayName || authUser.email || authUser.uid;
-  }, [authUser]);
 
   const needsEmailVerification = useMemo(() => {
     if (!authUser) {
@@ -177,6 +162,9 @@ const ClassSettings: React.FC = () => {
     const providers = authUser.providerData?.map((entry) => entry?.providerId).filter(Boolean) as string[];
     return providers.includes('password');
   }, [authUser]);
+
+  const latestPreferences = useRef({ blockPrefs, schedulePrefs });
+  latestPreferences.current = { blockPrefs, schedulePrefs };
 
   // Auto-save effect with debounce
   useEffect(() => {
@@ -190,15 +178,6 @@ const ClassSettings: React.FC = () => {
 
     const timeoutId = window.setTimeout(() => {
       void (async () => {
-        if (needsEmailVerification) {
-          setSaveState({
-            status: 'error',
-            message: 'Email not verified. Please confirm your email before saving.'
-          });
-          setHasUnsavedChanges(false);
-          return;
-        }
-
         setSaveState({ status: 'saving', message: 'Auto-saving…' });
 
         try {
@@ -209,11 +188,13 @@ const ClassSettings: React.FC = () => {
           if (typeof chrome !== 'undefined') {
             chrome.runtime?.sendMessage?.({ type: 'preferencesUpdated' });
           }
+          if (latestPreferences.current.blockPrefs !== blockPrefs || latestPreferences.current.schedulePrefs !== schedulePrefs) return;
           setSaveState({ status: 'success', message: 'Changes saved automatically.' });
           setHasUnsavedChanges(false);
           void logPreferenceSaved('class_settings_auto');
         } catch (error) {
           console.error('[class-settings] Auto-save failed', error);
+          if (latestPreferences.current.blockPrefs !== blockPrefs || latestPreferences.current.schedulePrefs !== schedulePrefs) return;
           setSaveState({
             status: 'error',
             message: mapSaveError(error)
@@ -227,43 +208,6 @@ const ClassSettings: React.FC = () => {
       window.clearTimeout(timeoutId);
     };
   }, [blockPrefs, schedulePrefs, hasUnsavedChanges, loading, authInitialized, needsEmailVerification]);
-
-  useEffect(() => {
-    if (!needsEmailVerification) {
-      return undefined;
-    }
-
-    let cancelled = false;
-
-    const refreshStatus = async () => {
-      try {
-        const updated = await reloadCurrentUser();
-        if (cancelled) {
-          return;
-        }
-        if (updated) {
-          setAuthUser(updated);
-          if (updated.emailVerified) {
-            setFeedback({ type: 'success', message: 'Email verified! You can now sync preferences.' });
-          }
-        }
-      } catch (error) {
-        console.warn('[class-settings] Auto refresh verification failed', error);
-      }
-    };
-
-    void refreshStatus();
-    const handleFocus = () => {
-      void refreshStatus();
-    };
-
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [needsEmailVerification]);
 
   const handleBlockNameChange = (key: BlockKey, value: string) => {
     setBlockPrefs((prev) => ({
@@ -462,52 +406,16 @@ const ClassSettings: React.FC = () => {
   };
 
 
-  const handleSignOut = async () => {
-    setFeedback(null);
-    setSignOutPending(true);
-    try {
-      await signOutUser();
-      setFeedback({ type: 'info', message: 'Signed out. Changes will now stay on this device only.' });
-    } catch (error) {
-      console.error('[class-settings] Sign-out failed', error);
-      setFeedback({ type: 'error', message: mapSignOutError(error) });
-    } finally {
-      setSignOutPending(false);
-    }
-  };
-
   const openLoginPage = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = loginUrl;
-    }
+    if (onAccount) { onAccount(); return; }
+    window.location.href = loginUrl;
   };
 
   return (
     <main className="class-settings">
-      <header className="class-settings__topbar" aria-label="Account status">
-        {!authInitialized ? (
-          <span className="class-settings__topbar-text">Checking sign-in status…</span>
-        ) : authUser ? (
-          <div className="class-settings__topbar-user">
-            <div className="class-settings__topbar-details">
-              <span className="class-settings__topbar-label">Signed in as</span>
-              <strong>{identityLabel}</strong>
-              {needsEmailVerification ? (
-                <span className="class-settings__badge">Email not verified</span>
-              ) : null}
-            </div>
-            <button type="button" className="secondary" onClick={handleSignOut} disabled={signOutPending}>
-              {signOutPending ? 'Signing out…' : 'Sign out'}
-            </button>
-          </div>
-        ) : (
-          <div className="class-settings__topbar-cta">
-            <p>Sign in to sync your schedule and class preferences across devices.</p>
-            <button type="button" className="primary" onClick={openLoginPage}>
-              Go to Sign In
-            </button>
-          </div>
-        )}
+      <header className="class-settings__topbar" aria-label="Account">
+        <span className="class-settings__topbar-text">{!authInitialized ? 'Restoring account…' : authUser ? needsEmailVerification ? 'Saved locally. Verify your email to sync.' : 'Signed in' : 'Settings are saved in this browser.'}</span>
+        <button type="button" className="secondary" onClick={openLoginPage} disabled={hasUnsavedChanges || saveState.status === 'saving'}>Account</button>
       </header>
 
       {feedback ? (
@@ -516,25 +424,9 @@ const ClassSettings: React.FC = () => {
         </div>
       ) : null}
 
-      {authUser && needsEmailVerification ? (
-        <div className="class-settings__notification class-settings__notification--warning" role="status" aria-live="polite">
-          <p>Your email is not verified. Open the sign-in page to resend the verification email or confirm the link in your inbox.</p>
-          <button type="button" className="tertiary" onClick={openLoginPage}>
-            Manage verification
-          </button>
-        </div>
-      ) : null}
-
-      {!authUser && authInitialized ? (
-        <div className="class-settings__notification class-settings__notification--info" role="status" aria-live="polite">
-          <p>Not signed in. Changes are saved to this browser only.</p>
-        </div>
-      ) : null}
-
       <header className="class-settings__header">
         <div>
           <h1>Class &amp; Schedule Settings</h1>
-          <p>Rename blocks and control how classes appear on Green and White days. Changes save automatically.</p>
         </div>
         <div className="class-settings__header-actions">
           {saveState.status === 'saving' && (

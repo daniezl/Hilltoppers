@@ -1,32 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
-import {
-  onAuthState,
-  registerWithEmail,
-  reloadCurrentUser,
-  sendVerificationEmail,
-  signInWithEmail,
-  signOut as signOutUser
-} from '../firebase/auth';
-import type { AuthUser } from '../firebase/auth';
-import { logScreenView } from '../firebase/analytics';
+import { onAuthState, registerWithEmail, reloadCurrentUser, sendVerificationEmail,
+  signInWithEmail, signOut, resetPassword, redeemEmailCode, completeEmailVerification, completePasswordReset, isSchoolEmail, getSchoolEmail, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
 import './login.css';
+import CodeInput from './CodeInput';
+import SchoolLinkButton from './SchoolLinkButton';
 
-type FeedbackType = 'success' | 'error' | 'info' | 'warning';
-
-interface Feedback {
-  type: FeedbackType;
-  message: string;
-}
-
-type AuthMode = 'signIn' | 'register';
-
-function resolveExtensionUrl(path: string): string {
-  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL(path);
-  }
-  return path;
-}
+type Mode = 'signIn' | 'register' | 'reset';
+const destinations: Record<string, string> = {
+  'class-settings.html': 'Class settings', 'toppings.html': 'Topping Bar'
+};
 
 function mapAuthError(error: unknown): string {
   if (error instanceof FirebaseError) {
@@ -55,7 +38,7 @@ function mapAuthError(error: unknown): string {
       case 'auth/operation-not-allowed':
         return 'This sign-in method is not available. Contact support for assistance.';
       default:
-        return `Unable to sign in right now (${error.code}). Please try again.`;
+        return `Could not complete this request (${error.code}). Please try again.`;
     }
   }
 
@@ -66,384 +49,244 @@ function mapAuthError(error: unknown): string {
   return 'Unable to sign in right now. Please try again.';
 }
 
-const Login: React.FC = () => {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
-  const [authMode, setAuthMode] = useState<AuthMode>('signIn');
+function nameFromEmail(address: string): string {
+  return address.split('@')[0].split(/[._-]+/).filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
+
+export default function Login({ returnPage, onNavigate }: { returnPage?: string; onNavigate?: (page: string) => void }) {
+  const requested = returnPage ?? new URLSearchParams(location.search).get('returnTo') ?? '';
+  const returnTo = Object.prototype.hasOwnProperty.call(destinations, requested) ? requested : '';
+  const followReturn = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onNavigate) { event.preventDefault(); onNavigate(returnTo); }
+  };
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [, refreshView] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState<Mode>('signIn');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [redirecting, setRedirecting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
-  const classSettingsUrl = useMemo(() => resolveExtensionUrl('class-settings.html'), []);
-
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+  const [resetSent, setResetSent] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
+  const [code, setCode] = useState('');
+  const [resetAction, setResetAction] = useState('');
+  const [school, setSchool] = useState<{email:string|null;verified:boolean}|null>(null);
+  const [schoolLoading, setSchoolLoading] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [schoolInput, setSchoolInput] = useState('');
+  const [schoolChallenge, setSchoolChallenge] = useState('');
+  const [schoolCode, setSchoolCode] = useState('');
+  const [schoolCooldown, setSchoolCooldown] = useState(0);
+  const [schoolError, setSchoolError] = useState('');
+  const [linkConfirmed,setLinkConfirmed] = useState(false);
+  useEffect(()=>{
+    if(!linkConfirmed)return;
+    const timer=window.setTimeout(()=>setLinkConfirmed(false),2400);
+    return ()=>window.clearTimeout(timer);
+  },[linkConfirmed]);
   useEffect(() => {
-    void logScreenView('Login');
+    let active=true;
+    setSchool(null); setLinkConfirmed(false); setLinkOpen(false); setSchoolInput(''); setSchoolChallenge(''); setSchoolCode(''); setSchoolError('');
+    if (!user) {setSchoolLoading(false); return;}
+    if (isSchoolEmail(user.email)) {setSchool({email:user.email,verified:user.emailVerified});setSchoolLoading(false);return;}
+    setSchoolLoading(true);
+    getSchoolEmail(user).then(value=>{if(active)setSchool(value);}).catch(()=>{if(active)setSchoolError('Could not load your school email.');})
+      .finally(()=>{if(active)setSchoolLoading(false);});
+    return ()=>{active=false;};
+  }, [user?.uid,user?.email,user?.emailVerified]);
+  useEffect(()=>{
+    if(!schoolCooldown)return;
+    const timer=window.setTimeout(()=>setSchoolCooldown(v=>v-1),1000);
+    return ()=>window.clearTimeout(timer);
+  },[schoolCooldown]);
+  async function schoolAction(action:()=>Promise<void>) {
+    setBusy(true);setSchoolError('');
+    try {await action();}catch(e){setSchoolError(mapAuthError(e));}finally{setBusy(false);}
+  }
+  async function sendSchoolCode(address = schoolInput) {
+    if(!user)return;
+    setSchoolChallenge(await requestSchoolEmailCode(user,address));setSchoolCode('');setSchoolCooldown(60);
+  }
 
-    const unsubscribe = onAuthState((user) => {
-      setAuthUser(user);
-      setAuthInitialized(true);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const identityLabel = useMemo(() => {
-    if (!authUser) {
-      return '';
-    }
-    return authUser.displayName || authUser.email || authUser.uid;
-  }, [authUser]);
-
-  const needsEmailVerification = useMemo(() => {
-    if (!authUser) {
-      return false;
-    }
-    if (authUser.emailVerified) {
-      return false;
-    }
-    const providers = authUser.providerData?.map((entry) => entry?.providerId).filter(Boolean) as string[];
-    return providers.includes('password');
-  }, [authUser]);
-
+  useEffect(() => onAuthState(next => {
+    setUser(next); setReady(true);
+  }), []);
   useEffect(() => {
-    if (resendCooldown <= 0) {
-      return undefined;
-    }
-    const timer = window.setInterval(() => {
-      setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [resendCooldown]);
-
+    if (!cooldown) return;
+    const timer = window.setTimeout(() => setCooldown(value => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
   useEffect(() => {
-    if (!needsEmailVerification) {
-      return undefined;
-    }
-
-    let cancelled = false;
-
-    const refreshStatus = async () => {
-      try {
-        const updated = await reloadCurrentUser();
-        if (cancelled) {
-          return;
-        }
-        if (updated) {
-          setAuthUser(updated);
-          if (updated.emailVerified) {
-            setFeedback({ type: 'success', message: 'Email verified! Opening settings…' });
-            console.log('[login] Email verified, redirecting to:', classSettingsUrl);
-            // Redirect immediately when email is verified
-            requestAnimationFrame(() => {
-              console.log('[login] Executing redirect after verification...');
-              window.location.href = classSettingsUrl;
-            });
-          }
-        }
-      } catch (error) {
-        console.warn('[login] Auto refresh verification failed', error);
-      }
+    if (!user || user.emailVerified) return;
+    const refresh = () => {
+      void reloadCurrentUser().then(next => {
+        if (next?.emailVerified) { setUser(next); refreshView(v => v + 1); setMessage('Email verified.'); }
+      }).catch(() => {});
     };
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [user?.uid, user?.emailVerified]);
 
-    const handleFocus = () => {
-      void refreshStatus();
-    };
-
-    window.addEventListener('focus', handleFocus);
-    void refreshStatus();
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [needsEmailVerification, classSettingsUrl]);
-
-  useEffect(() => {
-    if (!authInitialized || !authUser || needsEmailVerification || redirecting) {
-      return;
-    }
-
-    console.log('[login] Triggering redirect to settings:', classSettingsUrl);
-    setRedirecting(true);
-    setFeedback({ type: 'success', message: 'Signed in successfully. Opening settings…' });
-    
-    // Use requestAnimationFrame for immediate redirect
-    requestAnimationFrame(() => {
-      console.log('[login] Executing redirect now...');
-      window.location.href = classSettingsUrl;
-    });
-  }, [authInitialized, authUser, needsEmailVerification, redirecting, classSettingsUrl]);
-
-  const handleEmailSubmit = async (event: React.FormEvent) => {
+  function switchMode(next: Mode) {
+    setMode(next); setChallengeId(''); setCode(''); setResetAction(''); setShowPassword(false); setResetSent(false); setMessage(''); setError('');
+  }
+  async function perform(action: () => Promise<void>) {
+    setBusy(true); setError(''); setMessage('');
+    try { await action(); }
+    catch (e) { setError(mapAuthError(e)); }
+    finally { setBusy(false); }
+  }
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (busy) {
-      return;
-    }
-
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-
-    if (!trimmedEmail || !trimmedPassword) {
-      setFeedback({ type: 'error', message: 'Email and password are required.' });
-      return;
-    }
-
-    setBusy(true);
-    setFeedback(null);
-    setRedirecting(false);
-
-    try {
-      if (authMode === 'register') {
-        const credential = await registerWithEmail(trimmedEmail, trimmedPassword);
-        const createdUser = credential.user;
-        setFeedback({
-          type: 'info',
-          message: 'Account created. We just sent a verification email — please check your inbox (including spam or junk folders).'
-        });
-        try {
-          await sendVerificationEmail(createdUser);
-          setResendCooldown(60);
-        } catch (error) {
-          console.error('[login] Failed to send verification email', error);
-          setFeedback({
-            type: 'error',
-            message: 'Account created, but the verification email could not be sent. Please try resending in a moment.'
-          });
-        }
+    // Read the DOM before rendering busy state: password managers may fill without input events.
+    const fields = new FormData(event.currentTarget as HTMLFormElement);
+    const submittedEmail = String(fields.get('username') ?? '').trim();
+    const submittedPassword = String(fields.get('password') ?? '');
+    setEmail(submittedEmail);
+    await perform(async () => {
+      if (mode === 'reset') {
+        setChallengeId(await resetPassword(submittedEmail)); setCode('');
+        setResetSent(true);
+        setCooldown(60);
+      } else if (mode === 'register') {
+        const result = await registerWithEmail(submittedEmail, submittedPassword, nameFromEmail(submittedEmail));
+        setChallengeId(await sendVerificationEmail(result.user)); setCode(''); setCooldown(60);
       } else {
-        const credential = await signInWithEmail(trimmedEmail, trimmedPassword);
-        if (credential.user && !credential.user.emailVerified) {
-          setFeedback({
-            type: 'warning',
-            message: 'Signed in. Please verify your email to finish setting up syncing.'
-          });
-        } else {
-          setFeedback({ type: 'success', message: 'Signed in successfully.' });
-        }
+        await signInWithEmail(submittedEmail, submittedPassword);
+        setMessage('');
       }
-      setPassword('');
-    } catch (error) {
-      console.error('[login] Email auth failed', error);
-      if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
-        setFeedback({
-          type: 'error',
-          message: 'Too many attempts. Please wait a minute before trying again and check your spam folder for earlier emails.'
-        });
-        setResendCooldown((prev) => (prev > 30 ? prev : 60));
-      } else {
-        setFeedback({ type: 'error', message: mapAuthError(error) });
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    if (busy || resendCooldown > 0) {
-      if (resendCooldown > 0) {
-        setFeedback({
-          type: 'info',
-          message: `Please wait ${resendCooldown} seconds before sending another verification email.`
-        });
-      }
-      return;
-    }
-    setBusy(true);
-    setFeedback(null);
-    try {
-      await sendVerificationEmail();
-      setFeedback({
-        type: 'info',
-        message: 'Verification email sent. Please check your inbox (including spam or junk folders).'
+    });
+  }
+  function codeForm(verifying: boolean) {
+    return <form className="login__form login__code-form" onSubmit={event => {
+      event.preventDefault(); void perform(async () => {
+        const action = await redeemEmailCode(challengeId, code, verifying ? user : null);
+        if (verifying) {
+          await completeEmailVerification(action); setChallengeId(''); setCode(''); refreshView(v=>v+1);
+        } else { setResetAction(action); setCode(''); }
       });
-      setResendCooldown(60);
-    } catch (error) {
-      console.error('[login] Resend verification failed', error);
-      if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
-        setFeedback({
-          type: 'error',
-          message: 'Too many attempts. Please wait one minute before trying again.'
-        });
-        setResendCooldown(60);
-      } else {
-        setFeedback({ type: 'error', message: mapAuthError(error) });
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRefreshVerification = async () => {
-    if (busy) {
-      return;
-    }
-    setBusy(true);
-    setFeedback(null);
-    try {
-      const updated = await reloadCurrentUser();
-      if (updated) {
-        setAuthUser(updated);
-      }
-      if (updated?.emailVerified) {
-        setFeedback({ type: 'success', message: 'Email verified! Opening settings…' });
-        if (!redirecting) {
-          console.log('[login] Manual verification confirmed, redirecting to:', classSettingsUrl);
-          setRedirecting(true);
-          requestAnimationFrame(() => {
-            console.log('[login] Executing manual verification redirect...');
-            window.location.href = classSettingsUrl;
-          });
-        }
-      } else {
-        setFeedback({
-          type: 'warning',
-          message: 'We still cannot confirm the verification. Click the link in your email, then try again.'
-        });
-      }
-    } catch (error) {
-      console.error('[login] Refresh verification failed', error);
-      setFeedback({ type: 'error', message: mapAuthError(error) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    if (busy) {
-      return;
-    }
-    setBusy(true);
-    setFeedback(null);
-    setRedirecting(false);
-    try {
-      await signOutUser();
-      setFeedback({ type: 'info', message: 'Signed out. You can still browse settings locally.' });
-    } catch (error) {
-      console.error('[login] Sign-out failed', error);
-      setFeedback({ type: 'error', message: mapAuthError(error) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const openSettings = () => {
-    console.log('[login] Back to settings clicked, redirecting to:', classSettingsUrl);
-    window.location.href = classSettingsUrl;
-  };
-
-  const toggleMode = () => {
-    setAuthMode((prev) => (prev === 'signIn' ? 'register' : 'signIn'));
-    setFeedback(null);
-  };
-
-  return (
-    <main className="login">
-      <div className="login__container" role="main">
-        <button type="button" className="login__back" onClick={openSettings}>
-          ← Back to settings
-        </button>
-        <header className="login__header">
-          <h1>Sign in to Hilltoppers</h1>
-          <p>Sync your schedule and class preferences across every device.</p>
-        </header>
-
-        {feedback ? (
-          <div className={`login__message login__message--${feedback.type}`} role="alert">
-            {feedback.message}
+    }}>
+      <label htmlFor="email-code">Email code</label>
+      <CodeInput id="email-code" value={code} disabled={busy} onChange={setCode}/>
+      {!verifying && error && <p role="alert" className="login__error">{error}</p>}
+      <button className="primary" disabled={busy}>{busy ? 'Please wait…' : verifying ? 'Verify email' : 'Continue'}</button>
+      <button type="button" className="tertiary" disabled={busy || cooldown>0} onClick={()=>void perform(async()=>{
+        setChallengeId(verifying ? await sendVerificationEmail(user) : await resetPassword(email));
+        setCode(''); setCooldown(60);
+      })}>{cooldown ? `Send again in ${cooldown}s` : 'Resend email'}</button>
+    </form>;
+  }
+  const heading = !ready ? 'Account' : user ? 'Account' : mode === 'reset' ? resetAction ? 'New password' : resetSent ? 'Check your email' : 'Reset password' : mode === 'register' ? 'Create an account' : 'Sign in';
+  return <main className="login">
+    <nav className="login__nav" aria-label="Account navigation">
+      <div className="login__brand"><span className="login__brand-icon" aria-hidden="true">✳</span> Hilltoppers <span className="login__brand-divider">/</span> Account</div>
+      {returnTo && <a className="login__back" href={returnTo} onClick={followReturn}>← {destinations[returnTo]}</a>}
+    </nav>
+    <div className={`login__container${user ? ' login__container--account' : ' login__container--auth'}`}>
+    <header className="login__header"><h1>{heading}</h1>{user ? <p>{user.email}</p> : ready && mode === 'reset' && !resetSent ? <p>Get a reset link and code.</p> : null}</header>
+    {!ready ? <p role="status">Restoring your account…</p> : user ? <div className="account-overview">
+      {!user.emailVerified && <section className="account-section">
+        <h2>Verify your email</h2>
+        {challengeId ? codeForm(true) : <button className="secondary" disabled={busy || cooldown > 0} onClick={() => void perform(async () => {
+          setChallengeId(await sendVerificationEmail(user)); setCode(''); setCooldown(60);
+        })}>{cooldown ? `Send again in ${cooldown}s` : 'Send verification email'}</button>}
+      </section>}
+      <section className="account-section" aria-labelledby="school-account-heading">
+        <h2 id="school-account-heading">Connections</h2>
+        <div className="account-school-card">
+        <div className="account-connection">
+          <span className="account-connection-icon" aria-hidden="true">SJA</span>
+          <div className="account-connection-copy">
+            <strong>St. Johnsbury Academy email</strong>
+            {school?.email && <p>{school.email}</p>}
           </div>
-        ) : null}
-
-        {authUser && needsEmailVerification ? (
-          <div className="login__notice login__notice--warning" role="status" aria-live="polite">
-            <p>Your email is not verified yet. Check your inbox (including spam or junk folders) and click the verification link.</p>
-            <div className="login__notice-actions">
-              <button
-                type="button"
-                className="secondary"
-                onClick={handleResendVerification}
-                disabled={busy || resendCooldown > 0}
-              >
-                {resendCooldown > 0 ? `Resend verification email (${resendCooldown}s)` : 'Resend verification email'}
-              </button>
-              <button type="button" className="tertiary" onClick={handleRefreshVerification} disabled={busy}>
-                I&apos;ve verified my email
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {authUser && !needsEmailVerification ? (
-          <div className="login__notice login__notice--info" role="status" aria-live="polite">
-            <p>You&apos;re signed in as <strong>{identityLabel}</strong>.</p>
-          </div>
-        ) : null}
-
-        <div className="login__content">
-          {!needsEmailVerification && (
-          <form className="login__form" onSubmit={handleEmailSubmit} method="post">
-            <label>
-              Email
-              <input
-                type="email"
-                name="email"
-                id="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="username email"
-                required
-                disabled={busy}
-              />
-            </label>
-            <label className="login__password-label">
-              Password
-              <div className="login__password-field">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  id="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-                  required
-                  disabled={busy}
-                />
-                <button
-                  type="button"
-                  className="login__password-toggle"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </label>
-            <button type="submit" className="primary" disabled={busy}>
-              {authMode === 'register' ? 'Create account' : 'Sign in with email'}
-            </button>
-            <button type="button" className="tertiary" onClick={toggleMode} disabled={busy}>
-              {authMode === 'register' ? 'Have an account? Sign in' : 'Need an account? Register'}
-            </button>
-          </form>
-          )}
+          {isSchoolEmail(user.email) ? <span className="account-school-status">{school?.verified ? 'Verified' : 'Not verified'}</span> :
+            <SchoolLinkButton linked={Boolean(school?.email)} confirmed={linkConfirmed} busy={busy || schoolLoading} onClick={()=>{
+              if(school?.email) {
+                if(!window.confirm(`Unlink ${school.email}?`))return;
+                void schoolAction(async()=>{
+                  await unlinkSchoolEmail(user);setSchool({email:null,verified:false});setLinkConfirmed(false);
+                  setLinkOpen(false);setSchoolChallenge('');setSchoolCode('');setSchoolInput('');
+                  window.dispatchEvent(new Event('school-email-linked'));
+                });
+              } else {setLinkOpen(v=>!v);setSchoolError('');}
+            }}/>}
         </div>
-
-        {authUser ? (
-          <footer className="login__footer">
-            <button type="button" className="login__footer-button secondary" onClick={handleSignOut} disabled={busy}>
-              Sign out
-            </button>
-          </footer>
-        ) : null}
+        {linkOpen && !school?.email && <form className="login__form account-school-form" onSubmit={event=>{
+          event.preventDefault();const address=String(new FormData(event.currentTarget).get('school-email') || schoolInput).trim().toLowerCase();
+          void schoolAction(async()=>{
+            if(!user)return;
+            if(schoolChallenge) {
+              const linked=await linkSchoolEmail(user,schoolChallenge,schoolCode);
+              setSchool(linked);setLinkConfirmed(true);setLinkOpen(false);setSchoolChallenge('');setSchoolCode('');
+              window.dispatchEvent(new Event('school-email-linked'));
+            } else {setSchoolInput(address);await sendSchoolCode(address);}
+          });
+        }}>
+          {schoolChallenge ? <>
+            <label htmlFor="school-code">Code sent to {schoolInput}</label>
+            <CodeInput id="school-code" value={schoolCode} disabled={busy} onChange={setSchoolCode}/>
+            <p className="school-delivery-hint">Check Junk or <a href="https://security.microsoft.com/quarantine" target="_blank" rel="noopener noreferrer">Quarantine</a> if you don’t see the email.</p>
+          </> : <>
+            <label htmlFor="school-email">School email</label>
+            <input id="school-email" name="school-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required disabled={busy} defaultValue={schoolInput} placeholder="you@student.stjacademy.org"/>
+          </>}
+          <div className="account-school-actions">
+            <button type="submit" className="primary" disabled={busy}>{busy ? 'Please wait…' : schoolChallenge ? 'Verify email' : 'Send code'}</button>
+            {schoolChallenge && <>
+              <button type="button" className="tertiary" disabled={busy || schoolCooldown>0} onClick={()=>void schoolAction(()=>sendSchoolCode())}>{schoolCooldown ? `Resend in ${schoolCooldown}s` : 'Resend code'}</button>
+              <button type="button" className="tertiary" disabled={busy} onClick={()=>{setSchoolChallenge('');setSchoolCode('');setSchoolError('');}}>Change email</button>
+            </>}
+          </div>
+        </form>}
+        {schoolError && <p role="alert" className="login__error school-link-error">{schoolError}</p>}
+        </div>
+      </section>
+      <div className="account-sign-out-row">
+        <button className="danger account-action" disabled={busy} onClick={() => {
+          if (!window.confirm('Sign out of Hilltoppers?')) return;
+          void perform(async () => {
+            await signOut(); switchMode('signIn');
+          });
+        }}>Sign out</button>
       </div>
-    </main>
-  );
-};
-
-export default Login;
-
+    </div> : resetSent ? <div className="login__reset-success">
+      {resetAction ? <form id="reset-password-form" method="post" autoComplete="on" className="login__form" onSubmit={event => {
+        event.preventDefault();
+        const newPassword = String(new FormData(event.currentTarget).get('password') ?? '');
+        void perform(async () => {
+          await completePasswordReset(resetAction, newPassword); switchMode('signIn');
+        });
+      }}>
+        <input type="hidden" name="username" autoComplete="username" value={email}/>
+        <label htmlFor="new-password">New password</label>
+        <input id="new-password" name="password" type="password" autoComplete="new-password" required minLength={6} defaultValue="" disabled={busy}/>
+        {error && <p role="alert" className="login__error">{error}</p>}
+        <button className="primary" disabled={busy}>{busy ? 'Please wait…' : 'Save password'}</button>
+      </form> : codeForm(false)}
+      <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode('signIn')}>Back to sign in</button>
+    </div> : <form key={mode} id={`${mode}-form`} method="post" autoComplete="on" className="login__form" onSubmit={submit}>
+      <label htmlFor="login-email">Email</label>
+      <input id="login-email" name="username" type="email" autoCapitalize="none" spellCheck={false} required defaultValue={email} onChange={e => { setEmail(e.target.value); setError(''); }} autoComplete="username" disabled={busy}/>
+      {mode !== 'reset' && <>
+        <label htmlFor="login-password">Password{mode === 'register' && <span className="login__hint">At least 6 characters</span>}</label>
+        <div className="login__password-field">
+          <input id="login-password" name="password" aria-label="Password" type={showPassword ? 'text' : 'password'} required minLength={mode === 'register' ? 6 : undefined} defaultValue="" onChange={() => setError('')} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} disabled={busy}/>
+          <button type="button" className="login__password-toggle" disabled={busy} aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)}>{showPassword ? 'Hide' : 'Show'}</button>
+        </div>
+      </>}
+      {error && <p role="alert" className="login__error">{error}</p>}
+      <button className="primary login__submit" disabled={busy || (mode === 'reset' && cooldown > 0)}>{busy ? 'Please wait…' : mode === 'reset' ? cooldown ? `Send again in ${cooldown}s` : 'Send reset link' : mode === 'register' ? 'Create account' : 'Sign in'}</button>
+      <div className="login__links">
+        {mode === 'reset' && error === 'No account found with this email.' && <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode('register')}>Create an account</button>}
+        {mode === 'signIn' && <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode('reset')}>Forgot password?</button>}
+        <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode(mode === 'signIn' ? 'register' : 'signIn')}>{mode === 'signIn' ? 'Create an account' : 'Back to sign in'}</button>
+      </div>
+    </form>}
+    {user && (error || message) && <div className="account-status" aria-live="polite">{error ? <p role="alert" className="account-error">{error}</p> : <p role="status">{message}</p>}</div>}
+  </div></main>;
+}

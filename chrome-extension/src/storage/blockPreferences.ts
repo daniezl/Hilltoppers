@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
-import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
+import { savePreferences, syncPreferences } from './preferenceSync';
 import { isFirebaseConfigured } from '../firebase/config';
 
 export type BlockKey = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -275,30 +275,15 @@ export async function loadBlockPreferences(): Promise<BlockPreferenceRecord> {
  * `chrome.storage.sync`. Returns `null` when there is no signed-in user or
  * no remote document.
  */
+const syncStore = { key: STORAGE_KEY, readLocal: loadFromSyncStorage, writeLocal: saveToSyncStorage,
+  readRemote: loadFromRemote, writeRemote: saveToRemote };
+
 export async function syncBlockPreferencesFromRemote(): Promise<BlockPreferenceRecord | null> {
-  const user = await waitForAuthReady();
-  if (!user) {
-    return null;
-  }
-  const remote = await loadFromRemote(user.uid);
-  if (!remote) {
-    return null;
-  }
-  try {
-    await saveToSyncStorage(remote);
-  } catch (error) {
-    console.warn('[blockPreferences] Failed to cache remote preferences locally', error);
-  }
-  return remote;
+  return syncPreferences(syncStore);
 }
 
 export async function saveBlockPreferences(preferences: BlockPreferenceRecord): Promise<void> {
-  await saveToSyncStorage(preferences);
-
-  const user = getCurrentUser();
-  if (user) {
-    await saveToRemote(user.uid, preferences);
-  }
+  await savePreferences(syncStore, preferences);
 }
 
 export function getBlockKey(blockName: string): BlockKey | null {
