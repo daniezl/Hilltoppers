@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Ask SJA · A Hilltoppers topping</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <main>
+    <header class="standalone-header"><span class="eyebrow">A HILLTOPPERS TOPPING</span><h1>Ask SJA</h1></header>
+    <section class="chat" aria-label="Ask SJA">
+      <div id="messages" role="log" aria-label="Conversation" aria-live="polite"></div>
+      <div class="composer">
+        <form id="ask-form">
+          <label for="question" class="sr-only">Message Ask SJA</label>
+          <textarea id="question" maxlength="500" rows="1" placeholder="Ask about SJA…" required></textarea>
+          <div class="composer-actions">
+            <button id="send" type="submit" aria-label="Send message" title="Send (Enter)" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" focusable="false"><path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </form>
+        <p class="disclosure">AI can be wrong. check sources.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

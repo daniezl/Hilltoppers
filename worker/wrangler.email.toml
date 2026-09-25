@@ -1,0 +1,16 @@
+name = "hilltoppers-account-email"
+main = "src/accountEmail.ts"
+compatibility_date = "2026-09-17"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "schedule-59d28"
+EMAIL_FROM = "Hilltoppers <hilltoppers@daniezl.com>"
+
+[triggers]
+crons = ["17 * * * *"]
+
+[[d1_databases]]
+binding = "EMAIL_DB"
+database_name = "hilltoppers-account-email"
+database_id = "521a503e-65d2-47ac-87eb-e9ea62a67293"

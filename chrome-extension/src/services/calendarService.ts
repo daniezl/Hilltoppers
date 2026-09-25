@@ -3,8 +3,8 @@ import { EST_ZONE } from '../types/schedule';
 
 /**
  * The school's public event calendar, as published to events.json by
- * data/scripts/fetch_sja_events.mjs. The popup shows the next couple of
- * entries and links out to the school's own calendar for the rest.
+ * data/scripts/fetch_sja_events.mjs. The popup's Calendar section marks the
+ * days these fall on and links out to the school's own calendar for the rest.
  */
 
 export type CalendarEventKind = 'schedule' | 'break' | 'event';
@@ -106,54 +106,12 @@ export async function saveCachedCalendarEvents(events: CalendarEvent[]): Promise
 // exercised without a browser.
 // ---------------------------------------------------------------------------
 
-export interface UpcomingEvent {
-  event: CalendarEvent;
-  /** The day this entry is shown under: its start, or today if already running. */
-  dayKey: string;
-}
-
 function schoolDay(now: Date): DateTime {
   return DateTime.fromJSDate(now, { zone: EST_ZONE }).startOf('day');
 }
 
-function toKey(day: DateTime): string {
-  return day.toFormat('yyyy-LL-dd');
-}
-
 function fromKey(key: string): DateTime {
   return DateTime.fromFormat(key, 'yyyy-LL-dd', { zone: EST_ZONE }).startOf('day');
-}
-
-function compareEvents(a: CalendarEvent, b: CalendarEvent): number {
-  // All-day first, then by clock time, then by title so the order is stable.
-  if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
-  if (a.startTime !== b.startTime) return (a.startTime ?? '') < (b.startTime ?? '') ? -1 : 1;
-  return a.title.localeCompare(b.title);
-}
-
-/**
- * The soonest `limit` entries, today included. A multi-day event that has
- * already begun keeps its place under today rather than disappearing until it
- * ends, which is how someone reading the popup thinks about it: exam week is
- * happening now, not on the Monday it started.
- */
-export function pickUpcomingEvents(
-  events: CalendarEvent[],
-  now: Date,
-  limit: number
-): UpcomingEvent[] {
-  const todayKey = toKey(schoolDay(now));
-
-  return events
-    .filter((event) => event.end >= todayKey)
-    .map((event) => ({
-      event,
-      dayKey: event.start > todayKey ? event.start : todayKey
-    }))
-    .sort((a, b) => (a.dayKey === b.dayKey
-      ? compareEvents(a.event, b.event)
-      : a.dayKey < b.dayKey ? -1 : 1))
-    .slice(0, limit);
 }
 
 /**

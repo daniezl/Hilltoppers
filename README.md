@@ -1,6 +1,15 @@
-<img width="120" alt="Hilltoppers icon" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
+<p align="center">
+  <img width="120" alt="Hilltoppers icon" src="https://github.com/user-attachments/assets/822f14b5-181b-462f-b9ee-59c1f28534a9" />
+</p>
 
-# Hilltoppers
+<h1 align="center">
+  Hilltoppers
+  <br>
+  <sub><sup>Started by Daniel Zhang, Class of 2027. What comes next is up to you.</sup></sub>
+  <br>
+  <sub><sup>Growing since April 2025.</sup></sub>
+  <br><br><br>
+</h1>
 
 Today's schedule, today's day color, and a timer to the end of the block — for
 students at Saint Johnsbury Academy. An iOS app and a Chrome extension, built
@@ -8,10 +17,6 @@ by a student, open to anyone at SJA who wants to help.
 
 [**Get it on the App Store**](https://apps.apple.com/us/app/hilltoppers/id6749836752) ·
 [**Add to Chrome**](https://chromewebstore.google.com/detail/bcjpcmlikbccobbpheojlnmiaffilnaa)
-
-<img width="800" alt="The iOS app: schedule, day color, and widgets" src="https://github.com/user-attachments/assets/65a9984a-1077-4531-9f75-eccbf5774e27" />
-
-<img width="400" alt="The Chrome extension popup" src="https://github.com/user-attachments/assets/876722b8-1dae-4c1c-8d1c-870834710afa" />
 
 ## What it does
 
@@ -32,8 +37,7 @@ Open an [issue](https://github.com/daniezl/Hilltoppers/issues/new) and
 describe it the way you would explain it to a friend — no technical language
 needed. Ideas that other students want get the `enhancement` label.
 
-Or use the feedback link at the bottom of the extension popup, which needs no
-GitHub account.
+Or use Suggestions in the extension, which needs no GitHub account.
 
 ## Want to help build it?
 
@@ -44,6 +48,7 @@ changes touch only one.
 |---|---|---|---|
 | [`ios/`](./ios) | The iPhone app and its home-screen widget | Swift, SwiftUI | Open `ios/SJA_re.xcodeproj` in Xcode |
 | [`chrome-extension/`](./chrome-extension) | The Chrome extension | TypeScript, React | `cd chrome-extension && npm install && npm run dev` |
+| [`worker/`](./worker) | Toppings, public suggestions, and account email APIs | TypeScript, Cloudflare Workers | See [`worker/README.md`](./worker/README.md) |
 | [`data/`](./data) | Special days, breaks, the menu — the JSON both apps download | JSON | Edit `data/public/special_days.json`; format in [`DATA_FORMAT.md`](./data/DATA_FORMAT.md) |
 
 The most common change is a schedule fix: a special day was missed or has the
@@ -66,9 +71,9 @@ Anything that needs Firebase or Cloudflare credentials is described in
 ```
 
 The schedule never touches a server: it is static JSON that both apps read
-directly. We run no server code at all. (Firebase handles sign-in and
-preference sync, and feedback from the popup lands in Firestore; that is
-Google's infrastructure, not ours.)
+directly. Separate Workers handle Toppings, public suggestions, and account
+email. Firebase handles sign-in and preference sync; private feedback lands
+in Firestore.
 
 ### Working on it
 
@@ -97,3 +102,91 @@ To update, load the new `dist` folder the same way.
 ## License
 
 *(to be chosen — see the note in the pull request)*
+
+## Ask SJA: the first independently hosted topping
+
+`chrome-extension/` embeds a URL and provides a fixed-size collapsible container.
+`toppings/ask-sja/` is independently deployable: its own static webpage, Worker
+API, corpus, rate limiters and DeepSeek secret. It has no imports or authentication
+dependency on the extension or the existing schedule-admin Worker. The public
+calendar and day-colour feed URLs can be changed in `wrangler.toml`.
+
+Live site: https://ask-sja-topping.danielzhang089.workers.dev/.
+Browsers contact that site only; its server calls DeepSeek. Test this domain on
+the school network rather than assuming a DeepSeek website block applies to it.
+
+```sh
+cd toppings/ask-sja
+npm ci
+npm run typecheck
+npm test
+npm run refresh:corpus
+npm run build
+npm run deploy
+npx wrangler secret put DEEPSEEK_API_KEY
+```
+
+The secret belongs to this independent Worker. Enter it at Wrangler's prompt,
+never in frontend code or Git. `DEEPSEEK_MODEL` is configurable; the default is
+`deepseek-flash`. Without a secret the API returns 503, never a fabricated answer.
+`npm run dev` serves http://localhost:8790; local secrets go in ignored `.dev.vars`.
+`DEEPSEEK_URL` is a local-test override, not set in the production configuration.
+
+### Conversation and sources
+
+The webpage keeps up to 20 turns in memory while it is open. Closing and reopening
+the popup starts a fresh conversation and clears the draft; no chat is restored
+from browser storage. Reloading the standalone webpage also starts fresh. Each request sends
+only the last three completed turns (six alternating user/assistant messages) plus
+the new question. No client-supplied system roles are accepted. User messages are
+limited to 500 characters; previous assistant answers to 3,000 characters each;
+request bodies to 48 KiB. Old citation numbers are removed from history before it
+reaches the model. Both search-query rewriting and answer generation receive the
+context. The answer must still be grounded in freshly retrieved passages, not in
+previous assistant claims. Backend logs contain retrieval metrics, not questions.
+
+Sources are collapsed under each answer, de-duplicated by document/date, while
+inline citation numbers remain linked. Bulletin labels display one publication
+date as `Daily Bulletin · Sep 16`; date-only fields are not timezone-converted.
+Enter sends, Shift+Enter adds a line and IME composition does not send. Leaving
+the page clears context and aborts the in-flight browser request. There is no
+manual reset button. Within the same open popup, follow-up questions retain context.
+
+### Data and independent publishing
+
+The corpus fetcher and retrieval code originate in PR #34. Sources and archives
+live inside the topping project. The **Update Ask SJA sources** Action runs every 30 minutes and can also be run manually.
+It archives bulletins/newsletters and publishes `data/public/ask-sja-corpus.json`
+through the existing Cloudflare Pages data site. Ask SJA reads that feed using
+`CORPUS_URL`, refreshing its index every 15 minutes (the feed may also be cached
+for five minutes). Failed page/PDF fetches keep the previous content. If the
+feed is unavailable, Ask SJA keeps its last index or uses its bundled snapshot.
+Deploy the Worker once after switching to this feed; later source updates do not
+require Worker or extension deployments. `npm run refresh:corpus` updates both
+the public feed and bundled fallback. Fixed PDF links remain configured in
+`corpus_sources.json`; new editions need their links updated there. Newsletters
+not listed by the school can be added to its `newsletters` list. Model requests are limited to 20/minute per network IP and
+60/minute on a shared key; Cloudflare's location-local counters are not a hard
+global spending cap. School users can share the same network IP.
+
+Publish changes with `npm run deploy` in `toppings/ask-sja`, then reload the topping
+from its **⋯** menu. The extension does not need rebuilding for webpage/backend
+changes. Host layout changes do require rebuilding the extension.
+
+Validation includes 21 Worker/retrieval tests, six document-parser tests,
+TypeScript and extension builds, plus browser checks for multi-turn payloads,
+IME/Enter handling, stable panel height, pinned composer, scrolling, source dates,
+source expansion, history restore, retry, new chat and the host options menu.
+Browser fixtures verify UI behavior separately from live model answers.
+
+
+## Topping Bar
+
+The extension's **Topping Bar** link opens a catalog of independently hosted
+modules. Preview cards show community ratings and unique browser installations
+as Users; sorting defaults to most users. Publishing requires a verified SJA
+student or staff email and a public author name. The store lives in
+`chrome-extension/src/toppings/`; its independent Cloudflare Worker and D1
+configuration are in `worker/wrangler.toppings.toml`. See `worker/README.md` for
+deployment and report moderation. Creation instructions and starter templates
+are intentionally deferred.

@@ -1,15 +1,16 @@
+import { FirebaseError } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
-  getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  applyActionCode,
+  confirmPasswordReset,
   onAuthStateChanged,
   reload,
-  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
   browserLocalPersistence,
-  setPersistence,
-  type ActionCodeSettings,
   type Auth,
   type Unsubscribe,
   type User,
@@ -26,13 +27,11 @@ function getOrInitAuth(): Auth {
   }
 
   if (!cachedAuth) {
-    cachedAuth = getAuth(getFirebaseApp());
-    
-    // Set persistence and configure for Chrome extension environment
-    setPersistence(cachedAuth, browserLocalPersistence).catch((error) => {
-      console.warn('[auth] Failed to set persistence', error);
+    // Keep one persistence policy across pages, with migration from older localStorage sessions.
+    cachedAuth = initializeAuth(getFirebaseApp(), {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence]
     });
-    
+
     if ('useDeviceLanguage' in cachedAuth && typeof cachedAuth.useDeviceLanguage === 'function') {
       cachedAuth.useDeviceLanguage();
     }
@@ -69,65 +68,50 @@ export function onAuthState(callback: (user: User | null) => void): Unsubscribe 
   return onAuthStateChanged(auth, callback);
 }
 
-let authReadyPromise: Promise<User | null> | null = null;
-
-/**
- * Resolves after Firebase Auth has restored its persisted session (or confirmed
- * there is none). `getCurrentUser()` returns `null` until the first
- * `onAuthStateChanged` callback fires, so any code path that needs to decide
- * between remote (Firestore) and local (chrome.storage) data should await this
- * first to avoid a race on cold popup opens.
- *
- * Falls back to `null` after a short timeout so we never block UI indefinitely.
- */
-export function waitForAuthReady(timeoutMs = 2500): Promise<User | null> {
-  if (authReadyPromise) {
-    return authReadyPromise;
-  }
+// Read the current user after restoration every time; never cache a user or a timed-out null.
+export async function waitForAuthReady(): Promise<User | null> {
   const auth = getAuthIfAvailable();
-  if (!auth) {
-    authReadyPromise = Promise.resolve(null);
-    return authReadyPromise;
-  }
-  if (auth.currentUser) {
-    authReadyPromise = Promise.resolve(auth.currentUser);
-    return authReadyPromise;
-  }
-  authReadyPromise = new Promise<User | null>((resolve) => {
-    let settled = false;
-    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
-    let unsubscribe: Unsubscribe = () => {};
+  if (!auth) return null;
+  await auth.authStateReady();
+  return auth.currentUser;
+}
 
-    const finish = (user: User | null) => {
-      if (settled) return;
-      settled = true;
-      if (timeoutHandle !== null) {
-        clearTimeout(timeoutHandle);
-      }
-      try {
-        unsubscribe();
-      } catch {
-        // ignore
-      }
-      resolve(user);
-    };
-
-    unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => finish(user),
-      () => finish(null)
-    );
-    timeoutHandle = setTimeout(() => {
-      console.warn('[auth] waitForAuthReady timed out; falling back to current value');
-      finish(auth.currentUser ?? null);
-    }, timeoutMs);
+const EMAIL_API = 'https://hilltoppers-account-email.danielzhang089.workers.dev/api/account-email';
+async function emailRequest(path: string, body: object, user?: User | null) {
+  const response = await fetch(EMAIL_API + path, {
+    method: 'POST', headers: {'Content-Type':'application/json', ...(user ? {Authorization:'Bearer '+await user.getIdToken()} : {})},
+    body: JSON.stringify(body), signal: AbortSignal.timeout(30000)
   });
-  return authReadyPromise;
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Could not complete this request.');
+  return data;
+}
+export async function resetPassword(email: string): Promise<string> {
+  return (await emailRequest('/send', {purpose:'reset', email:email.trim()})).challengeId;
+}
+export async function redeemEmailCode(challengeId: string, code: string, user?: User | null): Promise<string> {
+  return (await emailRequest('/redeem', {challengeId, code}, user)).actionCode;
+}
+export async function completeEmailVerification(actionCode: string): Promise<void> {
+  await applyActionCode(getOrInitAuth(), actionCode);
+  await reloadCurrentUser();
+}
+export async function completePasswordReset(actionCode: string, password: string): Promise<void> {
+  await confirmPasswordReset(getOrInitAuth(), actionCode, password);
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<UserCredential> {
   const auth = getOrInitAuth();
-  return signInWithEmailAndPassword(auth, email, password);
+  try { return await signInWithEmailAndPassword(auth, email, password); }
+  catch (error) {
+    if (error instanceof FirebaseError && ['auth/invalid-credential','auth/wrong-password','auth/user-not-found'].includes(error.code)) {
+      let exists: boolean | undefined;
+      try { exists = (await emailRequest('/check', {email})).exists; }
+      catch { /* Preserve the original login error when lookup is unavailable. */ }
+      if (exists === false) throw new Error('No account found with this email.');
+    }
+    throw error;
+  }
 }
 
 export async function registerWithEmail(
@@ -155,18 +139,10 @@ export async function signOut(): Promise<void> {
   await firebaseSignOut(auth);
 }
 
-export async function sendVerificationEmail(
-  user?: User | null,
-  actionCodeSettings?: ActionCodeSettings
-): Promise<void> {
+export async function sendVerificationEmail(user?: User | null): Promise<string> {
   const target = user ?? getCurrentUser();
-  if (!target) {
-    throw new Error('No authenticated user available for verification email.');
-  }
-  if (target.emailVerified) {
-    return;
-  }
-  await sendEmailVerification(target, actionCodeSettings);
+  if (!target) throw new Error('Sign in to verify your email.');
+  return (await emailRequest('/send', {purpose:'verify'}, target)).challengeId;
 }
 
 export async function reloadCurrentUser(): Promise<User | null> {
@@ -189,3 +165,20 @@ export async function reloadCurrentUser(): Promise<User | null> {
 
 
 
+
+export function isSchoolEmail(email: string | null | undefined): boolean {
+  return /^[^\s@]+@(student\.stjacademy\.org|stjacademy\.org)$/.test((email || '').toLowerCase());
+}
+export async function getSchoolEmail(user: User): Promise<{email:string|null;verified:boolean}> {
+  return emailRequest('/school', {}, user);
+}
+export async function requestSchoolEmailCode(user: User, email: string): Promise<string> {
+  return (await emailRequest('/school/send', {email}, user)).challengeId;
+}
+export async function linkSchoolEmail(user: User, challengeId: string, code: string): Promise<{email:string;verified:boolean}> {
+  return emailRequest('/school/redeem', {challengeId,code}, user);
+}
+
+export async function unlinkSchoolEmail(user: User): Promise<void> {
+  await emailRequest('/school/unlink', {}, user);
+}

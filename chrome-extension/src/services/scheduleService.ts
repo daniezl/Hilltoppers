@@ -17,12 +17,14 @@ interface RawBlock {
   grades?: number[];
 }
 
-type SpecialDayRecord = {
+export type SpecialDayRecord = {
   type?: string;
   details?: string;
   color?: string;
   schedule?: RawBlock[];
 };
+
+export type SpecialPeriod = { start: string; end: string; details?: string };
 
 export interface ScheduleResult {
   blocks: Block[];
@@ -79,7 +81,7 @@ function getAssetUrl(path: string): string {
 }
 
 // Always fetch fresh — no caching.
-async function fetchSpecialDays(): Promise<Record<string, SpecialDayRecord> | null> {
+export async function fetchSpecialDays(): Promise<Record<string, SpecialDayRecord> | null> {
   const url = `${CLOUDFLARE_BASE_URL}/special_days.json`;
   try {
     const response = await fetchWithTimeout(url, { cache: 'no-cache' });
@@ -94,7 +96,7 @@ async function fetchSpecialDays(): Promise<Record<string, SpecialDayRecord> | nu
   }
 }
 
-async function fetchSpecialPeriodsList(): Promise<Array<{ start: string; end: string; details?: string }> | null> {
+export async function fetchSpecialPeriodsList(): Promise<SpecialPeriod[] | null> {
   const url = `${CLOUDFLARE_BASE_URL}/special_periods.json`;
   if (!url) return null;
   try {

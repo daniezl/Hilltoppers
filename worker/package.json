@@ -1,0 +1,21 @@
+{
+  "name": "schedule-admin-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "deploy:toppings": "wrangler deploy --config wrangler.toppings.toml",
+    "deploy:email": "wrangler deploy --config wrangler.email.toml"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "miniflare": "^4.20251217.0",
+    "typescript": "^5.4.5",
+    "vitest": "^3.2.7",
+    "wrangler": "^4.56.0"
+  },
+  "dependencies": {
+    "jose": "^6.2.10"
+  }
+}

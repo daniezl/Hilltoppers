@@ -70,6 +70,10 @@ On 4/16, grades 9–10 have Fashion Show first while grades 11–12 have Advisor
 
 ## Naming Conventions
 
+`details` is the schedule's display title, not a description or notes field.
+Keep it short (for example, `"Walk for a Healthy Community"`). Do not append
+instructions, activity start times, or other explanatory sentences.
+
 When transcribing a schedule from an official PDF/handout into JSON, follow these rules so blocks render consistently across the app:
 
 | In the official schedule | Write in JSON as | Reason |

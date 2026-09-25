@@ -24,18 +24,13 @@ import {
   DEFAULT_SCHEDULE_PREFERENCES
 } from '../storage/schedulePreferences';
 import { logAppOpen } from '../firebase/analytics';
-import {
-  fetchCalendarEvents,
-  loadCachedCalendarEvents,
-  pickUpcomingEvents,
-  relativeLabel,
-  saveCachedCalendarEvents,
-  type CalendarEvent,
-  type UpcomingEvent
-} from '../services/calendarService';
-import { FEEDBACK_PROMPT } from '../services/feedbackService';
+import { relativeLabel } from '../services/calendarService';
+import Calendar from './Calendar';
+import Toppings from './Toppings';
+import AnimatedCollapse from './AnimatedCollapse';
+import { useRevealExpandedSection } from './useRevealExpandedSection';
 
-/** Opens one of the extension's own pages (class-settings.html, feedback.html) in a tab. */
+/** Opens one of the extension's own pages in a tab. */
 function openExtensionPage(page: string) {
   const targetUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL
     ? chrome.runtime.getURL(page)
@@ -74,8 +69,6 @@ const DINING_MENU_URL = 'https://stjacademy.campus-dining.com/menus/';
 const DAILY_BULLETIN_URL = 'https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/';
 const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch', 'Dinner'];
 
-const UPCOMING_EVENT_COUNT = 2;
-
 /**
  * The school's homepage, with a text fragment that scrolls to its calendar
  * band. Chrome resolves `#:~:text=` against the loaded page, so this lands on
@@ -83,9 +76,15 @@ const UPCOMING_EVENT_COUNT = 2;
  */
 const SJA_CALENDAR_URL = `https://stjacademy.org/#:~:text=${encodeURIComponent('SJA Calendar')}`;
 const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
+const LUNCH_PROMPT_DISMISSED_KEY = 'lunchSetupPromptDismissed';
 
 function getDishSearchUrl(dishName: string): string {
   return `${GOOGLE_SEARCH_URL}${encodeURIComponent(dishName)}`;
+}
+
+function ExpandableBlock({ expanded, className, children }: { expanded: boolean; className: string; children: React.ReactNode }) {
+  const section = useRevealExpandedSection<HTMLLIElement>(expanded);
+  return <li ref={section} className={className}>{children}</li>;
 }
 
 function safeSendMessage<T>(message: unknown): Promise<T> {
@@ -140,11 +139,20 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [prefsLoaded, setPrefsLoaded] = useState<boolean>(false);
+  const [lunchPromptDismissed, setLunchPromptDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(LUNCH_PROMPT_DISMISSED_KEY) === 'true';
+    } catch {
+      // If storage is unavailable, avoid repeatedly prompting on each open.
+      return true;
+    }
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [eventsExpanded, setEventsExpanded] = useState<boolean>(false);
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[] | null>(null);
-  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
+  const scheduleSection = useRevealExpandedSection(scheduleExpanded);
+  const calendarSection = useRevealExpandedSection(calendarExpanded);
+  const menuSection = useRevealExpandedSection(menuExpanded);
   const [selectedDiningPeriod, setSelectedDiningPeriod] = useState<DiningMenuPayload['period']>('Lunch');
   // null means "whichever day the file calls today"; set once the arrows move.
   const [selectedMenuDate, setSelectedMenuDate] = useState<string | null>(null);
@@ -344,42 +352,6 @@ const Popup: React.FC = () => {
   useEffect(() => {
     latestMenuDataRef.current = menuData;
   }, [menuData]);
-
-  // Events load on first expand: the section is collapsed by default, and the
-  // school calendar changes far too slowly to be worth fetching before then.
-  useEffect(() => {
-    if (!eventsExpanded) {
-      return () => {};
-    }
-
-    let cancelled = false;
-    const show = (events: CalendarEvent[]) => {
-      if (!cancelled) setUpcomingEvents(pickUpcomingEvents(events, new Date(), UPCOMING_EVENT_COUNT));
-    };
-
-    loadCachedCalendarEvents()
-      .then((cached) => {
-        if (cached && cached.length > 0) show(cached);
-      })
-      .catch(() => {});
-
-    fetchCalendarEvents()
-      .then((events) => {
-        show(events);
-        if (!cancelled) setEventsError(null);
-        return saveCachedCalendarEvents(events);
-      })
-      .catch((err) => {
-        console.warn('[popup] Failed to load calendar events', err);
-        // Whatever the cache had is better than an error message.
-        if (!cancelled) setUpcomingEvents((prev) => (prev === null ? [] : prev));
-        if (!cancelled) setEventsError('Calendar unavailable');
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [eventsExpanded]);
 
   useEffect(() => {
     if (!menuExpanded) {
@@ -656,6 +628,19 @@ const Popup: React.FC = () => {
     return formatCountdown(remainingMs);
   }, [currentBlock?.id, remainingMs]);
 
+  const showLunchPrompt = prefsLoaded && !lunchPromptDismissed &&
+    schedulePrefs.lunchWave == null &&
+    currentBlock?.subBlocks?.some((sub) => lunchWaveFromName(sub.name) != null);
+
+  const dismissLunchPrompt = () => {
+    setLunchPromptDismissed(true);
+    try {
+      localStorage.setItem(LUNCH_PROMPT_DISMISSED_KEY, 'true');
+    } catch (err) {
+      console.warn('[popup] Failed to remember lunch prompt dismissal', err);
+    }
+  };
+
   const formattedNextStart = useMemo(() => {
     if (!nextBlock) {
       return '00:00';
@@ -799,7 +784,6 @@ const Popup: React.FC = () => {
   const isNetworkFailed = schedule.networkFailed === true && filteredBlocks.length === 0 && !dayTypeLabel;
 
   const handleOpenClassSettings = () => openExtensionPage('class-settings.html');
-  const handleOpenFeedback = () => openExtensionPage('feedback.html');
 
   const handleGradePromptConfirm = () => {
     if (pendingGradeSelection == null) return;
@@ -1021,33 +1005,50 @@ const Popup: React.FC = () => {
         )}
       </section>
       {!isNoSchool && !isNetworkFailed && (
-        <section className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
-          <button
-            type="button"
-            className="schedule-toggle"
-            aria-expanded={scheduleExpanded}
-            onClick={() => setScheduleExpanded((prev) => !prev)}
-          >
-            <span className="toggle-title">
-              <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>Schedule</span>
-            </span>
-            {lunchCountdown ? (
-              <span className="toggle-note">{lunchCountdown}</span>
-            ) : null}
-            <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
-          </button>
-        {scheduleExpanded && (
-          <>
+        <section ref={scheduleSection} className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
+          <div className="schedule-heading">
+            <button
+              type="button"
+              className="schedule-toggle"
+              aria-expanded={scheduleExpanded}
+              onClick={() => setScheduleExpanded((prev) => !prev)}
+            >
+              <span className="toggle-title">
+                <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Schedule</span>
+              </span>
+              {lunchCountdown ? (
+                <span className="toggle-note">{lunchCountdown}</span>
+              ) : null}
+              <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
+            </button>
+            {showLunchPrompt && (
+              <div className="lunch-setup-prompt">
+                <button type="button" className="lunch-setup-link" onClick={handleOpenClassSettings}>
+                  Pick your lunch
+                </button>
+                <button
+                  type="button"
+                  className="lunch-setup-dismiss"
+                  aria-label="Don't remind me to pick a lunch again"
+                  title="Don't show again"
+                  onClick={dismissLunchPrompt}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+        <AnimatedCollapse expanded={scheduleExpanded}>
             {hasGradeSpecificBlocks && viewingGrade != null && (
               <div className="grade-selector">
                 <span>Showing schedule for</span>
@@ -1084,7 +1085,7 @@ const Popup: React.FC = () => {
                 };
 
                 return (
-                  <li key={block.id} className={className}>
+                  <ExpandableBlock key={block.id} className={className} expanded={hasSubBlocks && isExpanded}>
                     <div
                       className={`block-row${hasSubBlocks ? ' expandable' : ''}`}
                       onClick={hasSubBlocks ? toggleExpanded : undefined}
@@ -1110,7 +1111,8 @@ const Popup: React.FC = () => {
                         ) : null}
                       </div>
                     </div>
-                    {hasSubBlocks && isExpanded ? (
+                    {hasSubBlocks ? (
+                      <AnimatedCollapse expanded={isExpanded}>
                       <ul className="subblock-list">
                         {subBlocksForBlock.map((sub) => {
                           const isMyLunch =
@@ -1130,8 +1132,9 @@ const Popup: React.FC = () => {
                           );
                         })}
                       </ul>
+                      </AnimatedCollapse>
                     ) : null}
-                  </li>
+                  </ExpandableBlock>
                 );
               })}
             </ul>
@@ -1143,91 +1146,44 @@ const Popup: React.FC = () => {
                 }}>settings</a> (top left) to set courses in your schedule.
               </p>
             ) : null}
-          </>
-        )}
+        </AnimatedCollapse>
         </section>
       )}
-      <section className={`events-list ${eventsExpanded ? '' : 'collapsed'}`}>
+      <section ref={calendarSection} className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
-          aria-expanded={eventsExpanded}
-          onClick={() => setEventsExpanded((prev) => !prev)}
+          aria-expanded={calendarExpanded}
+          onClick={() => setCalendarExpanded((prev) => !prev)}
         >
           <span className="toggle-title">
             <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path
-                d="M12 8v4l2.5 2.5M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z"
+                d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
+              <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
-            <span>Events</span>
+            <span>Calendar</span>
           </span>
-          <span className={`chevron ${eventsExpanded ? 'open' : ''}`} aria-hidden="true" />
+          <span className={`chevron ${calendarExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
-        {eventsExpanded && (
-          <div className="events-content">
-            {upcomingEvents === null ? (
-              <p className="events-empty">Loading…</p>
-            ) : upcomingEvents.length === 0 ? (
-              <p className="events-empty">{eventsError ?? 'Nothing coming up'}</p>
-            ) : (
-              <ul className="events-items">
-                {upcomingEvents.map(({ event, dayKey }) => {
-                  const body = (
-                    <>
-                      <p className="event-when">{relativeLabel(dayKey, now)}</p>
-                      <p className="event-title">{event.title}</p>
-                    </>
-                  );
-                  return (
-                    <li key={event.id} className="event-card">
-                      {event.url ? (
-                        <a
-                          className="event-card-link"
-                          href={event.url}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          title="Open on the school website"
-                        >
-                          {body}
-                        </a>
-                      ) : (
-                        <div className="event-card-link">{body}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <p className="events-meta">
-              <a
-                className="dining-link"
-                href={SJA_CALENDAR_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <svg className="dining-link-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>SJA Calendar</span>
-              </a>
-            </p>
-          </div>
-        )}
+        <AnimatedCollapse expanded={calendarExpanded}>
+          <Calendar
+            now={now}
+            timeFormat={schedulePrefs.timeFormat}
+            blockPrefs={blockPrefs}
+            viewingGrade={viewingGrade}
+            today={{ dateKey: schedule.dateKey, blocks: schedule.blocks, dayType: schedule.dayType }}
+            calendarUrl={SJA_CALENDAR_URL}
+          />
+        </AnimatedCollapse>
       </section>
-      <section className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
+      <section ref={menuSection} className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
         <button
           type="button"
           className="schedule-toggle"
@@ -1273,7 +1229,7 @@ const Popup: React.FC = () => {
           </span>
           <span className={`chevron ${menuExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
-        {menuExpanded && (
+        <AnimatedCollapse expanded={menuExpanded}>
           <div className="dining-content">
             <div className="dining-period-tabs" role="tablist" aria-label="Menu period">
               {DINING_PERIODS.map((period) => (
@@ -1471,13 +1427,10 @@ const Popup: React.FC = () => {
               )}
             </p>
           </div>
-        )}
+        </AnimatedCollapse>
       </section>
-      <footer className="popup-footer">
-        <button type="button" className="feedback-link" onClick={handleOpenFeedback}>
-          {FEEDBACK_PROMPT}
-        </button>
-      </footer>
+      <Toppings />
+
     </main>
   );
 };

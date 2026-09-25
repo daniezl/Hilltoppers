@@ -15,9 +15,13 @@ is not meant to be served.
 - [`menu.json`](./public/menu.json) — dining hall menu, rewritten every 30
   minutes by a GitHub Action. Do not edit by hand.
 - [`day_type.json`](./public/day_type.json) — which colour (Green / White / No
-  School) each of the next 30 days is, computed from the Daily Bulletin plus
-  the two files above. Generated; do not edit by hand. **Not yet read by either
-  app** — see below.
+  School) each day is, from the start of the school year to about six months
+  ahead, computed from the Daily Bulletin plus the two files above. Generated;
+  do not edit by hand. The extension's Calendar reads it for day colours;
+  neither app reads it for *today's* colour yet — see below.
+- `ask-sja-corpus.json` — school documents for Ask SJA, generated every 30 minutes by
+  **Update Ask SJA sources** using `toppings/ask-sja/scripts/fetch_corpus.mjs`.
+  Do not edit by hand. The existing Pages deployment publishes it with the other feeds.
 - `.well-known/apple-app-site-association` — iOS universal links.
 
 ## `scripts/` — keeps `public/` current

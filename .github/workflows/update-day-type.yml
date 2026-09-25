@@ -10,6 +10,13 @@ on:
   schedule:
     - cron: "*/30 10-22 * * 1-5" # every 30 min, 6am–6pm Vermont, weekdays
     - cron: "0 12 * * 0,6"       # once on weekend mornings, to keep the horizon moving
+  # A day off added by hand should show up in the colours right away, not at
+  # the next half-hour.
+  push:
+    branches: [main]
+    paths:
+      - data/public/special_days.json
+      - data/public/special_periods.json
   workflow_dispatch:
 
 permissions:

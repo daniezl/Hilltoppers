@@ -1,0 +1,50 @@
+:root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #202722; background: #f7f8fb; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 620px; margin: 48px auto; padding: 0 20px; }
+.eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.6px; color: #748079; }
+h1 { font-size: 32px; margin: 10px 0 24px; letter-spacing: -1px; }
+.chat { height: min(580px, calc(100dvh - 180px)); min-height: 300px; display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid #dce2de; border-radius: 12px; }
+#messages { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 14px 8px; overscroll-behavior: contain; scrollbar-width: thin; }
+.empty { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 8px; padding: 16px; }
+.empty strong { font-size: 16px; letter-spacing: -.3px; font-weight: 550; }
+.empty p { color: #8b938d; font-size: 11px; line-height: 1.6; margin: 0; max-width: 230px; }
+.turn { display: flow-root; margin-bottom: 22px; }
+.user { margin: 0 0 14px auto; padding: 9px 12px; max-width: 88%; width: fit-content; background: #eef2ee; color: #344238; border-radius: 13px 13px 3px 13px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant { padding: 0 2px; }
+.answer { margin: 0; color: #263029; font-size: 13px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cite { display: inline-block; vertical-align: super; font-size: 9px; line-height: 1; margin: 0 2px; color: #668071; text-decoration: none; }
+.sources { margin-top: 10px; color: #8b948e; }
+.sources summary { cursor: pointer; width: fit-content; font-size: 10px; user-select: none; }
+.sources ul { list-style: none; padding: 8px 0 0; margin: 0; }
+.sources li + li { margin-top: 5px; }
+.sources a { color: #6c7b70; font-size: 10px; text-decoration: none; line-height: 1.6; overflow-wrap: anywhere; }
+.sources a:hover { text-decoration: underline; }
+.thinking { display: flex; gap: 4px; align-items: center; height: 23px; }
+.thinking i { width: 4px; height: 4px; background: #96a49b; border-radius: 50%; animation: pulse 1.2s infinite; }
+.thinking i:nth-child(2) { animation-delay: .2s; }.thinking i:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { 50% { opacity: .25; } }
+.error { font-size: 12px; line-height: 1.6; color: #926651; margin: 0; }
+.retry { border: 0; background: transparent; padding: 5px 0; color: #51755e; font: inherit; font-size: 11px; cursor: pointer; }
+.composer { flex: none; padding: 8px 12px 9px; background: #fff; }
+form { display: flex; align-items: flex-end; gap: 6px; border: 1px solid #d5ddd6; border-radius: 12px; padding: 8px 8px 8px 11px; }
+form:focus-within { border-color: #8aa393; }
+textarea { flex: 1; display: block; width: 100%; min-width: 0; resize: none; overflow-y: auto; max-height: 94px; min-height: 28px; border: 0; outline: 0; color: #27382c; background: transparent; font: 12px/1.7 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 3px 0; }
+textarea::placeholder { color: #929c95; }
+.composer-actions { display: flex; gap: 4px; align-items: center; }
+button { cursor: pointer; }
+#send { display: grid; place-items: center; flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: #a9cfb5; color: #244633; transition: background-color .15s ease, color .15s ease, transform .15s ease; }
+#send svg { display: block; }
+#send:not(:disabled):hover { background: #96c3a5; }
+#send:not(:disabled):active { transform: scale(.94); background: #85b695; }
+#send:disabled { background: #f0f1f2; color: #a8adb1; cursor: default; }
+#send:focus-visible { outline: 2px solid #6f9580; outline-offset: 3px; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #267c43; outline-offset: 3px; }
+.disclosure { margin: 6px 0 0; text-align: left; color: #9ba29d; font-size: 9px; line-height: 1.4; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+[hidden] { display: none !important; }
+html.embedded, .embedded body { height: 100%; background: #fff; overflow: hidden; }
+.embedded main { margin: 0; padding: 0; max-width: none; height: 100%; }
+.embedded .standalone-header { display: none; }
+.embedded .chat { height: 100%; min-height: 0; border: 0; border-radius: 0; }
+@media (prefers-reduced-motion: reduce) { .thinking i { animation: none; } #send { transition: none; } }

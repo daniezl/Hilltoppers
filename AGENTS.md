@@ -76,9 +76,10 @@ npm run build     # must succeed; writes dist/
 
 - Run the build yourself if you can. `dist/` is what Chrome loads, and the
   change is not real until it builds.
-- `npx tsc --noEmit` reports nine pre-existing errors (`import.meta.env`
-  typing, two in `scheduleService.ts`). They are not yours. Do not fix them
-  in a PR about something else.
+- `npx tsc --noEmit` reports pre-existing errors: one per `import.meta.env`
+  use, plus two in `scheduleService.ts`. They are not yours. Compare the count
+  against `main` before assuming you caused one, and do not fix them in a PR
+  about something else.
 - `dist/` is git-ignored. Never commit it.
 - There are no automated tests. Verification is: it builds, and it looks right.
 
@@ -113,9 +114,11 @@ Write those steps into the PR description. They may not know them.
 
 - One branch per change, named for what it does. Do not bundle unrelated
   fixes.
-- Any change under `chrome-extension/` bumps the patch version by 0.0.1 in
-  **four** places: `manifest.json`, `package.json`, and twice in
-  `package-lock.json` (top-level and `packages[""]`).
+- Do not bump the version for each incremental edit. Keep the current version
+  during development; change it when the maintainer requests a version change
+  or as part of an agreed release. Keep it synchronized in **four** places:
+  `manifest.json`, `package.json`, and twice in `package-lock.json`
+  (top-level and `packages[""]`).
 - A new entry in `manifest.json` `permissions` needs a one-sentence reason in
   the PR. The Chrome Web Store asks for it at review.
 - Keep the UI as quiet as it is. Prefer changing an existing element over

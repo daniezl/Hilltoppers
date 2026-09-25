@@ -8,8 +8,14 @@
  *     "updatedAt": "...",
  *     "bulletin": { "date": "2026-09-03", "dayType": "Green Day", ... },
  *     "days": { "2026-09-03": "Green Day", "2026-09-04": "White Day",
- *               "2026-09-05": "No School", ... }        // 30 days from bulletin
+ *               "2026-09-05": "No School", ... }
  *   }
+ *
+ * `days` runs from the start of the school year to HORIZON_DAYS past the
+ * bulletin. Days already in the file are kept, so past days stay readable
+ * (the calendar in the extension colours them); the bulletin's own date is
+ * rewritten each run, so what stays for a past day is what the school said
+ * that morning, not an earlier prediction.
  *
  * Why this exists: the bulletin is usually a day behind (posted in the
  * morning for that morning, sometimes not until the afternoon), so "read the
@@ -47,7 +53,14 @@ const OUT = "public/day_type.json";
 const SPECIAL_DAYS = "public/special_days.json";
 const SPECIAL_PERIODS = "public/special_periods.json";
 
-const HORIZON_DAYS = 30;
+// Far enough to cover the rest of a semester. Accuracy past a few weeks
+// depends on special_days / special_periods having every day off filled in;
+// a missed holiday flips every colour after it until the next bulletin
+// re-anchors the sequence.
+const HORIZON_DAYS = 180;
+// Past days are kept back to this point, then dropped. August 1 is safely
+// before the first day of school and after graduation.
+const SCHOOL_YEAR_START_MONTH = 8;
 // A bulletin dated further than this from the run date means the page layout
 // changed and the wrong text was read as the date.
 const MAX_BULLETIN_AGE_DAYS = 60;
@@ -234,6 +247,26 @@ export function computeDays(anchor, cal, horizon = HORIZON_DAYS) {
   return days;
 }
 
+/** August 1 of the school year that `key` falls in. */
+export function schoolYearStart(key) {
+  const [y, m] = key.split("-").map(Number);
+  return toKey(m >= SCHOOL_YEAR_START_MONTH ? y : y - 1, SCHOOL_YEAR_START_MONTH, 1);
+}
+
+/**
+ * Newly computed days win; anything older in the file is kept back to the
+ * start of the school year. Keys come out sorted so the diff stays readable.
+ */
+export function mergeDays(previous, computed, anchorDate) {
+  const cutoff = schoolYearStart(anchorDate);
+  const merged = {};
+  for (const [k, v] of Object.entries(previous ?? {})) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && k >= cutoff) merged[k] = v;
+  }
+  Object.assign(merged, computed);
+  return Object.fromEntries(Object.entries(merged).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+}
+
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -258,7 +291,7 @@ async function main() {
   }
 
   const cal = await loadCalendar();
-  const days = computeDays(anchor, cal);
+  const days = mergeDays(existing?.days, computeDays(anchor, cal), anchor.date);
 
   const payload = {
     updatedAt: new Date().toISOString(),
@@ -283,7 +316,7 @@ async function main() {
 
   await fs.writeFile(OUT, JSON.stringify(payload, null, 2) + "\n", "utf8");
 
-  const preview = Object.entries(days).slice(0, 8).map(([k, v]) => `  ${k} ${WEEKDAYS[weekdayOf(k)].slice(0, 3)}  ${v}`).join("\n");
+  const preview = Object.entries(days).filter(([k]) => k >= anchor.date).slice(0, 8).map(([k, v]) => `  ${k} ${WEEKDAYS[weekdayOf(k)].slice(0, 3)}  ${v}`).join("\n");
   console.log(`day_type.json updated — bulletin ${bulletin.date} (${bulletin.weekday}) ${bulletin.dayType ?? "no colour"}\n${preview}\n  …`);
 }
 
