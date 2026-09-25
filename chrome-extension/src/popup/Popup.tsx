@@ -85,6 +85,7 @@ const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch'
  */
 const SJA_CALENDAR_URL = `https://stjacademy.org/#:~:text=${encodeURIComponent('SJA Calendar')}`;
 const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
+const LUNCH_PROMPT_DISMISSED_KEY = 'lunchSetupPromptDismissed';
 
 function getDishSearchUrl(dishName: string): string {
   return `${GOOGLE_SEARCH_URL}${encodeURIComponent(dishName)}`;
@@ -142,6 +143,14 @@ const Popup: React.FC = () => {
   const [blockPrefs, setBlockPrefs] = useState<BlockPreferenceRecord>(createEmptyPreferences());
   const [schedulePrefs, setSchedulePrefs] = useState<SchedulePreferences>(DEFAULT_SCHEDULE_PREFERENCES);
   const [prefsLoaded, setPrefsLoaded] = useState<boolean>(false);
+  const [lunchPromptDismissed, setLunchPromptDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(LUNCH_PROMPT_DISMISSED_KEY) === 'true';
+    } catch {
+      // If storage is unavailable, avoid repeatedly prompting on each open.
+      return true;
+    }
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
   const [menuExpanded, setMenuExpanded] = useState<boolean>(false);
@@ -712,6 +721,19 @@ const Popup: React.FC = () => {
     return formatCountdown(remainingMs);
   }, [currentBlock?.id, remainingMs]);
 
+  const showLunchPrompt = prefsLoaded && !lunchPromptDismissed &&
+    schedulePrefs.lunchWave == null &&
+    currentBlock?.subBlocks?.some((sub) => lunchWaveFromName(sub.name) != null);
+
+  const dismissLunchPrompt = () => {
+    setLunchPromptDismissed(true);
+    try {
+      localStorage.setItem(LUNCH_PROMPT_DISMISSED_KEY, 'true');
+    } catch (err) {
+      console.warn('[popup] Failed to remember lunch prompt dismissal', err);
+    }
+  };
+
   const formattedNextStart = useMemo(() => {
     if (!nextBlock) {
       return '00:00';
@@ -1077,30 +1099,48 @@ const Popup: React.FC = () => {
       </section>
       {!isNoSchool && !isNetworkFailed && (
         <section ref={scheduleSection} className={`schedule-list ${scheduleExpanded ? '' : 'collapsed'}`}>
-          <button
-            type="button"
-            className="schedule-toggle"
-            aria-expanded={scheduleExpanded}
-            onClick={() => setScheduleExpanded((prev) => !prev)}
-          >
-            <span className="toggle-title">
-              <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>Schedule</span>
-            </span>
-            {lunchCountdown ? (
-              <span className="toggle-note">{lunchCountdown}</span>
-            ) : null}
-            <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
-          </button>
+          <div className="schedule-heading">
+            <button
+              type="button"
+              className="schedule-toggle"
+              aria-expanded={scheduleExpanded}
+              onClick={() => setScheduleExpanded((prev) => !prev)}
+            >
+              <span className="toggle-title">
+                <svg className="toggle-title-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Schedule</span>
+              </span>
+              {lunchCountdown ? (
+                <span className="toggle-note">{lunchCountdown}</span>
+              ) : null}
+              <span className={`chevron ${scheduleExpanded ? 'open' : ''}`} aria-hidden="true" />
+            </button>
+            {showLunchPrompt && (
+              <div className="lunch-setup-prompt">
+                <button type="button" className="lunch-setup-link" onClick={handleOpenClassSettings}>
+                  Pick your lunch
+                </button>
+                <button
+                  type="button"
+                  className="lunch-setup-dismiss"
+                  aria-label="Don't remind me to pick a lunch again"
+                  title="Don't show again"
+                  onClick={dismissLunchPrompt}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
         {scheduleExpanded && (
           <>
             {hasGradeSpecificBlocks && viewingGrade != null && (
