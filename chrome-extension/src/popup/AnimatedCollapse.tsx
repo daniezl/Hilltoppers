@@ -11,7 +11,12 @@ export default function AnimatedCollapse({ expanded, children }: { expanded: boo
     const content = inner.current!;
     container.inert = !expanded;
     const resize = () => {
-      const height = expanded ? content.getBoundingClientRect().height : 0;
+      // An outer accordion follows the inner accordion's final height, not each
+      // intermediate frame, so nested transitions finish together.
+      const nested = Array.from(content.querySelectorAll<HTMLElement>('.module-collapse'))
+        .filter(node => node.parentElement?.closest('.module-collapse') === container);
+      const adjustment = nested.reduce((sum, node) => sum + Number(node.dataset.expandHeight || 0) - node.getBoundingClientRect().height, 0);
+      const height = expanded ? content.getBoundingClientRect().height + adjustment : 0;
       // Measure the current frame before assigning the next transition target.
       container.getBoundingClientRect();
       container.dataset.expandHeight = String(height);

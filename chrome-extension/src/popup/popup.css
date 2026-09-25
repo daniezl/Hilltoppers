@@ -1549,3 +1549,8 @@ header {
   .module-collapse, .chevron { transition:none; }
   .topping-panel { animation:none; }
 }
+
+.schedule-list li:has(> .module-collapse) { gap:0; }
+.schedule-list li > .module-collapse { width:100%; }
+.schedule-list li > .module-collapse > .module-collapse-inner { padding-top:6px; gap:0; }
+.cal-schedule > .module-collapse > .module-collapse-inner { padding-top:0; gap:0; }

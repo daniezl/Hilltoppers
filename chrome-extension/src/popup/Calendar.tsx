@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import AnimatedCollapse from './AnimatedCollapse';
+import { useRevealExpandedSection } from './useRevealExpandedSection';
 import { DateTime } from 'luxon';
 import { Block, EST_ZONE, GradeLevel, parseBlockTime, toDisplayTime } from '../types/schedule';
 import { BlockPreferenceRecord, resolveBlockDisplay } from '../storage/blockPreferences';
@@ -174,6 +176,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
   const [specialDays, setSpecialDays] = useState<Record<string, SpecialDayRecord>>({});
   const [periods, setPeriods] = useState<SpecialPeriod[]>([]);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const scheduleSection = useRevealExpandedSection<HTMLDivElement>(scheduleOpen, undefined, '.calendar-content');
   const [daySchedule, setDaySchedule] = useState<{ key: string; result: ScheduleResult } | null>(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const scheduleCache = useRef(new Map<string, ScheduleResult>());
@@ -409,7 +412,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
             </ul>
           )}
           {!selected.noSchool ? (
-            <div className="cal-schedule">
+            <div className="cal-schedule" ref={scheduleSection}>
               <button
                 type="button"
                 className="cal-schedule-toggle"
@@ -419,8 +422,8 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
                 <span>Schedule</span>
                 <span className={`chevron ${scheduleOpen ? 'open' : ''}`} aria-hidden="true" />
               </button>
-              {scheduleOpen ? (
-                scheduleLoading || !shownSchedule ? (
+              <AnimatedCollapse expanded={scheduleOpen}>
+              {scheduleLoading || !shownSchedule ? (
                   <p className="events-empty">Loading…</p>
                 ) : shownSchedule.networkFailed ? (
                   <p className="events-empty">Schedule unavailable</p>
@@ -442,8 +445,8 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
                       );
                     })}
                   </ul>
-                )
-              ) : null}
+                )}
+              </AnimatedCollapse>
             </div>
           ) : null}
         </div>
