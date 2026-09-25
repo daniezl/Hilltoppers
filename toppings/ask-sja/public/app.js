@@ -1,6 +1,4 @@
 const $ = selector => document.querySelector(selector);
-const CACHE = 'ask-sja:conversation:v2';
-const TTL = 6 * 60 * 60 * 1000;
 const params = new URLSearchParams(location.search);
 const embedded = parent !== window;
 document.documentElement.classList.toggle('embedded', embedded);
@@ -20,9 +18,6 @@ window.addEventListener('message', event => {
   parent.postMessage({ channel, session, type: 'ready' }, event.origin);
 });
 
-function save() {
-  try { localStorage.setItem(CACHE, JSON.stringify({ turns, draft: $('#question').value, updatedAt: Date.now() })); } catch { /* Chat remains usable when embedded storage is disabled. */ }
-}
 function safeURL(value) {
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; }
 }
@@ -89,7 +84,6 @@ function render() {
     }
     row.append(assistant); log.append(row);
   }
-  $('#new-chat').hidden = !turns.length;
   log.scrollTop = log.scrollHeight;
 }
 function fitInput() {
@@ -98,20 +92,14 @@ function fitInput() {
 function updateInput() { fitInput(); $('#send').disabled = busy || $('#question').value.trim().length < 2; }
 window.addEventListener('resize', fitInput);
 
+// Conversations belong to the open popup, never to a later visit.
 try {
-  const cached = JSON.parse(localStorage.getItem(CACHE) || 'null');
-  if (cached && Number.isFinite(cached.updatedAt) && Date.now() - cached.updatedAt < TTL && Array.isArray(cached.turns)) {
-    turns = cached.turns.slice(-20).filter(turn => turn && typeof turn.question === 'string' && turn.question.length <= 500 && (turn.answer === null || typeof turn.answer === 'string'));
-    for (const turn of turns) if (!turn.answer) turn.error = 'The response was interrupted. Try again.';
-    $('#question').value = typeof cached.draft === 'string' ? cached.draft.slice(0, 500) : '';
-  } else {
-    // Carry over the last completed answer from the earlier single-question UI.
-    const old = JSON.parse(localStorage.getItem('ask-sja:last-answer:v1') || 'null');
-    if (old && typeof old.question === 'string' && typeof old.answer === 'string' && Number.isFinite(old.askedAt) && Date.now() - old.askedAt < TTL) turns = [old];
-  }
-} catch { /* Start a fresh conversation when storage is unavailable or invalid. */ }
+  localStorage.removeItem('ask-sja:conversation:v2');
+  localStorage.removeItem('ask-sja:last-answer:v1');
+} catch { /* Storage may be unavailable inside an embedded topping. */ }
+$('#question').value = '';
 render(); updateInput();
-$('#question').addEventListener('input', () => { updateInput(); save(); });
+$('#question').addEventListener('input', () => { updateInput(); });
 $('#question').addEventListener('keydown', event => {
   if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
   event.preventDefault(); if (!$('#send').disabled) $('#ask-form').requestSubmit();
@@ -131,7 +119,7 @@ async function submit(raw, retryTurn) {
   const id = ++generation;
   const abort = new AbortController(); controller = abort;
   const timeout = setTimeout(() => abort.abort(), 65000);
-  busy = true; $('#question').value = ''; updateInput(); render(); save();
+  busy = true; $('#question').value = ''; updateInput(); render();
   try {
     const response = await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, history }), signal: abort.signal });
     const data = await response.json();
@@ -144,14 +132,17 @@ async function submit(raw, retryTurn) {
     turn.error = error.name === 'AbortError' ? 'That took too long. Try again.' : error instanceof TypeError ? 'Could not reach Ask SJA. Check your connection.' : error.message;
   } finally {
     clearTimeout(timeout);
-    if (id === generation) { busy = false; updateInput(); render(); save(); }
+    if (id === generation) { busy = false; updateInput(); render(); }
   }
 }
-$('#new-chat').addEventListener('click', () => {
-  generation++; controller?.abort(); busy = false; turns = []; $('#question').value = '';
-  try { localStorage.removeItem('ask-sja:last-answer:v1'); } catch {}
-  render(); updateInput(); save(); $('#question').focus();
-});
+function clearConversation() {
+  generation++; controller?.abort(); controller = undefined;
+  busy = false; turns = []; $('#question').value = '';
+  render(); updateInput();
+}
+window.addEventListener('pagehide', clearConversation);
+// Browsers can restore a page from memory without rerunning this script.
+window.addEventListener('pageshow', event => { if (event.persisted) clearConversation(); });
 fetch('/api/health').then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(health => {
   if (!health.configured) { serviceMessage = 'AI answers are not configured yet.'; if (!turns.length) render(); }
 }).catch(() => { serviceMessage = 'Ask SJA could not be reached. Check your connection.'; if (!turns.length) render(); });

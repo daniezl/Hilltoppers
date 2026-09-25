@@ -134,7 +134,9 @@ never in frontend code or Git. `DEEPSEEK_MODEL` is configurable; the default is
 
 ### Conversation and sources
 
-The webpage keeps up to 20 turns locally with a six-hour expiry. Each request sends
+The webpage keeps up to 20 turns in memory while it is open. Closing and reopening
+the popup starts a fresh conversation and clears the draft; no chat is restored
+from browser storage. Reloading the standalone webpage also starts fresh. Each request sends
 only the last three completed turns (six alternating user/assistant messages) plus
 the new question. No client-supplied system roles are accepted. User messages are
 limited to 500 characters; previous assistant answers to 3,000 characters each;
@@ -146,10 +148,9 @@ previous assistant claims. Backend logs contain retrieval metrics, not questions
 Sources are collapsed under each answer, de-duplicated by document/date, while
 inline citation numbers remain linked. Bulletin labels display one publication
 date as `Daily Bulletin · Sep 16`; date-only fields are not timezone-converted.
-Enter sends, Shift+Enter adds a line and IME composition does not send. New chat
-clears context and aborts the in-flight browser request. Completed and failed turns
-are saved; interrupted requests require explicit retry after reopening. Embedded
-browser storage may differ from standalone storage or be unavailable.
+Enter sends, Shift+Enter adds a line and IME composition does not send. Leaving
+the page clears context and aborts the in-flight browser request. There is no
+manual reset button. Within the same open popup, follow-up questions retain context.
 
 ### Data and independent publishing
 

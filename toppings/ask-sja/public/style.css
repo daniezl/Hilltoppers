@@ -33,13 +33,12 @@ textarea { flex: 1; display: block; width: 100%; min-width: 0; resize: none; ove
 textarea::placeholder { color: #929c95; }
 .composer-actions { display: flex; gap: 4px; align-items: center; }
 button { cursor: pointer; }
-#send { display: grid; place-items: center; flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: #3f6b56; color: #fff; transition: background-color .15s ease, color .15s ease, transform .15s ease; }
+#send { display: grid; place-items: center; flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: #a9cfb5; color: #244633; transition: background-color .15s ease, color .15s ease, transform .15s ease; }
 #send svg { display: block; }
-#send:not(:disabled):hover { background: #345b48; }
-#send:not(:disabled):active { transform: scale(.94); background: #2b4d3c; }
+#send:not(:disabled):hover { background: #96c3a5; }
+#send:not(:disabled):active { transform: scale(.94); background: #85b695; }
 #send:disabled { background: #f0f1f2; color: #a8adb1; cursor: default; }
 #send:focus-visible { outline: 2px solid #6f9580; outline-offset: 3px; }
-#new-chat { border: 0; background: transparent; color: #98a39b; width: 24px; height: 28px; font-size: 19px; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #267c43; outline-offset: 3px; }
 .disclosure { margin: 6px 0 0; text-align: left; color: #9ba29d; font-size: 9px; line-height: 1.4; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
