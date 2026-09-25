@@ -17,14 +17,8 @@
   line-height: 1.2;
 }
 
-.feedback__success p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 .feedback__panel {
+  position: relative;
   padding: 28px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -70,7 +64,7 @@
 .feedback__count.over,
 .feedback__error { color: var(--danger); }
 .feedback__error { margin: 0; font-size: 12px; }
-.feedback__actions { display: flex; justify-content: flex-end; }
+.feedback__actions { display:flex; align-items:center; justify-content:space-between; gap:16px; }
 
 .feedback__primary,
 .feedback__secondary {
@@ -90,15 +84,52 @@
 .feedback__primary:focus-visible,
 .feedback__secondary:focus-visible { outline: 3px solid #78a88c; outline-offset: 3px; }
 
-.feedback__success { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-
 @media (max-width: 650px) {
   .feedback__panel { padding: 22px 18px; }
   .feedback__optional { display: block; margin: 3px 0 0; }
-  .feedback__success { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .feedback textarea,
   .feedback input[type='text'] { transition: none; }
+}
+
+.feedback__actions > label { display:flex; align-items:center; gap:8px; font-size:13px; width:fit-content; }
+.feedback__actions input { width:16px; height:16px; margin:0; accent-color:var(--accent); }
+.feedback__identity-slot { display:grid; }
+.feedback__identity-slot > * { grid-area:1 / 1; }
+.feedback__public-choice { align-self:center; }
+.feedback__public-choice p { margin:0; font-size:12px; line-height:1.6; color:var(--muted); }
+.feedback__public-choice button { padding:0; border:0; background:none; color:var(--accent); font:inherit; text-decoration:underline; text-underline-offset:3px; }
+.public-suggestions { margin-top:32px; }
+.public-suggestions-empty { font-size:13px; color:var(--muted); }
+.public-suggestion { margin:0; padding:24px 4px; border-bottom:1px solid var(--border); }
+.public-suggestion:first-of-type { border-top:1px solid var(--border); }
+.public-suggestion-byline { display:flex; align-items:center; flex-wrap:wrap; gap:7px; font-size:12px; color:var(--muted); }
+.public-suggestion-byline time { font-size:11px; color:var(--muted); }
+.public-suggestion > p { margin:10px 0 16px; font-size:16px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+.suggestion-footer { display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+.suggestion-votes { display:inline-flex; align-items:center; border-radius:999px; background:#eaf0e7; color:var(--text); }
+.suggestion-votes button { display:grid; place-items:center; width:34px; height:34px; padding:0; border:0; border-radius:50%; background:transparent; color:inherit; cursor:pointer; }
+.suggestion-votes button:hover:not(:disabled) { background:rgba(36,60,50,.09); }
+.suggestion-votes svg { width:20px; height:20px; }
+.suggestion-score { min-width:24px; padding:0 2px; text-align:center; font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; }
+.suggestion-votes[data-vote='1'] { background:#fce9df; color:#ae431b; }
+.suggestion-votes[data-vote='-1'] { background:#e9e9fa; color:#5954ac; }
+.suggestion-votes button:focus-visible,
+.suggestion-delete:focus-visible { outline:3px solid #78a88c; outline-offset:2px; }
+.suggestion-votes button:disabled { opacity:.6; cursor:default; }
+.feedback__public-choice:empty { display:none; }
+.suggestion-delete { display:inline-flex; align-items:center; gap:6px; height:34px; border:0; border-radius:999px; padding:0 12px; color:var(--muted); background:transparent; font-size:12px; cursor:pointer; }
+.suggestion-delete:hover:not(:disabled) { color:var(--danger); background:#f8eae7; }
+.suggestion-delete svg { width:16px; height:16px; }
+.suggestion-delete:disabled { opacity:.6; cursor:default; }
+
+.public-suggestion--new { animation:suggestion-highlight 2.4s ease-out; }
+@keyframes suggestion-highlight {
+  0%, 25% { background:var(--accent-muted); box-shadow:0 0 0 10px var(--accent-muted); }
+  100% { background:transparent; box-shadow:0 0 0 10px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-suggestion--new { animation:none; background:var(--accent-muted); }
 }

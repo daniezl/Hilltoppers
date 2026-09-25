@@ -3,6 +3,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { changeTopping, localToppings, fetchToppings, openToppingBar, PREVIEW_TOPPING_KEY, TOPPINGS_KEY, TOPPING_ORDER_KEY, type Topping } from '../services/toppingsService';
 import { useRevealExpandedSection } from './useRevealExpandedSection';
 
+import AnimatedCollapse from './AnimatedCollapse';
+
 const CHANNEL = 'hilltoppers-topping-v1';
 
 function ToppingFrame({ topping }: { topping: Topping }) {
@@ -47,8 +49,7 @@ function ToppingFrame({ topping }: { topping: Topping }) {
 }
 
 function ToppingSection({ topping, expanded }: { topping: Topping; expanded: boolean }) {
-  const section = useRevealExpandedSection(expanded);
-  return <section ref={section} hidden={!expanded} className="topping-section topping-panel" aria-label={topping.name}>
+  return <section hidden={!expanded} className="topping-section topping-panel" aria-label={topping.name}>
     <ToppingFrame topping={topping}/>
   </section>;
 }
@@ -75,6 +76,9 @@ export default function InstalledToppings() {
   const [revisions,setRevisions]=useState<Record<string,number>>({});
   const menu=useRef<HTMLDivElement>(null);
   const active=items.find(t=>t.id===activeId);
+  const lastActive=useRef<string|null>(null);
+  if(active)lastActive.current=active.id;
+  const dock=useRevealExpandedSection<HTMLDivElement>(!!active, activeId);
   useEffect(()=>{setMenuOpen(false);setError('');},[activeId]);
   useEffect(()=>{
     const close=(event:PointerEvent)=>{if(!menu.current?.contains(event.target as Node))setMenuOpen(false);};
@@ -112,7 +116,7 @@ export default function InstalledToppings() {
     }).catch(() => {});
     return () => { alive = false; chrome.storage.onChanged.removeListener(changed); };
   }, []);
-  return <div className="toppings-dock">
+  return <div className="toppings-dock" ref={dock}>
     <div className="toppings-row">
     <div className="toppings-strip" role="group" aria-label="Your Toppings">
       <div className="toppings-strip-scroll" onScroll={()=>setTooltip(null)}>
@@ -134,6 +138,8 @@ export default function InstalledToppings() {
     </div>
     {error&&<p role="alert">{error}</p>}
     {tooltip&&<span ref={tooltipElement} role="tooltip" className="topping-name-tooltip" style={{left:tooltip.x,top:tooltip.y}}>{tooltip.name}</span>}
-    {items.filter(t=>opened.has(t.id)).map(t=><ToppingSection key={`${t.id}-${revisions[t.id]||0}`} topping={t} expanded={activeId===t.id}/>)}
+    <AnimatedCollapse expanded={!!active}>
+      {items.filter(t=>opened.has(t.id)).map(t=><ToppingSection key={`${t.id}-${revisions[t.id]||0}`} topping={t} expanded={activeId===t.id || (!active && t.id===lastActive.current)}/>)}
+    </AnimatedCollapse>
   </div>;
 }

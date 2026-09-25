@@ -232,3 +232,25 @@ respected. Installation counts register normally when the catalog is reachable.
 
 Short descriptions are optional (up to 180 characters); name, icon, webpage URL
 and preview image are required when submitting a Topping.
+
+### Public suggestions
+
+The Topping Bar Worker also serves `/api/suggestions`. Apply
+`suggestions-schema.sql` to `hilltoppers-toppings` with
+`wrangler d1 execute hilltoppers-toppings --config wrangler.toppings.toml --remote --file suggestions-schema.sql`
+before deploying this endpoint. Private feedback still goes to the existing
+Firestore collection and is never copied into this public list.
+
+Public posts require a verified school email or a verified linked school email.
+The server derives the displayed name from that email; public responses omit
+email addresses, account IDs, and contact details. `GET /api/suggestions/identity`
+returns the caller's eligible public name. `POST /api/suggestions` accepts a
+message and a client-generated `requestId` for safe retries, with a limit of
+10 public posts per account per day. GET lists newest posts with cursor pagination.
+Signed-in accounts can POST `/:id/vote` with `value` 1, -1, or 0 (cancel).
+A database primary key enforces one vote per account per suggestion.
+
+Authors can DELETE `/api/suggestions/:id`; the verified account configured in
+`TOPPING_REVIEWER_EMAIL` can also delete any public suggestion. Votes and the
+suggestion are deleted together. GET includes a caller-specific `canDelete`
+flag without exposing the author account ID.

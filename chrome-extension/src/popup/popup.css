@@ -588,9 +588,6 @@ header {
   flex: 0 0 auto;
 }
 
-.dining-list.collapsed .dining-content {
-  display: none;
-}
 
 /* Calendar: a month of the school calendar, then a way out to the school's
    own page for the details. Same shell as Menu. */
@@ -608,9 +605,6 @@ header {
   padding: 12px;
 }
 
-.events-list.collapsed .calendar-content {
-  display: none;
-}
 
 .cal-header {
   display: flex;
@@ -905,9 +899,6 @@ header {
   background: #ffffff;
 }
 
-.schedule-list.collapsed ul {
-  display: none;
-}
 
 .schedule-list li {
   display: flex;
@@ -1545,3 +1536,16 @@ header {
 @media (prefers-reduced-motion:reduce) { .toppings-row .topping-menu { animation:none; } }
 
 @media (prefers-reduced-motion:reduce) { .topping-chip > svg { transition:none; } .topping-chip:hover > svg { transform:none; } }
+
+/* Keep content mounted while the outer viewport folds shut. */
+.schedule-list, .events-list, .dining-list { gap:0; }
+.module-collapse { height:0; min-height:0; overflow:hidden; opacity:0; transition:height 180ms cubic-bezier(.2,.7,.2,1), opacity 140ms ease; overflow-anchor:none; }
+.module-collapse.is-open { opacity:1; transition-duration:220ms,180ms; }
+.module-collapse-inner { display:grid; gap:6px; padding-top:6px; }
+.toppings-dock > .module-collapse > .module-collapse-inner { padding-top:8px; }
+.topping-panel { margin-top:0; animation:module-fade-in 180ms ease; }
+@keyframes module-fade-in { from { opacity:0; } to { opacity:1; } }
+@media (prefers-reduced-motion:reduce) {
+  .module-collapse, .chevron { transition:none; }
+  .topping-panel { animation:none; }
+}
