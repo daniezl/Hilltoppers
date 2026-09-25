@@ -135,7 +135,7 @@ export default function Dashboard() {
       {/* Keep visited pages mounted so navigation preserves forms and pending saves. */}
       {visited.includes('toppings.html') && <div hidden={page !== 'toppings.html'}><ToppingBar active={page === 'toppings.html'} onAccount={() => navigate('login.html')}/></div>}
       {visited.includes('class-settings.html') && <div hidden={page !== 'class-settings.html'}><ClassSettings onAccount={() => navigate('login.html')}/></div>}
-      {visited.includes('feedback.html') && <div hidden={page !== 'feedback.html'}><Feedback/></div>}
+      {visited.includes('feedback.html') && <div hidden={page !== 'feedback.html'}><Feedback active={page === 'feedback.html'} onAccount={()=>navigate('login.html')}/></div>}
       {visited.includes('login.html') && <div hidden={page !== 'login.html'}><Login returnPage={returnPage} onNavigate={navigate}/></div>}
     </div>
   </div>;

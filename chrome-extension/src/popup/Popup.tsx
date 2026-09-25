@@ -27,6 +27,7 @@ import { logAppOpen } from '../firebase/analytics';
 import { relativeLabel } from '../services/calendarService';
 import Calendar from './Calendar';
 import Toppings from './Toppings';
+import AnimatedCollapse from './AnimatedCollapse';
 import { useRevealExpandedSection } from './useRevealExpandedSection';
 import {
   IDEAS_ENABLED,
@@ -1141,8 +1142,7 @@ const Popup: React.FC = () => {
               </div>
             )}
           </div>
-        {scheduleExpanded && (
-          <>
+        <AnimatedCollapse expanded={scheduleExpanded}>
             {hasGradeSpecificBlocks && viewingGrade != null && (
               <div className="grade-selector">
                 <span>Showing schedule for</span>
@@ -1238,8 +1238,7 @@ const Popup: React.FC = () => {
                 }}>settings</a> (top left) to set courses in your schedule.
               </p>
             ) : null}
-          </>
-        )}
+        </AnimatedCollapse>
         </section>
       )}
       <section ref={calendarSection} className={`events-list ${calendarExpanded ? '' : 'collapsed'}`}>
@@ -1265,7 +1264,7 @@ const Popup: React.FC = () => {
           </span>
           <span className={`chevron ${calendarExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
-        {calendarExpanded && (
+        <AnimatedCollapse expanded={calendarExpanded}>
           <Calendar
             now={now}
             timeFormat={schedulePrefs.timeFormat}
@@ -1274,7 +1273,7 @@ const Popup: React.FC = () => {
             today={{ dateKey: schedule.dateKey, blocks: schedule.blocks, dayType: schedule.dayType }}
             calendarUrl={SJA_CALENDAR_URL}
           />
-        )}
+        </AnimatedCollapse>
       </section>
       <section ref={menuSection} className={`dining-list ${menuExpanded ? '' : 'collapsed'}`}>
         <button
@@ -1322,7 +1321,7 @@ const Popup: React.FC = () => {
           </span>
           <span className={`chevron ${menuExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
-        {menuExpanded && (
+        <AnimatedCollapse expanded={menuExpanded}>
           <div className="dining-content">
             <div className="dining-period-tabs" role="tablist" aria-label="Menu period">
               {DINING_PERIODS.map((period) => (
@@ -1520,7 +1519,7 @@ const Popup: React.FC = () => {
               )}
             </p>
           </div>
-        )}
+        </AnimatedCollapse>
       </section>
       <Toppings />
       {/* Paused — see IDEAS_ENABLED in services/ideasService.ts. */}
