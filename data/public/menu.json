@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-26T05:21:06.079Z",
+  "updatedAt": "2026-09-26T10:09:06.652Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-26",
   "menus": {
@@ -36,7 +36,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-25T17:54:41.708Z",
+  "daysUpdatedAt": "2026-09-26T10:09:06.652Z",
   "days": {
     "2026-09-26": {
       "breakfast": {
@@ -273,6 +273,36 @@
           "Italian Sausage",
           "Italian Vegetables",
           "Marinara Sauce"
+        ]
+      }
+    },
+    "2026-10-03": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Plant-Based Chik'n Tenders",
+          "Grilled Chicago Chicken Sandwich",
+          "Seasoned Tater Tots",
+          "Zucchini & Tomatoes"
+        ],
+        "globalFare": []
+      },
+      "dinner": {
+        "classicKitchen": [
+          "London Broil",
+          "Risotto Stuffed Portobello",
+          "Baked Sweet Potatoes & Apples",
+          "Brussel Sprouts"
+        ],
+        "globalFare": [
+          "Oriental Chicken",
+          "Asian Marinated Tofu",
+          "Vegetable Rice",
+          "Sauteed Mushrooms",
+          "Sauteed Peppers & Onions"
         ]
       }
     }
