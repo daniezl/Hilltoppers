@@ -1,50 +1,43 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-03T02:15:45.489Z",
+  "updatedAt": "2026-10-03T08:30:20.713Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-02",
+  "menuDate": "2026-10-03",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
-      "globalFare": [
-        "Pork Bacon",
-        "Biscuit with Sausage Gravy",
-        "Scrambled Eggs",
-        "French Waffles",
-        "Hashbrowns"
-      ]
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "TVP Vegan Meatballs",
-        "Spaghetti & Meatballs",
-        "Roasted Broccoli",
-        "Grilled Balsamic Yellow Squash",
-        "Marinara Sauce"
+        "Plant-Based Chik'n Tenders",
+        "Vegan Chorizo",
+        "BBQ Chicken Sandwich",
+        "Low Sodium Seasoned Beans Black",
+        "Seasoned White Rice",
+        "Corn with Peppers and Onions",
+        "Seasoned Tater Tots",
+        "Zucchini & Tomatoes"
       ],
-      "globalFare": [
-        "Whole Grain Corn Dog",
-        "Waffle Fries",
-        "Peas & Carrots"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Western Turkey Burger",
-        "Vegan Veggie Patty",
-        "Potato Cheddar Bites",
-        "Roasted Green Beans"
+        "London Broil",
+        "Risotto Stuffed Portobello",
+        "Baked Sweet Potatoes & Apples",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Seasoned Ground Beef",
-        "Baked Ziti",
-        "Italian Sausage",
-        "Italian Vegetables",
-        "Marinara Sauce"
+        "Oriental Chicken",
+        "Asian Marinated Tofu",
+        "Vegetable Rice",
+        "Sauteed Mushrooms",
+        "Sauteed Peppers & Onions"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-02T19:29:01.917Z",
+  "daysUpdatedAt": "2026-10-03T08:30:20.713Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -437,6 +430,41 @@
           "Spicy Refried Beans",
           "Mexican Street Corn Salad",
           "Jasmine Rice"
+        ]
+      }
+    },
+    "2026-10-10": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Classic Reuben",
+          "Mixed Vegetables",
+          "Seasoned French Fries",
+          "French Fry Seasoning"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sausage Patty 2 Oz",
+          "Hashbrown Patty"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Fried Pork Chop",
+          "Baked Beans",
+          "Red Skin Mashed Garlic Potatoes",
+          "Brussel Sprouts"
+        ],
+        "globalFare": [
+          "Fried Chicken Tenders",
+          "Teriyaki Chicken Nuggets",
+          "Plant-Based Chik'n Tenders",
+          "Seasoned White Rice",
+          "Stir Fry Vegetables"
         ]
       }
     }
