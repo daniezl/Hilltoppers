@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-03T23:41:58.193Z",
+  "updatedAt": "2026-10-04T05:23:28.918Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-03",
+  "menuDate": "2026-10-04",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -11,29 +11,24 @@
     "lunch": {
       "classicKitchen": [
         "Plant-Based Chik'n Tenders",
-        "Vegan Chorizo",
-        "BBQ Chicken Sandwich",
-        "Low Sodium Seasoned Beans Black",
-        "Seasoned White Rice",
-        "Corn with Peppers and Onions",
-        "Seasoned Tater Tots",
-        "Zucchini & Tomatoes"
+        "Chicken Parmesan Sandwich",
+        "Italian Vegetables",
+        "Vegetable Tortellini Soup"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "London Broil",
-        "Risotto Stuffed Portobello",
-        "Baked Sweet Potatoes & Apples",
-        "Brussel Sprouts"
+        "Confetti Lentils",
+        "Roasted Garlic Chicken",
+        "Fresh Roasted Broccoli",
+        "Garlic & Herb Tofu Spread"
       ],
       "globalFare": [
-        "Oriental Chicken",
-        "Asian Marinated Tofu",
-        "Vegetable Rice",
-        "Sauteed Mushrooms",
-        "Sauteed Peppers & Onions"
+        "Dhaba Chicken Curry",
+        "Vegetable Lo Mein",
+        "Steamed Green Beans and Carrots",
+        "Roasted Curried Cauliflower"
       ]
     }
   },
