@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-04T05:23:28.918Z",
+  "updatedAt": "2026-10-04T11:15:38.083Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-04",
   "menus": {
@@ -32,7 +32,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-03T20:54:37.863Z",
+  "daysUpdatedAt": "2026-10-04T11:15:38.083Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -460,6 +460,39 @@
           "Plant-Based Chik'n Tenders",
           "Seasoned White Rice",
           "Stir Fry Vegetables"
+        ]
+      }
+    },
+    "2026-10-11": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Meatballs TVP Vegan GF",
+          "All-Beef Meatball Sub",
+          "Garlic Breadstick"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Home Fried Potatoes",
+          "Bacon"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Pasta with Chicken & Wild Mushroom Sauce",
+          "Turkey Tetrazzini",
+          "Spaghetti Noodles",
+          "Peas & Mushrooms"
+        ],
+        "globalFare": [
+          "Classic Swiss Steak",
+          "Stewed Chickpea",
+          "Red Skin Mashed Garlic Potatoes",
+          "Sautéed Garden Fresh Green Beans"
         ]
       }
     }
