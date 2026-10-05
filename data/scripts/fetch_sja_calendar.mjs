@@ -119,7 +119,7 @@ function classify(events, today) {
     }
 
     if (RE_PROGRAM_DAY.test(title)) {
-      for (const date of dates) needsHuman.push({ date, title, reason: "program day, block times not published" });
+      for (const date of dates) needsHuman.push({ date, title, eventId: props.UID?.value ?? title, eventStart: span.first, reason: "program day, block times not published" });
       continue;
     }
 
@@ -129,9 +129,9 @@ function classify(events, today) {
     }
 
     if (RE_NEEDS_HUMAN.test(title)) {
-      for (const date of dates) needsHuman.push({ date, title, reason: "unclassified" });
+      for (const date of dates) needsHuman.push({ date, title, eventId: props.UID?.value ?? title, eventStart: span.first, reason: "unclassified" });
     } else if (RE_NEEDS_HUMAN.test(body)) {
-      for (const date of dates) needsHuman.push({ date, title, reason: "flagged by event body" });
+      for (const date of dates) needsHuman.push({ date, title, eventId: props.UID?.value ?? title, eventStart: span.first, reason: "flagged by event body" });
     }
   }
 

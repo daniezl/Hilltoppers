@@ -109,18 +109,21 @@ older clients. Edit the generator, not the generated JSON.
 
 ## Schedule review issues
 
-**Sync SJA calendar** opens one GitHub issue per unresolved date in the next
-45 days, including each weekday of multi-day events. It reports even when no
-data PR is needed. Repeated runs update the existing open issue instead of
-creating duplicates. These issues do not change the extension's interface,
-timetable, or countdown.
+**Sync SJA calendar** opens one GitHub issue per unresolved calendar event in the
+next 45 days, with a checklist for each affected weekday. Multi-day events such
+as Spirit Week share one issue; different event occurrences stay separate.
+It reports even when no data PR is needed. Repeated runs update the existing
+open issue instead of creating duplicates. These issues do not change the
+extension's interface, timetable, or countdown.
 
 All these issues receive the `schedule-review` label. The workflow creates the
-label if needed and adds it to older tracked issues, including closed ones,
-without removing any existing labels.
+label if needed and preserves other labels. Existing date-based issues are
+consolidated into the oldest open issue for that event; duplicates are closed
+with a reference to the retained issue, keeping their discussions accessible.
 
-After checking a date, close its issue if the existing timetable is correct;
-the bot respects that decision and does not reopen it. If a custom schedule,
-no-school entry, or break is merged into the data, the bot automatically closes
-the corresponding issue. An event vanishing from the feed or a date passing
-does not by itself count as a fix.
+Tick each date's checkbox after verifying it; manual checks survive later runs.
+Close the whole issue when the event's timetable is confirmed; the bot respects
+manual closure. Merged custom schedules, no-school entries, and breaks also
+resolve the corresponding dates. Automatic closure requires every checklist
+date to be resolved. An event vanishing from the feed or a date passing does
+not by itself count as a fix.
