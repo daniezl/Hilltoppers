@@ -1,34 +1,54 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-05T01:48:31.786Z",
+  "updatedAt": "2026-10-05T08:45:24.878Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-04",
+  "menuDate": "2026-10-05",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
+      ],
+      "globalFare": [
+        "Fresh Blueberries",
+        "Potato Hashbrown Patty",
+        "Scrambled Eggs",
+        "Pork Sausage Patty",
+        "Blueberry Pancakes"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Chicken Parmesan Sandwich",
-        "Italian Vegetables",
-        "Vegetable Tortellini Soup"
+        "Sliced Italian Sausage",
+        "Broccoli & Carrots",
+        "Broccoli & Cheese Casserole",
+        "Sauce White"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Brown Rice and Pepper Casserole",
+        "Creamy Chicken Basil Curry",
+        "Indian Potatoes with Peas & Cauliflower",
+        "Baked Eggplant"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Confetti Lentils",
-        "Roasted Garlic Chicken",
-        "Fresh Roasted Broccoli",
-        "Garlic & Herb Tofu Spread"
+        "Chicken with Red Pepper Sauce",
+        "Pasta Shells",
+        "Sauteed Spinach",
+        "Creamy Roasted Red Pepper Sauce"
       ],
       "globalFare": [
-        "Dhaba Chicken Curry",
-        "Vegetable Lo Mein",
-        "Steamed Green Beans and Carrots",
-        "Roasted Curried Cauliflower"
+        "Beef Bibimbap Bowl",
+        "Adobo Marinated Egg",
+        "Seasoned Asian Vegetables"
       ]
     }
   },
