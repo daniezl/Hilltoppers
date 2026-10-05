@@ -52,7 +52,7 @@ test('reuse oldest legacy issue, close duplicates, preserve labels and manual ch
   await h.sync(report);
   assert.equal(h.issues.length, 5);
   assert.equal(h.issues[0].state, 'open');
-  assert.match(h.issues[0].title, /Spirit Week/);
+  assert.equal(h.issues[0].title, 'Spirit Week (2026-10-19 – 2026-10-23)');
   assert.equal((h.issues[0].body.match(/- \[ \]/g) ?? []).length, 5);
   assert.deepEqual(h.issues[0].labels, [{ name: 'bug' }, 'schedule-review']);
   for (const duplicate of h.issues.slice(1)) {

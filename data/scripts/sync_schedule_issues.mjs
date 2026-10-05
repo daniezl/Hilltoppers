@@ -31,7 +31,7 @@ export async function syncScheduleIssues({ github, context, report }) {
     // Keep older checklist dates and manual confirmations when the feed changes.
     const dates = [...new Set([...review.dates, ...checklist(existing?.body).map(m => m[2])])].sort();
     const done = date => checked.has(date) || isResolved(date, report.days, report.periods);
-    const title = `Schedule needs confirmation: ${review.title} (${dates[0]}${dates.length > 1 ? ` – ${dates.at(-1)}` : ''})`;
+    const title = `${review.title} (${dates[0]}${dates.length > 1 ? ` – ${dates.at(-1)}` : ''})`;
     const body = `${eventMarker(id)}\n\nThis event needs review; this is not proof that the timetable is incorrect. This issue does not change the extension's timetable or countdown.\n\n${review.reasons.map(r => `- ${r}`).join('\n')}\n\n### Dates to verify\n\n${dates.map(date => `- [${done(date) ? 'x' : ' '}] ${date}`).join('\n')}\n\nSource: https://stjacademy.org/?feed=eo-events\n\nCheck each day's schedule and tick its box when confirmed. If all dates are correct, close this issue; the bot will leave it closed. Otherwise, fill in the correct schedule in data/public/special_days.json. Merged custom schedules, no-school entries, and breaks also count as resolved. The issue closes automatically when every date is resolved.`;
     let number = existing?.number;
     if (!existing) {
