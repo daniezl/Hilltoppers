@@ -7,11 +7,21 @@ name: Sync SJA calendar
 on:
   schedule:
     - cron: "0 11 * * *" # ~6-7am in St. Johnsbury, before the school day
+  push:
+    branches: [main]
+    paths:
+      - data/public/special_days.json
+      - data/public/special_periods.json
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
+
+concurrency:
+  group: sja-calendar-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -27,6 +37,7 @@ jobs:
         id: sync
         working-directory: data
         env:
+          SJA_ISSUES_FILE: ${{ runner.temp }}/sja-schedule-issues.json
           SJA_REPORT_FILE: ${{ runner.temp }}/sja-calendar-report.md
         run: node scripts/fetch_sja_calendar.mjs
 
@@ -42,3 +53,15 @@ jobs:
           add-paths: |
             data/public/special_days.json
             data/public/special_periods.json
+
+      - name: Track schedule reviews in issues
+        uses: actions/github-script@v7
+        env:
+          SJA_ISSUES_FILE: ${{ runner.temp }}/sja-schedule-issues.json
+        with:
+          script: |
+            const fs = require('node:fs/promises');
+            const { pathToFileURL } = require('node:url');
+            const { syncScheduleIssues } = await import(pathToFileURL(`${process.env.GITHUB_WORKSPACE}/data/scripts/sync_schedule_issues.mjs`).href);
+            const report = JSON.parse(await fs.readFile(process.env.SJA_ISSUES_FILE, 'utf8'));
+            await syncScheduleIssues({ github, context, report });

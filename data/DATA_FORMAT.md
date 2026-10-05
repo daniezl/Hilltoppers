@@ -106,3 +106,21 @@ Each successful refresh drops history older than that window. Missing historical
 days are not invented or fetched again; previously deleted menus will not be
 restored by this retention rule. `menuDate` and `menus` still describe today for
 older clients. Edit the generator, not the generated JSON.
+
+## Schedule review issues
+
+**Sync SJA calendar** opens one GitHub issue per unresolved date in the next
+45 days, including each weekday of multi-day events. It reports even when no
+data PR is needed. Repeated runs update the existing open issue instead of
+creating duplicates. These issues do not change the extension's interface,
+timetable, or countdown.
+
+All these issues receive the `schedule-review` label. The workflow creates the
+label if needed and adds it to older tracked issues, including closed ones,
+without removing any existing labels.
+
+After checking a date, close its issue if the existing timetable is correct;
+the bot respects that decision and does not reopen it. If a custom schedule,
+no-school entry, or break is merged into the data, the bot automatically closes
+the corresponding issue. An event vanishing from the feed or a date passing
+does not by itself count as a fix.

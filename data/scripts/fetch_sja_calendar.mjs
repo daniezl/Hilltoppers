@@ -25,6 +25,7 @@
  */
 
 import fs from "node:fs/promises";
+import { buildScheduleReviews } from "./lib/schedule_reviews.mjs";
 import {
   RE_BREAK,
   RE_CLOSED,
@@ -118,7 +119,7 @@ function classify(events, today) {
     }
 
     if (RE_PROGRAM_DAY.test(title)) {
-      needsHuman.push({ date: span.first, title, reason: "program day, block times not published" });
+      for (const date of dates) needsHuman.push({ date, title, reason: "program day, block times not published" });
       continue;
     }
 
@@ -128,9 +129,9 @@ function classify(events, today) {
     }
 
     if (RE_NEEDS_HUMAN.test(title)) {
-      needsHuman.push({ date: span.first, title, reason: "unclassified" });
+      for (const date of dates) needsHuman.push({ date, title, reason: "unclassified" });
     } else if (RE_NEEDS_HUMAN.test(body)) {
-      needsHuman.push({ date: span.first, title, reason: "flagged by event body" });
+      for (const date of dates) needsHuman.push({ date, title, reason: "flagged by event body" });
     }
   }
 
@@ -388,7 +389,7 @@ function buildReport({ today, eventCount, days, periods, needsHuman, feedConflic
   // would train the reader to skip this section.
   const horizon = addDays(today, REVIEW_HORIZON_DAYS);
   const upcoming = needsHuman
-    .filter((item) => item.date >= today && item.date <= horizon)
+    .filter((item) => item.date >= today && item.date <= horizon && !isWeekend(item.date))
     .filter((item) => !isSettled(days.merged[item.date]))
     .sort((a, b) => compareYmd(a.date, b.date))
     .map((item) => `**${item.date}** — ${item.title} _(${item.reason})_`);
@@ -471,6 +472,16 @@ async function main() {
   }
   if (!deepEqual(JSON.parse(periodsText), periods.merged)) {
     throw new Error("Refusing to write: special_periods serialization is not lossless");
+  }
+
+  // Issue reporting is independent of whether this run proposes a data PR.
+  // Resolve issues against committed data, not changes awaiting review.
+  if (process.env.SJA_ISSUES_FILE) {
+    const reviewCandidates = [...needsHuman, ...[...days.conflicts, ...feedConflicts].map(reason => ({
+      date: reason.slice(0, 10), title: "Conflicting schedule information", reason
+    }))];
+    const reviews = buildScheduleReviews({ today, needsHuman: reviewCandidates, days: currentDays, periods: currentPeriods });
+    await fs.writeFile(process.env.SJA_ISSUES_FILE, JSON.stringify({ reviews, days: currentDays, periods: currentPeriods }));
   }
 
   const report = buildReport({
