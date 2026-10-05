@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-05T08:45:24.878Z",
+  "updatedAt": "2026-10-05T18:14:00.425Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-05",
   "menus": {
@@ -52,7 +52,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-05T01:48:31.786Z",
+  "daysUpdatedAt": "2026-10-05T18:14:00.425Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -513,6 +513,50 @@
           "Stewed Chickpea",
           "Red Skin Mashed Garlic Potatoes",
           "Sautéed Garden Fresh Green Beans"
+        ]
+      }
+    },
+    "2026-10-12": {
+      "breakfast": {
+        "classicKitchen": [
+          "Bacon Egg Cheese Biscuit Sandwich",
+          "Egg and Cheese Biscuit",
+          "Sausage & Cheese Biscuit"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sausage Patty",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Crispy Chicken Bowl WG",
+          "Popcorn Chicken",
+          "Plant-Based Chik'n Tenders",
+          "Country Gravy",
+          "Mashed Potatoes",
+          "Buttered Corn"
+        ],
+        "globalFare": [
+          "Chicago Dog",
+          "Four Cheese Macaroni & Cheese",
+          "Coleslaw"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "BBQ Chicken Thigh",
+          "Baked Beans",
+          "Roasted Potato Wedges",
+          "Roasted Baby Carrots with Dill"
+        ],
+        "globalFare": [
+          "Asian Garlic Beef Strips",
+          "Jasmine Rice",
+          "Asian Style Snap Peas",
+          "Cambodian Style Tofu Salad"
         ]
       }
     }
