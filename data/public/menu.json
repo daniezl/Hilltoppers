@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-06T00:15:39.919Z",
+  "updatedAt": "2026-10-06T06:47:06.554Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-05",
+  "menuDate": "2026-10-06",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -17,42 +17,42 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Fresh Blueberries",
-        "Potato Hashbrown Patty",
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Pork Sausage Patty",
-        "Blueberry Pancakes"
+        "Oven Roasted Red Bliss Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Sliced Italian Sausage",
-        "Broccoli & Carrots",
-        "Broccoli & Cheese Casserole",
-        "Sauce White"
+        "Hawaiian Ham Steak",
+        "Augratin Potatoes",
+        "Green Beans with Red Peppers",
+        "Pacific Vegetable Blend"
       ],
       "globalFare": [
-        "Brown Rice and Pepper Casserole",
-        "Creamy Chicken Basil Curry",
-        "Indian Potatoes with Peas & Cauliflower",
-        "Baked Eggplant"
+        "Adobo Chicken",
+        "Spanish Brown Rice",
+        "Fresh Bell Peppers"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken with Red Pepper Sauce",
-        "Pasta Shells",
-        "Sauteed Spinach",
-        "Creamy Roasted Red Pepper Sauce"
+        "Pot Roast",
+        "Lentils with Vegetables",
+        "Red Skin Mashed Garlic Potatoes",
+        "Garlic Roasted Root Vegetables"
       ],
       "globalFare": [
-        "Beef Bibimbap Bowl",
-        "Adobo Marinated Egg",
-        "Seasoned Asian Vegetables"
+        "Grilled Pork Chop",
+        "Baked Beans",
+        "Rice Pilaf Chicken with Orzo from Mix",
+        "Risotto Rice",
+        "Maple-Caramelized Brussels Sprouts"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-05T18:14:00.425Z",
+  "daysUpdatedAt": "2026-10-06T06:47:06.554Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -557,6 +557,50 @@
           "Jasmine Rice",
           "Asian Style Snap Peas",
           "Cambodian Style Tofu Salad"
+        ]
+      }
+    },
+    "2026-10-13": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Brunch Burger"
+        ],
+        "globalFare": [
+          "Greek Style Chicken Thighs",
+          "Chips Pita Baked",
+          "Brown Rice",
+          "Broccoli and Cauliflower",
+          "Roasted Chickpeas"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "MM5 Garlic Herb Crusted Pork Loin",
+          "Red Skin Mashed Potatoes",
+          "Italian Corn"
+        ],
+        "globalFare": [
+          "Tofu Cacciatore",
+          "Chicken Cacciatore",
+          "Jasmine Rice",
+          "Fresh Roasted Broccoli"
         ]
       }
     }
