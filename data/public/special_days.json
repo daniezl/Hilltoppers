@@ -381,6 +381,10 @@
     "details": "Late Start Schedule",
     "source": "sja-calendar"
   },
+  "2026-10-08": {
+    "type": "schedule_fri",
+    "details": "Friday Schedule"
+  },
   "2026-10-09": {
     "type": "no_school",
     "details": "Faculty In-Service – No Classes",
