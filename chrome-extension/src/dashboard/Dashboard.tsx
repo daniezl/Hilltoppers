@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { GithubLogo, DeviceMobile } from '@phosphor-icons/react';
+import { GithubLogo, DeviceMobile, CalendarDots } from '@phosphor-icons/react';
 import ScheduleCalendar from '../schedule/ScheduleCalendar';
 import ToppingBar from '../toppings/ToppingBar';
 import ClassSettings from '../classSettings/ClassSettings';
@@ -12,7 +12,7 @@ import './dashboard.css';
 
 type Page = 'schedule.html' | 'toppings.html' | 'class-settings.html' | 'feedback.html' | 'login.html' | 'source-code.html' | 'ios-app.html';
 const titles: Record<Page, string> = {
-  'schedule.html': 'Schedule',
+  'schedule.html': 'Calendar',
   'toppings.html': 'Topping Bar', 'class-settings.html': 'Settings',
   'feedback.html': 'Suggestions', 'login.html': 'Account', 'source-code.html': 'Source code', 'ios-app.html': 'iOS App'
 };
@@ -120,7 +120,7 @@ export default function Dashboard() {
         <a href="toppings.html" onClick={follow('toppings.html')} aria-current={page === 'toppings.html' ? 'page' : undefined}><svg className="dashboard-topping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4.5"/><path d="M12 6.75v10.5M6.75 12h10.5"/></svg>Topping Bar</a>
         <a href="class-settings.html" onClick={follow('class-settings.html')} aria-current={page === 'class-settings.html' ? 'page' : undefined}><SettingsIcon/>Settings</a>
         <a href="feedback.html" onClick={follow('feedback.html')} aria-current={page === 'feedback.html' ? 'page' : undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5"/></svg>Suggestions</a>
-        <a href="schedule.html" onClick={follow('schedule.html')} aria-current={page === 'schedule.html' ? 'page' : undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>Schedule</a>
+        <a href="schedule.html" onClick={follow('schedule.html')} aria-current={page === 'schedule.html' ? 'page' : undefined}><CalendarDots weight="regular" aria-hidden="true"/>Calendar</a>
         <hr className="dashboard-nav-divider"/>
         <a href="ios-app.html" onClick={follow('ios-app.html')} aria-current={page === 'ios-app.html' ? 'page' : undefined}><DeviceMobile weight="regular" aria-hidden="true"/>iOS App</a>
         <a href="source-code.html" onClick={follow('source-code.html')} aria-current={page === 'source-code.html' ? 'page' : undefined}><GithubLogo weight="regular" aria-hidden="true"/>Source code</a>

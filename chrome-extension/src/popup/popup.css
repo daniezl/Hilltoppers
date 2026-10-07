@@ -1423,3 +1423,8 @@ header {
 .schedule-list li > .module-collapse { width:100%; }
 .schedule-list li > .module-collapse > .module-collapse-inner { padding-top:6px; gap:0; }
 .cal-schedule > .module-collapse > .module-collapse-inner { padding-top:0; gap:0; }
+
+.calendar-view-links { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.calendar-new-view { flex-shrink: 0; padding: 4px 9px; border: 1px solid #1a7f3740; border-radius: 6px; color: #1a7f37; font-weight: 600; text-decoration: none; }
+.calendar-new-view:hover { background: #1a7f3710; }
+.calendar-new-view:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

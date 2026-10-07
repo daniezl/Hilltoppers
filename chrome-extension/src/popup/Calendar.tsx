@@ -454,7 +454,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
         </div>
       ) : null}
 
-      <p className="events-meta">
+      <p className="events-meta calendar-view-links">
         <a className="dining-link" href={calendarUrl} target="_blank" rel="noreferrer noopener">
           <svg className="dining-link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -468,6 +468,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
           </svg>
           <span>SJA Calendar</span>
         </a>
+        <a className="calendar-new-view" href={typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('schedule.html') : 'schedule.html'} target="_blank" rel="noreferrer noopener">New view</a>
       </p>
     </div>
   );
