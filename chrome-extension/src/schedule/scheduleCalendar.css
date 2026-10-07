@@ -148,3 +148,11 @@
 @media (prefers-color-scheme: dark) {
   .admin-calendar .admin-calendar-swatch { filter: brightness(1.15); }
 }
+
+.calendar-month-stack { position: relative; isolation: isolate; }
+.calendar-month-front { position: relative; z-index: 1; }
+.calendar-month-layer { position: absolute; inset: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-muted); transform-origin: center bottom; box-shadow: 0 2px 5px #0001; pointer-events: none; transition: transform 350ms ease; }
+.calendar-month-outgoing { position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2; pointer-events: none; box-shadow: 0 18px 40px #0002; }
+.admin-calendar-month-heading { min-width: 0; }
+@media (max-width: 650px) { .calendar-month-stack { margin-left: 12px; margin-right: 12px; } }
+@media (prefers-reduced-motion: reduce) { .calendar-month-layer { transition: none; } }

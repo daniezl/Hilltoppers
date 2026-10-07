@@ -7,6 +7,7 @@ import { EST_ZONE } from '../types/schedule';
 import './scheduleCalendar.css';
 import SchedulePopover from './SchedulePopover';
 import PresetSchedules from './PresetSchedules';
+import MonthStack from './MonthStack';
 import { classifyCustom, familyForType, familyLabels, presetTypes } from './scheduleFamily';
 import type { TimelineBlock } from './timelineLayout';
 
@@ -107,12 +108,16 @@ export default function ScheduleCalendar() {
   const start = month.minus({ days: offset });
   const count = Math.ceil((offset + month.daysInMonth!) / 7) * 7;
   const dates = Array.from({ length: count }, (_, i) => start.plus({ days: i }));
+  const monthIndex = month.year * 12 + month.month;
+  const monthDistance = monthIndex - (today.year * 12 + today.month);
   const selectedAppearance = selection && data ? dayAppearance(selection.day, data) : null;
   return <section className="admin-calendar" aria-labelledby="admin-schedule-title">
     <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Schedule</h1><button type="button" onClick={event => { setSelection(null); setShowPresets(event.currentTarget); }}>View all schedules</button></header>
+    <MonthStack monthIndex={monthIndex} distance={monthDistance}>
     <div className="admin-calendar-card">
       <div className="admin-calendar-toolbar">
-        <h2 aria-live="polite">{month.setLocale('en-US').toFormat('MMMM yyyy')}</h2>
+        <div className="admin-calendar-month-heading"><h2 aria-live="polite">{month.setLocale('en-US').toFormat('MMMM yyyy')}</h2>
+        </div>
         <div className="admin-calendar-controls">
           <button type="button" onClick={() => setMonth(DateTime.now().setZone(EST_ZONE).startOf('month'))}>Today</button>
           <button type="button" aria-label="Previous month" onClick={() => setMonth(m => m.minus({ months: 1 }))}><span aria-hidden="true">‹</span></button>
@@ -144,6 +149,7 @@ export default function ScheduleCalendar() {
         {(['normal', 'friday', 'late', 'abdec', 'custom'] as const).map(color => <span key={color}><i className={`admin-calendar-swatch admin-calendar-${color}`} aria-hidden="true"/>{familyLabels[color]}</span>)}
       </div>
     </div>
+    </MonthStack>
     {showPresets && <PresetSchedules anchor={showPresets} onBack={() => setShowPresets(null)} />}
     {selection && data && <SchedulePopover key={selection.day.toISODate()} date={selection.day} anchor={selection.anchor}
       status={dayColor(selection.day, data)} label={selectedAppearance!.label} family={selectedAppearance!.family}
