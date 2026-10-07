@@ -6,6 +6,7 @@ import { fetchCalendarEvents, type CalendarEvent } from '../services/calendarSer
 import { EST_ZONE } from '../types/schedule';
 import './scheduleCalendar.css';
 import SchedulePopover from './SchedulePopover';
+import PresetSchedules from './PresetSchedules';
 
 type CalendarData = { availableTypes: Set<string>; events: CalendarEvent[]; colors: DayTypeMap; days: Record<string, SpecialDayRecord>; periods: SpecialPeriod[] };
 type Color = 'special' | 'pending' | 'normal' | 'off';
@@ -60,6 +61,7 @@ function scheduleName(key: string, data: CalendarData): string {
 }
 
 export default function ScheduleCalendar() {
+  const [showPresets, setShowPresets] = useState<HTMLButtonElement | null>(null);
   const today = DateTime.now().setZone(EST_ZONE);
   const [month, setMonth] = useState(() => today.startOf('month'));
   const [selection, setSelection] = useState<{ day: DateTime; anchor: HTMLButtonElement } | null>(null);
@@ -90,7 +92,7 @@ export default function ScheduleCalendar() {
   const count = Math.ceil((offset + month.daysInMonth!) / 7) * 7;
   const dates = Array.from({ length: count }, (_, i) => start.plus({ days: i }));
   return <section className="admin-calendar" aria-labelledby="admin-schedule-title">
-    <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Schedule</h1></header>
+    <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Schedule</h1><button type="button" onClick={event => { setSelection(null); setShowPresets(event.currentTarget); }}>View all schedules</button></header>
     <div className="admin-calendar-card">
       <div className="admin-calendar-toolbar">
         <h2 aria-live="polite">{month.setLocale('en-US').toFormat('MMMM yyyy')}</h2>
@@ -124,6 +126,7 @@ export default function ScheduleCalendar() {
         {(['special', 'pending', 'normal', 'off'] as const).map(color => <span key={color}><i className={`admin-calendar-swatch admin-calendar-${color}`} aria-hidden="true"/>{labels[color]}</span>)}
       </div>
     </div>
+    {showPresets && <PresetSchedules anchor={showPresets} onBack={() => setShowPresets(null)} />}
     {selection && data && <SchedulePopover key={selection.day.toISODate()} date={selection.day} anchor={selection.anchor}
       status={dayColor(selection.day, data)} label={labels[dayColor(selection.day, data)]}
       name={dayColor(selection.day, data) === 'off' ? noSchoolReason(selection.day, data) : dayColor(selection.day, data) !== 'normal' ? scheduleName(selection.day.toISODate()!, data) : ''}

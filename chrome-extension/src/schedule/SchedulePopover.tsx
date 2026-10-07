@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
 import ScheduleTimeline from './ScheduleTimeline';
+import ScheduleNotice from './ScheduleNotice';
 import { loadScheduleByType, type SpecialDayRecord } from '../services/scheduleService';
 
 type Blocks = NonNullable<SpecialDayRecord['schedule']>;
@@ -153,7 +154,10 @@ export default function SchedulePopover({ date, anchor, status, label, name, rec
         <p className="schedule-popover-weekday">{date.setLocale('en-US').toFormat('cccc')}</p>
         <div className="schedule-popover-heading">
           <h2 id="schedule-popover-title">{date.setLocale('en-US').toFormat('MMMM d, yyyy')}</h2>
-          <span className={`schedule-popover-status admin-calendar-${status}`}>{status === 'normal' ? `${date.setLocale('en-US').toFormat('cccc')} schedule` : name || (status === 'off' && date.weekday > 5 ? 'Weekend' : label)}</span>
+          <span className="schedule-popover-label-group">
+          <span className={`schedule-popover-status admin-calendar-${status === 'pending' ? 'normal' : status}`}>{status === 'normal' || status === 'pending' ? `${date.setLocale('en-US').toFormat('cccc')} schedule` : name || (status === 'off' && date.weekday > 5 ? 'Weekend' : label)}</span>
+          {status === 'pending' && <ScheduleNotice name={name} enabled={detailsEnabled} />}
+          </span>
         </div>
       </header>
       {status !== 'off' && <>

@@ -1,14 +1,15 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { buildTimeline, PIXELS_PER_MINUTE, timeLabel, type TimelineBlock } from './timelineLayout';
 
 export default function ScheduleTimeline({ blocks, detailsEnabled = true }: { blocks: TimelineBlock[]; detailsEnabled?: boolean }) {
+  const tooltipId = useId();
   const timeline = useMemo(() => buildTimeline(blocks), [blocks]);
   const [hovered, setHovered] = useState<{ id: string; anchor: HTMLButtonElement } | null>(null);
   useEffect(() => { if (!detailsEnabled) setHovered(null); }, [detailsEnabled]);
   const detail = useRef<HTMLDivElement>(null);
   const active = timeline.entries.find(entry => entry.id === hovered?.id);
-  const dialog = hovered?.anchor.closest('dialog');
+  const dialog = hovered?.anchor.closest('dialog, .schedule-presets');
   useLayoutEffect(() => {
     if (!hovered || !dialog || !detail.current) return;
     const anchor = hovered.anchor.getBoundingClientRect();
@@ -34,7 +35,7 @@ export default function ScheduleTimeline({ blocks, detailsEnabled = true }: { bl
   }, [hovered]);
   return <div className="schedule-timeline" aria-label="Proportional schedule timeline">
     {timeline.invalidCount > 0 && <p className="schedule-popover-notice">Some entries have invalid times and cannot be placed on the timeline.</p>}
-    {detailsEnabled && active && dialog && createPortal(<div ref={detail} className="schedule-timeline-detail" role="tooltip" id="schedule-course-detail">
+    {detailsEnabled && active && dialog && createPortal(<div ref={detail} className="schedule-timeline-detail" role="tooltip" id={tooltipId}>
       <strong>{active.name}</strong>
       <span>{timeLabel(active.start)}–{timeLabel(active.end)} · {active.end - active.start} min</span>
       {active.parentName && <small>{active.parentName}</small>}
@@ -50,7 +51,7 @@ export default function ScheduleTimeline({ blocks, detailsEnabled = true }: { bl
             const description = `${entry.name}, ${timeLabel(entry.start)}–${timeLabel(entry.end)}, ${entry.end - entry.start} minutes${entry.parentName ? `, ${entry.parentName}` : ''}${entry.grades?.length ? `, grades ${entry.grades.join(', ')}` : ''}`;
             return <li key={entry.id} className="schedule-timeline-slot" style={{ top: entry.top, height: entry.height, left: `${entry.lane / entry.lanes * 100}%`, width: `${100 / entry.lanes}%` }}>
               <button type="button" className={`schedule-timeline-block${entry.parentName ? ' is-subblock' : ''}${entry.height < 42 ? ' is-short' : ''}${detailsEnabled && hovered?.id === entry.id ? ' is-active' : ''}`}
-                aria-label={description} aria-describedby={detailsEnabled && hovered?.id === entry.id ? 'schedule-course-detail' : undefined}
+                aria-label={description} aria-describedby={detailsEnabled && hovered?.id === entry.id ? tooltipId : undefined}
                 onMouseMove={event => {
                   // A flying card can cross a stationary pointer; only deliberate movement activates a block.
                   if (detailsEnabled && (event.movementX !== 0 || event.movementY !== 0) && hovered?.id !== entry.id) {
