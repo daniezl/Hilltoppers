@@ -126,6 +126,8 @@ function describeDay(
   const dayEvents = events.filter((e) => e.start <= key && key <= e.end).sort(compareEvents);
   const hasScheduleEvent = dayEvents.some((e) => e.kind === 'schedule');
   const hasOtherEvent = dayEvents.some((e) => e.kind !== 'schedule');
+  // TODO: Show a star only for a confirmed special timetable; keyword-classified
+  // calendar events alone do not establish that the regular timetable changes.
   const specialSchedule = !noSchool && (Boolean(special?.type) || hasScheduleEvent);
 
   const label: PublishedDayType | null = noSchool ? 'No School' : dayTypes[key] ?? null;
