@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-06T23:42:02.248Z",
+  "updatedAt": "2026-10-07T05:26:30.066Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-06",
+  "menuDate": "2026-10-07",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -17,38 +17,37 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Oven Roasted Red Bliss Potatoes"
+        "Chicken Sausage Patty",
+        "Pancakes",
+        "Tater Tots",
+        "Banana",
+        "Toasted Pecans"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Hawaiian Ham Steak",
-        "Augratin Potatoes",
-        "Green Beans with Red Peppers",
-        "Pacific Vegetable Blend"
+        "Grilled Cheese",
+        "Grilled Ham and Cheese",
+        "Peas & Carrots",
+        "Tomato Soup"
       ],
       "globalFare": [
-        "Adobo Chicken",
-        "Spanish Brown Rice",
-        "Fresh Bell Peppers"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Cumin Black Beans",
+        "Corn with Peppers and Onions",
+        "Nacho Cheese Sauce",
+        "Chips Doritos Cool Ranch RF WG 1 Oz",
+        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
       ]
     },
     "dinner": {
-      "classicKitchen": [
-        "Pot Roast",
-        "Lentils with Vegetables",
-        "Red Skin Mashed Garlic Potatoes",
-        "Garlic Roasted Root Vegetables"
-      ],
+      "classicKitchen": [],
       "globalFare": [
-        "Grilled Pork Chop",
-        "Baked Beans",
-        "Rice Pilaf Chicken with Orzo from Mix",
-        "Risotto Rice",
-        "Maple-Caramelized Brussels Sprouts"
+        "Grilled Chipotle Chicken",
+        "Seasoned White Rice",
+        "Green Beans with Sauteed Mushrooms"
       ]
     }
   },
