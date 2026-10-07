@@ -1,12 +1,14 @@
 .admin-calendar {
-  --calendar-special: rgba(26, 127, 55, .12);
+  --calendar-special: #cfe5d5;
   --calendar-special-text: #215c34;
-  --calendar-pending: #fff0c2;
+  --calendar-pending: #ffe49a;
   --calendar-pending-text: #765500;
-  --calendar-normal: #f0f2f5;
+  --calendar-normal: #e1e5e9;
   --calendar-normal-text: #36403b;
   --calendar-off-text: #87928b;
-  --calendar-off-badge: #fde8e7;
+  --calendar-custom: #e1cff4;
+  --calendar-custom-text: #68408c;
+  --calendar-off-badge: #f8cfcc;
   --calendar-off-badge-text: #a12825;
   max-width: 1100px; margin: 0 auto; padding: 44px 44px 64px;
 }
@@ -35,7 +37,7 @@
 .admin-calendar-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 4px; }
 .admin-calendar-message { min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; }
 @media (prefers-color-scheme: dark) {
-  .admin-calendar { --calendar-pending: #51401e; --calendar-pending-text: #f6d77f; --calendar-special: #294c35; --calendar-special-text: #b5e7c4; --calendar-normal: #36403b; --calendar-normal-text: #e5ece6; --calendar-off-text: #8b9a90; --calendar-off-badge: #542c2c; --calendar-off-badge-text: #ffb9b4; }
+  .admin-calendar { --calendar-pending: #51401e; --calendar-pending-text: #f6d77f; --calendar-special: #294c35; --calendar-special-text: #b5e7c4; --calendar-normal: #36403b; --calendar-normal-text: #e5ece6; --calendar-custom: #443050; --calendar-custom-text: #dec1f4; --calendar-off-text: #8b9a90; --calendar-off-badge: #542c2c; --calendar-off-badge-text: #ffb9b4; }
 }
 @media (max-width: 800px) {
   .admin-calendar { padding: 28px 18px; }
@@ -59,7 +61,7 @@
 .admin-calendar-special { --date-bg: var(--calendar-special); --date-text: var(--calendar-special-text); }
 .admin-calendar-pending { --date-bg: var(--calendar-pending); --date-text: var(--calendar-pending-text); }
 .admin-calendar-normal { --date-bg: var(--calendar-normal); --date-text: var(--calendar-normal-text); }
-.admin-calendar button.admin-calendar-date:hover { filter: brightness(.96); }
+.admin-calendar button.admin-calendar-date:hover { border-color: var(--date-text, var(--border)); }
 .admin-calendar button.admin-calendar-date[aria-expanded="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .schedule-popover-shell { position: fixed; inset: auto; z-index: 50; width: min(380px, calc(100vw - 24px)); max-width: none; max-height: none; height: min(760px, calc(100dvh - 24px)); margin: 0; padding: 0; border: 0; overflow: visible; background: transparent; color: var(--text); perspective: 1200px; }
 .schedule-popover-shell::backdrop { background: transparent; }
@@ -128,3 +130,21 @@
 .admin-calendar button.schedule-notice-trigger:disabled { pointer-events: none; opacity: 1; filter: none; color: var(--calendar-pending-text); }
 .schedule-notice-tooltip { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; gap: 6px; width: min(240px, calc(100vw - 72px)); box-sizing: border-box; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 6px 20px #0003; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .schedule-notice-tooltip > span { color: var(--muted); }
+
+.admin-calendar-friday { --date-bg: var(--calendar-special); --date-text: var(--calendar-special-text); background: var(--date-bg); color: var(--date-text); }
+.admin-calendar-late { --date-bg: var(--calendar-pending); --date-text: var(--calendar-pending-text); background: var(--date-bg); color: var(--date-text); }
+.admin-calendar-abdec { --date-bg: var(--calendar-off-badge); --date-text: var(--calendar-off-badge-text); background: var(--date-bg); color: var(--date-text); }
+.admin-calendar-custom { --date-bg: var(--calendar-custom); --date-text: var(--calendar-custom-text); background: var(--date-bg); color: var(--date-text); }
+.schedule-popover-shell[data-schedule-status="friday"] { --timeline-fill: var(--calendar-special); --timeline-ink: var(--calendar-special-text); }
+.schedule-popover-shell[data-schedule-status="late"] { --timeline-fill: var(--calendar-pending); --timeline-ink: var(--calendar-pending-text); }
+.schedule-popover-shell[data-schedule-status="abdec"] { --timeline-fill: var(--calendar-off-badge); --timeline-ink: var(--calendar-off-badge-text); }
+.schedule-popover-shell[data-schedule-status="custom"] { --timeline-fill: var(--calendar-custom); --timeline-ink: var(--calendar-custom-text); }
+
+/* Share the base fill without changing it on hover. */
+.admin-calendar button.admin-calendar-date,
+.admin-calendar .admin-calendar-swatch { background: var(--date-bg, transparent); opacity: 1; filter: none; }
+
+/* Small swatches need a little extra brightness against the dark surface. */
+@media (prefers-color-scheme: dark) {
+  .admin-calendar .admin-calendar-swatch { filter: brightness(1.15); }
+}

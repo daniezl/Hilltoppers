@@ -1,5 +1,12 @@
 import React, { useEffect, useId, useState } from 'react';
 
+export function ScheduleWarningIcon() {
+  return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M10.3 4.2 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/>
+        <path d="M12 9v4M12 17h.01"/>
+      </svg>);
+}
+
 export default function ScheduleNotice({ name, enabled }: { name: string; enabled: boolean }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -12,10 +19,7 @@ export default function ScheduleNotice({ name, enabled }: { name: string; enable
       onFocus={event => { if (enabled && event.currentTarget.matches(':focus-visible')) setOpen(true); }}
       onClick={() => setOpen(value => !value)}
       onKeyDown={event => { if (event.key === 'Escape' && open) { event.stopPropagation(); setOpen(false); } }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M10.3 4.2 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/>
-        <path d="M12 9v4M12 17h.01"/>
-      </svg>
+      <ScheduleWarningIcon />
     </button>
     {enabled && open && <span className="schedule-notice-tooltip" role="tooltip" id={id}>
       <strong>{name || 'Potential special schedule'}</strong>
