@@ -112,7 +112,7 @@ export default function ScheduleCalendar() {
   const monthDistance = monthIndex - (today.year * 12 + today.month);
   const selectedAppearance = selection && data ? dayAppearance(selection.day, data) : null;
   return <section className="admin-calendar" aria-labelledby="admin-schedule-title">
-    <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Schedule</h1><button type="button" onClick={event => { setSelection(null); setShowPresets(event.currentTarget); }}>View all schedules</button></header>
+    <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Calendar</h1><button type="button" onClick={event => { setSelection(null); setShowPresets(event.currentTarget); }}>View all schedules</button></header>
     <MonthStack monthIndex={monthIndex} distance={monthDistance}>
     <div className="admin-calendar-card">
       <div className="admin-calendar-toolbar">
