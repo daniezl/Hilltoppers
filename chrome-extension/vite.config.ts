@@ -13,6 +13,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        schedule: path.resolve(rootDir, 'schedule.html'),
         popup: path.resolve(rootDir, 'popup.html'),
         toppings: path.resolve(rootDir, 'toppings.html'),
         sourceCode: path.resolve(rootDir, 'source-code.html'),

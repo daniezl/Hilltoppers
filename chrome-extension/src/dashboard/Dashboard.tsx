@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { GithubLogo, DeviceMobile } from '@phosphor-icons/react';
+import ScheduleCalendar from '../schedule/ScheduleCalendar';
 import ToppingBar from '../toppings/ToppingBar';
 import ClassSettings from '../classSettings/ClassSettings';
 import Login from '../login/Login';
@@ -9,8 +10,9 @@ import '../classSettings/classSettings.css';
 import '../feedback/feedback.css';
 import './dashboard.css';
 
-type Page = 'toppings.html' | 'class-settings.html' | 'feedback.html' | 'login.html' | 'source-code.html' | 'ios-app.html';
+type Page = 'schedule.html' | 'toppings.html' | 'class-settings.html' | 'feedback.html' | 'login.html' | 'source-code.html' | 'ios-app.html';
 const titles: Record<Page, string> = {
+  'schedule.html': 'Schedule',
   'toppings.html': 'Topping Bar', 'class-settings.html': 'Settings',
   'feedback.html': 'Suggestions', 'login.html': 'Account', 'source-code.html': 'Source code', 'ios-app.html': 'iOS App'
 };
@@ -118,6 +120,7 @@ export default function Dashboard() {
         <a href="toppings.html" onClick={follow('toppings.html')} aria-current={page === 'toppings.html' ? 'page' : undefined}><svg className="dashboard-topping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4.5"/><path d="M12 6.75v10.5M6.75 12h10.5"/></svg>Topping Bar</a>
         <a href="class-settings.html" onClick={follow('class-settings.html')} aria-current={page === 'class-settings.html' ? 'page' : undefined}><SettingsIcon/>Settings</a>
         <a href="feedback.html" onClick={follow('feedback.html')} aria-current={page === 'feedback.html' ? 'page' : undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H3V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5"/></svg>Suggestions</a>
+        <a href="schedule.html" onClick={follow('schedule.html')} aria-current={page === 'schedule.html' ? 'page' : undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>Schedule</a>
         <hr className="dashboard-nav-divider"/>
         <a href="ios-app.html" onClick={follow('ios-app.html')} aria-current={page === 'ios-app.html' ? 'page' : undefined}><DeviceMobile weight="regular" aria-hidden="true"/>iOS App</a>
         <a href="source-code.html" onClick={follow('source-code.html')} aria-current={page === 'source-code.html' ? 'page' : undefined}><GithubLogo weight="regular" aria-hidden="true"/>Source code</a>
@@ -132,6 +135,7 @@ export default function Dashboard() {
     <div className="dashboard-content" ref={heading} tabIndex={-1}>
       {visited.includes('ios-app.html') && <div hidden={page !== 'ios-app.html'}><section className="source-code-page ios-app-page"><header><h1>iOS App</h1></header><div className="ios-app-card"><div className="ios-app-copy"><h2>Hilltoppers for iPhone</h2><p>Search for <strong>Hilltoppers</strong> in the App Store, or scan the QR code.</p><a className="ios-app-download" href="https://apps.apple.com/us/app/hilltoppers/id6749836752" target="_blank" rel="noopener noreferrer"><span className="ios-app-download-label">View on the App Store</span><span aria-hidden="true">↗</span></a></div><picture className="ios-app-qr"><source srcSet="images/ios-app-qr-dark.svg" media="(prefers-color-scheme: dark)"/><img src="images/ios-app-qr.svg" alt="QR code for Hilltoppers on the App Store" width="196" height="196"/></picture></div><p className="source-code-intro">Please don’t use your phone during the school day.</p></section></div>}
       {visited.includes('source-code.html') && <div hidden={page !== 'source-code.html'}><section className="source-code-page"><header><h1>Source code</h1></header><h2 className="source-code-label">GitHub:</h2><a className="source-code-link" href="https://github.com/daniezl/Hilltoppers" target="_blank" rel="noopener noreferrer"><GithubLogo weight="regular" aria-hidden="true"/><span className="source-code-link-text"><span>daniezl / Hilltoppers</span><span className="source-code-url">https://github.com/daniezl/Hilltoppers</span></span><span className="source-code-arrow" aria-hidden="true">↗</span></a><p className="source-code-intro">Hilltoppers is open source. Everyone can contribute.</p></section></div>}
+      {visited.includes('schedule.html') && <div hidden={page !== 'schedule.html'}><ScheduleCalendar /></div>}
       {/* Keep visited pages mounted so navigation preserves forms and pending saves. */}
       {visited.includes('toppings.html') && <div hidden={page !== 'toppings.html'}><ToppingBar active={page === 'toppings.html'} onAccount={() => navigate('login.html')}/></div>}
       {visited.includes('class-settings.html') && <div hidden={page !== 'class-settings.html'}><ClassSettings onAccount={() => navigate('login.html')}/></div>}

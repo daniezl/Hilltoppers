@@ -73,7 +73,9 @@ body { background: var(--bg); }
 @media (max-width: 650px) {
   .dashboard-sidebar { position: static; width: 100%; padding: 16px; border-right: 0; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; gap: 10px; }
   .dashboard-brand { width: 100%; padding: 0 6px 8px; }
-  .dashboard-sidebar .dashboard-primary { display: flex; }
+  .dashboard-sidebar .dashboard-primary { display: flex; flex-wrap: wrap; width: 100%; }
+  .dashboard-sidebar .dashboard-nav-divider { display: none; }
+  .dashboard-sidebar .dashboard-primary a { white-space: nowrap; }
   .dashboard-sidebar .dashboard-bottom { display: flex; margin: 0; padding: 0; flex: 1; }
   .dashboard-sidebar nav .dashboard-account { border: 0; border-radius: 8px; padding: 8px; margin: 0 0 0 auto; }
   .dashboard-sidebar nav a { padding: 10px 8px; font-size: 12px; gap: 6px; }
