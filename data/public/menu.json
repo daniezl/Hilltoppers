@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-07T05:26:30.066Z",
+  "updatedAt": "2026-10-07T11:58:27.231Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-07",
   "menus": {
@@ -51,7 +51,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-06T19:46:11.679Z",
+  "daysUpdatedAt": "2026-10-07T11:58:27.231Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -475,7 +475,6 @@
         ],
         "globalFare": [
           "Fried Chicken Tenders",
-          "Teriyaki Chicken Nuggets",
           "Plant-Based Chik'n Tenders",
           "Seasoned White Rice",
           "Stir Fry Vegetables"
@@ -582,11 +581,9 @@
           "Brunch Burger"
         ],
         "globalFare": [
-          "Greek Style Chicken Thighs",
-          "Chips Pita Baked",
-          "Brown Rice",
-          "Broccoli and Cauliflower",
-          "Roasted Chickpeas"
+          "Vegetable Potsticker",
+          "Fried Chicken Potsticker",
+          "Brown Rice"
         ]
       },
       "dinner": {
@@ -600,6 +597,51 @@
           "Chicken Cacciatore",
           "Jasmine Rice",
           "Fresh Roasted Broccoli"
+        ]
+      }
+    },
+    "2026-10-14": {
+      "breakfast": {
+        "classicKitchen": [
+          "Sausage & Cheese Croissant",
+          "Egg and Cheese Croissant",
+          "Egg Bacon and Cheese Croissant",
+          "Sausage, Egg & Cheese Croissant"
+        ],
+        "globalFare": [
+          "Halal Chicken Sausage",
+          "Potato Hashbrown Patty",
+          "Waffles Belgian",
+          "Scrambled Eggs"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Vegan Chorizo",
+          "Kansas City BBQ Pulled Pork",
+          "Baked Beans",
+          "Sweet Potato Fries"
+        ],
+        "globalFare": [
+          "Greek Style Chicken Thighs",
+          "Pita Bread",
+          "Brown Rice",
+          "Broccoli and Cauliflower",
+          "Roasted Chickpeas"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Chicken Brazilian Stroganoff",
+          "Mushroom Stroganoff",
+          "Seasoned White Rice"
+        ],
+        "globalFare": [
+          "Baked Fish",
+          "Capellini",
+          "Fresh Roasted Green Beans",
+          "Roasted Cauliflower",
+          "Sauce Garlic Parmesan"
         ]
       }
     }
