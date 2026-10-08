@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-08T13:11:16.699Z",
+  "updatedAt": "2026-10-08T19:24:31.313Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-08",
   "menus": {
@@ -27,12 +27,11 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Meatball",
         "Baked Spaghetti Casserole",
+        "Meat Sauce",
+        "Garlic Knots",
         "Garlic Breadstick",
-        "Spaghetti Noodles",
-        "Steamed Broccoli",
-        "Parmesan Broiled Tomato"
+        "Steamed Broccoli"
       ],
       "globalFare": [
         "Buffalo Cauliflower Bites",
@@ -57,7 +56,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-08T05:35:54.180Z",
+  "daysUpdatedAt": "2026-10-08T19:24:31.313Z",
   "days": {
     "2026-10-01": {
       "breakfast": {
@@ -372,12 +371,11 @@
       },
       "lunch": {
         "classicKitchen": [
-          "Meatball",
           "Baked Spaghetti Casserole",
+          "Meat Sauce",
+          "Garlic Knots",
           "Garlic Breadstick",
-          "Spaghetti Noodles",
-          "Steamed Broccoli",
-          "Parmesan Broiled Tomato"
+          "Steamed Broccoli"
         ],
         "globalFare": [
           "Buffalo Cauliflower Bites",
