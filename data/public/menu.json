@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-09T05:39:10.566Z",
+  "updatedAt": "2026-10-09T12:58:46.486Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-09",
   "menus": {
@@ -54,7 +54,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-08T19:24:31.313Z",
+  "daysUpdatedAt": "2026-10-09T12:58:46.486Z",
   "days": {
     "2026-10-02": {
       "breakfast": {
@@ -654,6 +654,48 @@
           "Edamame Steamed",
           "Waffle Fries",
           "Gochujang Sauce"
+        ]
+      }
+    },
+    "2026-10-16": {
+      "breakfast": {
+        "classicKitchen": [
+          "Egg and Cheese Bagel",
+          "Sandwich Bagel Egg Cheese & Sausage",
+          "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
+        ],
+        "globalFare": [
+          "Potato Hashbrown Patty",
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Mild Pork Sausage Link"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Meatballs",
+          "Cheese Ravioli",
+          "Steamed Broccoli & Carrots",
+          "Pesto Cream Sauce",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Turkey Day Panini",
+          "Grilled Vegetable Panini"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Meatless Stuffed Bell Peppers",
+          "Honey Mustard Pork Chop",
+          "Scalloped Potatoes",
+          "Cauliflower with Peas and Carrots"
+        ],
+        "globalFare": [
+          "Paprika Chicken",
+          "Rice Pilaf Chicken with Orzo from Mix",
+          "Seasoned White Rice",
+          "Roasted Root Vegetable Medley"
         ]
       }
     }
