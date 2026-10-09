@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-08T23:52:46.965Z",
+  "updatedAt": "2026-10-09T05:39:10.566Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-08",
+  "menuDate": "2026-10-09",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -17,86 +17,45 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Pork Bacon",
         "Scrambled Eggs",
-        "Black Forest Ham",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes",
-        "Bacon Bits"
+        "Mild Pork Sausage Link",
+        "Chocolate Chip Pancakes",
+        "Hashbrown Patty"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Baked Spaghetti Casserole",
-        "Meat Sauce",
-        "Garlic Knots",
-        "Garlic Breadstick",
-        "Steamed Broccoli"
+        "Breaded Fish Sandwich",
+        "Baked Beans",
+        "French Fries",
+        "Coleslaw",
+        "Oven Roasted Succotash"
       ],
       "globalFare": [
-        "Buffalo Cauliflower Bites",
-        "Boneless Breaded Chicken Wings",
-        "Seasoned White Rice",
-        "Cranberry Broccoli Salad"
+        "Sweet & Sour Chicken",
+        "Vegetable Egg Roll",
+        "Fried Brown Rice",
+        "Sweet-n- Sour Tofu & Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Cheese Lasagna Casserole",
-        "Garlic Breadstick",
-        "Italian Vegetables",
-        "Marinara Sauce"
+        "Pork Ribs Baby Back BBQ",
+        "Baked Beans",
+        "Beer Battered French Fries"
       ],
       "globalFare": [
-        "Plant-Based Chik'n Tenders",
-        "BLT Crispy Chicken Sandwich",
-        "Curly Fries",
-        "Buttered Corn"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Tortilla",
+        "Spicy Refried Beans",
+        "Mexican Street Corn Salad",
+        "Jasmine Rice"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-08T19:24:31.313Z",
   "days": {
-    "2026-10-01": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Grilled Ham",
-          "French Toast",
-          "Hashbrown"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Chicken Fajita Meat",
-          "Seasoned Black Beans",
-          "Brown Rice",
-          "Sauteed Peppers & Onions"
-        ],
-        "globalFare": [
-          "Diced Ham",
-          "Roasted Carrots",
-          "Bacon Bits",
-          "Fire Roasted Corn Chowder"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Gnocchi with Roasted Cauliflower",
-          "Honey Glazed Pork Loin",
-          "Fresh Roasted Broccoli",
-          "White Cheese Sauce"
-        ],
-        "globalFare": [
-          "Teriyaki Glazed Chicken Breast",
-          "Adobo Marinated Egg",
-          "Asian Fried Rice",
-          "Seasoned Asian Vegetables"
-        ]
-      }
-    },
     "2026-10-02": {
       "breakfast": {
         "classicKitchen": [],
