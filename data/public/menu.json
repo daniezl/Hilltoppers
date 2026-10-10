@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-10T09:38:43.735Z",
+  "updatedAt": "2026-10-10T15:49:28.981Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-10",
   "menus": {
@@ -37,7 +37,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-10T02:38:19.197Z",
+  "daysUpdatedAt": "2026-10-10T15:49:28.981Z",
   "days": {
     "2026-10-03": {
       "breakfast": {
@@ -638,6 +638,35 @@
           "Rice Pilaf Chicken with Orzo from Mix",
           "Seasoned White Rice",
           "Roasted Root Vegetable Medley"
+        ]
+      }
+    },
+    "2026-10-17": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Plant-Based Chik'n Tenders",
+          "Nashville Hot Chicken Sandwich",
+          "Southern Style Biscuit",
+          "French Fry Seasoning"
+        ],
+        "globalFare": []
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Smoked Gouda Cheese Sauce",
+          "Balsamic Glazed Chicken",
+          "Macaroni & Cheese",
+          "Brussel Sprouts"
+        ],
+        "globalFare": [
+          "Bacon Jam Burger",
+          "Vegan Veggie Patty",
+          "Seasoned Fries",
+          "Corn On The Cob"
         ]
       }
     }
