@@ -1,102 +1,44 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-10T02:38:19.197Z",
+  "updatedAt": "2026-10-10T09:38:43.735Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-09",
+  "menuDate": "2026-10-10",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
-      ],
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Breaded Fish Sandwich",
-        "Baked Beans",
-        "French Fries",
-        "Coleslaw",
-        "Oven Roasted Succotash"
+        "Classic Reuben",
+        "Mixed Vegetables",
+        "Seasoned French Fries",
+        "French Fry Seasoning"
       ],
       "globalFare": [
-        "Sweet & Sour Chicken",
-        "Vegetable Egg Roll",
-        "Fried Brown Rice",
-        "Sweet-n- Sour Tofu & Vegetables"
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty 2 Oz",
+        "Hashbrown Patty"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Pork Ribs Baby Back BBQ",
+        "Fried Pork Chop",
         "Baked Beans",
-        "Beer Battered French Fries"
+        "Red Skin Mashed Garlic Potatoes",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Tortilla",
-        "Spicy Refried Beans",
-        "Mexican Street Corn Salad",
-        "Jasmine Rice"
+        "Fried Chicken Tenders",
+        "Plant-Based Chik'n Tenders",
+        "Seasoned White Rice",
+        "Stir Fry Vegetables"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-10T02:38:19.197Z",
   "days": {
-    "2026-10-02": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": [
-          "Pork Bacon",
-          "Biscuit with Sausage Gravy",
-          "Scrambled Eggs",
-          "French Waffles",
-          "Hashbrowns"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "TVP Vegan Meatballs",
-          "Spaghetti & Meatballs",
-          "Roasted Broccoli",
-          "Grilled Balsamic Yellow Squash",
-          "Marinara Sauce"
-        ],
-        "globalFare": [
-          "Whole Grain Corn Dog",
-          "Waffle Fries",
-          "Peas & Carrots"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Western Turkey Burger",
-          "Vegan Veggie Patty",
-          "Potato Cheddar Bites",
-          "Roasted Green Beans"
-        ],
-        "globalFare": [
-          "Seasoned Ground Beef",
-          "Baked Ziti",
-          "Italian Sausage",
-          "Italian Vegetables",
-          "Marinara Sauce"
-        ]
-      }
-    },
     "2026-10-03": {
       "breakfast": {
         "classicKitchen": [],
