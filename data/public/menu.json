@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-11T02:05:48.249Z",
+  "updatedAt": "2026-10-11T09:14:12.298Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-10",
+  "menuDate": "2026-10-11",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -10,69 +10,34 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Classic Reuben",
-        "Mixed Vegetables",
-        "Seasoned French Fries",
-        "French Fry Seasoning"
+        "Meatballs TVP Vegan GF",
+        "All-Beef Meatball Sub",
+        "Garlic Breadstick"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty 2 Oz",
-        "Hashbrown Patty"
+        "Home Fried Potatoes",
+        "Bacon"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Fried Pork Chop",
-        "Baked Beans",
-        "Red Skin Mashed Garlic Potatoes",
-        "Brussel Sprouts"
+        "Pasta with Chicken & Wild Mushroom Sauce",
+        "Turkey Tetrazzini",
+        "Spaghetti Noodles",
+        "Peas & Mushrooms"
       ],
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Plant-Based Chik'n Tenders",
-        "Seasoned White Rice",
-        "Stir Fry Vegetables"
+        "Classic Swiss Steak",
+        "Stewed Chickpea",
+        "Red Skin Mashed Garlic Potatoes",
+        "Sautéed Garden Fresh Green Beans"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-10T15:49:28.981Z",
+  "daysUpdatedAt": "2026-10-11T09:14:12.298Z",
   "days": {
-    "2026-10-03": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Plant-Based Chik'n Tenders",
-          "Vegan Chorizo",
-          "BBQ Chicken Sandwich",
-          "Low Sodium Seasoned Beans Black",
-          "Seasoned White Rice",
-          "Corn with Peppers and Onions",
-          "Seasoned Tater Tots",
-          "Zucchini & Tomatoes"
-        ],
-        "globalFare": []
-      },
-      "dinner": {
-        "classicKitchen": [
-          "London Broil",
-          "Risotto Stuffed Portobello",
-          "Baked Sweet Potatoes & Apples",
-          "Brussel Sprouts"
-        ],
-        "globalFare": [
-          "Oriental Chicken",
-          "Asian Marinated Tofu",
-          "Vegetable Rice",
-          "Sauteed Mushrooms",
-          "Sauteed Peppers & Onions"
-        ]
-      }
-    },
     "2026-10-04": {
       "breakfast": {
         "classicKitchen": [],
@@ -667,6 +632,30 @@
           "Vegan Veggie Patty",
           "Seasoned Fries",
           "Corn On The Cob"
+        ]
+      }
+    },
+    "2026-10-18": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Smoked Baja Turkey Melt",
+          "Tomato & Garden Vegetable Soup"
+        ],
+        "globalFare": []
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Apricot & Ginger Glazed Salmon",
+          "Tofu BBQ with Rice",
+          "Fresh Roasted Broccoli",
+          "Maple Orange Sweet Potatoes"
+        ],
+        "globalFare": [
+          "Beef Bourguignon w/Fettuccine"
         ]
       }
     }
