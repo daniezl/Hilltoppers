@@ -1,72 +1,54 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-11T23:53:51.647Z",
+  "updatedAt": "2026-10-12T05:28:12.686Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-11",
+  "menuDate": "2026-10-12",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Bacon Egg Cheese Biscuit Sandwich",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ],
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Meatballs TVP Vegan GF",
-        "All-Beef Meatball Sub",
-        "Garlic Breadstick"
+        "Crispy Chicken Bowl WG",
+        "Popcorn Chicken",
+        "Plant-Based Chik'n Tenders",
+        "Country Gravy",
+        "Mashed Potatoes",
+        "Buttered Corn"
       ],
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Scrambled Eggs",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Chicago Dog",
+        "Four Cheese Macaroni & Cheese",
+        "Coleslaw"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Pasta with Chicken & Wild Mushroom Sauce",
-        "Turkey Tetrazzini",
-        "Spaghetti Noodles",
-        "Peas & Mushrooms"
+        "BBQ Chicken Thigh",
+        "Baked Beans",
+        "Roasted Potato Wedges",
+        "Roasted Baby Carrots with Dill"
       ],
       "globalFare": [
-        "Classic Swiss Steak",
-        "Stewed Chickpea",
-        "Red Skin Mashed Garlic Potatoes",
-        "Sautéed Garden Fresh Green Beans"
+        "Asian Garlic Beef Strips",
+        "Jasmine Rice",
+        "Asian Style Snap Peas",
+        "Cambodian Style Tofu Salad"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-11T23:53:51.647Z",
   "days": {
-    "2026-10-04": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Plant-Based Chik'n Tenders",
-          "Chicken Parmesan Sandwich",
-          "Italian Vegetables",
-          "Vegetable Tortellini Soup"
-        ],
-        "globalFare": []
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Confetti Lentils",
-          "Roasted Garlic Chicken",
-          "Fresh Roasted Broccoli",
-          "Garlic & Herb Tofu Spread"
-        ],
-        "globalFare": [
-          "Dhaba Chicken Curry",
-          "Vegetable Lo Mein",
-          "Steamed Green Beans and Carrots",
-          "Roasted Curried Cauliflower"
-        ]
-      }
-    },
     "2026-10-05": {
       "breakfast": {
         "classicKitchen": [
