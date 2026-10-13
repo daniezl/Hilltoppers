@@ -742,5 +742,63 @@
       }
     ],
     "fetchedAt": "2026-10-08T16:41:05.748Z"
+  },
+  "2026-10-13": {
+    "heading": "Daily Bulletin | Tuesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "White Day"
+      },
+      {
+        "kind": "para",
+        "text": "Today is the flu clinic. If you were signed up to receive a flu vaccine, you will be given a green pass today. It’s very important for you to report to Fuller Basement at your scheduled time. Faculty- if you have already signed up, please stop by Fuller Basement anytime between 9am-12pm."
+      },
+      {
+        "kind": "para",
+        "text": "Juniors and Seniors testing tomorrow, you will receive an email by the end of the day with information about the location and test time."
+      },
+      {
+        "kind": "para",
+        "text": "If you are planning to attend the Homecoming dance this Saturday, and plan on bringing a guest who is not an SJA student, you must register them in the Student Life office by the end of the day today."
+      },
+      {
+        "kind": "para",
+        "text": "Juniors and Seniors, Johnson & Wales University, College of the Holy Cross, Western New England University, Ithaca College, and Syracuse University are on campus today for a visit. Please see Naviance or Mrs. LaBounty for details and to register. Be sure to check in with your teacher before attending."
+      },
+      {
+        "kind": "para",
+        "text": "Our friends from Spain have been working hard to prepare a special cultural exhibit for the SJA community, and they are excited to share it with us! The exhibit will take place today in the Mayo Library starting during C Block and will showcase different aspects of Spain, its traditions, and its rich culture. If you are able, please stop by and explore what they have created. This is a wonderful opportunity to learn directly from our Spanish visitors, ask questions, exchange ideas, and discover new perspectives."
+      },
+      {
+        "kind": "para",
+        "text": "Calling all “mystical, magical” concertgoers!! You need to submit your signed permission slip plus $15 cash to Mr. Mackenzie in the Learning Center by Friday, October 16. Otherwise, you will not be able to go on this fabulous phantasmagorical musical trip! You can also return paperwork and money to Mrs. Mackenzie in Ranger 110, Mr. Larsen in Student Life, and Ms. Hsieh in the library."
+      },
+      {
+        "kind": "para",
+        "text": "The JV field hockey team won their game against North Country, 1-0, with Mayla Middleton scoring the team’s only goal!"
+      },
+      {
+        "kind": "para",
+        "text": "JV Boys Soccer lost to CVU, 2-0."
+      },
+      {
+        "kind": "para",
+        "text": "For Girls Cross Country, Willa Mantius set the tone for St. Johnsbury, crossing the line 5 to earn 29th place in the scoring order. Stella van der Linde followed as the Academy’s second runner to claim 71st overall. In the JV race, Wenonah Brewer-Nyborg spearheaded the Hilltoppers’ effort, finishing 89th overall in a field of 209 runners, and Lyda Bentley followed just seconds later, securing 94th overall."
+      },
+      {
+        "kind": "para",
+        "text": "Owen Tucker placed 9th in a field of 35 Division 1 golfers in the State Tournament at Ralph Myhre Golf Course on Thursday to cap off a great season."
+      },
+      {
+        "kind": "para",
+        "text": "VARSITY/JV FIELD HOCKEY – HOME vs. NORTH COUNTRY 4:00/5:15"
+      },
+      {
+        "kind": "para",
+        "text": "JV/VARSITY BOYS SOCCER – HOME vs. SOUTH BURLINGTON 4:00"
+      }
+    ],
+    "fetchedAt": "2026-10-13T17:52:06.155Z"
   }
 }
