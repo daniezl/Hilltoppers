@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-13T10:24:49.303Z",
+  "updatedAt": "2026-10-13T17:46:40.618Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-13",
   "menus": {
@@ -45,7 +45,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-13T02:57:31.508Z",
+  "daysUpdatedAt": "2026-10-13T17:46:40.618Z",
   "days": {
     "2026-10-06": {
       "breakfast": {
@@ -638,6 +638,60 @@
           "Mac N Cheese Pork Belly Slider",
           "Seasoned White Rice",
           "Asian Style Snap Peas"
+        ]
+      }
+    },
+    "2026-10-20": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Oven Roasted Red Bliss Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Ramen Noodles Spicy Veg",
+          "Beef Meatball Teriyaki",
+          "Teriyaki Tofu",
+          "Sesame Snap Peas"
+        ],
+        "globalFare": [
+          "Buffalo Chicken Bites",
+          "Buffalo Chicken",
+          "Brown Rice",
+          "Fresh Steamed Baby Carrots",
+          "Roasted Buffalo Cauliflower"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Crabcakes with Lemon Cream Sauce",
+          "Sundried Tomato Fettuccine",
+          "Garlic Shrimp",
+          "Fresh Roasted Broccoli & Cauliflower",
+          "Caesar Salad"
+        ],
+        "globalFare": [
+          "Vegetarian Chili",
+          "Nacho Bar",
+          "Refried Beans",
+          "Tortilla Chips",
+          "Seasoned White Rice",
+          "Corn with Peppers and Onions",
+          "Nacho Cheese Sauce"
         ]
       }
     }
