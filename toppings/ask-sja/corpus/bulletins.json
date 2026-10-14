@@ -800,5 +800,55 @@
       }
     ],
     "fetchedAt": "2026-10-13T17:52:06.155Z"
+  },
+  "2026-10-14": {
+    "heading": "Daily Bulletin | Wednesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "Green Day"
+      },
+      {
+        "kind": "para",
+        "text": "Tomorrow, the Vermont Supreme Court will be in the South Church hearing oral arguments on three cases as part of their “On the Road” program. Students, faculty, and staff are welcome to sit in at any point from 9:30am – 11:30am, but please be aware that you will need to enter through the court security’s metal detectors, so please do not bring your backpacks or any personal items with you. For more information, see Mrs. Legendre in the Headmaster’s Office."
+      },
+      {
+        "kind": "para",
+        "text": "Attention Student Drivers, please be advised that General Parking spaces 52–61, located behind the Fieldhouse, will be blocked off and unavailable for use tomorrow, Thursday, October 15. These spaces will be reserved for individuals who are normally assigned to South Church parking for the day. Please plan accordingly and make alternate parking arrangements. We appreciate your understanding and cooperation."
+      },
+      {
+        "kind": "para",
+        "text": "Attention International Students — Any student wanting to take the November 14th TOEFL must register by 3pm this Friday, October 16. See Mrs. McCaffrey in Colby 106 to register. Space is limited. Priority will be given to seniors."
+      },
+      {
+        "kind": "para",
+        "text": "Can you serve a volleyball? Would you be up for a challenge? Put it to the test during the serving challenge in between the JV and Varsity Volleyball Pink Out Game today around 5:30pm. The cost is $1 per serve. All money collected will go towards the NVRH Breast Cancer Education Fund."
+      },
+      {
+        "kind": "para",
+        "text": "Have you ever experienced cute aggression? It’s when you see something small and/or cute and you feel the urge to squish it. Like, perhaps, a tiny artwork in a tiny frame behind a tiny rope? This is all to say: Tiny Art Gallery’s submission box is live and ready in Student Life for your tiny artworks. Submissions for the spooky theme are due Monday, October 19. You may also submit any questions to Tiny Art Gallery’s anonymous directors via the drop-box. Please don’t squish the art."
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday today to Damian Alford Page and Liam Foster!"
+      },
+      {
+        "kind": "para",
+        "text": "JV/VARSITY BOYS SOCCER – HOME vs. SOUTH BURLINGTON 4:00"
+      },
+      {
+        "kind": "para",
+        "text": "JV/VARSITY VOLLEYBALL – HOME vs. SOUTH BURLINGTON 4:30/6:00"
+      },
+      {
+        "kind": "para",
+        "text": "BOYS & GIRLS CROSS COUNTRY NVAC CHAMPIONSHIPS 4:45; please dismiss the teams at 1:15"
+      },
+      {
+        "kind": "para",
+        "text": "MOUNTAIN BIKING @ WOODSTOCK 3:00; please dismiss the team at 10:45"
+      }
+    ],
+    "fetchedAt": "2026-10-14T12:11:47.796Z"
   }
 }
