@@ -1,103 +1,59 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-15T00:22:51.328Z",
+  "updatedAt": "2026-10-15T05:02:54.252Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-14",
+  "menuDate": "2026-10-15",
   "menus": {
     "breakfast": {
       "classicKitchen": [
-        "Sausage & Cheese Croissant",
-        "Egg and Cheese Croissant",
-        "Egg Bacon and Cheese Croissant",
-        "Sausage, Egg & Cheese Croissant"
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
-        "Halal Chicken Sausage",
-        "Potato Hashbrown Patty",
-        "Waffles Belgian",
-        "Scrambled Eggs"
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
+        "Scrambled Eggs",
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Vegan Chorizo",
-        "Kansas City BBQ Pulled Pork",
-        "Baked Beans",
-        "Sweet Potato Fries"
+        "Chicken Stew",
+        "Mediterranean Vegetable Stew",
+        "White Rice",
+        "Roasted Cauliflower",
+        "Grilled Zucchini"
       ],
       "globalFare": [
-        "Greek Style Chicken Thighs",
-        "Pita Bread",
-        "Brown Rice",
-        "Broccoli and Cauliflower",
-        "Roasted Chickpeas"
+        "Beef Tex Mex Casserole",
+        "Vegetarian Picadillo",
+        "Black Beans & Rice",
+        "Corn with Peppers and Onions"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Chicken Brazilian Stroganoff",
-        "Mushroom Stroganoff",
-        "Seasoned White Rice"
+        "Beef and Mac Casserole",
+        "Garlic Breadstick",
+        "Sauce Tomato Cream"
       ],
       "globalFare": [
-        "Baked Fish",
-        "Capellini",
-        "Fresh Roasted Green Beans",
-        "Roasted Cauliflower",
-        "Sauce Garlic Parmesan"
+        "Beef Bulgogi",
+        "Vegan Chorizo",
+        "Korean Baked Cheese Corn",
+        "Edamame Steamed",
+        "Waffle Fries",
+        "Gochujang Sauce"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-14T21:54:44.944Z",
   "days": {
-    "2026-10-07": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Sliced Smoked Ham",
-          "Cheese Omelet",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Chicken Sausage Patty",
-          "Pancakes",
-          "Tater Tots",
-          "Banana",
-          "Toasted Pecans"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Grilled Cheese",
-          "Grilled Ham and Cheese",
-          "Peas & Carrots",
-          "Tomato Soup"
-        ],
-        "globalFare": [
-          "Taco Meat",
-          "Vegan Chorizo",
-          "Cumin Black Beans",
-          "Corn with Peppers and Onions",
-          "Nacho Cheese Sauce",
-          "Chips Doritos Cool Ranch RF WG 1 Oz",
-          "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [],
-        "globalFare": [
-          "Grilled Chipotle Chicken",
-          "Seasoned White Rice",
-          "Green Beans with Sauteed Mushrooms"
-        ]
-      }
-    },
     "2026-10-08": {
       "breakfast": {
         "classicKitchen": [
