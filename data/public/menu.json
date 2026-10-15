@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-15T05:02:54.252Z",
+  "updatedAt": "2026-10-15T10:15:19.652Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-15",
   "menus": {
@@ -52,7 +52,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-14T21:54:44.944Z",
+  "daysUpdatedAt": "2026-10-15T10:15:19.652Z",
   "days": {
     "2026-10-08": {
       "breakfast": {
@@ -457,15 +457,14 @@
           "Plant-Based Chik'n Tenders",
           "Nashville Hot Chicken Sandwich",
           "Southern Style Biscuit",
-          "French Fry Seasoning"
+          "Tater Tots"
         ],
         "globalFare": []
       },
       "dinner": {
         "classicKitchen": [
-          "Smoked Gouda Cheese Sauce",
           "Balsamic Glazed Chicken",
-          "Macaroni & Cheese",
+          "Cranberry Almond Rice Pilaf",
           "Brussel Sprouts"
         ],
         "globalFare": [
@@ -523,7 +522,6 @@
       },
       "lunch": {
         "classicKitchen": [
-          "Loaded Mac & Cheese Bowl",
           "Ham Diced",
           "Macaroni & Cheese",
           "Broccoli",
@@ -544,10 +542,12 @@
           "Carrot Baby Cut"
         ],
         "globalFare": [
-          "Vegan Chorizo",
-          "Mac N Cheese Pork Belly Slider",
+          "Pork Belly",
+          "Asian Marinated Tofu",
           "Seasoned White Rice",
-          "Asian Style Snap Peas"
+          "Steamed Broccoli",
+          "Shredded Carrots",
+          "Sauteed Mushrooms"
         ]
       }
     },
@@ -580,7 +580,6 @@
         ],
         "globalFare": [
           "Buffalo Chicken Bites",
-          "Buffalo Chicken",
           "Brown Rice",
           "Fresh Steamed Baby Carrots",
           "Roasted Buffalo Cauliflower"
@@ -591,8 +590,7 @@
           "Crabcakes with Lemon Cream Sauce",
           "Sundried Tomato Fettuccine",
           "Garlic Shrimp",
-          "Fresh Roasted Broccoli & Cauliflower",
-          "Caesar Salad"
+          "Fresh Roasted Broccoli & Cauliflower"
         ],
         "globalFare": [
           "Vegetarian Chili",
@@ -659,6 +657,59 @@
           "Tofu Vegetable Stir Fry",
           "Jasmine Rice",
           "Stir Fry Vegetables"
+        ]
+      }
+    },
+    "2026-10-22": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Pork Bacon",
+          "Scrambled Eggs",
+          "Black Forest Ham",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes",
+          "Bacon Bits"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "BBQ Chicken",
+          "Vegan Chorizo",
+          "Sautéed Garden Fresh Green Beans",
+          "Seasoned French Fries"
+        ],
+        "globalFare": [
+          "Halal Chicken Sausage",
+          "Scrambled Eggs with Cheese",
+          "Pancakes",
+          "Oven Roasted Red Potatoes"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Country Style Braised Beef Tips",
+          "BLT Chopped Salad",
+          "Vegetarian Hamburger Steak",
+          "Roasted Potato Wedges",
+          "Roasted Cauliflower",
+          "Carrot Charred"
+        ],
+        "globalFare": [
+          "Citrus Herb Salmon Filet BW",
+          "Lemon White Rice",
+          "Fresh Roasted Broccoli",
+          "Lemon Pepper Peas with Dill"
         ]
       }
     }
