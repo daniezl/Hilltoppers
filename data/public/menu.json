@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-16T06:15:07.741Z",
+  "updatedAt": "2026-10-16T11:49:34.516Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-16",
   "menus": {
@@ -45,7 +45,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-15T22:38:41.296Z",
+  "daysUpdatedAt": "2026-10-16T11:49:34.516Z",
   "days": {
     "2026-10-09": {
       "breakfast": {
@@ -650,6 +650,57 @@
           "Lemon White Rice",
           "Fresh Roasted Broccoli",
           "Lemon Pepper Peas with Dill"
+        ]
+      }
+    },
+    "2026-10-23": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Mild Pork Sausage Link",
+          "Chocolate Chip Pancakes",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Crispy Chicken Sandwich",
+          "Peas and Carrots"
+        ],
+        "globalFare": [
+          "Taco Meat",
+          "Soft Shell Beef Taco",
+          "Rice Brown Spanish",
+          "Black Refried Beans",
+          "Roasted Confetti Corn"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Buttered Pasta",
+          "Fresh Roasted Broccoli",
+          "Fresh Steamed Baby Carrots",
+          "Roasted Cauliflower",
+          "Sauteed Mushrooms",
+          "Sauteed Zucchini and Squash"
+        ],
+        "globalFare": [
+          "Saute Breaded Pork Chops",
+          "Crispy Roasted Tofu",
+          "Red Skin Mashed Potatoes",
+          "Sauteed Green Cabbage & Shallots"
         ]
       }
     }
