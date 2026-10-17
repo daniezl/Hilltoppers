@@ -1,103 +1,38 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-17T01:13:17.709Z",
+  "updatedAt": "2026-10-17T06:00:55.299Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-16",
+  "menuDate": "2026-10-17",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Egg and Cheese Bagel",
-        "Sandwich Bagel Egg Cheese & Sausage",
-        "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
-      ],
-      "globalFare": [
-        "Potato Hashbrown Patty",
-        "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Meatballs",
-        "Cheese Ravioli",
-        "Steamed Broccoli & Carrots",
-        "Pesto Cream Sauce",
-        "Marinara Sauce"
+        "Plant-Based Chik'n Tenders",
+        "Nashville Hot Chicken Sandwich",
+        "Southern Style Biscuit",
+        "Tater Tots"
       ],
-      "globalFare": [
-        "Turkey Day Panini",
-        "Grilled Vegetable Panini"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Meatless Stuffed Bell Peppers",
-        "Honey Mustard Pork Chop",
-        "Scalloped Potatoes",
-        "Cauliflower with Peas and Carrots"
+        "Balsamic Glazed Chicken",
+        "Cranberry Almond Rice Pilaf",
+        "Brussel Sprouts"
       ],
       "globalFare": [
-        "Paprika Chicken",
-        "Rice Pilaf Chicken with Orzo from Mix",
-        "Seasoned White Rice",
-        "Roasted Root Vegetable Medley"
+        "Bacon Jam Burger",
+        "Vegan Veggie Patty",
+        "Seasoned Fries",
+        "Corn On The Cob"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-17T01:13:17.709Z",
   "days": {
-    "2026-10-09": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Sliced Smoked Ham",
-          "Cheese Omelet",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Mild Pork Sausage Link",
-          "Chocolate Chip Pancakes",
-          "Hashbrown Patty"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Breaded Fish Sandwich",
-          "Baked Beans",
-          "French Fries",
-          "Coleslaw",
-          "Oven Roasted Succotash"
-        ],
-        "globalFare": [
-          "Sweet & Sour Chicken",
-          "Vegetable Egg Roll",
-          "Fried Brown Rice",
-          "Sweet-n- Sour Tofu & Vegetables"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Pork Ribs Baby Back BBQ",
-          "Baked Beans",
-          "Beer Battered French Fries"
-        ],
-        "globalFare": [
-          "Taco Meat",
-          "Vegan Chorizo",
-          "Tortilla",
-          "Spicy Refried Beans",
-          "Mexican Street Corn Salad",
-          "Jasmine Rice"
-        ]
-      }
-    },
     "2026-10-10": {
       "breakfast": {
         "classicKitchen": [],
