@@ -531,6 +531,10 @@
     "details": "No Classes",
     "source": "sja-calendar"
   },
+  "2026-11-11": {
+    "type": "late_start",
+    "details": "Late Start Schedule"
+  },
   "2027-01-18": {
     "type": "no_school",
     "details": "MLK Day – No Classes",
