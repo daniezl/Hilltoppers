@@ -395,6 +395,18 @@
     "details": "Faculty In-Service – No Classes",
     "source": "sja-calendar"
   },
+  "2026-10-19": {
+    "type": "schedule_mon_thu",
+    "details": "Spirit Week"
+  },
+  "2026-10-20": {
+    "type": "schedule_mon_thu",
+    "details": "Spirit Week"
+  },
+  "2026-10-21": {
+    "type": "schedule_wed",
+    "details": "Spirit Week"
+  },
   "2026-10-22": {
     "type": "custom",
     "details": "Spirit Week",
