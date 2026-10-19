@@ -1,67 +1,62 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-19T00:23:55.184Z",
+  "updatedAt": "2026-10-19T05:09:06.342Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-18",
+  "menuDate": "2026-10-19",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "classicKitchen": [
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
+      ],
+      "globalFare": [
+        "Fresh Blueberries",
+        "Potato Hashbrown Patty",
+        "Scrambled Eggs",
+        "Pork Sausage Patty",
+        "Blueberry Pancakes"
+      ]
     },
     "lunch": {
       "classicKitchen": [
-        "Smoked Baja Turkey Melt",
-        "Tomato & Garden Vegetable Soup"
+        "Ham Diced",
+        "Macaroni & Cheese",
+        "Broccoli",
+        "Bacon Bits",
+        "Cheese Sauce"
       ],
-      "globalFare": []
+      "globalFare": [
+        "Brown Rice Royale",
+        "Chicken & Broccoli Asian",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Asian Marinated Tofu"
+      ]
     },
     "dinner": {
       "classicKitchen": [
-        "Apricot & Ginger Glazed Salmon",
-        "Tofu BBQ with Rice",
-        "Fresh Roasted Broccoli",
-        "Maple Orange Sweet Potatoes"
+        "Chicken Parmesan",
+        "Capellini",
+        "Carrot Baby Cut"
       ],
       "globalFare": [
-        "Beef Bourguignon w/Fettuccine"
+        "Pork Belly",
+        "Asian Marinated Tofu",
+        "Seasoned White Rice",
+        "Steamed Broccoli",
+        "Shredded Carrots",
+        "Sauteed Mushrooms"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-18T17:12:42.464Z",
   "days": {
-    "2026-10-11": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Meatballs TVP Vegan GF",
-          "All-Beef Meatball Sub",
-          "Garlic Breadstick"
-        ],
-        "globalFare": [
-          "Cinnamon French Toast Homemade",
-          "Scrambled Eggs",
-          "Home Fried Potatoes",
-          "Bacon"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Pasta with Chicken & Wild Mushroom Sauce",
-          "Turkey Tetrazzini",
-          "Spaghetti Noodles",
-          "Peas & Mushrooms"
-        ],
-        "globalFare": [
-          "Classic Swiss Steak",
-          "Stewed Chickpea",
-          "Red Skin Mashed Garlic Potatoes",
-          "Sautéed Garden Fresh Green Beans"
-        ]
-      }
-    },
     "2026-10-12": {
       "breakfast": {
         "classicKitchen": [
