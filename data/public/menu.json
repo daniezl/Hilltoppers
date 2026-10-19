@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-19T05:09:06.342Z",
+  "updatedAt": "2026-10-19T11:08:54.796Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-19",
   "menus": {
@@ -55,7 +55,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-18T17:12:42.464Z",
+  "daysUpdatedAt": "2026-10-19T11:08:54.796Z",
   "days": {
     "2026-10-12": {
       "breakfast": {
@@ -665,6 +665,60 @@
         "globalFare": [
           "Fried Chicken Tenders",
           "Seasoned White Rice"
+        ]
+      }
+    },
+    "2026-10-26": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Sausage Patty",
+          "Blueberry Pancake",
+          "Hashbrown Patty"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Meatball",
+          "Meatballs TVP Vegan GF",
+          "Tricolor Cheese Tortellini",
+          "Broccoli & Carrots",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Chili Dog",
+          "Sauteed Peppers & Onions",
+          "Seasoned Tater Tots",
+          "Chili con Carne",
+          "Full O'Beans Chili"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Tradition Wht Brd Stuffing Mix",
+          "Herb Baked Chicken Breast",
+          "Mashed Potatoes",
+          "Seasoned Corn on the Cob",
+          "Broccoli Salad",
+          "Chicken Gravy"
+        ],
+        "globalFare": [
+          "Cajun Shrimp Etouffee",
+          "Parmesan Polenta",
+          "Pinto Beans w/Pizzazz",
+          "Peas and Carrots"
         ]
       }
     }
