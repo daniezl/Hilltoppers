@@ -395,6 +395,132 @@
     "details": "Faculty In-Service – No Classes",
     "source": "sja-calendar"
   },
+  "2026-10-22": {
+    "type": "custom",
+    "details": "Spirit Week",
+    "schedule": [
+      {
+        "name": "Chapel",
+        "start": "08:00",
+        "end": "08:15"
+      },
+      {
+        "name": "A Block",
+        "start": "08:25",
+        "end": "09:00"
+      },
+      {
+        "name": "B Block",
+        "start": "09:05",
+        "end": "09:40"
+      },
+      {
+        "name": "D Block",
+        "start": "09:45",
+        "end": "10:20"
+      },
+      {
+        "name": "E Block",
+        "start": "10:25",
+        "end": "11:00"
+      },
+      {
+        "name": "C Block",
+        "start": "11:05",
+        "end": "12:40",
+        "subBlocks": [
+          {
+            "name": "1st Lunch",
+            "start": "11:05",
+            "end": "11:25"
+          },
+          {
+            "name": "2nd Lunch",
+            "start": "11:25",
+            "end": "11:45"
+          },
+          {
+            "name": "3rd Lunch",
+            "start": "11:45",
+            "end": "12:05"
+          },
+          {
+            "name": "4th Lunch",
+            "start": "12:05",
+            "end": "12:25"
+          },
+          {
+            "name": "5th Lunch",
+            "start": "12:20",
+            "end": "12:40"
+          }
+        ]
+      },
+      {
+        "name": "Advisory",
+        "start": "12:45",
+        "end": "13:15"
+      }
+    ]
+  },
+  "2026-10-23": {
+    "type": "custom",
+    "details": "Spirit Week",
+    "schedule": [
+      {
+        "name": "A Block",
+        "start": "08:00",
+        "end": "08:40"
+      },
+      {
+        "name": "B Block",
+        "start": "08:45",
+        "end": "09:25"
+      },
+      {
+        "name": "D Block",
+        "start": "09:30",
+        "end": "10:10"
+      },
+      {
+        "name": "E Block",
+        "start": "10:15",
+        "end": "10:55"
+      },
+      {
+        "name": "C Block",
+        "start": "11:00",
+        "end": "12:35",
+        "subBlocks": [
+          {
+            "name": "1st Lunch",
+            "start": "11:00",
+            "end": "11:20"
+          },
+          {
+            "name": "2nd Lunch",
+            "start": "11:20",
+            "end": "11:40"
+          },
+          {
+            "name": "3rd Lunch",
+            "start": "11:40",
+            "end": "12:00"
+          },
+          {
+            "name": "4th Lunch",
+            "start": "12:00",
+            "end": "12:20"
+          },
+          {
+            "name": "5th Lunch",
+            "start": "12:15",
+            "end": "12:35"
+          }
+        ]
+      }
+    ]
+  },
   "2026-11-04": {
     "type": "late_start",
     "details": "Late Start Schedule",
@@ -404,6 +530,10 @@
     "type": "no_school",
     "details": "No Classes",
     "source": "sja-calendar"
+  },
+  "2026-11-11": {
+    "type": "late_start",
+    "details": "Late Start Schedule"
   },
   "2027-01-18": {
     "type": "no_school",

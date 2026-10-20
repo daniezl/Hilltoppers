@@ -68,6 +68,22 @@ On 4/16, grades 9–10 have Fashion Show first while grades 11–12 have Advisor
 - **Valid values:** `9`, `10`, `11`, `12`. You can use any combination (e.g. `[9]`, `[10, 11, 12]`, `[9, 10, 11, 12]`).
 - **Backward compatible.** Old app versions that don't understand `"grades"` will show all blocks (they just ignore the extra field).
 
+## Default lunch distribution for C Block
+
+When a special schedule's C Block has the same total duration as a normal
+day's C Block and the school has not provided different lunch times, use the
+normal day's lunch distribution by default. Preserve each lunch wave's start
+and end offsets relative to the start of C Block, including overlaps; shift
+the entire distribution to the special day's C Block start time.
+
+For the current 95-minute normal C Block, the five lunch waves have offsets
+of 0–20, 20–40, 40–60, 60–80, and 75–95 minutes.
+
+This is the maintainer's default rule (confirmed October 18, 2026), not
+independent school confirmation of lunch times. Explicit school-provided
+lunch times take precedence. If C Block has a different duration, do not
+apply or proportionally scale this default; confirm the lunch times instead.
+
 ## Naming Conventions
 
 `details` is the schedule's display title, not a description or notes field.
