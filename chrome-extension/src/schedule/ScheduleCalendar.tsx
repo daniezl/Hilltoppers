@@ -169,7 +169,6 @@ export default function ScheduleCalendar({ canEdit = false, saveSchedule }: Prop
     {selection && data && <SchedulePopover key={selection.day.toISODate()} date={selection.day} anchor={selection.anchor}
       status={dayColor(selection.day, data)} label={selectedAppearance!.label} family={selectedAppearance!.family}
       name={dayColor(selection.day, data) === 'off' ? noSchoolReason(selection.day, data) : dayColor(selection.day, data) !== 'normal' ? scheduleName(selection.day.toISODate()!, data) : ''}
-      events={data.events.filter(event => event.kind === 'event' && event.start <= selection.day.toISODate()! && selection.day.toISODate()! <= event.end)}
       record={data.days[selection.day.toISODate()!]} customValid={usableBlocks(data.days[selection.day.toISODate()!]?.schedule)}
       typeAvailable={data.availableTypes.has(data.days[selection.day.toISODate()!]?.type ?? '')} onClose={closePopover} onEdit={canEdit ? () => { setEditing(selection.day); setSelection(null); } : undefined} />}
   </section>;

@@ -138,8 +138,3 @@
 .admin-calendar-month-heading { min-width: 0; }
 @media (max-width: 650px) { .calendar-month-stack { margin-left: 12px; margin-right: 12px; } }
 @media (prefers-reduced-motion: reduce) { .calendar-month-layer { transition: none; } }
-
-.schedule-day-events { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; font-size: 13px; }
-.schedule-day-events li { display: grid; gap: 4px; }
-.schedule-day-events a { color: var(--text); text-underline-offset: 3px; }
-.schedule-day-events li > span { color: var(--muted); font-size: 12px; }
