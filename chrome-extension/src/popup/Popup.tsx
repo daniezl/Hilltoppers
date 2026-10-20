@@ -75,7 +75,6 @@ const DINING_PERIODS: Array<DiningMenuPayload['period']> = ['Breakfast', 'Lunch'
  * band. Chrome resolves `#:~:text=` against the loaded page, so this lands on
  * the calendar without the school having to give that section an anchor.
  */
-const SJA_CALENDAR_URL = `https://stjacademy.org/#:~:text=${encodeURIComponent('SJA Calendar')}`;
 const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
 const LUNCH_PROMPT_DISMISSED_KEY = 'lunchSetupPromptDismissed';
 
@@ -1186,7 +1185,6 @@ const Popup: React.FC = () => {
             blockPrefs={blockPrefs}
             viewingGrade={viewingGrade}
             today={{ dateKey: schedule.dateKey, blocks: schedule.blocks, dayType: schedule.dayType }}
-            calendarUrl={SJA_CALENDAR_URL}
           />
         </AnimatedCollapse>
       </section>

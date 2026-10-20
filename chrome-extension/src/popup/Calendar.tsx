@@ -58,7 +58,6 @@ interface CalendarProps {
   blockPrefs: BlockPreferenceRecord;
   viewingGrade: GradeLevel | null;
   today: TodaySchedule;
-  calendarUrl: string;
 }
 
 const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -150,7 +149,7 @@ function describeDay(
   };
 }
 
-const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewingGrade, today, calendarUrl }) => {
+const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewingGrade, today }) => {
   const todayKey = useMemo(() => toKey(DateTime.fromJSDate(now, { zone: EST_ZONE })), [now]);
 
   const [month, setMonth] = useState<DateTime>(() => fromKey(todayKey).startOf('month'));
@@ -371,8 +370,9 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
           {events === null ? (
             <p className="events-empty">Loading…</p>
           ) : selected.events.length === 0 ? (
-            <p className="events-empty">{eventsError ?? selected.note
-              ? <strong>{eventsError ?? selected.note}</strong>
+            <p className="events-empty">{eventsError
+              ? <strong>{eventsError}</strong>
+              : selected.note ? <span className="cal-event-title">{selected.note}</span>
               : 'Nothing on this day'}</p>
           ) : (
             <ul className="cal-events">
@@ -444,8 +444,8 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
         </div>
       ) : null}
 
-      <p className="events-meta calendar-view-links">
-        <a className="dining-link" href={calendarUrl} target="_blank" rel="noreferrer noopener">
+      <p className="events-meta">
+        <a className="dining-link" href={typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('schedule.html') : 'schedule.html'} target="_blank" rel="noreferrer noopener">
           <svg className="dining-link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3"
@@ -456,9 +456,8 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
               strokeLinejoin="round"
             />
           </svg>
-          <span>SJA Calendar</span>
+          <span>Full calendar</span>
         </a>
-        <a className="calendar-new-view" href={typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('schedule.html') : 'schedule.html'} target="_blank" rel="noreferrer noopener">New view</a>
       </p>
     </div>
   );
