@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-20T12:00:18.688Z",
+  "updatedAt": "2026-10-20T16:54:11.962Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-20",
   "menus": {
@@ -55,7 +55,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-20T01:11:45.969Z",
+  "daysUpdatedAt": "2026-10-20T16:54:11.962Z",
   "days": {
     "2026-10-13": {
       "breakfast": {
@@ -675,6 +675,63 @@
           "Parmesan Polenta",
           "Pinto Beans w/Pizzazz",
           "Peas and Carrots"
+        ]
+      }
+    },
+    "2026-10-27": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Asian Pork Noodle Bowl",
+          "Ramen Noodles",
+          "Green Beans",
+          "Broccoli",
+          "Shredded Carrots",
+          "Salad Mushroom Marinated"
+        ],
+        "globalFare": [
+          "Grilled Chicken with Pineapple Salsa",
+          "Brown Rice",
+          "Black Refried Beans",
+          "Corn with Peppers and Onions",
+          "Cheese Queso Hatch"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Meatball",
+          "Garden Primavera with Cheese",
+          "Caprese Salad",
+          "Fresh Roasted Broccoli & Cauliflower",
+          "Alfredo Sauce",
+          "Marinara Sauce"
+        ],
+        "globalFare": [
+          "Chicken Rice Bowl",
+          "Asian Marinated Tofu",
+          "Shredded Napa Cabbage",
+          "Shredded Carrots",
+          "Sliced Mushrooms",
+          "Fresh Sugar Snap Peas"
         ]
       }
     }
