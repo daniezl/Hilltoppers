@@ -6,6 +6,7 @@ import { fetchCalendarEvents, type CalendarEvent } from '../services/calendarSer
 import { EST_ZONE } from '../types/schedule';
 import './scheduleCalendar.css';
 import SchedulePopover from './SchedulePopover';
+import ScheduleEditor from './ScheduleEditor';
 import PresetSchedules from './PresetSchedules';
 import MonthStack from './MonthStack';
 import { classifyCustom, familyForType, familyLabels, presetTypes } from './scheduleFamily';
@@ -58,7 +59,7 @@ function dayAppearance(day: DateTime, data: CalendarData) {
   const record = data.days[day.toISODate()!];
   if (record?.type === 'custom' && usableBlocks(record.schedule)) {
     const match = classifyCustom(record.schedule!, data.templates);
-    return { family: match.family, label: `${match.modified ? 'Modified ' : ''}${familyLabels[match.family]}` };
+    return { family: match.family, label: match.modified ? 'ABDEC · adjusted times' : familyLabels[match.family] };
   }
   const type = record?.type && data.availableTypes.has(record.type) ? record.type : day.weekday === 3 ? 'schedule_wed' : day.weekday === 5 ? 'schedule_fri' : 'schedule_mon_thu';
   const family = familyForType(type);
@@ -75,7 +76,9 @@ function scheduleName(key: string, data: CalendarData): string {
   return types[special?.type ?? ''] ?? special?.type?.replace(/_/g, ' ') ?? 'Special schedule';
 }
 
-export default function ScheduleCalendar() {
+type Props = { canEdit?: boolean; saveSchedule?: (date: string, record: SpecialDayRecord) => Promise<void> };
+export default function ScheduleCalendar({ canEdit = false, saveSchedule }: Props = {}) {
+  const [editing, setEditing] = useState<DateTime | null>(null);
   const [showPresets, setShowPresets] = useState<HTMLButtonElement | null>(null);
   const today = DateTime.now().setZone(EST_ZONE);
   const [month, setMonth] = useState(() => today.startOf('month'));
@@ -111,6 +114,17 @@ export default function ScheduleCalendar() {
   const monthIndex = month.year * 12 + month.month;
   const monthDistance = monthIndex - (today.year * 12 + today.month);
   const selectedAppearance = selection && data ? dayAppearance(selection.day, data) : null;
+  if (editing && data && canEdit) {
+    const key = editing.toISODate()!;
+    const record = data.days[key];
+    const regular = editing.weekday === 3 ? 'schedule_wed' : editing.weekday === 5 ? 'schedule_fri' : 'schedule_mon_thu';
+    const initial = dayColor(editing, data) === 'off' ? [] : record?.type === 'custom' ? record.schedule ?? [] : data.templates[record?.type ?? regular] ?? data.templates[regular] ?? [];
+    return <ScheduleEditor date={editing} initial={initial} record={record} templates={data.templates} history={data.days}
+      onClose={() => setEditing(null)} onSave={saveSchedule ? async next => {
+        await saveSchedule(key, next);
+        setData(current => current ? { ...current, days: { ...current.days, [key]: next } } : current);
+      } : undefined} />;
+  }
   return <section className="admin-calendar" aria-labelledby="admin-schedule-title">
     <header className="admin-calendar-heading"><h1 id="admin-schedule-title">Calendar</h1><button type="button" onClick={event => { setSelection(null); setShowPresets(event.currentTarget); }}>View all schedules</button></header>
     <MonthStack monthIndex={monthIndex} distance={monthDistance}>
@@ -134,19 +148,20 @@ export default function ScheduleCalendar() {
               const color = dayColor(day, data);
               const appearance = dayAppearance(day, data);
               const isToday = day.hasSame(today, 'day');
+              const activities = data.events.filter(event => event.kind === 'event' && event.start <= day.toISODate()! && day.toISODate()! <= event.end);
               const name = color === 'off' ? noSchoolReason(day, data) : color !== 'normal' ? scheduleName(day.toISODate()!, data) : null;
               return <td key={day.toISODate()} className={outside ? 'admin-calendar-outside' : ''}>
                 {!outside && <button type="button" aria-haspopup="dialog" aria-expanded={selection?.day.hasSame(day, 'day') ?? false} aria-controls={selection?.day.hasSame(day, 'day') ? 'schedule-popover' : undefined} onClick={event => { const anchor = event.currentTarget; setSelection(current => current?.day.hasSame(day, 'day') ? null : { day, anchor }); }} className={`admin-calendar-date admin-calendar-${appearance.family}${isToday ? ' admin-calendar-today' : ''}`}
-                  aria-label={`${day.setLocale('en-US').toFormat('cccc, LLLL d, yyyy')}: ${appearance.label}${color === 'pending' ? ', potential schedule change' : ''}${name ? `, ${name}` : ''}${isToday ? ', today' : ''}`}
+                  aria-label={`${day.setLocale('en-US').toFormat('cccc, LLLL d, yyyy')}: ${appearance.label}${name ? `, ${name}` : ''}${activities.length ? `, ${activities.map(event => event.title).join(', ')}` : ''}${isToday ? ', today' : ''}`}
                   aria-current={isToday ? 'date' : undefined}>
-                  <span>{day.day}</span>{name && <span className="admin-calendar-event-name">{name}</span>}
+                  <span>{day.day}</span>{(name || activities.length > 0) && <span className="admin-calendar-event-name">{[name, ...activities.map(event => event.title)].filter(Boolean).join(' · ')}</span>}
                 </button>}
               </td>;
             })}
           </tr>)}</tbody>
         </table>}
       <div className="admin-calendar-legend" aria-label="Calendar colors">
-        {(['normal', 'friday', 'late', 'abdec', 'custom'] as const).map(color => <span key={color}><i className={`admin-calendar-swatch admin-calendar-${color}`} aria-hidden="true"/>{familyLabels[color]}</span>)}
+        {(['normal', 'friday', 'late', 'abdec', 'custom'] as const).map(color => <span key={color}><i className={`admin-calendar-swatch admin-calendar-${color}`} aria-hidden="true"/>{color === 'abdec' ? 'ABDEC order (times may vary)' : familyLabels[color]}</span>)}
       </div>
     </div>
     </MonthStack>
@@ -154,7 +169,8 @@ export default function ScheduleCalendar() {
     {selection && data && <SchedulePopover key={selection.day.toISODate()} date={selection.day} anchor={selection.anchor}
       status={dayColor(selection.day, data)} label={selectedAppearance!.label} family={selectedAppearance!.family}
       name={dayColor(selection.day, data) === 'off' ? noSchoolReason(selection.day, data) : dayColor(selection.day, data) !== 'normal' ? scheduleName(selection.day.toISODate()!, data) : ''}
+      events={data.events.filter(event => event.kind === 'event' && event.start <= selection.day.toISODate()! && selection.day.toISODate()! <= event.end)}
       record={data.days[selection.day.toISODate()!]} customValid={usableBlocks(data.days[selection.day.toISODate()!]?.schedule)}
-      typeAvailable={data.availableTypes.has(data.days[selection.day.toISODate()!]?.type ?? '')} onClose={closePopover} />}
+      typeAvailable={data.availableTypes.has(data.days[selection.day.toISODate()!]?.type ?? '')} onClose={closePopover} onEdit={canEdit ? () => { setEditing(selection.day); setSelection(null); } : undefined} />}
   </section>;
 }

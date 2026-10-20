@@ -1,9 +1,10 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
 import ScheduleTimeline from './ScheduleTimeline';
-import ScheduleNotice from './ScheduleNotice';
 import type { ScheduleFamily } from './scheduleFamily';
 import { loadScheduleByType, type SpecialDayRecord } from '../services/scheduleService';
+
+import type { CalendarEvent } from '../services/calendarService';
 
 type Blocks = NonNullable<SpecialDayRecord['schedule']>;
 type Props = {
@@ -13,12 +14,14 @@ type Props = {
   label: string;
   family: ScheduleFamily;
   name: string;
+  events?: CalendarEvent[];
   record?: SpecialDayRecord;
   customValid: boolean;
   typeAvailable: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 };
-export default function SchedulePopover({ date, anchor, status, label, family, name, record, customValid, typeAvailable, onClose }: Props) {
+export default function SchedulePopover({ date, anchor, status, label, family, name, events = [], record, customValid, typeAvailable, onClose, onEdit }: Props) {
   const shell = useRef<HTMLDialogElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const origin = useRef<HTMLDivElement>(null);
@@ -145,7 +148,7 @@ export default function SchedulePopover({ date, anchor, status, label, family, n
     return () => { cancelled = true; };
   }, [date, status, record, customValid, typeAvailable, attempt]);
 
-  return <dialog ref={shell} data-schedule-status={family} className={`schedule-popover-shell${status === 'off' ? ' is-no-school' : ''}`} aria-labelledby="schedule-popover-title" id="schedule-popover"
+  return <dialog ref={shell} data-schedule-status={family} className={`schedule-popover-shell${onEdit ? ' is-editable' : ''}${status === 'off' ? ' is-no-school' : ''}`} aria-labelledby="schedule-popover-title" id="schedule-popover"
     onCancel={event => { event.preventDefault(); dismiss(); }}
     onClick={event => { if (event.target === event.currentTarget) dismiss(); }}>
     <div ref={card} className="schedule-popover">
@@ -158,10 +161,15 @@ export default function SchedulePopover({ date, anchor, status, label, family, n
           <h2 id="schedule-popover-title">{date.setLocale('en-US').toFormat('MMMM d, yyyy')}</h2>
           <span className="schedule-popover-label-group">
           <span className={`schedule-popover-status admin-calendar-${family}`}>{status === 'off' ? name || (date.weekday > 5 ? 'Weekend' : label) : label}</span>
-          {status === 'pending' && <ScheduleNotice name={name} enabled={detailsEnabled} />}
           </span>
         </div>
       </header>
+      {events.length > 0 && <ul className="schedule-day-events" aria-label="Events">
+        {events.map(event => <li key={event.id}>
+          {event.url ? <a href={event.url} target="_blank" rel="noopener noreferrer">{event.title}</a> : <strong>{event.title}</strong>}
+          <span>{event.allDay ? 'All day' : [event.startTime, event.endTime].filter(Boolean).map(time => DateTime.fromFormat(time!, 'HH:mm').toFormat('h:mm a')).join(' – ')}</span>
+        </li>)}
+      </ul>}
       {status !== 'off' && <>
         {!result ? <p role="status" className="schedule-popover-empty">Loading schedule…</p> : result.error ?
           <div role="alert" className="schedule-popover-empty"><p>Couldn't load the schedule.</p><button type="button" onClick={() => setAttempt(a => a + 1)}>Try again</button></div> : !result.blocks.length ?
@@ -169,6 +177,7 @@ export default function SchedulePopover({ date, anchor, status, label, family, n
           <ScheduleTimeline blocks={result.blocks} detailsEnabled={detailsEnabled} />}
       </>}
       </div>
+      {onEdit && <footer className="schedule-popover-actions"><button type="button" onClick={onEdit}>Edit</button></footer>}
     </div>
   </dialog>;
 }

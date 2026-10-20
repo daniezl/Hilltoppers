@@ -21,26 +21,23 @@ import {
   fetchSpecialDays,
   fetchSpecialPeriodsList,
   loadBlocksForDate,
+  loadScheduleByType,
   type ScheduleResult,
   type SpecialDayRecord,
   type SpecialPeriod
 } from '../services/scheduleService';
 
-/**
- * A month of the school calendar. Each day's background says what kind of day
- * it is (Green, White, or no school) and a single mark says whether anything
- * is on: a star when the bell schedule is not the usual one, otherwise a
- * circle when there is an event. Tapping a day lists its events and, behind
- * one more tap, that day's blocks.
- */
+import { classifyCustom, familyForType, familyLabels, presetTypes, type ScheduleFamily } from '../schedule/scheduleFamily';
+import type { TimelineBlock } from '../schedule/timelineLayout';
+import '../schedule/calendarPalette.css';
 
-type DayColor = 'green' | 'white' | 'no-school' | null;
-type DayMarker = 'star' | 'circle' | null;
+// Schedule colors identify the timetable; selecting a date reveals its events.
+type DayColor = ScheduleFamily;
 
 interface DayInfo {
   key: string;
   color: DayColor;
-  marker: DayMarker;
+  scheduleLabel: string;
   noSchool: boolean;
   /** Exactly one of the three day types, or null when the file does not say. */
   label: PublishedDayType | null;
@@ -104,6 +101,7 @@ function isDayOff(
   periods: SpecialPeriod[]
 ): boolean {
   const special = specialDays[key];
+  if (periods.some(p => key >= p.start && key <= p.end)) return true;
   if (special?.type) return special.type === 'no_school';
   const weekday = fromKey(key).weekday; // 1 = Monday … 7 = Sunday
   return periods.some((p) => key >= p.start && key <= p.end)
@@ -117,25 +115,22 @@ function describeDay(
   events: CalendarEvent[],
   dayTypes: DayTypeMap,
   specialDays: Record<string, SpecialDayRecord>,
-  periods: SpecialPeriod[]
+  periods: SpecialPeriod[],
+  templates: Record<string, TimelineBlock[]>
 ): DayInfo {
   const special = specialDays[key];
   const period = periods.find((p) => key >= p.start && key <= p.end) ?? null;
   const noSchool = isDayOff(key, dayTypes, specialDays, periods);
 
   const dayEvents = events.filter((e) => e.start <= key && key <= e.end).sort(compareEvents);
-  const hasScheduleEvent = dayEvents.some((e) => e.kind === 'schedule');
-  const hasOtherEvent = dayEvents.some((e) => e.kind !== 'schedule');
-  // TODO: Show a star only for a confirmed special timetable; keyword-classified
-  // calendar events alone do not establish that the regular timetable changes.
-  const specialSchedule = !noSchool && (Boolean(special?.type) || hasScheduleEvent);
-
   const label: PublishedDayType | null = noSchool ? 'No School' : dayTypes[key] ?? null;
-
-  let color: DayColor = null;
-  if (noSchool) color = 'no-school';
-  else if (label === 'Green Day') color = 'green';
-  else if (label === 'White Day') color = 'white';
+  const weekday = fromKey(key).weekday;
+  const type = special?.type ?? (weekday === 3 ? 'schedule_wed' : weekday === 5 ? 'schedule_fri' : 'schedule_mon_thu');
+  const custom = type === 'custom' ? classifyCustom(special?.schedule ?? [], templates) : null;
+  const color: DayColor = noSchool ? 'off' : custom?.family ?? familyForType(type);
+  const scheduleLabel = custom?.modified ? 'ABDEC · adjusted times'
+    : color === 'normal' && !custom ? `${fromKey(key).setLocale('en-US').toFormat('cccc')} schedule`
+    : familyLabels[color];
 
   // Holidays and late starts are nearly always events too, so this only has
   // to carry the days the calendar feed says nothing about.
@@ -147,25 +142,13 @@ function describeDay(
   return {
     key,
     color,
-    marker: specialSchedule ? 'star' : hasOtherEvent ? 'circle' : null,
+    scheduleLabel,
     noSchool,
     label,
     note,
     events: dayEvents
   };
 }
-
-const StarMark: React.FC = () => (
-  <svg className="cal-mark" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 2.5l2.9 6.2 6.7.8-5 4.6 1.3 6.7L12 17.5l-5.9 3.3 1.3-6.7-5-4.6 6.7-.8z" fill="currentColor" />
-  </svg>
-);
-
-const CircleMark: React.FC = () => (
-  <svg className="cal-mark" viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" strokeWidth="3.5" />
-  </svg>
-);
 
 const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewingGrade, today, calendarUrl }) => {
   const todayKey = useMemo(() => toKey(DateTime.fromJSDate(now, { zone: EST_ZONE })), [now]);
@@ -176,6 +159,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [dayTypes, setDayTypes] = useState<DayTypeMap>({});
   const [specialDays, setSpecialDays] = useState<Record<string, SpecialDayRecord>>({});
+  const [templates, setTemplates] = useState<Record<string, TimelineBlock[]>>({});
   const [periods, setPeriods] = useState<SpecialPeriod[]>([]);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const scheduleSection = useRevealExpandedSection<HTMLDivElement>(scheduleOpen, undefined, '.calendar-content');
@@ -185,6 +169,10 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
 
   useEffect(() => {
     let cancelled = false;
+
+    Promise.all(presetTypes.map(async type => [type, await loadScheduleByType(type)] as const)).then(entries => {
+      if (!cancelled) setTemplates(Object.fromEntries(entries.flatMap(([type, blocks]) => blocks?.length ? [[type, blocks]] : [])));
+    }).catch(() => {});
 
     loadCachedCalendarEvents()
       .then((cached) => {
@@ -251,11 +239,11 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
     const map = new Map<string, DayInfo>();
     for (const cell of cells) {
       if (cell.inMonth) {
-        map.set(cell.key, describeDay(cell.key, events ?? [], dayTypes, specialDays, periods));
+        map.set(cell.key, describeDay(cell.key, events ?? [], dayTypes, specialDays, periods, templates));
       }
     }
     return map;
-  }, [cells, events, dayTypes, specialDays, periods]);
+  }, [cells, events, dayTypes, specialDays, periods, templates]);
 
   const selected = infoByKey.get(selectedKey) ?? null;
 
@@ -356,7 +344,7 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
           }
           const info = infoByKey.get(cell.key);
           const classes = ['cal-day'];
-          if (info?.color) classes.push(`cal-${info.color}`);
+          if (info?.color) classes.push(`cal-family-${info.color}`);
           if (cell.key === todayKey) classes.push('cal-today');
           if (cell.key === selectedKey) classes.push('cal-selected');
           return (
@@ -366,10 +354,9 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
               className={classes.join(' ')}
               onClick={() => pickDay(cell.key)}
               aria-pressed={cell.key === selectedKey}
-              aria-label={fromKey(cell.key).toFormat('cccc, LLLL d')}
+              aria-label={`${fromKey(cell.key).toFormat('cccc, LLLL d')}, ${info ? familyLabels[info.color] : ''}${info?.events.length ? ', has events' : ''}`}
             >
               <span className="cal-day-number">{cell.day}</span>
-              {info?.marker === 'star' ? <StarMark /> : info?.marker === 'circle' ? <CircleMark /> : <span className="cal-mark" />}
             </button>
           );
         })}
@@ -384,7 +371,9 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
           {events === null ? (
             <p className="events-empty">Loading…</p>
           ) : selected.events.length === 0 ? (
-            <p className="events-empty">{eventsError ?? selected.note ?? 'Nothing on this day'}</p>
+            <p className="events-empty">{eventsError ?? selected.note
+              ? <strong>{eventsError ?? selected.note}</strong>
+              : 'Nothing on this day'}</p>
           ) : (
             <ul className="cal-events">
               {selected.events.map((event) => {
@@ -418,10 +407,11 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
               <button
                 type="button"
                 className="cal-schedule-toggle"
+                aria-label={selected.scheduleLabel}
                 aria-expanded={scheduleOpen}
                 onClick={() => setScheduleOpen((prev) => !prev)}
               >
-                <span>Schedule</span>
+                <span className={`cal-schedule-tag cal-family-${selected.color}`}>{selected.scheduleLabel}</span>
                 <span className={`chevron ${scheduleOpen ? 'open' : ''}`} aria-hidden="true" />
               </button>
               <AnimatedCollapse expanded={scheduleOpen}>

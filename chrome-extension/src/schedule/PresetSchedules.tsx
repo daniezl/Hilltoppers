@@ -7,7 +7,7 @@ const presets = [
   { type: 'schedule_mon_thu', name: 'Mon–Thurs / Wednesday', color: 'gray' },
   { type: 'schedule_fri', name: 'Friday', color: 'green' },
   { type: 'late_start', name: 'Late start', color: 'yellow' },
-  { type: 'abdec', name: 'ABDEC', color: 'red' }
+  { type: 'abdec', name: 'ABDEC example', color: 'red' }
 ];
 
 type Props = { onBack: () => void; anchor: HTMLButtonElement };
@@ -16,6 +16,7 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const flight = useRef<Animation | null>(null);
+  const resizePanel = useRef<(() => void) | null>(null);
   const closing = useRef(false);
   const [ready, setReady] = useState(false);
   const dismiss = () => {
@@ -51,10 +52,17 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
     if (!dialog || !surface) return;
     const place = () => {
       const calendar = anchor.closest('.admin-calendar')!.querySelector('.admin-calendar-card')!.getBoundingClientRect();
-      let topEdge = Math.max(12, calendar.top);
-      let bottomEdge = Math.min(window.innerHeight - 12, calendar.bottom);
-      if (bottomEdge <= topEdge) { topEdge = 12; bottomEdge = window.innerHeight - 12; }
-      const height = Math.max(1, Math.min(760, bottomEdge - topEdge));
+      const topEdge = 12;
+      const bottomEdge = window.innerHeight - 12;
+      const content = surface.querySelector<HTMLElement>('.schedule-popover-content')!;
+      const style = getComputedStyle(content);
+      const naturalHeight = Array.from(content.children).reduce((total, child) => {
+        const element = child as HTMLElement;
+        const childStyle = getComputedStyle(element);
+        return total + element.offsetHeight + parseFloat(childStyle.marginTop) + parseFloat(childStyle.marginBottom);
+      }, parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2);
+      // Let the comparison card grow beyond the calendar when its notes need room.
+      const height = Math.max(1, Math.min(naturalHeight, bottomEdge - topEdge));
       dialog.style.height = `${height}px`;
       dialog.style.top = `${Math.max(topEdge, Math.min((calendar.top + calendar.bottom - height) / 2, bottomEdge - height))}px`;
       dialog.style.left = `${Math.max(12, Math.min((calendar.left + calendar.right - dialog.offsetWidth) / 2, window.innerWidth - dialog.offsetWidth - 12))}px`;
@@ -64,6 +72,7 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
       { transform: 'translateY(0)', opacity: 1 }
     ];
     dialog.showModal();
+    resizePanel.current = place;
     place();
     closeButton.current?.focus({ preventScroll: true });
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -77,6 +86,7 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
     window.addEventListener('scroll', reposition, true);
     return () => {
       disposed = true;
+      resizePanel.current = null;
       animation.cancel();
       flight.current = null;
       window.removeEventListener('resize', reposition);
@@ -84,6 +94,7 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
       dialog.close();
     };
   }, [anchor]);
+  useLayoutEffect(() => { resizePanel.current?.(); }, [schedules, failed]);
   return <dialog ref={shell} className="schedule-popover-shell schedule-presets-dialog" aria-labelledby="preset-schedules-title"
     onCancel={event => { event.preventDefault(); dismiss(); }}
     onClick={event => { if (event.target === event.currentTarget) dismiss(); }}>
@@ -99,6 +110,7 @@ export default function PresetSchedules({ onBack, anchor }: Props) {
             <div className="schedule-presets-grid">
               {presets.map((preset, index) => <section key={preset.type} className={`schedule-preset schedule-preset-${preset.color}`} aria-label={preset.name}>
                 <h3><span>{preset.name}</span></h3>
+                <p className="schedule-preset-note">{preset.type === 'abdec' ? 'Times vary by date. Select a date for its schedule.' : null}</p>
                 <ScheduleTimeline blocks={schedules[index]} detailsEnabled={ready} />
               </section>)}
             </div>

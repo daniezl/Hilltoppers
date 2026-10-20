@@ -1,15 +1,5 @@
+@import './calendarPalette.css';
 .admin-calendar {
-  --calendar-special: #cfe5d5;
-  --calendar-special-text: #215c34;
-  --calendar-pending: #ffe49a;
-  --calendar-pending-text: #765500;
-  --calendar-normal: #e1e5e9;
-  --calendar-normal-text: #36403b;
-  --calendar-off-text: #87928b;
-  --calendar-custom: #e1cff4;
-  --calendar-custom-text: #68408c;
-  --calendar-off-badge: #f8cfcc;
-  --calendar-off-badge-text: #a12825;
   max-width: 1100px; margin: 0 auto; padding: 44px 44px 64px;
 }
 .admin-calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
@@ -31,14 +21,11 @@
 .admin-calendar-normal { background: var(--calendar-normal); color: var(--calendar-normal-text); }
 .admin-calendar-off { background: transparent; color: var(--calendar-off-text); }
 .admin-calendar-today { border: 1px solid var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 650; }
-.admin-calendar-event-name { width: 100%; min-height: 0; font-size: 11px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.admin-calendar-event-name { width: 100%; min-height: 0; font-size: 10px; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .admin-calendar-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 20px; margin: 24px 6px 0; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
 .admin-calendar-legend > span { display: inline-flex; align-items: center; gap: 7px; }
 .admin-calendar-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 4px; }
 .admin-calendar-message { min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; }
-@media (prefers-color-scheme: dark) {
-  .admin-calendar { --calendar-pending: #51401e; --calendar-pending-text: #f6d77f; --calendar-special: #294c35; --calendar-special-text: #b5e7c4; --calendar-normal: #36403b; --calendar-normal-text: #e5ece6; --calendar-custom: #443050; --calendar-custom-text: #dec1f4; --calendar-off-text: #8b9a90; --calendar-off-badge: #542c2c; --calendar-off-badge-text: #ffb9b4; }
-}
 @media (max-width: 800px) {
   .admin-calendar { padding: 28px 18px; }
   .admin-calendar-card { padding: 18px 10px; }
@@ -115,29 +102,24 @@
 .schedule-presets-scroll { overflow-x: auto; padding-bottom: 12px; }
 .schedule-presets-grid { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 24px; }
 .schedule-preset { min-width: 0; }
+.schedule-preset-note { min-height: 36px; margin: 4px 0 0; font-size: 12px; line-height: 18px; color: var(--muted); }
 .schedule-preset h3 { height: 40px; margin: 0; display: flex; align-items: center; font-size: 13px; }
 .schedule-preset h3 span { padding: 6px 9px; border-radius: 6px; background: var(--timeline-fill); color: var(--timeline-ink); }
 .schedule-preset-gray { --timeline-fill: var(--calendar-normal); --timeline-ink: var(--calendar-normal-text); }
 .schedule-preset-green { --timeline-fill: var(--calendar-special); --timeline-ink: var(--calendar-special-text); }
 .schedule-preset-yellow { --timeline-fill: var(--calendar-pending); --timeline-ink: var(--calendar-pending-text); }
-.schedule-preset-red { --timeline-fill: var(--calendar-off-badge); --timeline-ink: var(--calendar-off-badge-text); }
+.schedule-preset-red { --timeline-fill: var(--calendar-abdec); --timeline-ink: var(--calendar-abdec-text); }
 
 
 .schedule-popover-label-group { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
-.schedule-notice { position: relative; display: inline-flex; flex: 0 0 auto; }
-.admin-calendar button.schedule-notice-trigger { display: inline-flex; align-items: center; justify-content: center; width: 24px; min-width: 24px; height: 28px; padding: 0; border: 0; background: transparent; color: var(--calendar-pending-text); }
-.admin-calendar button.schedule-notice-trigger:hover { background: var(--calendar-pending); }
-.admin-calendar button.schedule-notice-trigger:disabled { pointer-events: none; opacity: 1; filter: none; color: var(--calendar-pending-text); }
-.schedule-notice-tooltip { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; gap: 6px; width: min(240px, calc(100vw - 72px)); box-sizing: border-box; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 6px 20px #0003; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-.schedule-notice-tooltip > span { color: var(--muted); }
 
 .admin-calendar-friday { --date-bg: var(--calendar-special); --date-text: var(--calendar-special-text); background: var(--date-bg); color: var(--date-text); }
 .admin-calendar-late { --date-bg: var(--calendar-pending); --date-text: var(--calendar-pending-text); background: var(--date-bg); color: var(--date-text); }
-.admin-calendar-abdec { --date-bg: var(--calendar-off-badge); --date-text: var(--calendar-off-badge-text); background: var(--date-bg); color: var(--date-text); }
+.admin-calendar-abdec { --date-bg: var(--calendar-abdec); --date-text: var(--calendar-abdec-text); background: var(--date-bg); color: var(--date-text); }
 .admin-calendar-custom { --date-bg: var(--calendar-custom); --date-text: var(--calendar-custom-text); background: var(--date-bg); color: var(--date-text); }
 .schedule-popover-shell[data-schedule-status="friday"] { --timeline-fill: var(--calendar-special); --timeline-ink: var(--calendar-special-text); }
 .schedule-popover-shell[data-schedule-status="late"] { --timeline-fill: var(--calendar-pending); --timeline-ink: var(--calendar-pending-text); }
-.schedule-popover-shell[data-schedule-status="abdec"] { --timeline-fill: var(--calendar-off-badge); --timeline-ink: var(--calendar-off-badge-text); }
+.schedule-popover-shell[data-schedule-status="abdec"] { --timeline-fill: var(--calendar-abdec); --timeline-ink: var(--calendar-abdec-text); }
 .schedule-popover-shell[data-schedule-status="custom"] { --timeline-fill: var(--calendar-custom); --timeline-ink: var(--calendar-custom-text); }
 
 /* Share the base fill without changing it on hover. */
@@ -156,3 +138,8 @@
 .admin-calendar-month-heading { min-width: 0; }
 @media (max-width: 650px) { .calendar-month-stack { margin-left: 12px; margin-right: 12px; } }
 @media (prefers-reduced-motion: reduce) { .calendar-month-layer { transition: none; } }
+
+.schedule-day-events { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; font-size: 13px; }
+.schedule-day-events li { display: grid; gap: 4px; }
+.schedule-day-events a { color: var(--text); text-underline-offset: 3px; }
+.schedule-day-events li > span { color: var(--muted); font-size: 12px; }

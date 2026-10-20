@@ -1,0 +1,18 @@
+.admin-calendar, .calendar-content {
+  --calendar-special: #cfe5d5;
+  --calendar-special-text: #215c34;
+  --calendar-pending: #ffe49a;
+  --calendar-pending-text: #765500;
+  --calendar-normal: #e1e5e9;
+  --calendar-normal-text: #36403b;
+  --calendar-off-text: #87928b;
+  --calendar-custom: #e1cff4;
+  --calendar-custom-text: #68408c;
+  --calendar-abdec: #f8cfcc;
+  --calendar-abdec-text: #a12825;
+  --calendar-off-badge: #f8cfcc;
+  --calendar-off-badge-text: #a12825;
+}
+@media (prefers-color-scheme: dark) {
+  .admin-calendar { --calendar-abdec: #542c2c; --calendar-abdec-text: #ffb9b4; --calendar-pending: #51401e; --calendar-pending-text: #f6d77f; --calendar-special: #294c35; --calendar-special-text: #b5e7c4; --calendar-normal: #36403b; --calendar-normal-text: #e5ece6; --calendar-custom: #443050; --calendar-custom-text: #dec1f4; --calendar-off-text: #8b9a90; --calendar-off-badge: #542c2c; --calendar-off-badge-text: #ffb9b4; }
+}

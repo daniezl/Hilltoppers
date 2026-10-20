@@ -19,7 +19,7 @@ export function classifyCustom(blocks: TimelineBlock[], templates: Record<string
   for (const type of presetTypes) {
     if (templates[type]?.length && signature(blocks) === signature(templates[type])) return { family: familyForType(type), modified: false };
   }
-  // Family classification uses teaching order; lunches, activities, and grade restrictions stay in the original data.
+  // ABDEC identifies teaching order even when times or other activities differ.
   const teachingOrder = blocks
     .map(block => ({ letter: /^([A-E])(?:\s+Block)?$/i.exec(block.name.trim())?.[1].toUpperCase(), start: block.start }))
     .filter(block => block.letter)
