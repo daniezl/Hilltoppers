@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import AnimatedCollapse from './AnimatedCollapse';
 import { useRevealExpandedSection } from './useRevealExpandedSection';
 import { DateTime } from 'luxon';
-import { Block, EST_ZONE, GradeLevel, parseBlockTime, toDisplayTime } from '../types/schedule';
+import { Block, EST_ZONE, GradeLevel } from '../types/schedule';
 import { BlockPreferenceRecord, resolveBlockDisplay } from '../storage/blockPreferences';
 import {
   fetchCalendarEvents,
@@ -28,6 +28,8 @@ import {
 } from '../services/scheduleService';
 
 import { classifyCustom, familyForType, familyLabels, presetTypes, type ScheduleFamily } from '../schedule/scheduleFamily';
+import ScheduleTimeline from '../schedule/ScheduleTimeline';
+import { timeLabel } from '../schedule/timelineLayout';
 import type { TimelineBlock } from '../schedule/timelineLayout';
 import '../schedule/calendarPalette.css';
 
@@ -53,6 +55,7 @@ interface TodaySchedule {
 }
 
 interface CalendarProps {
+  expanded: boolean;
   now: Date;
   timeFormat: '12h' | '24h';
   blockPrefs: BlockPreferenceRecord;
@@ -149,7 +152,7 @@ function describeDay(
   };
 }
 
-const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewingGrade, today }) => {
+const Calendar: React.FC<CalendarProps> = ({ expanded, now, timeFormat, blockPrefs, viewingGrade, today }) => {
   const todayKey = useMemo(() => toKey(DateTime.fromJSDate(now, { zone: EST_ZONE })), [now]);
 
   const [month, setMonth] = useState<DateTime>(() => fromKey(todayKey).startOf('month'));
@@ -163,8 +166,16 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const scheduleSection = useRevealExpandedSection<HTMLDivElement>(scheduleOpen, undefined, '.calendar-content');
   const [daySchedule, setDaySchedule] = useState<{ key: string; result: ScheduleResult } | null>(null);
-  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const scheduleBody = useRef<HTMLDivElement>(null);
+  const previousScheduleHeight = useRef(0);
   const scheduleCache = useRef(new Map<string, ScheduleResult>());
+
+  useEffect(() => {
+    if (expanded) return;
+    setMonth(fromKey(todayKey).startOf('month'));
+    setSelectedKey(todayKey);
+    setScheduleOpen(false);
+  }, [expanded, todayKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -261,14 +272,12 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
     const next = month.plus({ months: delta });
     setMonth(next);
     setSelectedKey(next.hasSame(fromKey(todayKey), 'month') ? todayKey : firstSchoolDay(next));
-    setScheduleOpen(false);
   };
 
   // Tapping the selected day again keeps it selected: there is no state of the
   // calendar where nothing is picked.
   const pickDay = (key: string) => {
     setSelectedKey(key);
-    setScheduleOpen(false);
   };
 
   // Blocks are fetched only when the row is opened: loadBlocksForDate goes to
@@ -289,7 +298,6 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
     }
 
     let cancelled = false;
-    setScheduleLoading(true);
     loadBlocksForDate(fromKey(key).toJSDate())
       .then((result) => {
         if (cancelled) return;
@@ -299,16 +307,20 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
       .catch((err) => {
         console.warn('[calendar] Failed to load schedule for', key, err);
         if (!cancelled) setDaySchedule({ key, result: { blocks: [], dayType: null, networkFailed: true } });
-      })
-      .finally(() => {
-        if (!cancelled) setScheduleLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [scheduleOpen, selectedKey, selected?.noSchool, today.dateKey, today.blocks, today.dayType]);
 
-  const shownSchedule = daySchedule && daySchedule.key === selectedKey ? daySchedule.result : null;
+  const shownSchedule: ScheduleResult | null = selectedKey === today.dateKey
+    ? { blocks: today.blocks, dayType: today.dayType }
+    : scheduleCache.current.get(selectedKey) ?? (daySchedule?.key === selectedKey ? daySchedule.result : null);
+  useLayoutEffect(() => {
+    if (shownSchedule && scheduleBody.current) {
+      previousScheduleHeight.current = scheduleBody.current.getBoundingClientRect().height;
+    }
+  }, [shownSchedule]);
   const shownBlocks = useMemo(() => {
     if (!shownSchedule) return [];
     const hasGrades = shownSchedule.blocks.some((b) => b.grades && b.grades.length > 0);
@@ -414,30 +426,28 @@ const Calendar: React.FC<CalendarProps> = ({ now, timeFormat, blockPrefs, viewin
                 <span className={`cal-schedule-tag cal-family-${selected.color}`}>{selected.scheduleLabel}</span>
                 <span className={`chevron ${scheduleOpen ? 'open' : ''}`} aria-hidden="true" />
               </button>
-              <AnimatedCollapse expanded={scheduleOpen}>
-              {scheduleLoading || !shownSchedule ? (
+              <AnimatedCollapse expanded={scheduleOpen} animateContentResize={false}>
+              <div ref={scheduleBody} style={!shownSchedule ? { minHeight: previousScheduleHeight.current } : undefined}>
+              {!shownSchedule ? (
                   <p className="events-empty">Loading…</p>
                 ) : shownSchedule.networkFailed ? (
                   <p className="events-empty">Schedule unavailable</p>
                 ) : shownBlocks.length === 0 ? (
                   <p className="events-empty">{shownSchedule.details ?? 'No blocks'}</p>
                 ) : (
-                  <ul className="cal-blocks">
-                    {shownBlocks.map((block) => {
-                      const base = selectedDate.toJSDate();
-                      const display = resolveBlockDisplay(block.name, scheduleDayType, blockPrefs);
-                      const muted = display.isFree || display.useGrayText;
-                      return (
-                        <li key={block.id} className={muted ? 'muted-block' : undefined}>
-                          <span className="cal-block-name">{display.label}</span>
-                          <span className="cal-block-time">
-                            {toDisplayTime(parseBlockTime(block.start, base), timeFormat)} – {toDisplayTime(parseBlockTime(block.end, base), timeFormat)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <div className={`cal-schedule-timeline cal-timeline-${selected.color}`}>
+                    <ScheduleTimeline
+                      blocks={shownBlocks}
+                      heightScale={0.7}
+                      formatTime={minute => formatClock(timeLabel(minute), timeFormat)}
+                      getBlockDisplay={name => {
+                        const display = resolveBlockDisplay(name, scheduleDayType, blockPrefs);
+                        return { label: display.label, muted: false };
+                      }}
+                    />
+                  </div>
                 )}
+              </div>
               </AnimatedCollapse>
             </div>
           ) : null}

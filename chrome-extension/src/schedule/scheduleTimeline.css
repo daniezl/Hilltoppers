@@ -1,0 +1,23 @@
+.schedule-timeline { margin-top: 16px; }
+.schedule-timeline-frame { padding: 12px 0; }
+.schedule-timeline-plane { position: relative; }
+.schedule-timeline-courses { position: absolute; inset: 0 54px 0 0; list-style: none; padding: 0; margin: 0; }
+.schedule-timeline-rules { position: absolute; inset: 0 46px 0 0; pointer-events: none; }
+.schedule-timeline-rule { position: absolute; left: 0; right: 0; border-top: 1px dotted var(--border); }
+.schedule-timeline-rule.is-hour { border-top-style: solid; }
+.schedule-timeline-axis { position: absolute; inset: 0 0 0 auto; width: 46px; border-left: 1px solid var(--border); color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.schedule-timeline-axis > span { position: absolute; left: 8px; transform: translateY(-50%); white-space: nowrap; }
+.schedule-timeline-axis > .is-hour { font-weight: 650; color: var(--text); }
+.schedule-timeline-slot { position: absolute; margin: 0; padding: 0 2px; box-sizing: border-box; min-height: 0; }
+.schedule-timeline button.schedule-timeline-block { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; width: 100%; height: 100%; min-width: 0; min-height: 0; box-sizing: border-box; margin: 0; padding: 7px 6px; overflow: hidden; text-align: left; border: 1px solid var(--border); border-left: 3px solid var(--timeline-ink); border-radius: 5px; background: var(--timeline-fill); color: var(--timeline-ink); }
+.schedule-timeline button.schedule-timeline-block.is-subblock { border-left-width: 1px; }
+.schedule-timeline button.schedule-timeline-block.is-short { padding: 0 5px; border-top-width: 0; border-bottom-width: 0; gap: 0; }
+.schedule-timeline button.schedule-timeline-block.is-active { border-color: var(--timeline-ink); }
+.schedule-timeline button.schedule-timeline-block:focus-visible { outline-color: var(--timeline-ink); }
+.schedule-timeline-block strong { display: block; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; line-height: 15px; font-weight: 600; }
+.schedule-timeline-block span, .schedule-timeline-block small { display: block; overflow: hidden; flex-shrink: 0; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 13px; color: var(--timeline-ink); font-variant-numeric: tabular-nums; }
+.schedule-timeline-detail { position: absolute; z-index: 3; pointer-events: none; width: max-content; max-width: min(240px, calc(100vw - 20px)); box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 3px 10px #0001; overflow-wrap: anywhere; }
+.schedule-timeline-detail strong { font-size: 13px; }
+.schedule-timeline-detail span, .schedule-timeline-detail small { color: var(--muted); font-size: 12px; }
+
+.schedule-timeline button.schedule-timeline-block.is-muted { --timeline-ink: var(--muted); }

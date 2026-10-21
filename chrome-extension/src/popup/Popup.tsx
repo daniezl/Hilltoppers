@@ -1178,8 +1178,9 @@ const Popup: React.FC = () => {
           </span>
           <span className={`chevron ${calendarExpanded ? 'open' : ''}`} aria-hidden="true" />
         </button>
-        <AnimatedCollapse expanded={calendarExpanded}>
+        <AnimatedCollapse expanded={calendarExpanded} animateContentResize={false}>
           <Calendar
+            expanded={calendarExpanded}
             now={now}
             timeFormat={schedulePrefs.timeFormat}
             blockPrefs={blockPrefs}

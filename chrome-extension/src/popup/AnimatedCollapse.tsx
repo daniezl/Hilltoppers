@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 
-export default function AnimatedCollapse({ expanded, children }: { expanded: boolean; children: ReactNode }) {
+export default function AnimatedCollapse({ expanded, children, animateContentResize = true }: { expanded: boolean; children: ReactNode; animateContentResize?: boolean }) {
   const outer = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
   const opened = useRef(false);
@@ -10,6 +10,8 @@ export default function AnimatedCollapse({ expanded, children }: { expanded: boo
     const container = outer.current!;
     const content = inner.current!;
     container.inert = !expanded;
+    container.style.transition = '';
+    let lastHeight: number | undefined;
     const resize = () => {
       // An outer accordion follows the inner accordion's final height, not each
       // intermediate frame, so nested transitions finish together.
@@ -17,6 +19,9 @@ export default function AnimatedCollapse({ expanded, children }: { expanded: boo
         .filter(node => node.parentElement?.closest('.module-collapse') === container);
       const adjustment = nested.reduce((sum, node) => sum + Number(node.dataset.expandHeight || 0) - node.getBoundingClientRect().height, 0);
       const height = expanded ? content.getBoundingClientRect().height + adjustment : 0;
+      if (height === lastHeight) return;
+      if (!animateContentResize && lastHeight !== undefined) container.style.transition = 'none';
+      lastHeight = height;
       // Measure the current frame before assigning the next transition target.
       container.getBoundingClientRect();
       container.dataset.expandHeight = String(height);
@@ -26,7 +31,7 @@ export default function AnimatedCollapse({ expanded, children }: { expanded: boo
     const observer = new ResizeObserver(resize);
     observer.observe(content);
     return () => observer.disconnect();
-  }, [expanded]);
+  }, [expanded, animateContentResize]);
 
   return <div ref={outer} className={`module-collapse${expanded ? ' is-open' : ''}`} aria-hidden={!expanded}>
     <div ref={inner} className="module-collapse-inner">{opened.current ? children : null}</div>

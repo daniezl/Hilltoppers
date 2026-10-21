@@ -834,42 +834,25 @@ header {
   color: #161b22;
 }
 
-.cal-blocks {
-  list-style: none;
-  margin: 2px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.cal-schedule-timeline {
+  --border: #d8dee4;
+  --text: #161b22;
+  --muted: #7d8591;
+  --timeline-fill: var(--calendar-normal);
+  --timeline-ink: var(--calendar-normal-text);
 }
-
-.cal-blocks li {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 12px;
-  color: #161b22;
-}
-
-.cal-blocks li.muted-block {
-  color: #7d8591;
-}
-
-.cal-block-name {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.cal-block-time {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
+.cal-timeline-friday { --timeline-fill: var(--calendar-special); --timeline-ink: var(--calendar-special-text); }
+.cal-timeline-late { --timeline-fill: var(--calendar-pending); --timeline-ink: var(--calendar-pending-text); }
+.cal-timeline-abdec { --timeline-fill: var(--calendar-abdec); --timeline-ink: var(--calendar-abdec-text); }
+.cal-timeline-custom { --timeline-fill: var(--calendar-custom); --timeline-ink: var(--calendar-custom-text); }
+.cal-schedule-timeline .schedule-timeline { margin-top: 6px; }
+.cal-schedule-timeline .schedule-timeline-courses { right: 62px; }
+.cal-schedule-timeline .schedule-timeline-rules { right: 58px; }
+.cal-schedule-timeline .schedule-timeline-axis { width: 58px; font-size: 9px; }
+.cal-schedule-timeline .schedule-timeline-axis > span { left: 5px; }
+.cal-schedule-timeline .schedule-timeline-block span { white-space: normal; overflow-wrap: anywhere; }
+.cal-schedule-timeline button.schedule-timeline-block.is-subblock { padding-inline: 2px; }
+.cal-schedule-timeline .schedule-timeline-block.is-subblock strong { font-size: 10px; }
 
 /* Stands in for a list of events or blocks, so it is built to the same line
    as one of those rows: switching between a day with one event and a day
@@ -1419,3 +1402,16 @@ header {
 
 .cal-schedule-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-width: 0; text-align: left; }
 .cal-schedule-tag { display: inline-block; padding: 3px 6px; border-radius: 5px; font-size: 10px; font-weight: 500; line-height: 1.4; }
+
+.schedule-timeline-detail-popup {
+  position: fixed;
+  z-index: 1000;
+  --border: #d8dee4;
+  --surface: #fff;
+  --muted: #7d8591;
+  color: #161b22;
+}
+
+.cal-schedule-timeline .schedule-timeline-block.is-short strong { line-height: 12px; }
+
+.cal-schedule-timeline button.schedule-timeline-block.is-short { min-height: 12px; }
