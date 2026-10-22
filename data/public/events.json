@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-09-30T20:17:55Z",
+  "sourceUpdatedAt": "2026-10-22T16:25:39Z",
   "events": [
     {
       "id": "51741-1",
@@ -1009,6 +1009,18 @@
       "kind": "schedule",
       "description": "",
       "url": "https://stjacademy.org/events/event/spirit-week/"
+    },
+    {
+      "id": "54014-1",
+      "title": "Fall Concert",
+      "start": "2026-10-28",
+      "end": "2026-10-28",
+      "allDay": false,
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/fall-concert-2/"
     },
     {
       "id": "51417-1",
