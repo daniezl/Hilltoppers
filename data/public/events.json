@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-10-22T16:25:39Z",
+  "sourceUpdatedAt": "2026-10-22T19:22:50Z",
   "events": [
     {
       "id": "51741-1",
@@ -1009,6 +1009,30 @@
       "kind": "schedule",
       "description": "",
       "url": "https://stjacademy.org/events/event/spirit-week/"
+    },
+    {
+      "id": "54025-1",
+      "title": "Spirit Week – Thursday Schedule",
+      "start": "2026-10-22",
+      "end": "2026-10-22",
+      "allDay": true,
+      "startTime": null,
+      "endTime": null,
+      "kind": "schedule",
+      "description": "On Thursday (10/22): Classes end at 12:45 with an advisory block to follow. The advisory block is for Spirit Week preparation, as is the time that follows. Class Schedule (Thursday): Chapel: 8:00 – 8:15 A: 8:25 – 9:00 B: 9:05 – 9:40 D: 9:45 – 10:20 E: 10:25 – 11:00 C: 11:05 - 12:40 Advisory: 12:45…",
+      "url": "https://stjacademy.org/events/event/spirit-week-2/"
+    },
+    {
+      "id": "54026-1",
+      "title": "Spirit Week – Friday Schedule",
+      "start": "2026-10-23",
+      "end": "2026-10-23",
+      "allDay": true,
+      "startTime": null,
+      "endTime": null,
+      "kind": "schedule",
+      "description": "On Friday (10/23): Classes will end at 12:35 and Pep Chapel will follow at 12:45 p.m. in Fuller Hall. (Float preparation will continue after Chapel.) Class Schedule (Friday): A: 8:00 - 8:40 B: 8:45 - 9:25 D: 9:30 - 10:10 E: 10:15 - 10:55 C: 11:00 - 12:35 Pep Chapel: 12:45 - 2:00 Float Preparation:…",
+      "url": "https://stjacademy.org/events/event/spirit-week-3/"
     },
     {
       "id": "54014-1",
