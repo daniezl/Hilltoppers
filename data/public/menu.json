@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-22T05:55:07.958Z",
+  "updatedAt": "2026-10-22T11:33:57.174Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-22",
   "menus": {
@@ -56,7 +56,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-21T21:56:37.063Z",
+  "daysUpdatedAt": "2026-10-22T11:33:57.174Z",
   "days": {
     "2026-10-15": {
       "breakfast": {
@@ -577,12 +577,10 @@
       },
       "dinner": {
         "classicKitchen": [
-          "Tradition Wht Brd Stuffing Mix",
           "Herb Baked Chicken Breast",
           "Mashed Potatoes",
           "Seasoned Corn on the Cob",
-          "Broccoli Salad",
-          "Chicken Gravy"
+          "Broccoli Salad"
         ],
         "globalFare": [
           "Cajun Shrimp Etouffee",
@@ -615,12 +613,12 @@
       },
       "lunch": {
         "classicKitchen": [
-          "Asian Pork Noodle Bowl",
+          "Noodles Ramen Vegetarian Miso",
+          "Pork Ramen Noodle Bowl",
           "Ramen Noodles",
-          "Green Beans",
           "Broccoli",
-          "Shredded Carrots",
-          "Salad Mushroom Marinated"
+          "Sauteed Button Mushrooms",
+          "Shredded Carrots"
         ],
         "globalFare": [
           "Grilled Chicken with Pineapple Salsa",
@@ -689,8 +687,8 @@
       },
       "dinner": {
         "classicKitchen": [
-          "Lentil Mushroom Balls",
           "Meatloaf",
+          "Lentils with Vegetables",
           "Red Skin Mashed Potatoes",
           "Mixed Vegetables"
         ],
@@ -699,6 +697,56 @@
           "Crispy Roasted Tofu",
           "Beer Battered French Fries",
           "Whole Kernel Corn"
+        ]
+      }
+    },
+    "2026-10-29": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes",
+          "Bacon"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Smothered Chicken",
+          "Baked Beans",
+          "Oven Roasted Red Potatoes",
+          "Steamed Green Beans and Carrots"
+        ],
+        "globalFare": [
+          "Whole Grain Breaded Fish Stick",
+          "Crispy Roasted Tofu",
+          "Spicy Butter Peas",
+          "Rice Pilaf Chicken with Orzo from Mix"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Herb Infused Couscous",
+          "Oven Roasted Cauliflower with Turmeric",
+          "Roasted Chickpeas"
+        ],
+        "globalFare": [
+          "Potato Cheddar Onion Pierogies",
+          "Kielbasa",
+          "Harvard Beets",
+          "Sauerkraut"
         ]
       }
     }
