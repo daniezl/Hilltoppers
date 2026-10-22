@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-10-21T15:01:19.258Z",
+  "updatedAt": "2026-10-22T15:00:37.852Z",
   "source": "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/",
   "bulletin": {
-    "date": "2026-10-21",
-    "weekday": "Wednesday",
-    "dayType": "White Day",
+    "date": "2026-10-22",
+    "weekday": "Thursday",
+    "dayType": "Green Day",
     "headings": [
-      "Adam Sandler Day",
-      "White Day"
+      "Green Day",
+      "Class Theme Day"
     ]
   },
   "anchor": {
-    "date": "2026-10-21",
-    "dayType": "White Day"
+    "date": "2026-10-22",
+    "dayType": "Green Day"
   },
   "days": {
     "2026-08-26": "Green Day",
@@ -251,6 +251,7 @@
     "2027-04-16": "White Day",
     "2027-04-17": "No School",
     "2027-04-18": "No School",
-    "2027-04-19": "No School"
+    "2027-04-19": "No School",
+    "2027-04-20": "No School"
   }
 }
