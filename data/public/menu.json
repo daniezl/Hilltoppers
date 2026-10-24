@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-24T04:57:58.543Z",
+  "updatedAt": "2026-10-24T09:26:42.342Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-24",
   "menus": {
@@ -39,7 +39,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-23T18:39:30.578Z",
+  "daysUpdatedAt": "2026-10-24T09:26:42.343Z",
   "days": {
     "2026-10-17": {
       "breakfast": {
@@ -689,6 +689,36 @@
           "Shredded Carrots",
           "Mushroom Medium White Fresh",
           "Snow Peas"
+        ]
+      }
+    },
+    "2026-10-31": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Bacon Grilled Cheese",
+          "Texas Grilled Cheese Sandwich",
+          "Grilled Ham & Cheese",
+          "Seasoned Vegetable",
+          "Cream of Tomato Basil Soup"
+        ],
+        "globalFare": []
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Salisbury Steak With Espanol Sauce",
+          "Stewed Chickpea",
+          "Red Skin Mashed Potatoes",
+          "Honey-Glazed Roasted Root Vegetables"
+        ],
+        "globalFare": [
+          "Garlic Butter Baked Cod",
+          "Curried Rice w/Potato and Chickpeas",
+          "Rice Pilaf",
+          "Sauteed Broccolini"
         ]
       }
     }
