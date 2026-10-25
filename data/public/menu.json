@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-25T10:04:02.492Z",
+  "updatedAt": "2026-10-25T14:32:56.533Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-25",
   "menus": {
@@ -39,7 +39,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-24T22:22:45.580Z",
+  "daysUpdatedAt": "2026-10-25T14:32:56.533Z",
   "days": {
     "2026-10-18": {
       "breakfast": {
@@ -536,7 +536,7 @@
       },
       "lunch": {
         "classicKitchen": [
-          "Tradition Wht Brd Stuffing Mix",
+          "Traditional Stuffing",
           "Oven Roasted Turkey Breast",
           "Garlic Mashed Potatoes",
           "Peas and Carrots",
@@ -691,6 +691,35 @@
           "Curried Rice w/Potato and Chickpeas",
           "Rice Pilaf",
           "Sauteed Broccolini"
+        ]
+      }
+    },
+    "2026-11-01": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Seasoned Tater Tots",
+          "Plant-Based Chik'n Tenders",
+          "Buttered Corn",
+          "Chicken Waffle Sandwich"
+        ],
+        "globalFare": []
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Chicken Breast Florentine",
+          "Manicotti W/ Florentine Sauce",
+          "Green Peas",
+          "Grilled Balsamic Yellow Squash"
+        ],
+        "globalFare": [
+          "Pork Ribs Baby Back BBQ",
+          "Beer Battered French Fries",
+          "Baked Beans",
+          "Seasoned Corn on the Cob"
         ]
       }
     }
