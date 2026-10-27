@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-27T00:18:42.277Z",
+  "updatedAt": "2026-10-27T05:27:34.035Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-26",
+  "menuDate": "2026-10-27",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -18,97 +18,50 @@
         "Fresh Red Bell Pepper(s)"
       ],
       "globalFare": [
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Sausage Patty",
-        "Blueberry Pancake",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Meatball",
-        "Meatballs TVP Vegan GF",
-        "Tricolor Cheese Tortellini",
-        "Broccoli & Carrots",
-        "Marinara Sauce"
+        "Noodles Ramen Vegetarian Miso",
+        "Pork Ramen Noodle Bowl",
+        "Ramen Noodles",
+        "Broccoli",
+        "Sauteed Button Mushrooms",
+        "Shredded Carrots"
       ],
       "globalFare": [
-        "Chili Dog",
-        "Sauteed Peppers & Onions",
-        "Seasoned Tater Tots",
-        "Chili con Carne",
-        "Full O'Beans Chili"
+        "Grilled Chicken with Pineapple Salsa",
+        "Brown Rice",
+        "Black Refried Beans",
+        "Corn with Peppers and Onions",
+        "Cheese Queso Hatch"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Herb Baked Chicken Breast",
-        "Mashed Potatoes",
-        "Seasoned Corn on the Cob",
-        "Broccoli Salad"
+        "Meatball",
+        "Garden Primavera with Cheese",
+        "Caprese Salad",
+        "Fresh Roasted Broccoli & Cauliflower",
+        "Alfredo Sauce",
+        "Marinara Sauce"
       ],
       "globalFare": [
-        "Cajun Shrimp Etouffee",
-        "Parmesan Polenta",
-        "Pinto Beans w/Pizzazz",
-        "Peas and Carrots"
+        "Chicken Rice Bowl",
+        "Asian Marinated Tofu",
+        "Shredded Napa Cabbage",
+        "Shredded Carrots",
+        "Sliced Mushrooms",
+        "Fresh Sugar Snap Peas"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-26T20:42:39.209Z",
   "days": {
-    "2026-10-19": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Sliced Smoked Ham",
-          "Cheese Omelet",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Fresh Blueberries",
-          "Potato Hashbrown Patty",
-          "Scrambled Eggs",
-          "Pork Sausage Patty",
-          "Blueberry Pancakes"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Ham Diced",
-          "Macaroni & Cheese",
-          "Broccoli",
-          "Bacon Bits",
-          "Cheese Sauce"
-        ],
-        "globalFare": [
-          "Brown Rice Royale",
-          "Chicken & Broccoli Asian",
-          "Broccoli & Mushroom Vegetarian Stir Fry",
-          "Asian Marinated Tofu"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Chicken Parmesan",
-          "Capellini",
-          "Carrot Baby Cut"
-        ],
-        "globalFare": [
-          "Pork Belly",
-          "Asian Marinated Tofu",
-          "Seasoned White Rice",
-          "Steamed Broccoli",
-          "Shredded Carrots",
-          "Sauteed Mushrooms"
-        ]
-      }
-    },
     "2026-10-20": {
       "breakfast": {
         "classicKitchen": [
