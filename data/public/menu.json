@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-27T05:27:34.035Z",
+  "updatedAt": "2026-10-27T10:53:23.560Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-27",
   "menus": {
@@ -60,7 +60,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-26T20:42:39.209Z",
+  "daysUpdatedAt": "2026-10-27T10:53:23.560Z",
   "days": {
     "2026-10-20": {
       "breakfast": {
@@ -671,9 +671,15 @@
     "2026-11-02": {
       "breakfast": {
         "classicKitchen": [
-          "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
-          "Egg and Cheese Biscuit",
-          "Sausage & Cheese Biscuit"
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Red Onions",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
         ],
         "globalFare": [
           "Scrambled Eggs",
@@ -693,8 +699,8 @@
         "globalFare": [
           "Furikake",
           "Huli Huli Chicken",
-          "Broccoli & Mushroom Vegetarian Stir Fry",
           "Black Beans",
+          "Corn with Peppers and Onions",
           "Sauteed Peppers & Onions",
           "Seasoned French Fries"
         ]
@@ -716,6 +722,54 @@
           "Vegetable Egg Roll",
           "Sugar Snap Peas with Red Peppers",
           "Fortune Cookie"
+        ]
+      }
+    },
+    "2026-11-03": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Red Onions",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Fried Chicken Drumsticks",
+          "Red Quinoa & Garbanzo Beans",
+          "Rice Pilaf",
+          "Honey Buttered Baby Carrots"
+        ],
+        "globalFare": [
+          "Glazed Baked Ham",
+          "Sweet Potato Casserole",
+          "Fresh Roasted Green Beans",
+          "Sautéed Garlic Kale"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Quinoa Stuffed Peppers",
+          "Country Fried Steak",
+          "Scalloped Potatoes"
+        ],
+        "globalFare": [
+          "Roasted Tomatoes & Zucchini",
+          "Chicken, Shrimp, and Sausage Jambalaya",
+          "French Bread",
+          "Jasmine Rice"
         ]
       }
     }
