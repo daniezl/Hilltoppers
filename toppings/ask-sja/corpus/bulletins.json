@@ -1402,5 +1402,35 @@
       }
     ],
     "fetchedAt": "2026-10-26T17:58:03.922Z"
+  },
+  "2026-10-27": {
+    "heading": "Daily Bulletin | Tuesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "White Day"
+      },
+      {
+        "kind": "para",
+        "text": "Seniors, your yearbook photos and quotes are due by Monday, November 2. Please email them to Mr. Legge before the deadline to ensure they appear in the yearbook."
+      },
+      {
+        "kind": "para",
+        "text": "Say Cheese, Seniors! Tomorrow morning, all seniors and senior advisors will meet in the Amphitheater by 7:55am for our senior class picture. GO 2027!"
+      },
+      {
+        "kind": "para",
+        "text": "Thursday will be a school photo day for students who did not have their photo taken last month. Mr. Legge will take photos on the Fuller Hall stage from 8:30 to 3:00."
+      },
+      {
+        "kind": "para",
+        "text": "Brooklynn Hibshman is looking for donations of fleece, flannel, thick cotton, or any cozy materials for her Capstone project, making hats to repurpose items that would otherwise be added to landfills. She will donate these hats around Saint Johnsbury. You can find the donation box in Ms. Mantius’ room in Ranger 115."
+      },
+      {
+        "kind": "para",
+        "text": "A very Happy Belated Birthday to Isabella Plantier who celebrated her birthday yesterday! Happy Birthday today to Makiah Alba Richardson, Mia Allen, and Samuel Saad Micha!"
+      }
+    ],
+    "fetchedAt": "2026-10-27T13:26:04.436Z"
   }
 }

@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-10-26T17:58:06.830Z",
+  "updatedAt": "2026-10-27T13:26:06.689Z",
   "counts": {
     "pages": 27,
     "pdfs": 335,
     "newsletters": 57,
-    "bulletins": 92
+    "bulletins": 94
   },
   "chunks": [
     {
@@ -4605,6 +4605,24 @@
       "date": "2026-10-26",
       "section": "Green Day",
       "text": "Varsity Football beat Lyndon Institute, 48-14, on Saturday!\nVarsity Girls Soccer beat North Country, 1-0, in double overtime during their quarterfinal game on Saturday!\nHappy Birthday tomorrow to Destiny Bai, Brian LaFond, and Gracie Patrick!"
+    },
+    {
+      "id": "59b58574d35a903c",
+      "source": "bulletin",
+      "title": "Daily Bulletin — 2026-10-27",
+      "url": "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/",
+      "date": "2026-10-27",
+      "section": "White Day",
+      "text": "Seniors, your yearbook photos and quotes are due by Monday, November 2. Please email them to Mr. Legge before the deadline to ensure they appear in the yearbook.\nSay Cheese, Seniors! Tomorrow morning, all seniors and senior advisors will meet in the Amphitheater by 7:55am for our senior class picture. GO 2027!\nThursday will be a school photo day for students who did not have their photo taken last month. Mr. Legge will take photos on the Fuller Hall stage from 8:30 to 3:00.\nBrooklynn Hibshman is looking for donations of fleece, flannel, thick cotton, or any cozy materials for her Capstone project, making hats to repurpose items that would otherwise be added to landfills. She will donate these hats around Saint Johnsbury. You can find the donation box in Ms. Mantius’ room in Ranger 115."
+    },
+    {
+      "id": "c9fec6cee0cd9688",
+      "source": "bulletin",
+      "title": "Daily Bulletin — 2026-10-27",
+      "url": "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/",
+      "date": "2026-10-27",
+      "section": "White Day",
+      "text": "A very Happy Belated Birthday to Isabella Plantier who celebrated her birthday yesterday! Happy Birthday today to Makiah Alba Richardson, Mia Allen, and Samuel Saad Micha!"
     }
   ]
 }
