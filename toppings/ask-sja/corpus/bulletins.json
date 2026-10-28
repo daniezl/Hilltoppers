@@ -1464,5 +1464,39 @@
       }
     ],
     "fetchedAt": "2026-10-27T18:48:38.828Z"
+  },
+  "2026-10-28": {
+    "heading": "Daily Bulletin | Wednesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "Green Day"
+      },
+      {
+        "kind": "para",
+        "text": "Tomorrow will be a school photo day for all students who did not have their photo taken last month. Mr. Legge will take photos on the Fuller Hall stage from 8:30 to 3:00. Please make sure that you are in dress code and have no facial hair for your photo."
+      },
+      {
+        "kind": "para",
+        "text": "Take a break from your studies tonight and come to the Fall Concert, Fuller Hall 7pm featuring the Chorus, Hilltones, Jazz Band, and String Ensemble. Along with less familiar works, you’ll hear hits by Cee Lo Green, Journey, Joni Mitchell, and Weather Report. Admission is free."
+      },
+      {
+        "kind": "para",
+        "text": "Science Olympiad will hold an informational meeting today after school at 3:30 in Streeter 226. If you are interested in participating but cannot meet today, contact Mr. Hansen in the Science Department."
+      },
+      {
+        "kind": "para",
+        "text": "If you are a student interested in being part of SkillsUSA this year, listen up! This year we are holding monthly “shop talk” meetings to build up the club and its activities. Our first shop talk will be tomorrow during C block in Streeter 210 – or during CP tomorrow in the same location. We will cover what SkillsUSA is and start exploring student’s related interests — it will not take the entire block. If you are thinking about competing in April, you should attend. If you’re just curious about building your resume and employability skills, you should come. SkillsUSA is open to any 9th – 12th grade student who is currently in a CTE class or enrolled in one next semester."
+      },
+      {
+        "kind": "para",
+        "text": "Have you seen all of the signs dotting peoples lawn and along the roadsides? It is a sure sign (pun intended) that Election Day is rapidly approaching. Members of the Contemporary Issues class have designed signs for a mock election and are running for either senator or governor. They have employed principles of design and a short slogan on their posters. Please come take a look and vote for your favorite sign. We will use the very unscientific tally system to count your votes. Please cast your ballot based on the quality of the design over the name on it. That said, Be Smart, Vote Eckhardt!"
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday today to Aiden Gochee, Saylor Hemond, and Alyssa LaLonde!"
+      }
+    ],
+    "fetchedAt": "2026-10-28T14:42:39.197Z"
   }
 }
