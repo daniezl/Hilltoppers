@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-10-22T19:22:50Z",
+  "sourceUpdatedAt": "2026-10-28T12:42:14Z",
   "events": [
     {
       "id": "51741-1",
@@ -1057,6 +1057,18 @@
       "kind": "schedule",
       "description": "",
       "url": "https://stjacademy.org/events/event/semester-1-student-progress-conferences/"
+    },
+    {
+      "id": "54060-1",
+      "title": "School Photos",
+      "start": "2026-10-29",
+      "end": "2026-10-29",
+      "allDay": false,
+      "startTime": "08:30",
+      "endTime": "15:00",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/school-photos-5/"
     },
     {
       "id": "53386-1",
