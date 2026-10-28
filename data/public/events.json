@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-10-28T12:42:14Z",
+  "sourceUpdatedAt": "2026-10-28T14:56:26Z",
   "events": [
     {
       "id": "51741-1",
@@ -1069,6 +1069,18 @@
       "kind": "event",
       "description": "",
       "url": "https://stjacademy.org/events/event/school-photos-5/"
+    },
+    {
+      "id": "54062-1",
+      "title": "Headmaster’s Holiday",
+      "start": "2026-10-30",
+      "end": "2026-10-30",
+      "allDay": true,
+      "startTime": null,
+      "endTime": null,
+      "kind": "schedule",
+      "description": "No Classes",
+      "url": "https://stjacademy.org/events/event/headmasters-holiday/"
     },
     {
       "id": "53386-1",
