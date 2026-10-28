@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-28T06:09:04.491Z",
+  "updatedAt": "2026-10-28T13:26:54.754Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-28",
   "menus": {
@@ -56,7 +56,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-28T00:23:32.337Z",
+  "daysUpdatedAt": "2026-10-28T13:26:54.754Z",
   "days": {
     "2026-10-21": {
       "breakfast": {
@@ -714,6 +714,57 @@
           "Chicken, Shrimp, and Sausage Jambalaya",
           "French Bread",
           "Jasmine Rice"
+        ]
+      }
+    },
+    "2026-11-04": {
+      "breakfast": {
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Red Onions",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Chicken Sausage Patty",
+          "Pancakes",
+          "Hashbrown Patty",
+          "Fresh Banana",
+          "Pecan Pieces Med Roasted Salted"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Penne Pasta with Alfredo Sauce",
+          "Garlic Bread",
+          "Fresh Roasted Broccoli"
+        ],
+        "globalFare": [
+          "Sloppy Joe Beef",
+          "Curly Fries",
+          "Buttered Corn"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Corned Beef",
+          "Steamed Potatoes",
+          "Beets n' Sweets Roasted",
+          "Sauteed Green Cabbage & Shallots"
+        ],
+        "globalFare": [
+          "Grilled Swordfish",
+          "Crispy Roasted Tofu",
+          "French Bread",
+          "Roasted Fingerling Potatoes",
+          "Sauteed Broccolini"
         ]
       }
     }
