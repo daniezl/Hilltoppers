@@ -1,6 +1,6 @@
 {
   "source": "https://stjacademy.org/?feed=eo-events",
-  "sourceUpdatedAt": "2026-10-28T14:56:26Z",
+  "sourceUpdatedAt": "2026-10-28T19:15:12Z",
   "events": [
     {
       "id": "51741-1",
@@ -1311,6 +1311,18 @@
       "url": "https://stjacademy.org/events/event/faculty-in-service-2/"
     },
     {
+      "id": "54064-1",
+      "title": "Spring Concert",
+      "start": "2027-03-24",
+      "end": "2027-03-24",
+      "allDay": false,
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/spring-concert-2/"
+    },
+    {
       "id": "51433-1",
       "title": "Semester 2 Student Progress Conferences",
       "start": "2027-03-25",
@@ -1383,6 +1395,18 @@
       "url": "https://stjacademy.org/events/event/spring-day/"
     },
     {
+      "id": "54065-1",
+      "title": "Commencement Concert",
+      "start": "2027-05-26",
+      "end": "2027-05-26",
+      "allDay": false,
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/commencement-concert-2/"
+    },
+    {
       "id": "52098-1",
       "title": "Memorial Day – No Classes",
       "start": "2027-05-31",
@@ -1417,6 +1441,18 @@
       "kind": "schedule",
       "description": "",
       "url": "https://stjacademy.org/events/event/faculty-in-service-no-classes-5/"
+    },
+    {
+      "id": "54066-1",
+      "title": "Senior Concert",
+      "start": "2027-06-06",
+      "end": "2027-06-06",
+      "allDay": false,
+      "startTime": "15:30",
+      "endTime": "16:30",
+      "kind": "event",
+      "description": "",
+      "url": "https://stjacademy.org/events/event/senior-concert-2/"
     },
     {
       "id": "51446-1",
