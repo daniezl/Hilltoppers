@@ -1498,5 +1498,55 @@
       }
     ],
     "fetchedAt": "2026-10-28T14:42:39.197Z"
+  },
+  "2026-10-29": {
+    "heading": "Daily Bulletin | Thursday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "White Day"
+      },
+      {
+        "kind": "para",
+        "text": "A reminder that tomorrow is a Headmaster’s Holiday, meaning there will be no classes tomorrow. Have a fun and safe Halloween weekend!"
+      },
+      {
+        "kind": "para",
+        "text": "Student Government will meet today right after school in Fuller basement. Please contact Mr. Ryan or Raine with any questions."
+      },
+      {
+        "kind": "para",
+        "text": "Just a reminder to all CTE students interested in SkillsUSA – our first shop talk will be held today during C block (or CP if you can’t get there during C block) in Mrs. McGarvin’s room, Streeter 210."
+      },
+      {
+        "kind": "para",
+        "text": "Calling all VSO concert-goers! The haunted school bus will be departing Brantview Drive for the Halloween concert at the Flynn Center in Burlington at 9am this Saturday. We will return to campus by 7pm. Be sure to bring any snacks and/or money for lunch in Burlington before the show. See you on Brantview at 9, or you are on your own (broomstick)!"
+      },
+      {
+        "kind": "para",
+        "text": "Don’t forget to check out the Election Day signs on the first floor of Colby Hall and vote for your favorite sign! Please cast your ballot based on the quality of the design over the name on it. That said, Be Smart, Vote Eckhardt!"
+      },
+      {
+        "kind": "para",
+        "text": "Even though there is no school tomorrow, we wouldn’t leave you without Michael’s Joke of the Week: Why was the jack-o’-lantern afraid to cross the road?…He had no guts."
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday today to Temuujin Johnson! Happy Birthday tomorrow to Eliana Benware, Marshall May, Lynelle Motari, and Lukas Patno, and on Saturday to Lincoln Wootton, Jeffrey Call, Jr., Alexis McKeon, and Rosa Patoine!"
+      },
+      {
+        "kind": "para",
+        "text": "FRIDAY BOYS & GIRLS CROSS COUNTRY MEET OF CHAMPIONS @ HARDACK 4:00;"
+      },
+      {
+        "kind": "para",
+        "text": "Please dismiss the teams at 11:30"
+      },
+      {
+        "kind": "para",
+        "text": "FOOTBALL QUARTERFINALS vs. CVU 7:00"
+      }
+    ],
+    "fetchedAt": "2026-10-29T17:12:45.964Z"
   }
 }
