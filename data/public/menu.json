@@ -1,111 +1,38 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-30T23:59:46.262Z",
+  "updatedAt": "2026-10-31T05:23:55.790Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-30",
+  "menuDate": "2026-10-31",
   "menus": {
     "breakfast": {
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Green Bell Pepper",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese",
-        "Fresh Red Bell Pepper(s)"
-      ],
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "classicKitchen": [
-        "Bean Burrito",
-        "Beef and Bean Burrito",
-        "Aztec Corn",
-        "Fajita Vegetables"
+        "Bacon Grilled Cheese",
+        "Texas Grilled Cheese Sandwich",
+        "Grilled Ham & Cheese",
+        "Seasoned Vegetable",
+        "Cream of Tomato Basil Soup"
       ],
-      "globalFare": [
-        "Crispy Chicken Bacon Ranch Wrap",
-        "Seasoned Fries",
-        "Sauteed Broccolini"
-      ]
+      "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Roasted Pork Loin",
-        "Baked Sweet Potato",
-        "Green Beans with Oregano"
+        "Chopped Steak",
+        "Stewed Chickpea",
+        "Red Skin Mashed Potatoes",
+        "Honey-Glazed Roasted Root Vegetables"
       ],
       "globalFare": [
-        "Tofu Extra Firm 4 Oz Square",
-        "Mongolian Beef Stir Fry",
-        "Jasmine Rice",
-        "Shredded Carrots",
-        "Mushroom Medium White Fresh",
-        "Snow Peas"
+        "Fish and Chips",
+        "Sauteed Broccolini"
       ]
     }
   },
   "daysUpdatedAt": "2026-10-30T23:59:46.262Z",
   "days": {
-    "2026-10-23": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Clipped Spinach",
-          "Sliced Smoked Ham",
-          "Cheese Omelet",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bell Peppers",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Mild Pork Sausage Link",
-          "Chocolate Chip Pancakes",
-          "Hashbrown Patty"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Crispy Chicken Sandwich",
-          "Peas and Carrots"
-        ],
-        "globalFare": [
-          "Taco Meat",
-          "Soft Shell Beef Taco",
-          "Rice Brown Spanish",
-          "Black Refried Beans",
-          "Roasted Confetti Corn"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Grilled Chicken Breast",
-          "Buttered Pasta",
-          "Fresh Roasted Broccoli",
-          "Fresh Steamed Baby Carrots",
-          "Roasted Cauliflower",
-          "Sauteed Mushrooms",
-          "Sauteed Zucchini and Squash"
-        ],
-        "globalFare": [
-          "Saute Breaded Pork Chops",
-          "Crispy Roasted Tofu",
-          "Red Skin Mashed Potatoes",
-          "Sauteed Green Cabbage & Shallots"
-        ]
-      }
-    },
     "2026-10-24": {
       "breakfast": {
         "classicKitchen": [],
