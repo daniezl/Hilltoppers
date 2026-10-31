@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-31T11:07:04.461Z",
+  "updatedAt": "2026-10-31T16:17:01.754Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-31",
   "menus": {
@@ -31,7 +31,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-30T23:59:46.262Z",
+  "daysUpdatedAt": "2026-10-31T16:17:01.754Z",
   "days": {
     "2026-10-24": {
       "breakfast": {
@@ -680,6 +680,40 @@
           "Cavatappi Pasta",
           "Fresh Roasted Broccoli",
           "Pesto Cream Sauce"
+        ]
+      }
+    },
+    "2026-11-07": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Mac & Cheese Bites",
+          "Kentucky Hot Brown Sandwich",
+          "Mixed Vegetables"
+        ],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Breakfast Quesadilla",
+          "Sausage Patty",
+          "Hashbrown Patty"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Onion Crusted Chicken Aioli",
+          "Baked Italian Tofu",
+          "Fresh Garlic Mashed Potatoes",
+          "Carrot Baby Peeled Tri-Color"
+        ],
+        "globalFare": [
+          "Slow-Cooked Tomato & Herb White Beans",
+          "Poblano Stuffed Pork Loin",
+          "Confetti Rice",
+          "Green Beans With Tomatoes"
         ]
       }
     }
