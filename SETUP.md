@@ -123,3 +123,4 @@ match /feedback/{id} {
    - 启用"开发者模式"
    - 点击"加载已解压的扩展程序"
    - 选择 `chrome-extension/dist/` 目录
+
