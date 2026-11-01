@@ -48,6 +48,30 @@ removes a failure mode: a build made without the old `.env.local` was silently
 broken — no sign-in, no preference sync, and the day colour stopped being
 predicted forward, so the popup showed the previous school day's colour.
 
+### Google sign-in
+
+Signing in uses Google. The one value a build cannot carry for you is the OAuth
+client id; create it once in the same Google Cloud project as the Firebase
+project:
+
+1. Google Cloud Console → APIs & Services → Credentials → Create credentials →
+   OAuth client ID → application type **Web application** (not "Chrome").
+2. Add `https://<extension-id>.chromiumapp.org/` under **Authorized redirect
+   URIs**. The id is on `chrome://extensions`; `googleRedirectUrl()` in
+   `src/firebase/auth.ts` returns the exact string. An unpacked build loaded from
+   a different folder gets a different id, so pin it with a manifest `key` if
+   several machines should share one client.
+3. Firebase Console → Authentication → Sign-in method → enable **Google**.
+4. Put the id in `.env.local` (gitignored) and rebuild:
+
+   ```
+   VITE_GOOGLE_OAUTH_CLIENT_ID=....apps.googleusercontent.com
+   ```
+
+Until then the Account page still loads and the button says sign-in is not set
+up yet. The `identity` permission exists because `chrome.identity` is what opens
+Google's sign-in window in a Manifest V3 extension.
+
 ### Optional: analytics
 
 The one value not committed is `VITE_FIREBASE_MEASUREMENT_API_SECRET`. That one

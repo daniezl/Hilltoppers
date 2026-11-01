@@ -25,6 +25,31 @@ Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键�
 （`chrome-extension/src/firebase/config.ts` 和 `scheduleService.ts`），
 `npm ci && npm run build` 出来的扩展直接可用。
 
+### 必须：Google 登录
+
+登录方式只有「Sign in with Google」。扩展里唯一没法写死的值是 OAuth client id，
+需要在同一个 Google Cloud 项目里配一次：
+
+1. Google Cloud Console → API 和凭据 → 创建凭据 → OAuth 客户端 ID，应用类型选
+   **Web 应用**（不要选「Chrome 扩展程序」，那种类型不能自定义重定向 URI）。
+2. 在「已获授权的重定向 URI」里加上 `https://<扩展 ID>.chromiumapp.org/`。
+   扩展 ID 在 `chrome://extensions` 上可以看到，
+   `chrome-extension/src/firebase/auth.ts` 里的 `googleRedirectUrl()` 返回的就是
+   这个字符串。用「加载已解压的扩展程序」从别的目录加载时扩展 ID 会变；想让多台
+   机器共用一个 client，就在 `manifest.json` 里用 `key` 固定 ID。
+3. Firebase 控制台 → Authentication → 登录方式 → 启用 **Google**。
+4. 把 client id 写进 `chrome-extension/.env.local`（已被 git 忽略）再重新构建：
+
+   ```
+   VITE_GOOGLE_OAUTH_CLIENT_ID=....apps.googleusercontent.com
+   ```
+
+没配好之前 Account 页面照常打开，按钮会直接说还没设置好，不会弹出 Google 窗口。
+
+以前用邮箱密码注册的账号不会自动变成 Google 账号：同一个邮箱用 Google 登录会报
+`auth/account-exists-with-different-credential`，页面会说明这一点。要不要把这些
+账号迁移过去，或者让用户换一个 Google 账号，是维护者的决定。
+
 ### 可选：分析上报
 
 唯一没有写进仓库的是 GA4 的 `VITE_FIREBASE_MEASUREMENT_API_SECRET` —— 它是真正
@@ -98,4 +123,3 @@ match /feedback/{id} {
    - 启用"开发者模式"
    - 点击"加载已解压的扩展程序"
    - 选择 `chrome-extension/dist/` 目录
-
