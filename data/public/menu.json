@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-10-31T23:36:05.205Z",
+  "updatedAt": "2026-11-01T05:33:12.962Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-31",
+  "menuDate": "2026-11-01",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -10,65 +10,32 @@
     },
     "lunch": {
       "classicKitchen": [
-        "Bacon Grilled Cheese",
-        "Texas Grilled Cheese Sandwich",
-        "Grilled Ham & Cheese",
-        "Seasoned Vegetable",
-        "Cream of Tomato Basil Soup"
+        "Seasoned Tater Tots",
+        "Plant-Based Chik'n Tenders",
+        "Buttered Corn",
+        "Chicken Waffle Sandwich"
       ],
       "globalFare": []
     },
     "dinner": {
       "classicKitchen": [
-        "Chopped Steak",
-        "Stewed Chickpea",
-        "Red Skin Mashed Potatoes",
-        "Honey-Glazed Roasted Root Vegetables"
+        "Chicken Breast Florentine",
+        "Manicotti W/ Florentine Sauce",
+        "Green Peas"
       ],
       "globalFare": [
-        "Fish and Chips",
-        "Sauteed Broccolini"
+        "BBQ Chicken Wings",
+        "Sweet & Sour Chicken Wings",
+        "Beer Battered French Fries",
+        "Baked Beans",
+        "Seasoned Corn on the Cob",
+        "Cheese Queso Hatch",
+        "Jalapeno Poppers"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-31T16:17:01.754Z",
+  "daysUpdatedAt": "2026-11-01T05:33:12.962Z",
   "days": {
-    "2026-10-24": {
-      "breakfast": {
-        "classicKitchen": [],
-        "globalFare": []
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Ham Club Baguette Sandwich",
-          "Loaded Bacon Ranch Fries",
-          "Mixed Vegetables"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Buttermilk Pancake(s)",
-          "Sandwich Egg & Cheese English Muffin",
-          "Egg Bacon and Cheese English Muffin",
-          "Ham Egg & Cheese English Muffin Sandwich",
-          "Sausage Patty 2 Oz",
-          "Hashbrown Patty"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Cajun Honey Roast Pork Loin",
-          "Stuffed Pepper",
-          "Red Beans & Rice",
-          "Butternut Squash"
-        ],
-        "globalFare": [
-          "Chicken Marsala",
-          "Creamy Basil & Sun Dried Tomatoes Pasta",
-          "Sauteed Mushrooms",
-          "Sauteed Zucchini"
-        ]
-      }
-    },
     "2026-10-25": {
       "breakfast": {
         "classicKitchen": [],
@@ -714,6 +681,40 @@
           "Poblano Stuffed Pork Loin",
           "Confetti Rice",
           "Green Beans With Tomatoes"
+        ]
+      }
+    },
+    "2026-11-08": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Battered Cod Sandwich",
+          "Potato Wedges",
+          "Sauteed Spinach"
+        ],
+        "globalFare": [
+          "Pork Bacon",
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Meatless Stuffed Bell Peppers",
+          "Chimichurri Flank Steak",
+          "Roasted Fingerling Potatoes",
+          "Roasted Garlic Butter Mushrooms"
+        ],
+        "globalFare": [
+          "Roasted Red Pepper Hummus",
+          "Naan Bread",
+          "Indian Baked Rice",
+          "Oven Roasted Cauliflower with Turmeric"
         ]
       }
     }
