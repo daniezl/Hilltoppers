@@ -83,8 +83,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   color: #2c3f29;
   font-size: 14px;
 }
-.login__password-field { position: relative; display: flex; align-items: center; }
-.login__password-field input { padding-right: 64px; }
 
 .login button, .account-continue {
   padding: 11px 16px;
@@ -107,17 +105,21 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .login button.tertiary { color: #607367; background: transparent; padding: 5px 8px; font-weight: 400; }
 .login button.tertiary:not(:disabled):hover { color: var(--text); text-decoration: underline; }
 .login button:disabled { opacity: .5; cursor: default; }
-.login button.login__password-toggle {
-  position: absolute;
-  right: 5px;
-  padding: 8px;
-  border: 0;
-  background: transparent;
-  color: #607367;
-  font-size: 12px;
-  font-weight: 400;
+.login button.login__google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-color: #d5dfce;
+  color: #2c3f29;
+  font-size: 14px;
 }
-.login__password-toggle:hover { text-decoration: underline; }
+.login button.login__google-button:not(:disabled):hover { background: #f4f7f1; border-color: #bfd0bc; }
+.login__google-button svg { width: 18px; height: 18px; flex: none; }
+.login__google { display: grid; gap: 4px; }
 .account-continue { display: block; text-align: center; text-decoration: none; }
 .account-verification { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .login__container--account {
@@ -183,28 +185,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .login button, .account-continue { transition: none; }
 }
-
 .login__container--auth { width: min(420px, 100%); gap: 26px; box-shadow: 0 8px 28px #243c3208; }
 .login__container--auth .login__header h1 { margin: 0; font-size: 25px; }
 .login__container--auth .login__header p { margin-top: 10px; }
-.login__container--auth .login__form { gap: 0; }
-.login__container--auth .login__form > label { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 0 8px; }
-.login__container--auth .login__form > label:first-child { margin-top: 0; }
-.login__hint { color: var(--muted); font-size: 11px; font-weight: 400; }
-.login__submit { margin-top: 24px; }
-.login__links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 16px; }
-.login__links button.tertiary { padding: 0; font-size: 12px; }
 .login__error { color: var(--danger); font-size: 12px; line-height: 1.5; margin: 12px 0 0; }
-.login__reset-success { display: grid; gap: 24px; }
-.login__reset-success p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0; overflow-wrap: anywhere; }
-.login__reset-success strong { color: var(--text); font-weight: 500; }
-
-.login__code-form { max-width: 420px; }
-.login__code-form input { background: #fff; color: #263e32; border: 1px solid #dce4d9; border-radius: 8px; padding: 12px; color-scheme: light; }
-#email-code { letter-spacing: .3em; font-variant-numeric: tabular-nums; }
-
-.login__reset-success .login__form > .primary { margin-top: 20px; }
-.login__reset-success .login__form > .tertiary { margin-top: 12px; }
 
 .account-school-form { width: 100%; padding: 20px; border-top: 1px solid var(--border); }
 .account-school-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
