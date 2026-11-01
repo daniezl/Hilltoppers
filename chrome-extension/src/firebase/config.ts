@@ -84,6 +84,21 @@ export const firebaseConfig: FirebaseConfig = {
 };
 
 /**
+ * OAuth client id for "Sign in with Google". It is not a secret, but it is
+ * specific to the extension id: the client must list
+ * `https://<extension-id>.chromiumapp.org/` as an authorized redirect URI, and
+ * Google rejects the sign-in with `redirect_uri_mismatch` if the two do not
+ * match. `googleRedirectUrl()` in `auth.ts` returns the exact value to
+ * register. Left blank, the sign-in button explains that it is not set up yet
+ * instead of opening a window that Google will refuse.
+ *
+ * Setup steps are in SETUP.md ("Google 登录").
+ */
+const GOOGLE_OAUTH_CLIENT_ID = '';
+
+export const googleOAuthClientId = resolve(env.VITE_GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_ID);
+
+/**
  * True in every normal build, since the values above are committed. It still
  * exists so that blanking a default here fails closed rather than initialising
  * Firebase with an empty project id, and so the callers that genuinely need
