@@ -25,7 +25,7 @@ struct FeatureShowcaseView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
-                    router.popToRoot()
+                    router.popToSettings()
                 }
                 .foregroundColor(accentGreen)
             }

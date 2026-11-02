@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit.UIGestureRecognizerSubclass
 
 /// The look shared by every tab. Light mode only: the app sets
 /// `.preferredColorScheme(.light)` at the root, so colors here are literal.
@@ -48,15 +49,21 @@ extension View {
 /// navigation bar so every tab starts at the same height.
 struct TabHeader<Trailing: View>: View {
     let title: String
+    /// How one title gives way to the next when the title changes.
+    var titleTransition: AnyTransition = .identity
     @ViewBuilder let trailing: () -> Trailing
 
     var body: some View {
         HStack(alignment: .center) {
-            Text(title)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundColor(HT.green)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+            ZStack(alignment: .leading) {
+                Text(title)
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .foregroundColor(HT.green)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .id(title)
+                    .transition(titleTransition)
+            }
             Spacer(minLength: 8)
             trailing()
         }
@@ -105,6 +112,32 @@ struct StatusMessage: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, minHeight: 180)
+    }
+}
+
+/// A short text action in a capsule, floating over the page.
+struct CapsuleButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        let label = Text(title)
+            .font(.subheadline.weight(.semibold))
+            .foregroundColor(HT.green)
+
+        if #available(iOS 26.0, *) {
+            Button(action: action) { label }
+                .buttonStyle(.glass)
+        } else {
+            Button(action: action) {
+                label
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .overlay(Capsule().stroke(HT.hairline, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
@@ -176,6 +209,79 @@ struct SettingsRowDivider: View {
     }
 }
 
+/// How far the current or latest touch has moved. SwiftUI's tap still fires after about
+/// 10pt of movement, which turns the start of a short swipe into a tap. This watches
+/// without taking part: it never recognizes, and it leaves every other gesture alone.
+final class TouchMovementTracker: UIGestureRecognizer, UIGestureRecognizerDelegate {
+    static let shared = TouchMovementTracker()
+
+    /// A steady finger still moves a little during a real tap.
+    private static let tapTolerance: CGFloat = 5
+
+    private var start: CGPoint = .zero
+    private var farthest: CGFloat = 0
+
+    /// For a tap handler to check, so that only a finger that stayed put counts.
+    var wasTap: Bool { farthest <= Self.tapTolerance }
+
+    private init() {
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+        delegate = self
+    }
+
+    private func record(_ touches: Set<UITouch>) {
+        guard let point = touches.first?.location(in: nil) else { return }
+        farthest = max(farthest, hypot(point.x - start.x, point.y - start.y))
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        start = touches.first?.location(in: nil) ?? .zero
+        farthest = 0
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        record(touches)
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        record(touches)
+        state = .failed
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        state = .failed
+    }
+
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer
+    ) -> Bool {
+        true
+    }
+}
+
+/// Puts the tracker on the window, so it sees touches anywhere in the app.
+struct TouchMovementTrackerInstaller: UIViewRepresentable {
+    final class Host: UIView {
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            guard let window, TouchMovementTracker.shared.view !== window else { return }
+            window.addGestureRecognizer(TouchMovementTracker.shared)
+        }
+    }
+
+    func makeUIView(context: Context) -> Host {
+        let host = Host()
+        host.isUserInteractionEnabled = false
+        return host
+    }
+
+    func updateUIView(_ uiView: Host, context: Context) {}
+}
+
 /// Date and clock formatting in the school's timezone, whatever the phone is set to.
 enum SchoolTime {
     private static var formatters: [String: DateFormatter] = [:]
@@ -234,6 +340,85 @@ enum SchoolTime {
             return minutes == 0 ? "\(total / 3600)h" : "\(total / 3600)h\(minutes)m"
         }
         return String(format: "%02d:%02d", total / 60, total % 60)
+    }
+}
+
+/// The new content slides in from the side the finger is moving away from.
+func slideTransition(direction: Int) -> AnyTransition {
+    .asymmetric(
+        insertion: .move(edge: direction > 0 ? .trailing : .leading).combined(with: .opacity),
+        removal: .move(edge: direction > 0 ? .leading : .trailing).combined(with: .opacity)
+    )
+}
+
+/// Horizontal swipe that shows the finger's movement. A drag commits to one direction
+/// when it starts: `isSwiping` turns on for a sideways one, so the page can stop
+/// scrolling, and a vertical one never counts as a swipe however it moves later.
+/// A step of +1 means the next item, -1 the previous.
+struct HorizontalSwipe: ViewModifier {
+    @Binding var offset: CGFloat
+    @Binding var isSwiping: Bool
+    let onStep: (Int) -> Void
+    @State private var lockedAxis: Axis?
+    @GestureState private var isDragging = false
+
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 10)
+                    .updating($isDragging) { _, state, _ in state = true }
+                    .onChanged { value in
+                        if lockedAxis == nil {
+                            let isSideways = abs(value.translation.width) > abs(value.translation.height)
+                            lockedAxis = isSideways ? .horizontal : .vertical
+                            isSwiping = isSideways
+                        }
+                        if lockedAxis == .horizontal {
+                            offset = value.translation.width * 0.6
+                        }
+                    }
+                    .onEnded { value in
+                        let width = value.translation.width
+                        if lockedAxis == .horizontal, abs(width) > 60 || abs(value.predictedEndTranslation.width) > 140 {
+                            onStep(width < 0 ? 1 : -1)
+                        }
+                    }
+            )
+            // Here rather than in onEnded, which a cancelled drag never reaches.
+            .onChange(of: isDragging) { dragging in
+                guard !dragging else { return }
+                lockedAxis = nil
+                isSwiping = false
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { offset = 0 }
+            }
+    }
+}
+
+/// A drag's offset kept outside the view that starts it, so following a finger
+/// redraws only what observes this and not the whole screen around it.
+final class SwipeOffset: ObservableObject {
+    @Published var value: CGFloat = 0
+}
+
+/// Redraws just its content as a `SwipeOffset` changes.
+struct SwipeOffsetReader<Content: View>: View {
+    @ObservedObject var offset: SwipeOffset
+    @ViewBuilder let content: (CGFloat) -> Content
+
+    var body: some View {
+        content(offset.value)
+    }
+}
+
+extension View {
+    func readHeight(into height: Binding<CGFloat>) -> some View {
+        background(
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear { height.wrappedValue = geometry.size.height }
+                    .onChange(of: geometry.size.height) { height.wrappedValue = $0 }
+            }
+        )
     }
 }
 

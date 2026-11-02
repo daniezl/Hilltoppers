@@ -825,9 +825,10 @@ struct ContentView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 12)
-                // More room below than above: true center reads as too low on screen.
-                .padding(.bottom, 44)
+                // Clears the settings button; the bottom grows with it so the page stays
+                // above true center, which reads as too low on screen.
+                .padding(.top, 52)
+                .padding(.bottom, 148)
                 .frame(minHeight: geometry.size.height, alignment: .center)
             }
             .refreshable {
@@ -844,8 +845,17 @@ struct ContentView: View {
                     .transition(.opacity)
                 }
             }
+            .overlay(alignment: .topTrailing) {
+                CapsuleButton(title: "Settings") {
+                    router.push(.settings)
+                }
+                // In the same spot as the Today button on Calendar.
+                .padding(.trailing, 37)
+                .padding(.top, 10)
+            }
         }
         .background(HT.page.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 logAppOpenIfNeeded()
@@ -1488,8 +1498,6 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                TabHeader(title: "Settings") { EmptyView() }
-
                 VStack(spacing: 0) {
                     SettingsPickerRow(
                         title: "My lunch",
@@ -1551,7 +1559,11 @@ struct SettingsView: View {
             .padding(.bottom, 24)
         }
         .background(HT.page.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(HT.page, for: .navigationBar)
     }
 
     private func navigationRow(_ title: String, _ route: AppRoute) -> some View {
@@ -2714,7 +2726,7 @@ struct LoginView: View {
         await MainActor.run {
             // Ensure we navigate from settings page, not from login page
             // This ensures the back button returns to settings, not login
-            router.popToRoot()
+            router.popToSettings()
             router.push(.settingsCourses)
         }
     }

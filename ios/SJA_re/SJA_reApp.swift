@@ -104,16 +104,6 @@ struct SJA_reApp: App {
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
         UINavigationBar.appearance().compactAppearance = navAppearance
-
-        // SwiftUI's .tint does not reach the tab bar before iOS 26.
-        if #unavailable(iOS 26.0) {
-            let tabAppearance = UITabBarAppearance()
-            tabAppearance.configureWithDefaultBackground()
-            tabAppearance.stackedLayoutAppearance.selected.iconColor = .black
-            tabAppearance.stackedLayoutAppearance.normal.iconColor = .systemGray
-            UITabBar.appearance().standardAppearance = tabAppearance
-            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
-        }
     }
 
     var body: some Scene {

@@ -96,12 +96,18 @@ final class DiningMenuStore: ObservableObject {
 
 struct MenuTabView: View {
     @StateObject private var store = DiningMenuStore()
+    @EnvironmentObject private var router: NavigationRouter
     @Environment(\.scenePhase) private var scenePhase
     @State private var period: DiningPeriod = .lunch
     /// nil follows today; set once the arrows move.
     @State private var selectedKey: String?
     @State private var choseManually = false
     @State private var todayKey = SchoolTime.key(Date.currentEST)
+    @State private var slideDirection = 1
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isSwiping = false
+    @State private var contentHeight: CGFloat = 0
+    @State private var viewportHeight: CGFloat = 0
 
     private var shownKey: String { selectedKey ?? todayKey }
 
@@ -123,7 +129,7 @@ struct MenuTabView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                TabHeader(title: title) {
+                TabHeader(title: title, titleTransition: slideTransition(direction: slideDirection)) {
                     HStack(spacing: 8) {
                         StepButton(systemName: "chevron.left", label: "Previous day's menu", enabled: dayIndex > 0) { step(-1) }
                         StepButton(systemName: "chevron.right", label: "Next day's menu", enabled: dayIndex < dayKeys.count - 1) { step(1) }
@@ -132,23 +138,48 @@ struct MenuTabView: View {
 
                 Picker("Meal", selection: Binding(
                     get: { period },
-                    set: { period = $0; choseManually = true }
+                    set: { newPeriod in
+                        let meals = DiningPeriod.allCases
+                        let isLater = (meals.firstIndex(of: newPeriod) ?? 0) > (meals.firstIndex(of: period) ?? 0)
+                        show(day: shownKey, period: newPeriod, direction: isLater ? 1 : -1)
+                    }
                 )) {
                     ForEach(DiningPeriod.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
 
-                content
+                ZStack(alignment: .top) {
+                    content
+                        .id("\(shownKey)-\(period.rawValue)")
+                        .transition(slideTransition(direction: slideDirection))
+                }
+                .offset(x: swipeOffset)
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
             .padding(.bottom, 24)
+            .readHeight(into: $contentHeight)
         }
+        // Only scrolls when a long menu or a small screen needs it to.
+        .scrollDisabled(contentHeight <= viewportHeight || isSwiping)
+        .readHeight(into: $viewportHeight)
+        .modifier(HorizontalSwipe(offset: $swipeOffset, isSwiping: $isSwiping, onStep: stepMeal))
         .background(HT.page.ignoresSafeArea())
         .refreshable { await store.refresh() }
         .task {
             applyAutomaticPeriod()
             await store.refresh()
+        }
+        .onChange(of: router.menuRetapCount) { _ in
+            let current = dayIndex * 3 + mealIndex(period)
+            let target = (dayKeys.firstIndex(of: todayKey) ?? 0) * 3 + mealIndex(automaticPeriod())
+            show(day: todayKey, period: automaticPeriod(), direction: target >= current ? 1 : -1, followsNow: true)
+        }
+        .onChange(of: router.selectedTab) { tab in
+            guard tab != .menu else { return }
+            selectedKey = nil
+            choseManually = false
+            applyAutomaticPeriod()
         }
         .onChange(of: scenePhase) { phase in
             guard phase == .active else { return }
@@ -181,16 +212,47 @@ struct MenuTabView: View {
         }
     }
 
+    private func mealIndex(_ meal: DiningPeriod) -> Int {
+        DiningPeriod.allCases.firstIndex(of: meal) ?? 0
+    }
+
+    /// The direction has to be in place a moment before the content changes:
+    /// the outgoing view leaves using the transition it last rendered with.
+    private func show(day: String, period newPeriod: DiningPeriod, direction: Int, followsNow: Bool = false) {
+        slideDirection = direction
+        DispatchQueue.main.async {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.9)) {
+                selectedKey = followsNow ? nil : day
+                period = newPeriod
+                choseManually = !followsNow
+            }
+        }
+    }
+
     private func step(_ delta: Int) {
         let next = dayIndex + delta
         guard dayKeys.indices.contains(next) else { return }
-        selectedKey = dayKeys[next]
-        choseManually = true
+        show(day: dayKeys[next], period: period, direction: delta)
+    }
+
+    /// Next or previous meal, running on into the neighboring day.
+    private func stepMeal(_ delta: Int) {
+        let meals = DiningPeriod.allCases
+        let next = mealIndex(period) + delta
+        if meals.indices.contains(next) {
+            show(day: shownKey, period: meals[next], direction: delta)
+        } else if dayKeys.indices.contains(dayIndex + delta) {
+            show(day: dayKeys[dayIndex + delta], period: delta > 0 ? .breakfast : .dinner, direction: delta)
+        }
     }
 
     /// Picks the meal coming up next until the user chooses one themselves.
     private func applyAutomaticPeriod() {
         guard !choseManually else { return }
+        period = automaticPeriod()
+    }
+
+    private func automaticPeriod() -> DiningPeriod {
         let now = Date.currentEST
         let blocks = ContentView.loadCachedBlocks()
 
@@ -201,13 +263,12 @@ struct MenuTabView: View {
         }
 
         if let first = blocks.first, let start = time(first.start), now < start {
-            period = .breakfast
-            return
+            return .breakfast
         }
         let lunchBlock = blocks.first { $0.name.lowercased().contains("lunch") } ?? blocks.first { $0.subBlocks?.isEmpty == false }
         // Weekends and schedules without lunch still switch to dinner at 2 PM.
         let lunchEnd = time(lunchBlock?.end ?? "14:00") ?? now
-        period = now >= lunchEnd ? .dinner : .lunch
+        return now >= lunchEnd ? .dinner : .lunch
     }
 }
 

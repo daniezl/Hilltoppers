@@ -187,7 +187,6 @@ struct ConfettiAnimationView: View {
                     animationFinished = true
                     onAnimationComplete()
                 }
-                .offset(y: -200) // Move confetti up 
             }
         }
         .onAppear {
@@ -542,6 +541,7 @@ struct ScheduleView: View {
     @State private var viewingGrade: GradeLevel? = nil
     @State private var showGradePrompt: Bool = false
     @State private var hasStartedLoad = false
+    @EnvironmentObject private var router: NavigationRouter
 
     
 
@@ -668,6 +668,9 @@ struct ScheduleView: View {
         }
         .onChange(of: currentDayType) { _ in
             updateCountdownWidget()
+        }
+        .onChange(of: router.selectedTab) { tab in
+            if tab != .today { expandedBlockID = nil }
         }
         .onChange(of: currentDayTypeDate) { _ in
             updateCountdownWidget()
@@ -814,7 +817,12 @@ struct ScheduleView: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isNow ? HT.softGreen : isNext ? HT.softGreen.opacity(0.5) : Color.clear)
+                    .fill(isNow ? HT.softGreen : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                    .foregroundColor(isNext ? Color.green : Color.clear)
             )
             .contentShape(Rectangle())
             .onTapGesture {

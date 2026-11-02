@@ -97,14 +97,21 @@ typealias SpecialPeriod = (start: String, end: String, details: String?)
 
 @MainActor
 final class CalendarStore: ObservableObject {
-    @Published private(set) var events: [CalendarEvent]? { didSet { dayCache.removeAll() } }
+    @Published private(set) var events: [CalendarEvent]? { didSet { dataChanged() } }
     @Published private(set) var eventsFailed = false
-    @Published private(set) var dayTypes: [String: String] = [:] { didSet { dayCache.removeAll() } }
-    @Published private(set) var specialDays: [String: CloudflareDataLoader.SpecialDayRecord] = [:] { didSet { dayCache.removeAll() } }
-    @Published private(set) var periods: [SpecialPeriod] = [] { didSet { dayCache.removeAll() } }
+    @Published private(set) var dayTypes: [String: String] = [:] { didSet { dataChanged() } }
+    @Published private(set) var specialDays: [String: CloudflareDataLoader.SpecialDayRecord] = [:] { didSet { dataChanged() } }
+    @Published private(set) var periods: [SpecialPeriod] = [] { didSet { dataChanged() } }
 
     /// Every visible cell asks for its day on each redraw, across two years of months.
     private var dayCache: [String: CalendarDayInfo] = [:]
+    /// Lets a month skip redrawing until something it shows has actually changed.
+    private(set) var revision = 0
+
+    private func dataChanged() {
+        dayCache.removeAll()
+        revision += 1
+    }
 
     private static let eventsCacheKey = "CachedCalendarEventsData"
     private static let dayTypesCacheKey = "CachedCalendarDayTypesData"

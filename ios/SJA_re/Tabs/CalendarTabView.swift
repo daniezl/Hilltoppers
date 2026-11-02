@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let calendarScrollSpace = "calendarScroll"
+
 struct CalendarTabView: View {
     @StateObject private var store = CalendarStore()
     @ObservedObject private var blockManager = BlockSettingsManager.shared
@@ -11,9 +13,16 @@ struct CalendarTabView: View {
     @State private var scheduleOpen = false
     @State private var scrollToToday: (() -> Void)?
     @State private var dayPanelContentHeight: CGFloat = 120
+    /// Which way the day card's content moves; 0 fades, for a day picked in the grid.
+    @State private var dayDirection = 0
+    /// How many months either side of today are drawn so far. The rest start as
+    /// empty space of the right height, which keeps the first opening from stalling.
+    @State private var drawnMonthRadius = 1
+    /// In @State so that its changes reach only the card, which observes it.
+    @State private var daySwipe = SwipeOffset()
+    @State private var isSwipingDay = false
     @State private var visibleYear = Calendar.sja.component(.year, from: Date.currentEST)
 
-    private static let scrollSpace = "calendarScroll"
     /// Today sits a little above the middle, with the days before it still in view.
     private static let todayAnchor = UnitPoint(x: 0.5, y: 0.25)
     /// A January sets the year once it passes this share of the list's height, just
@@ -41,18 +50,45 @@ struct CalendarTabView: View {
                     ScrollView {
                         // Not lazy: jumping to a month far down a lazy stack lands in the wrong place.
                         VStack(alignment: .leading, spacing: 18) {
-                            ForEach(months, id: \.self) { month in
-                                monthSection(month)
-                                    .id(monthID(month))
+                            let allMonths = months
+                            ForEach(Array(allMonths.enumerated()), id: \.element) { index, month in
+                                let id = monthID(month)
+                                MonthSection(
+                                    month: month,
+                                    // Nil unless it falls in this month, so a change of day
+                                    // redraws the two months involved and leaves the rest.
+                                    selectedKey: selectedKey.hasPrefix(id) ? selectedKey : nil,
+                                    todayKey: todayKey.hasPrefix(id) ? todayKey : nil,
+                                    revision: store.revision,
+                                    isDrawn: abs(index - allMonths.count / 2) <= drawnMonthRadius,
+                                    store: store,
+                                    onSelect: { select($0, direction: 0) }
+                                )
+                                .equatable()
+                                .id(id)
                             }
                         }
                         .modifier(ScrollTargetRows())
+                        // One frame over all the months, so it travels from day to day.
+                        .overlayPreferenceValue(SelectedDayAnchorKey.self) { anchor in
+                            GeometryReader { geometry in
+                                if let anchor {
+                                    let rect = geometry[anchor]
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(HT.brightGreen, lineWidth: 2)
+                                        .frame(width: rect.width, height: rect.height)
+                                        .position(x: rect.midX, y: rect.midY)
+                                }
+                            }
+                            .allowsHitTesting(false)
+                        }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 8)
                     }
+                    .scrollDisabled(isSwipingDay)
                     .modifier(StartsAtMonth(id: String(todayKey.prefix(7))))
                     .background(ScrollsToTopDisabler())
-                    .coordinateSpace(name: Self.scrollSpace)
+                    .coordinateSpace(name: calendarScrollSpace)
                     .onPreferenceChange(JanuaryOffsetsKey.self) { offsets in
                         // Above the first January in reach, the earliest year is showing.
                         let reached = offsets.filter { $0.value <= geometry.size.height * Self.yearChangeShare }.keys.max()
@@ -65,10 +101,29 @@ struct CalendarTabView: View {
                             // Same side margins as the floating tab bar below it.
                             .padding(.horizontal, 21)
                             .padding(.bottom, 8)
+                            // Without this, taps around the card reach the days behind it.
+                            .contentShape(Rectangle())
+                            .onTapGesture {}
                     }
                     .refreshable { await store.refresh() }
                     .onChange(of: router.calendarRetapCount) { _ in
+                        dayDirection = 0
                         scrollToToday?()
+                    }
+                    .onChange(of: router.selectedTab) { tab in
+                        guard tab == .calendar else {
+                            dayDirection = 0
+                            selectedKey = todayKey
+                            scheduleOpen = false
+                            return
+                        }
+                        // Scrolling does nothing while the tab is off screen, so this
+                        // part of going back to the default state waits for its return.
+                        for delay in [0.0, 0.1] {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                                proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
+                            }
+                        }
                     }
                     .onAppear {
                         // Switching back to this tab fires onAppear again; keep the user's place.
@@ -87,8 +142,21 @@ struct CalendarTabView: View {
                     }
                 }
             }
+        // On the whole page, so a swipe across the month changes the day as well.
+        .modifier(HorizontalSwipe(
+            offset: Binding(get: { daySwipe.value }, set: { daySwipe.value = $0 }),
+            isSwiping: $isSwipingDay,
+            onStep: stepDay
+        ))
         .background(HT.page.ignoresSafeArea())
         .task { await store.refresh() }
+        .task {
+            // Small steps, so filling in the rest never holds up a frame for long.
+            while drawnMonthRadius < 12 {
+                try? await Task.sleep(nanoseconds: 30_000_000)
+                drawnMonthRadius += 1
+            }
+        }
         .onChange(of: scenePhase) { phase in
             guard phase == .active else { return }
             todayKey = SchoolTime.key(Date.currentEST)
@@ -102,7 +170,7 @@ struct CalendarTabView: View {
         VStack(spacing: 8) {
             TabHeader(title: String(visibleYear)) {
                 if let scrollToToday {
-                    TodayButton(action: scrollToToday)
+                    CapsuleButton(title: "Today", action: scrollToToday)
                 }
             }
             // Lines up with the text inside the day card: its 21 margin plus 16 padding.
@@ -132,82 +200,26 @@ struct CalendarTabView: View {
         }
     }
 
-    private func monthSection(_ month: Date) -> some View {
-        let calendar = Calendar.sja
-        let days = calendar.range(of: .day, in: .month, for: month) ?? 1..<1
-        let keys = days.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: month) }.map(SchoolTime.key)
-        // Blank cells before the 1st, so the grid starts on Sunday.
-        let leadingBlanks = calendar.component(.weekday, from: month) - 1
-        let cells: [String?] = Array(repeating: nil, count: leadingBlanks) + keys.map(Optional.some)
-
-        return VStack(alignment: .leading, spacing: 4) {
-            // The month's name sits over its 1st, so it reads as part of the grid.
-            HStack(spacing: 4) {
-                ForEach(0..<7, id: \.self) { column in
-                    Text(column == leadingBlanks ? SchoolTime.string(month, "MMM") : "")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundColor(HT.green)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-
-            // Plain rows, not a lazy grid: jumping to a month needs every month's real height.
-            ForEach(0..<(cells.count + 6) / 7, id: \.self) { row in
-                HStack(spacing: 4) {
-                    ForEach(0..<7, id: \.self) { column in
-                        let index = row * 7 + column
-                        if index < cells.count, let key = cells[index] {
-                            dayCell(key)
-                        } else {
-                            Color.clear.frame(maxWidth: .infinity, minHeight: 40)
-                        }
-                    }
-                }
-            }
-        }
-        .background {
-            // Only a January can change the year in the title, so only those report in.
-            if calendar.component(.month, from: month) == 1 {
-                GeometryReader { section in
-                    Color.clear.preference(
-                        key: JanuaryOffsetsKey.self,
-                        value: [calendar.component(.year, from: month): section.frame(in: .named(Self.scrollSpace)).minY]
-                    )
-                }
-            }
-        }
-    }
-
-    private func dayCell(_ key: String) -> some View {
-        let info = store.describe(key)
-        let isSelected = key == selectedKey
-        let isToday = key == todayKey
-        let number = SchoolTime.date(fromKey: key).map { Calendar.sja.component(.day, from: $0) } ?? 0
-
-        return Button {
-            selectedKey = key
-        } label: {
-            Text("\(number)")
-                .font(.system(size: 15, weight: isToday ? .bold : .medium, design: .rounded))
-            .foregroundColor(info.family.ink)
-            .frame(maxWidth: .infinity, minHeight: 40)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(info.family.fill))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(
-                        isSelected ? HT.brightGreen : isToday ? info.family.ink.opacity(0.55) : Color.clear,
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .id(key)
-        .accessibilityLabel("\(key), \(info.family.label)\(info.events.isEmpty ? "" : ", has events")")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
     // MARK: - Selected day
+
+    /// The direction has to be in place a moment before the day changes: the
+    /// outgoing content leaves using the transition it last rendered with.
+    private func select(_ key: String, direction: Int) {
+        dayDirection = direction
+        DispatchQueue.main.async {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.9)) { selectedKey = key }
+        }
+    }
+
+    private func stepDay(_ delta: Int) {
+        let calendar = Calendar.sja
+        guard let current = SchoolTime.date(fromKey: selectedKey),
+              let next = calendar.date(byAdding: .day, value: delta, to: current),
+              let first = months.first, let lastMonth = months.last,
+              let end = calendar.date(byAdding: .month, value: 1, to: lastMonth),
+              next >= first, next < end else { return }
+        select(SchoolTime.key(next), direction: delta)
+    }
 
     private func dayPanel(maxHeight: CGFloat) -> some View {
         let info = store.describe(selectedKey)
@@ -233,13 +245,15 @@ struct CalendarTabView: View {
 
         // A long schedule scrolls inside the card rather than covering the month.
         let height = min(dayPanelContentHeight, maxHeight)
-        return ScrollView {
+        return SwipeOffsetReader(offset: daySwipe) { swipeOffset in
+        ScrollView {
             // A new id per day lets one day's details fade into the next.
             ZStack(alignment: .topLeading) {
                 content
                     .id(selectedKey)
-                    .transition(.opacity)
+                    .transition(dayDirection == 0 ? .opacity : slideTransition(direction: dayDirection))
             }
+            .offset(x: swipeOffset)
             .background(
                 GeometryReader { measured in
                     Color.clear.preference(key: DayPanelContentHeightKey.self, value: measured.size.height)
@@ -247,7 +261,7 @@ struct CalendarTabView: View {
             )
         }
         .animation(.easeInOut(duration: 0.2), value: selectedKey)
-        .scrollDisabled(dayPanelContentHeight <= maxHeight)
+        .scrollDisabled(dayPanelContentHeight <= maxHeight || isSwipingDay)
         .frame(height: height)
         .onPreferenceChange(DayPanelContentHeightKey.self) { measured in
             // Explicit: the card's height feeds the scroll view's inset, and an
@@ -258,6 +272,8 @@ struct CalendarTabView: View {
         }
         .padding(16)
         .glassCard()
+        .contentShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        }
     }
 
     @ViewBuilder
@@ -287,23 +303,25 @@ struct CalendarTabView: View {
 
     private func scheduleSection(_ info: CalendarDayInfo) -> some View {
         VStack(spacing: 8) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) { scheduleOpen.toggle() }
-            } label: {
-                HStack {
-                    Text(info.scheduleLabel).font(.footnote.weight(.semibold))
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .font(.caption2.weight(.bold))
-                        .rotationEffect(.degrees(scheduleOpen ? 180 : 0))
-                }
-                .foregroundColor(info.family.ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(info.family.fill))
-                .contentShape(Rectangle())
+            HStack {
+                Text(info.scheduleLabel).font(.footnote.weight(.semibold))
+                Spacer()
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.bold))
+                    .rotationEffect(.degrees(scheduleOpen ? 180 : 0))
             }
-            .buttonStyle(.plain)
+            .foregroundColor(info.family.ink)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(info.family.fill))
+            .contentShape(Rectangle())
+            // A tap gesture rather than a Button: it gives up as soon as the finger moves,
+            // so swiping the card across this row doesn't also open the schedule.
+            .onTapGesture {
+                guard TouchMovementTracker.shared.wasTap else { return }
+                withAnimation(.easeInOut(duration: 0.2)) { scheduleOpen.toggle() }
+            }
+            .accessibilityAddTraits(.isButton)
 
             if scheduleOpen {
                 dayBlocks(info)
@@ -369,6 +387,115 @@ private struct DayPanelContentHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+/// Where the selected day's cell is. Nil while its month isn't drawn yet.
+private struct SelectedDayAnchorKey: PreferenceKey {
+    static var defaultValue: Anchor<CGRect>?
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        value = value ?? nextValue()
+    }
+}
+
+/// One month's grid. Comparing what it shows keeps the other two years of months
+/// from redrawing whenever the selected day moves.
+private struct MonthSection: View, Equatable {
+    let month: Date
+    let selectedKey: String?
+    let todayKey: String?
+    let revision: Int
+    let isDrawn: Bool
+    let store: CalendarStore
+    let onSelect: (String) -> Void
+
+    static func == (lhs: MonthSection, rhs: MonthSection) -> Bool {
+        lhs.month == rhs.month
+            && lhs.selectedKey == rhs.selectedKey
+            && lhs.todayKey == rhs.todayKey
+            && lhs.revision == rhs.revision
+            && lhs.isDrawn == rhs.isDrawn
+    }
+
+    var body: some View {
+        let calendar = Calendar.sja
+        let days = calendar.range(of: .day, in: .month, for: month) ?? 1..<1
+        let keys = days.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: month) }.map(SchoolTime.key)
+        // Blank cells before the 1st, so the grid starts on Sunday.
+        let leadingBlanks = calendar.component(.weekday, from: month) - 1
+        let cells: [String?] = Array(repeating: nil, count: leadingBlanks) + keys.map(Optional.some)
+
+        let rowCount = (cells.count + 6) / 7
+
+        return VStack(alignment: .leading, spacing: 4) {
+            if !isDrawn {
+                // Exactly the drawn height: a month filling in must not move those below it.
+                Color.clear.frame(height: 22 + CGFloat(rowCount) * 44 - 4)
+            } else {
+            // The month's name sits over its 1st, so it reads as part of the grid.
+            HStack(spacing: 4) {
+                ForEach(0..<7, id: \.self) { column in
+                    Text(column == leadingBlanks ? SchoolTime.string(month, "MMM") : "")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundColor(HT.green)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 22)
+
+            // Plain rows, not a lazy grid: jumping to a month needs every month's real height.
+            ForEach(0..<rowCount, id: \.self) { row in
+                HStack(spacing: 4) {
+                    ForEach(0..<7, id: \.self) { column in
+                        let index = row * 7 + column
+                        if index < cells.count, let key = cells[index] {
+                            dayCell(key)
+                        } else {
+                            Color.clear.frame(maxWidth: .infinity, minHeight: 40)
+                        }
+                    }
+                }
+            }
+            }
+        }
+        .background {
+            // Only a January can change the year in the title, so only those report in.
+            if calendar.component(.month, from: month) == 1 {
+                GeometryReader { section in
+                    Color.clear.preference(
+                        key: JanuaryOffsetsKey.self,
+                        value: [calendar.component(.year, from: month): section.frame(in: .named(calendarScrollSpace)).minY]
+                    )
+                }
+            }
+        }
+    }
+
+    private func dayCell(_ key: String) -> some View {
+        let info = store.describe(key)
+        let isSelected = key == selectedKey
+        let isToday = key == todayKey
+        let number = SchoolTime.date(fromKey: key).map { Calendar.sja.component(.day, from: $0) } ?? 0
+
+        return Text("\(number)")
+            .font(.system(size: 15, weight: isToday ? .bold : .medium, design: .rounded))
+            .foregroundColor(info.family.ink)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(info.family.fill))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isToday ? info.family.ink.opacity(0.55) : Color.clear, lineWidth: 1)
+            )
+            .anchorPreference(key: SelectedDayAnchorKey.self, value: .bounds) { isSelected ? $0 : nil }
+            .contentShape(Rectangle())
+            // A tap gesture rather than a Button, so swiping across a day doesn't pick it.
+            .onTapGesture {
+                if TouchMovementTracker.shared.wasTap { onSelect(key) }
+            }
+            .accessibilityAddTraits(.isButton)
+            .id(key)
+        .accessibilityLabel("\(key), \(info.family.label)\(info.events.isEmpty ? "" : ", has events")")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -442,30 +569,6 @@ private struct TopBar<Bar: View>: ViewModifier {
             content.safeAreaInset(edge: .top, spacing: 0) {
                 bar.background(.ultraThinMaterial)
             }
-        }
-    }
-}
-
-private struct TodayButton: View {
-    let action: () -> Void
-
-    var body: some View {
-        let title = Text("Today")
-            .font(.subheadline.weight(.semibold))
-            .foregroundColor(HT.green)
-
-        if #available(iOS 26.0, *) {
-            Button(action: action) { title }
-                .buttonStyle(.glass)
-        } else {
-            Button(action: action) {
-                title
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .overlay(Capsule().stroke(HT.hairline, lineWidth: 1))
-            }
-            .buttonStyle(.plain)
         }
     }
 }
