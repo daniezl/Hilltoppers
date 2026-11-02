@@ -16,8 +16,10 @@ struct MainTabView: View {
                 get: { router.selectedTab },
                 set: { router.tabTapped($0) }
             )) {
-                todayTab
-                    .modifier(RoomForTabBar(height: barInset(geometry)))
+                // Today leaves room for the bar in its own padding, so it stays centered
+                // in the space above it.
+                TodayTab()
+                    .toolbar(.hidden, for: .tabBar)
                     .tag(AppTab.today)
 
                 CalendarTabView()
@@ -59,14 +61,68 @@ struct MainTabView: View {
         geometry.safeAreaInsets.bottom > 0 ? FloatingTabBar.height - 13 : FloatingTabBar.height + 8
     }
 
-    /// Settings opens from a button on Today rather than taking a tab of its own.
-    private var todayTab: some View {
+}
+
+/// Settings opens from a button on Today rather than taking a tab of its own. The
+/// gear is on the left, so Settings comes from the left and leaves the same way.
+private struct TodayTab: View {
+    @EnvironmentObject private var router: NavigationRouter
+    /// How far a swipe has pulled Settings back toward the left, as a negative number.
+    @State private var dragOffset: CGFloat = 0
+    @State private var lockedAxis: Axis?
+    @GestureState private var isDragging = false
+
+    /// Today shifts this far aside, as a page under a pushed one does.
+    private static let todayShift: CGFloat = 80
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = max(geometry.size.width, 1)
+
+            ZStack {
+                ContentView()
+                    .offset(x: router.isSettingsOpen ? Self.todayShift * (1 + dragOffset / width) : 0)
+                    .accessibilityHidden(router.isSettingsOpen)
+
+                if router.isSettingsOpen {
+                    settings(width: width)
+                        .offset(x: dragOffset)
+                        .shadow(color: .black.opacity(0.14), radius: 14)
+                        .transition(.move(edge: .leading))
+                        // Without this a page on its way out drops behind Today.
+                        .zIndex(1)
+                        .onDisappear { dragOffset = 0 }
+                }
+            }
+            // Here rather than in onEnded, which a cancelled drag never reaches.
+            .onChange(of: isDragging) { dragging in
+                guard !dragging else { return }
+                lockedAxis = nil
+                if router.isSettingsOpen {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 1)) { dragOffset = 0 }
+                }
+            }
+        }
+    }
+
+    private func settings(width: CGFloat) -> some View {
         NavigationStack(path: $router.path) {
-            ContentView()
+            SettingsView()
+                // Only this page: subpages keep the usual swipe back from the left edge.
+                .simultaneousGesture(closeSwipe(width: width))
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            router.closeSettings()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .fontWeight(.medium)
+                        }
+                        .accessibilityLabel("Back")
+                    }
+                }
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
-                    case .settings:
-                        SettingsView()
                     case .settingsFeatureShowcase:
                         FeatureShowcaseView()
                     case .settingsCourses:
@@ -82,6 +138,27 @@ struct MainTabView: View {
                     }
                 }
         }
+    }
+
+    /// Swiping left sends Settings back where it came from. Global coordinates,
+    /// because the page being dragged moves along with the finger.
+    private func closeSwipe(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 10, coordinateSpace: .global)
+            .updating($isDragging) { _, state, _ in state = true }
+            .onChanged { value in
+                if lockedAxis == nil {
+                    lockedAxis = abs(value.translation.width) > abs(value.translation.height) ? .horizontal : .vertical
+                }
+                if lockedAxis == .horizontal {
+                    dragOffset = min(value.translation.width, 0)
+                }
+            }
+            .onEnded { value in
+                guard lockedAxis == .horizontal else { return }
+                if value.translation.width < -width * 0.3 || value.predictedEndTranslation.width < -width * 0.5 {
+                    router.closeSettings()
+                }
+            }
     }
 }
 

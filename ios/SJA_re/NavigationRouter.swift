@@ -1,7 +1,6 @@
 import SwiftUI
 
 enum AppRoute: Hashable {
-    case settings
     case settingsFeatureShowcase
     case settingsCourses
     case settingsNotifications
@@ -17,7 +16,9 @@ final class NavigationRouter: ObservableObject {
     @Published var calendarRetapCount = 0
     /// Goes up each time the Menu icon is tapped while Menu is already showing.
     @Published var menuRetapCount = 0
-    /// Pages pushed on top of Today, starting with Settings.
+    /// Settings isn't a pushed page: it slides in from the left, on the gear's side.
+    @Published var isSettingsOpen = false
+    /// Pages pushed on top of Settings.
     @Published var path: [AppRoute] = []
     /// A required update blocks every tab, not only the one that noticed it.
     @Published var isUpdateRequired = false
@@ -28,13 +29,32 @@ final class NavigationRouter: ObservableObject {
         guard tab != selectedTab else {
             if tab == .calendar { calendarRetapCount += 1 }
             if tab == .menu { menuRetapCount += 1 }
-            if tab == .today { path.removeAll() }
+            if tab == .today { closeSettingsAndSubpages() }
             return
         }
         UISelectionFeedbackGenerator().selectionChanged()
-        if selectedTab == .today { path.removeAll() }
+        if selectedTab == .today {
+            isSettingsOpen = false
+            path.removeAll()
+        }
         selectedTab = tab
     }
+
+    func openSettings() {
+        withAnimation(Self.settingsAnimation) { isSettingsOpen = true }
+    }
+
+    func closeSettings() {
+        withAnimation(Self.settingsAnimation) { isSettingsOpen = false }
+    }
+
+    private func closeSettingsAndSubpages() {
+        closeSettings()
+        path.removeAll()
+    }
+
+    /// No bounce, so it moves like a pushed page does.
+    private static let settingsAnimation = Animation.spring(response: 0.38, dampingFraction: 1)
 
     func push(_ route: AppRoute) {
         path.append(route)
@@ -49,6 +69,6 @@ final class NavigationRouter: ObservableObject {
     }
 
     func popToSettings() {
-        path = [.settings]
+        path.removeAll()
     }
 }

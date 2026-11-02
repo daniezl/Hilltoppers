@@ -734,6 +734,7 @@ struct ContentView: View {
     @State private var lastOpenedDate: Date? = nil // Track when app was last opened
     @State private var currentDayType: String = "Loading..." // Track current day type for block filtering
     @State private var currentDayTypeDate: Date? = nil
+    @State private var showBulletinConfirmation = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var scheduleLoader = ScheduleLoader()
     @StateObject private var notificationManager = NotificationManager.shared
@@ -828,7 +829,7 @@ struct ContentView: View {
                 // Clears the settings button; the bottom grows with it so the page stays
                 // above true center, which reads as too low on screen.
                 .padding(.top, 52)
-                .padding(.bottom, 148)
+                .padding(.bottom, 136)
                 .frame(minHeight: geometry.size.height, alignment: .center)
             }
             .refreshable {
@@ -845,17 +846,76 @@ struct ContentView: View {
                     .transition(.opacity)
                 }
             }
-            .overlay(alignment: .topTrailing) {
-                CapsuleButton(title: "Settings") {
-                    router.push(.settings)
+            .overlay(alignment: .top) {
+                HStack {
+                    // The same gear and gray as the extension. The frame is only there to
+                    // make it easy to tap, so the margin below is smaller by that much.
+                    Button {
+                        router.openSettings()
+                    } label: {
+                        Image("settings-gear")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(Color(red: 125/255, green: 133/255, blue: 145/255))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Settings")
+                    Spacer(minLength: 0)
+                    // Anything but a known Green or White day for today shows nothing, so
+                    // a stale or still-loading day type never flashes here.
+                    if !isLoading, noSchool == false,
+                       let date = currentDayTypeDate,
+                       Calendar.sja.isDate(date, inSameDayAs: Date.currentEST),
+                       currentDayType == "Green Day" || currentDayType == "White Day" {
+                        Button {
+                            setBulletinConfirmation(true)
+                        } label: {
+                            DayTypePill(isGreen: currentDayType == "Green Day")
+                                .frame(height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Opens the Daily Bulletin")
+                    }
                 }
+                .padding(.leading, 15)
                 // In the same spot as the Today button on Calendar.
                 .padding(.trailing, 37)
-                .padding(.top, 10)
+                .padding(.top, 4)
+            }
+            .overlay(alignment: .topTrailing) {
+                ZStack(alignment: .topTrailing) {
+                    if showBulletinConfirmation {
+                        // Clear, but it still takes the tap that dismisses the dialog.
+                        Color.black.opacity(0.001)
+                            .ignoresSafeArea()
+                            .onTapGesture { setBulletinConfirmation(false) }
+
+                        BulletinConfirmation(
+                            onCancel: { setBulletinConfirmation(false) },
+                            onOpen: {
+                                setBulletinConfirmation(false)
+                                if let url = URL(string: "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/") {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                        )
+                        // Just below the pill, whose bottom is about 37pt down.
+                        .padding(.top, 40)
+                        .padding(.trailing, 20)
+                        .transition(BulletinConfirmation.transition)
+                    }
+                }
             }
         }
         .background(HT.page.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: router.selectedTab) { _ in
+            // The tab bar sits above the dismissing layer, and this view stays alive.
+            showBulletinConfirmation = false
+        }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 logAppOpenIfNeeded()
@@ -1066,6 +1126,12 @@ struct ContentView: View {
         }
     }
     
+    private func setBulletinConfirmation(_ isShown: Bool) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            showBulletinConfirmation = isShown
+        }
+    }
+
     @MainActor
     private func performUpdateCheck() async {
         guard let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,

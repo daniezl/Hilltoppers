@@ -115,6 +115,107 @@ struct StatusMessage: View {
     }
 }
 
+/// Today's day type, in the same pill the extension uses.
+struct DayTypePill: View {
+    let isGreen: Bool
+
+    var body: some View {
+        Text(isGreen ? "GREEN DAY" : "WHITE DAY")
+            .font(.caption.weight(.medium))
+            .tracking(1)
+            .foregroundColor(isGreen ? HT.green : Color(red: 85/255, green: 95/255, blue: 106/255))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
+            .background(
+                isGreen ? HT.brightGreen.opacity(0.12) : Color(red: 240/255, green: 242/255, blue: 245/255),
+                in: Capsule()
+            )
+            .overlay(
+                Capsule().stroke(isGreen ? HT.brightGreen.opacity(0.25) : Color.black.opacity(0.18), lineWidth: 1)
+            )
+    }
+}
+
+/// A card with a small tail on top, so it reads as coming out of what's above it.
+private struct SpeechBubble: Shape {
+    let tailFromTrailing: CGFloat
+    let tailHeight: CGFloat
+    var cornerRadius: CGFloat = 20
+    var tailWidth: CGFloat = 18
+
+    func path(in rect: CGRect) -> Path {
+        let top = rect.minY + tailHeight
+        let tailCenter = rect.maxX - tailFromTrailing
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + cornerRadius, y: top))
+        path.addLine(to: CGPoint(x: tailCenter - tailWidth / 2, y: top))
+        path.addLine(to: CGPoint(x: tailCenter, y: rect.minY))
+        path.addLine(to: CGPoint(x: tailCenter + tailWidth / 2, y: top))
+        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: top), tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: cornerRadius)
+        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.maxY), tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: cornerRadius)
+        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.maxY), tangent2End: CGPoint(x: rect.minX, y: top), radius: cornerRadius)
+        path.addArc(tangent1End: CGPoint(x: rect.minX, y: top), tangent2End: CGPoint(x: rect.maxX, y: top), radius: cornerRadius)
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// Asks before leaving the app, from under the day type pill that opened it.
+struct BulletinConfirmation: View {
+    let onCancel: () -> Void
+    let onOpen: () -> Void
+
+    private static let width: CGFloat = 250
+    private static let tailHeight: CGFloat = 8
+    /// Lands under the pill's middle when this sits at the same margin as the cards.
+    private static let tailFromTrailing: CGFloat = 65
+
+    /// Grows out of the tail's tip, so it seems to come from the pill.
+    static let transition = AnyTransition
+        .scale(scale: 0.4, anchor: UnitPoint(x: 1 - tailFromTrailing / width, y: 0))
+        .combined(with: .opacity)
+
+    var body: some View {
+        let bubble = SpeechBubble(tailFromTrailing: Self.tailFromTrailing, tailHeight: Self.tailHeight)
+
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Open Daily Bulletin?")
+                    .font(.subheadline.weight(.semibold))
+                Text("You'll leave the app and go to the school's website.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            HStack(spacing: 8) {
+                choice("Cancel", foreground: HT.green, background: Color.black.opacity(0.06), action: onCancel)
+                choice("Open", foreground: HT.green, background: HT.brightGreen.opacity(0.12), action: onOpen)
+            }
+        }
+        .padding(14)
+        .padding(.top, Self.tailHeight)
+        .frame(width: Self.width)
+        .background(bubble.fill(Color.white))
+        .overlay(bubble.stroke(HT.hairline, lineWidth: 1))
+        .shadow(color: .black.opacity(0.14), radius: 18, y: 6)
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
+    }
+
+    private func choice(_ title: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(foreground)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(background, in: Capsule())
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 /// A short text action in a capsule, floating over the page.
 struct CapsuleButton: View {
     let title: String
