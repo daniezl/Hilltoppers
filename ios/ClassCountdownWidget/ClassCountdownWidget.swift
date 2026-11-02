@@ -305,9 +305,16 @@ struct ClassCountdownWidgetEntryView: View {
                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
                 .foregroundColor(primaryTextColor)
         } else {
-            Text(timerInterval: range, countsDown: true)
+            let timer = Text(timerInterval: range, countsDown: true)
                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
                 .foregroundColor(family == .systemSmall ? primaryTextColor : .primary)
+
+            if family == .accessoryRectangular {
+                // Digits rolling at the lock screen's low refresh rate can freeze mid-roll.
+                timer.contentTransition(.identity)
+            } else {
+                timer
+            }
         }
     }
 

@@ -21,7 +21,7 @@ struct FeatureShowcaseView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .toolbarBackground(HT.page, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
@@ -96,7 +96,7 @@ struct FeatureShowcaseView: View {
     }
 
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color.black : Color(red: 245/255, green: 246/255, blue: 245/255)
+        colorScheme == .dark ? Color.black : HT.page
     }
 
     private var cardColor: Color {

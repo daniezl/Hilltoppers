@@ -58,6 +58,11 @@
 		C251B45F0DBA4903B89B9D8D /* DayTypeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845FCFE81465410FA49CF218 /* DayTypeCache.swift */; };
 		C9E2BFEAE8D7A0BABF41B31B /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066F6C25E1F23CBDCBDF2CE6 /* AuthManager.swift */; };
 		EB542DCCCBB341CAA84FE5C6 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602743BF6B60445A8269F574 /* BackgroundRefreshManager.swift */; };
+		A9TAB0000000000000001000 /* HilltoppersStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9TAB0000000000000000000 /* HilltoppersStyle.swift */; };
+		A9TAB0000000000000001001 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9TAB0000000000000000001 /* MainTabView.swift */; };
+		A9TAB0000000000000001002 /* MenuTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9TAB0000000000000000002 /* MenuTabView.swift */; };
+		A9TAB0000000000000001003 /* CalendarData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9TAB0000000000000000003 /* CalendarData.swift */; };
+		A9TAB0000000000000001004 /* CalendarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9TAB0000000000000000004 /* CalendarTabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +146,11 @@
 		B9A0F1002F10A1B000000001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		B9A0F1022F10A1B000000003 /* TimeSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSettingsModel.swift; sourceTree = "<group>"; };
 		D82AF040DECD4BCE9F07528B /* ScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleService.swift; sourceTree = "<group>"; };
+		A9TAB0000000000000000000 /* HilltoppersStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HilltoppersStyle.swift; sourceTree = "<group>"; };
+		A9TAB0000000000000000001 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A9TAB0000000000000000002 /* MenuTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuTabView.swift; sourceTree = "<group>"; };
+		A9TAB0000000000000000003 /* CalendarData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarData.swift; sourceTree = "<group>"; };
+		A9TAB0000000000000000004 /* CalendarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTabView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -247,6 +257,18 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		A9TAB0000000000000002000 /* Tabs */ = {
+			isa = PBXGroup;
+			children = (
+				A9TAB0000000000000000000 /* HilltoppersStyle.swift */,
+				A9TAB0000000000000000001 /* MainTabView.swift */,
+				A9TAB0000000000000000002 /* MenuTabView.swift */,
+				A9TAB0000000000000000003 /* CalendarData.swift */,
+				A9TAB0000000000000000004 /* CalendarTabView.swift */,
+			);
+			path = Tabs;
+			sourceTree = "<group>";
+		};
 		A280A0EA2DDCE7E300F98F3F /* Schedule */ = {
 			isa = PBXGroup;
 			children = (
@@ -272,6 +294,7 @@
 				A271E7DC2DFD271F0063C9C0 /* SplashScreenView.swift */,
 				A25EDD832DEFD9BE00F71034 /* GoogleService-Info.plist */,
 				A280A0F82DDD54E400F98F3F /* DayType */,
+				A9TAB0000000000000002000 /* Tabs */,
 				A280A0EA2DDCE7E300F98F3F /* Schedule */,
 				A280A0EB2DDCE7E300F98F3F /* Assets.xcassets */,
 				A280A0EC2DDCE7E300F98F3F /* ContentView.swift */,
@@ -537,6 +560,11 @@
 				A280A0F22DDCE7E300F98F3F /* ScheduleLoader.swift in Sources */,
 				A280A0F32DDCE7E300F98F3F /* ScheduleModels.swift in Sources */,
 				A25BDEF32F6CDEC200238690 /* DebugEedcf6Logger.swift in Sources */,
+				A9TAB0000000000000001000 /* HilltoppersStyle.swift in Sources */,
+				A9TAB0000000000000001001 /* MainTabView.swift in Sources */,
+				A9TAB0000000000000001002 /* MenuTabView.swift in Sources */,
+				A9TAB0000000000000001003 /* CalendarData.swift in Sources */,
+				A9TAB0000000000000001004 /* CalendarTabView.swift in Sources */,
 				A280A0F42DDCE7E300F98F3F /* ScheduleView.swift in Sources */,
 				A280A0FA2DDD557D00F98F3F /* DayTypeView 2.swift in Sources */,
 				A2DT00012F00A1B000000001 /* DayTypeBulletinParser.swift in Sources */,
@@ -742,7 +770,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.5.0;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -785,7 +813,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 2.5.0;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = danielzhang.Hilltoppers2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

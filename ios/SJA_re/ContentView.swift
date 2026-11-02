@@ -17,8 +17,21 @@ import FirebaseAuth
 extension Date {
     static var currentEST: Date {
         // Always return the current time, but the app will format/interpret it as EST
+        #if DEBUG
+        return Date().addingTimeInterval(debugClockOffset)
+        #else
         return Date()
+        #endif
     }
+
+    #if DEBUG
+    /// Launch with SJA_TEST_NOW=2026-11-02T08:50:00-05:00 to see any time of the school day.
+    private static let debugClockOffset: TimeInterval = {
+        guard let value = ProcessInfo.processInfo.environment["SJA_TEST_NOW"],
+              let target = ISO8601DateFormatter().date(from: value) else { return 0 }
+        return target.timeIntervalSinceNow
+    }()
+    #endif
     
     static var estTimeZone: TimeZone {
         return TimeZone(identifier: "America/New_York")!
@@ -709,7 +722,6 @@ struct ContentView: View {
     @State private var isStale: Bool = false
     @State private var refreshID = UUID()
     @State private var isLoading: Bool = true
-    @State private var isTogglingTomorrowView: Bool = false
     
     // Background refresh state
     @State private var previousDayType: String = ""
@@ -717,9 +729,6 @@ struct ContentView: View {
     @State private var previousNoSchool: Bool? = false
     @State private var scheduleLoaded: Bool = false
     @State private var dayTypeLoaded: Bool = false
-    @State private var dragOffset: CGFloat = 0
-    @State private var isRefreshReady: Bool = false
-    @State private var isRefreshing: Bool = false
     @State private var triggerDayTypeRipple: Bool = false
     @State private var disablePullToRefreshGesture = false
     @State private var lastOpenedDate: Date? = nil // Track when app was last opened
@@ -732,67 +741,19 @@ struct ContentView: View {
     @EnvironmentObject private var router: NavigationRouter
     @EnvironmentObject private var timeSettings: TimeSettingsModel
     
-    // Visual centering offsets
-    private let scheduleOffset: CGFloat = 60
-    private let noSchoolOffset: CGFloat = -30
 
     @State private var currentTime = Date.currentEST // Updated by timer to make UI flow
     @State private var updatePrompt: AppUpdatePrompt? = nil
     @State private var hasLoggedAppOpenForCurrentActivation = false
+    @State private var hasAppeared = false
     
     // Computed property that returns the effective current time (real time or test date)
     var effectiveCurrentTime: Date {
         return timeSettings.useTestDate ? timeSettings.testDateOverride : currentTime
     }
     
-    // Match the old optional testDate behaviour used throughout the views
-    private var tomorrowReferenceDate: Date {
-        var calendar = Calendar.current
-        calendar.timeZone = Date.estTimeZone
-        let base = Date.currentEST
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: base) ?? base
-        var components = calendar.dateComponents([.year, .month, .day], from: tomorrow)
-        components.hour = 23
-        components.minute = 59
-        components.second = 0
-        return calendar.date(from: components) ?? tomorrow
-    }
-
-    private var isViewingTomorrow: Bool {
-        guard timeSettings.useTestDate else { return false }
-        var calendar = Calendar.current
-        calendar.timeZone = Date.estTimeZone
-        return calendar.isDate(timeSettings.testDateOverride, inSameDayAs: tomorrowReferenceDate)
-    }
-
-    private var tomorrowButtonTitle: String {
-        isViewingTomorrow ? "Back to Today" : "View Tomorrow"
-    }
-
-    private var tomorrowButtonSubtitle: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE, MMM d"
-        formatter.timeZone = Date.estTimeZone
-        if isViewingTomorrow {
-            return formatter.string(from: Date.currentEST)
-        } else {
-            return formatter.string(from: tomorrowReferenceDate)
-        }
-    }
-
     var testDate: Date? {
         return timeSettings.useTestDate ? timeSettings.testDateOverride : nil
-    }
-
-    @ViewBuilder
-    private var backgroundView: some View {
-        if isViewingTomorrow {
-            RoundedRectangle(cornerRadius: 0)
-                .fill(Color.white)
-                .ignoresSafeArea()
-        } else {
-            Color.white.ignoresSafeArea()
-        }
     }
 
     private func beginScheduleReset() {
@@ -835,208 +796,56 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Main content - always present
-            VStack {
-                Spacer()
-                VStack(spacing: 24) { // padding between day type box and the schedule
+        GeometryReader { geometry in
+            ScrollView {
+                // No spacing here: the day type view is usually empty, and a gap after
+                // it would push everything below the center of the screen.
+                VStack(spacing: 0) {
                     // Only show content when noSchool state is determined
                     if let isNoSchool = noSchool {
-                         // Only show DayTypeView when there is school
+                        // Only show DayTypeView when there is school
                         if !isNoSchool {
-                                                     DayTypeView(testDate: testDate, isViewingTomorrow: isViewingTomorrow, firebaseError: $firebaseError, onLoadingComplete: { 
-                             // print("🎯 [CONTENT] DayTypeView loading completed")
-                             dayTypeLoaded = true 
-                         }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType, currentDayTypeDate: $currentDayTypeDate)
-                         .padding(.top, isViewingTomorrow ? 8 : 0)
-                             .id(refreshID)
-                     }
-                     
-                     ScheduleView(testDate: testDate, noSchool: Binding(
-                         get: { isNoSchool },
-                         set: { noSchool = $0 }
-                     ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: { 
-                         // print("📋 [CONTENT] ScheduleView loading completed")
-                         scheduleLoaded = true 
-                     }, onPullRefresh: {
-                             Task {
-                                 await refreshAll()
-                             }
-                         }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture, currentDayType: currentDayType, currentDayTypeDate: currentDayTypeDate)
-                             .id(refreshID)
-                             .onAppear {
-                                 // Reset animation state when view appears
-                                 scheduleLoader.showBlocks = false
-                             }
+                            DayTypeView(testDate: testDate, firebaseError: $firebaseError, onLoadingComplete: {
+                                dayTypeLoaded = true
+                            }, triggerRipple: $triggerDayTypeRipple, showSplashScreen: .constant(false), currentDayType: $currentDayType, currentDayTypeDate: $currentDayTypeDate)
+                                .id(refreshID)
+                        }
+
+                        ScheduleView(testDate: testDate, noSchool: Binding(
+                            get: { isNoSchool },
+                            set: { noSchool = $0 }
+                        ), isStale: $isStale, loader: scheduleLoader, onLoadingComplete: {
+                            scheduleLoaded = true
+                        }, onPullRefresh: {
+                            Task {
+                                await refreshAll()
+                            }
+                        }, showSplashScreen: .constant(false), disablePullToRefreshGesture: $disablePullToRefreshGesture, currentDayType: currentDayType, currentDayTypeDate: currentDayTypeDate)
+                            .id(refreshID)
                     }
                 }
-                .offset(y: scheduleOffset)
-                Spacer()
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                // More room below than above: true center reads as too low on screen.
+                .padding(.bottom, 44)
+                .frame(minHeight: geometry.size.height, alignment: .center)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .refreshable {
+                await refreshAll()
+            }
             .opacity(isLoading ? 0.0 : 1.0)
             .animation(.easeOut(duration: 0.3).delay(isLoading ? 0 : 0.1), value: isLoading)
-                
-            // Skeleton loading overlay to mimic final layout
-            if isLoading {
-                SkeletonLoadingView(
-                    scheduleOffset: scheduleOffset,
-                    blockCount: previousScheduleBlocks.isEmpty ? 3 : min(previousScheduleBlocks.count, 5)
-                )
-                    .transition(.opacity)
-                    .zIndex(1000)
-            }
-            
-            // Pull-to-refresh indicator - circular design
-            if dragOffset > 0 {
-                VStack {
-                    ZStack {
-                        // Circular background
-                        Circle()
-                            .fill(Color.white.opacity(0.9))
-                            .frame(width: 50, height: 50)
-                        
-                        // Arrow icon
-                        Image(systemName: isRefreshReady ? "arrow.clockwise" : "arrow.down")
-                            .font(.title2)
-                            .foregroundColor(isRefreshReady ? .green : .gray)
-                            .rotationEffect(.degrees(isRefreshReady ? 360 : 0))
-                            .animation(.easeInOut(duration: 0.3), value: isRefreshReady)
-                    }
-                    .opacity(min(dragOffset / 60, 1.0))
-                    .offset(y: min(dragOffset - 60, 0))
-                    Spacer()
-                }
-                .allowsHitTesting(false)
-                .zIndex(1000)
-            }
-            
-            // Full-screen loading overlay during refresh
-            if isRefreshing {
-                Color.white
-                    .ignoresSafeArea(.all)
-                    .overlay(
-                        ProgressView()
-                            .scaleEffect(1.5)
+            .overlay {
+                // Skeleton loading overlay to mimic final layout
+                if isLoading {
+                    TodaySkeletonView(
+                        blockCount: previousScheduleBlocks.isEmpty ? 5 : min(previousScheduleBlocks.count, 8)
                     )
-                    .zIndex(1000)
-            }
-            
-            // Settings button - top right
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button {
-                        router.push(.settings)
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.title2)
-                            .foregroundColor(.gray.opacity(0.7))
-                            .padding()
-                    }
-                    .buttonStyle(.plain)
+                    .transition(.opacity)
                 }
-
-                if isViewingTomorrow {
-                    HStack {
-                        Text("Tomorrow:")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.gray.opacity(1))
-                            .padding(.leading, UIScreen.main.bounds.width * 0.28)
-                        Spacer()
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-                Spacer()
-            }
-            .zIndex(500)
-            
-            if !isLoading {
-                VStack {
-                    Spacer()
-                    HStack(alignment: .bottom) {
-                        if isViewingTomorrow {
-                            Button(action: toggleTomorrowView) {
-                                Image(systemName: "chevron.backward")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                    .padding(.vertical, 12)
-                                    .padding(.horizontal, 16)
-                                    .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                                    .cornerRadius(18)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.leading, 38)
-                        }
-
-                        Spacer()
-
-                        if !isViewingTomorrow {
-                            Button(action: toggleTomorrowView) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(tomorrowButtonTitle)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text(tomorrowButtonSubtitle)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 18)
-                                .frame(width: 160, alignment: .leading)
-                                .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                                .cornerRadius(18)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.trailing, 32)
-                        }
-                    }
-                    .padding(.bottom, 32)
-                }
-                .zIndex(500)
-            } else {
-                VStack {
-                    Spacer()
-                    SkeletonTomorrowButtonsOverlay(isViewingTomorrow: isViewingTomorrow)
-                }
-                .padding(.bottom, 32)
-                .zIndex(500)
             }
         }
-        .background(Color.clear)
-        .contentShape(Rectangle())
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    // Only allow pull-to-refresh if balloon is not being dragged
-                    if !disablePullToRefreshGesture && value.translation.height > 0 {
-                        dragOffset = value.translation.height
-                        isRefreshReady = value.translation.height > 80
-                    }
-                }
-                .onEnded { value in
-                    // Only allow pull-to-refresh if balloon is not being dragged
-                    if !disablePullToRefreshGesture && value.translation.height > 80 {
-                        // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (pull-to-refresh)")
-                        isRefreshing = true
-                        Task {
-                            await refreshAll()
-                            // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Pull-to-refresh completed")
-                            // Don't set isRefreshing = false here, let updateLoadingState handle it
-                        }
-                    }
-                    
-                    // Reset drag state
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        dragOffset = 0
-                        isRefreshReady = false
-                    }
-                }
-        )
+        .background(HT.page.ignoresSafeArea())
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 logAppOpenIfNeeded()
@@ -1096,13 +905,8 @@ struct ContentView: View {
             let modeDescription = isUsingTestDate ? "test date" : "real time"
             print("🕒 [TIME-MODE] Switched to \(modeDescription)")
             
-            // Don't schedule notifications if we're toggling tomorrow view
-            if isTogglingTomorrowView {
-                print("🔄 [VIEW-NEXT-DAY] Skipping notification scheduling - toggling view")
-            } else {
-                print("🕒 [TIME-MODE] Rescheduling notifications")
-                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
-            }
+            print("🕒 [TIME-MODE] Rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             
             Task {
                 await refreshAll()
@@ -1115,13 +919,8 @@ struct ContentView: View {
             formatter.timeZone = Date.estTimeZone
             print("🕒 [TEST-DATE] Updated to \(formatter.string(from: newDate))")
             
-            // Don't schedule notifications if we're toggling tomorrow view
-            if isTogglingTomorrowView {
-                print("🔄 [VIEW-NEXT-DAY] Skipping notification scheduling - toggling view")
-            } else {
-                print("🕒 [TEST-DATE] Rescheduling notifications")
-                scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
-            }
+            print("🕒 [TEST-DATE] Rescheduling notifications")
+            scheduleUpcomingNotifications(startingFrom: effectiveCurrentTime)
             
             Task {
                 await refreshAll()
@@ -1183,6 +982,9 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // Switching back to this tab fires onAppear again; that is not a launch.
+            guard !hasAppeared else { return }
+            hasAppeared = true
             isLoading = true
             enforceTodayDefaultIfNeeded()
             // Reset to actual time on app startup
@@ -1223,8 +1025,9 @@ struct ContentView: View {
 
             logAppOpenIfNeeded()
         }
-        .preferredColorScheme(.light)
-        .background(backgroundView)
+        .onChange(of: updatePrompt?.importance == .required) { isRequired in
+            router.isUpdateRequired = isRequired
+        }
         .alert(item: $updatePrompt) { prompt in
             switch prompt.importance {
             case .required:
@@ -1246,13 +1049,11 @@ struct ContentView: View {
                 )
             }
         }
-        .disabled(updatePrompt?.importance == .required)
         .overlay {
             if updatePrompt?.importance == .required {
                 Color.black.opacity(0.25).ignoresSafeArea()
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
     
     @MainActor
@@ -1291,7 +1092,7 @@ struct ContentView: View {
 
     private static let cachedBlocksKey = "LastScheduleBlocks"
 
-    private static func loadCachedBlocks() -> [Block] {
+    static func loadCachedBlocks() -> [Block] {
         guard let data = UserDefaults.standard.data(forKey: cachedBlocksKey) else { return [] }
         return (try? JSONDecoder().decode([Block].self, from: data)) ?? []
     }
@@ -1319,7 +1120,6 @@ struct ContentView: View {
             // previousDayType would need to be set from the actual DayTypeView data
             
             isLoading = false
-            isRefreshing = false // Also hide the refresh spinner when content is ready
 
             RefreshTimelineStore.append(
                 kind: .appManualRefreshScheduleCompleted,
@@ -1507,45 +1307,6 @@ struct ContentView: View {
     }
     
     // Centralized refresh function
-    @MainActor
-    private func toggleTomorrowView() {
-        let action = isViewingTomorrow ? "Back to Today" : "View Tomorrow"
-        let targetDate = isViewingTomorrow ? Date.currentEST : tomorrowReferenceDate
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy HH:mm:ss"
-        formatter.timeZone = Date.estTimeZone
-        print("🔄 [VIEW-NEXT-DAY] User clicked '\(action)' - target date: \(formatter.string(from: targetDate))")
-        
-        // Set flag to prevent notification scheduling during view toggle
-        isTogglingTomorrowView = true
-        
-        if isViewingTomorrow {
-            timeSettings.useTestDate = false
-            timeSettings.testDateOverride = Date.currentEST
-        } else {
-            timeSettings.useTestDate = true
-            timeSettings.testDateOverride = tomorrowReferenceDate
-        }
-
-        currentDayType = "Loading..."
-        currentDayTypeDate = nil
-        isLoading = true
-        scheduleLoaded = false
-        dayTypeLoaded = false
-        scheduleLoader.showBlocks = false
-        triggerDayTypeRipple = false
-
-        Task {
-            await refreshAll()
-            // Reset flag after a short delay to allow onChange handlers to complete
-            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-            await MainActor.run {
-                isTogglingTomorrowView = false
-                print("🔄 [VIEW-NEXT-DAY] View toggle completed, flag reset")
-            }
-        }
-    }
-
     func refreshAll() async {
         // Reset loading states
         // print("[\(String(format: "%.3f", Date().timeIntervalSince1970))] Loading started (refreshAll)")
@@ -1719,121 +1480,82 @@ class BlockSettingsManager: ObservableObject {
 
 struct SettingsView: View {
     @EnvironmentObject private var router: NavigationRouter
-    @StateObject private var authManager = AuthManager.shared
-    private let accentGreen = Color(red: 20/255, green: 54/255, blue: 27/255)
-    private let horizontalInset: CGFloat = 32
+    @ObservedObject private var schedulePrefs = SchedulePreferencesManager.shared
+
+    private var prefs: SchedulePreferences { schedulePrefs.preferences }
+    private var savedGrade: GradeLevel? { prefs.graduationYear.map(gradeFromGraduationYear) }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Menu items near top
-            VStack(spacing: 16) {
-                settingsRow(icon: "square.grid.2x2", title: "Widget") {
-                    router.push(.settingsFeatureShowcase)
-                }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                TabHeader(title: "Settings") { EmptyView() }
 
-                settingsRow(icon: "bell.badge", title: "Notifications") {
-                    router.push(.settingsNotifications)
+                VStack(spacing: 0) {
+                    SettingsPickerRow(
+                        title: "My lunch",
+                        value: prefs.lunchWave.map(lunchWaveLabel) ?? "Not set",
+                        selection: Binding(
+                            get: { prefs.lunchWave ?? 0 },
+                            set: { schedulePrefs.setLunchWave($0 == 0 ? nil : $0) }
+                        )
+                    ) {
+                        Text("Not set").tag(0)
+                        ForEach(1...5, id: \.self) { Text(lunchWaveLabel($0)).tag($0) }
+                    }
+                    SettingsRowDivider()
+                    SettingsPickerRow(
+                        title: "Grade",
+                        value: savedGrade?.label ?? "Not set",
+                        selection: Binding(
+                            get: { savedGrade?.rawValue ?? 0 },
+                            set: { raw in
+                                schedulePrefs.preferences.graduationYear = GradeLevel(rawValue: raw).map(graduationYear(from:))
+                                Task { await schedulePrefs.savePreferences() }
+                            }
+                        )
+                    ) {
+                        Text("Not set").tag(0)
+                        ForEach(GradeLevel.allCases) { Text($0.label).tag($0.rawValue) }
+                    }
+                    SettingsRowDivider()
+                    SettingsPickerRow(
+                        title: "Time format",
+                        value: prefs.timeFormat == .hour24 ? "24-hour" : "12-hour",
+                        selection: Binding(
+                            get: { prefs.timeFormat },
+                            set: { value in
+                                schedulePrefs.preferences.timeFormat = value
+                                Task { await schedulePrefs.savePreferences() }
+                            }
+                        )
+                    ) {
+                        Text("12-hour").tag(TimeFormat.hour12)
+                        Text("24-hour").tag(TimeFormat.hour24)
+                    }
+                    SettingsRowDivider()
+                    navigationRow("Courses", .settingsCourses)
                 }
+                .card(padding: 0)
 
-                settingsRow(icon: "book.closed", title: "Courses") {
-                    router.push(.settingsCourses)
+                VStack(spacing: 0) {
+                    navigationRow("Notifications", .settingsNotifications)
+                    SettingsRowDivider()
+                    navigationRow("Widget", .settingsFeatureShowcase)
+                    SettingsRowDivider()
+                    navigationRow("More", .settingsMore)
                 }
-
-                // settingsRow(icon: "clock", title: "Time") {
-                //     router.push(.settingsTime)
-                // }
-                
-                // Account/Login row - Temporarily commented out
-                // settingsRow(
-                //     icon: "person.circle",
-                //     title: authManager.isAuthenticated ? "Account" : "Sign In",
-                //     accessory: {
-                //         if authManager.isAuthenticated && authManager.isEmailVerified {
-                //             Image(systemName: "checkmark.circle.fill")
-                //                 .foregroundColor(.green)
-                //                 .font(.body)
-                //         } else if authManager.needsEmailVerification {
-                //             Image(systemName: "exclamationmark.circle.fill")
-                //                 .foregroundColor(.orange)
-                //                 .font(.body)
-                //         } else {
-                //             EmptyView()
-                //         }
-                //     }
-                // ) {
-                //     router.push(.settingsAuth)
-                // }
-
-                settingsRow(icon: "ellipsis.circle", title: "More") {
-                    router.push(.settingsMore)
-                }
+                .card(padding: 0)
             }
-            .padding(.top, 40)
-            .padding(.horizontal, horizontalInset)
-
-            Spacer()
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color(.systemBackground).ignoresSafeArea())
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Done") {
-                    router.popToRoot()
-                }
-                .foregroundColor(accentGreen)
-            }
-        }
+        .background(HT.page.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
     }
 
-    // Beta badge removed
-    // private var betaBadge: some View {
-    //     Text("BETA")
-    //         .font(.caption.bold())
-    //         .padding(.vertical, 4)
-    //         .padding(.horizontal, 10)
-    //         .background(
-    //             Capsule()
-    //                 .fill(accentGreen.opacity(0.15))
-    //         )
-    //         .foregroundColor(accentGreen)
-    // }
-
-    private func settingsRow(icon: String, title: String, action: @escaping () -> Void) -> some View {
-        settingsRow(icon: icon, title: title, accessory: { EmptyView() }, action: action)
-    }
-
-    private func settingsRow<Accessory: View>(icon: String, title: String, @ViewBuilder accessory: () -> Accessory, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(alignment: .center, spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(accentGreen)
-
-                HStack(spacing: 10) {
-                    Text(title)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-
-                    accessory()
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-            .cornerRadius(12)
-        }
-        .buttonStyle(.plain)
+    private func navigationRow(_ title: String, _ route: AppRoute) -> some View {
+        SettingsActionRow(title: title) { router.push(route) }
     }
 }
 
@@ -2157,7 +1879,7 @@ struct NotificationSettingsView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(UIColor.systemGroupedBackground))
+                        .fill(Color.white)
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 4)
@@ -2176,7 +1898,7 @@ struct NotificationSettingsView: View {
                     HStack(spacing: 8) {
                         ForEach(1...5, id: \.self) { period in
                             Button(action: {
-                                notificationManager.selectedLunchPeriod = period
+                                SchedulePreferencesManager.shared.setLunchWave(period)
                             }) {
                                 Text("\(period)\(getOrdinalSuffix(period))")
                                     .font(.system(size: 16, weight: .medium))
@@ -2192,7 +1914,7 @@ struct NotificationSettingsView: View {
                         
                         // Off option
                         Button(action: {
-                            notificationManager.selectedLunchPeriod = 0
+                            SchedulePreferencesManager.shared.setLunchWave(nil)
                         }) {
                             Text("Off")
                                 .font(.system(size: 16, weight: .medium))
@@ -2212,7 +1934,7 @@ struct NotificationSettingsView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(UIColor.systemGroupedBackground))
+                        .fill(Color.white)
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -2277,7 +1999,7 @@ struct NotificationSettingsView: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(UIColor.systemGroupedBackground))
+                            .fill(Color.white)
                     )
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
@@ -2314,7 +2036,7 @@ struct NotificationSettingsView: View {
                     .padding(.vertical, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(UIColor.systemGroupedBackground))
+                            .fill(Color.white)
                     )
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
@@ -2324,12 +2046,12 @@ struct NotificationSettingsView: View {
             
             Spacer()
         }
-        .background(Color(UIColor.systemBackground))
+        .background(HT.page.ignoresSafeArea())
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .toolbarBackground(HT.page, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") {
@@ -2458,185 +2180,25 @@ struct NotificationSettingsView: View {
     }
 }
 
-private struct SkeletonLoadingView: View {
-    let scheduleOffset: CGFloat
-    let blockCount: Int
-    private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
-    private let topOverlayPadding: CGFloat = 32
-
-    var body: some View {
-        ZStack {
-            Color(UIColor.systemBackground)
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                Spacer(minLength: topOverlayPadding)
-
-                VStack(spacing: 24) {
-                    HStack {
-                        Spacer(minLength: 0)
-                        SkeletonDayTypeCardPlaceholder(cardBackground: cardBackground)
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, 16)
-
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 16) {
-                            SkeletonScheduleCardPlaceholder(cardBackground: cardBackground, blockCount: blockCount)
-                        }
-                        .padding(.leading, 44)
-                        .padding(.trailing, 40)
-                        .padding(.top, 8)
-                    }
-                    .allowsHitTesting(false)
-                }
-                .offset(y: scheduleOffset)
-
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-}
-
-private struct SkeletonTomorrowButtonsOverlay: View {
-    let isViewingTomorrow: Bool
-    private let cardBackground = Color(red: 245/255, green: 246/255, blue: 245/255)
-
-    var body: some View {
-        HStack(alignment: .bottom) {
-            if isViewingTomorrow {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(cardBackground)
-                    .frame(width: 52, height: 44)
-                    .overlay(
-                        SkeletonBar(cornerRadius: 8, height: 12)
-                            .frame(width: 20)
-                    )
-                    .padding(.leading, 38)
-            }
-
-            Spacer()
-
-            if !isViewingTomorrow {
-                VStack(alignment: .leading, spacing: 4) {
-                    SkeletonBar(cornerRadius: 8, height: 16)
-                        .frame(width: 120)
-                    SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 96)
-                        .opacity(0.6)
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 18)
-                .frame(width: 160, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(cardBackground)
-                )
-                .padding(.trailing, 32)
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-private struct SkeletonDayTypeCardPlaceholder: View {
-    let cardBackground: Color
-
-    var body: some View {
-        VStack(spacing: 7) {
-            SkeletonBar(cornerRadius: 10, height: 24)
-                .frame(width: 150)
-
-            SkeletonBar(cornerRadius: 8, height: 9)
-                .frame(width: 100)
-                .opacity(0.65)
-
-            SkeletonBar(cornerRadius: 6, height: 7)
-                .frame(width: 70)
-                .opacity(0.45)
-        }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 24)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(cardBackground)
-        )
-    }
-}
-
-private struct SkeletonScheduleCardPlaceholder: View {
-    let cardBackground: Color
+private struct TodaySkeletonView: View {
     let blockCount: Int
 
     var body: some View {
-        let placeholderCount = max(min(blockCount, 5), 2)
-
-        VStack(spacing: 0) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    SkeletonBar(cornerRadius: 8, height: 16)
-                        .frame(width: 120)
-
-                    SkeletonBar(cornerRadius: 8, height: 12)
-                        .frame(width: 80)
-                        .opacity(0.8)
-                }
-
-                Spacer()
-
-                SkeletonBar(cornerRadius: 6, height: 12)
-                    .frame(width: 90)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-
-            Rectangle()
-                .fill(Color(UIColor.systemGray3).opacity(0.35))
-                .frame(height: 1)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-
-            VStack(spacing: 8) {
-                ForEach(0..<placeholderCount, id: \.self) { _ in
-                    SkeletonScheduleBlockRowPlaceholder()
+        VStack(spacing: 14) {
+            Spacer(minLength: 0)
+            SkeletonBar(cornerRadius: 16, height: 76).frame(width: 220)
+                .padding(.vertical, 6)
+            VStack(spacing: 16) {
+                ForEach(0..<blockCount, id: \.self) { _ in
+                    SkeletonBar(cornerRadius: 6, height: 16)
                 }
             }
-            .padding(.bottom, 8)
+            .card()
+            Spacer(minLength: 0)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(cardBackground)
-        )
-        .frame(maxWidth: .infinity)
-    }
-}
-
-private struct SkeletonScheduleBlockRowPlaceholder: View {
-    var body: some View {
-        SkeletonBar(cornerRadius: 10, height: 18)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 28)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(UIColor.systemGray5).opacity(0.2))
-                    .padding(.horizontal, 12)
-            )
-    }
-}
-
-private struct SkeletonCircle: View {
-    let diameter: CGFloat
-
-    var body: some View {
-        Circle()
-            .fill(Color(UIColor.systemGray5))
-            .frame(width: diameter, height: diameter)
-            .overlay(
-                SkeletonShimmer()
-                    .mask(Circle())
-            )
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .background(HT.page.ignoresSafeArea())
     }
 }
 
@@ -3152,7 +2714,8 @@ struct LoginView: View {
         await MainActor.run {
             // Ensure we navigate from settings page, not from login page
             // This ensures the back button returns to settings, not login
-            router.navigateToSettingsThen(.settingsCourses)
+            router.popToRoot()
+            router.push(.settingsCourses)
         }
     }
     
@@ -3350,9 +2913,13 @@ enum TimeFormat: String, Codable {
 }
 
 struct SchedulePreferences: Codable, Equatable {
+    /// Legacy. The extension still writes 1 for everyone, so it says nothing about
+    /// the user's lunch; the choice lives in `lunchWave`.
     var lunchPeriod: Int = 1
     var timeFormat: TimeFormat = .hour12
     var graduationYear: Int? = nil
+    /// The user's lunch, 1–5 ("1st Lunch" … "5th Lunch"). Absent until chosen.
+    var lunchWave: Int? = nil
 }
 
 class SchedulePreferencesManager: ObservableObject {
@@ -3401,6 +2968,7 @@ class SchedulePreferencesManager: ObservableObject {
                 }
                 // Cache locally
                 await saveToLocalStorage(remote)
+                await reconcileLunchWithNotifications()
                 return
             }
         }
@@ -3410,6 +2978,33 @@ class SchedulePreferencesManager: ObservableObject {
         await MainActor.run {
             self.preferences = local
             self.isLoading = false
+        }
+        await reconcileLunchWithNotifications()
+    }
+
+    /// One lunch for the whole app: this choice also drives lunch notifications.
+    @MainActor
+    func setLunchWave(_ wave: Int?) {
+        preferences.lunchWave = wave
+        let notifications = NotificationSettingsManager.shared
+        notifications.selectedLunchPeriod = wave ?? 0
+        notifications.saveSettings()
+        Task { await savePreferences() }
+    }
+
+    /// Older versions kept the lunch only in notification settings, so carry it
+    /// over once; after that the saved preference (possibly synced) wins.
+    @MainActor
+    private func reconcileLunchWithNotifications() async {
+        let notifications = NotificationSettingsManager.shared
+        if let wave = preferences.lunchWave {
+            if notifications.selectedLunchPeriod != wave {
+                notifications.selectedLunchPeriod = wave
+                notifications.saveSettings()
+            }
+        } else if (1...5).contains(notifications.selectedLunchPeriod) {
+            preferences.lunchWave = notifications.selectedLunchPeriod
+            await savePreferences()
         }
     }
     
@@ -3554,18 +3149,18 @@ struct NewBlockConfigurationView: View {
                         ProgressView()
                             .padding()
                     } else {
-                        displaySettingsSection
                         classBlocksSection
                     }
                 }
                 .padding(.bottom)
             }
         }
+        .background(HT.page.ignoresSafeArea())
         .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+        .toolbarBackground(HT.page, for: .navigationBar)
         .onDisappear {
             cooldownTimer?.invalidate()
             cooldownTimer = nil
@@ -3663,7 +3258,7 @@ struct NewBlockConfigurationView: View {
             }
         }
         .padding()
-        .background(Color(UIColor.secondarySystemBackground))
+        .background(Color.white)
         .cornerRadius(8)
         .padding(.horizontal)
         .padding(.top)
@@ -3735,42 +3330,6 @@ struct NewBlockConfigurationView: View {
             .padding()
             .background(Color.red.opacity(0.1))
             .cornerRadius(8)
-            .padding(.horizontal)
-        }
-    }
-    
-    private var displaySettingsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Display Settings")
-                .font(.headline)
-                .padding(.horizontal)
-            
-            VStack(spacing: 12) {
-                HStack {
-                    Text("Time format")
-                        .font(.subheadline)
-                    
-                    Spacer()
-                    
-                    Picker("Time format", selection: Binding(
-                        get: { schedulePrefsManager.preferences.timeFormat },
-                        set: { newValue in
-                            schedulePrefsManager.preferences.timeFormat = newValue
-                            Task {
-                                await schedulePrefsManager.savePreferences()
-                            }
-                        }
-                    )) {
-                        Text("12-hour").tag(TimeFormat.hour12)
-                        Text("24-hour").tag(TimeFormat.hour24)
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 150)
-                }
-                .padding()
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(8)
-            }
             .padding(.horizontal)
         }
     }
@@ -3860,9 +3419,8 @@ struct NewBlockConfigurationView: View {
     private func handleReset() {
         prefsManager.resetToDefaults()
         schedulePrefsManager.preferences = SchedulePreferences()
-        Task {
-            await schedulePrefsManager.savePreferences()
-        }
+        // Also clears the lunch in notification settings, and saves.
+        schedulePrefsManager.setLunchWave(nil)
         feedback = LoginFeedback(type: .info, message: "Preferences reset to defaults.")
     }
     

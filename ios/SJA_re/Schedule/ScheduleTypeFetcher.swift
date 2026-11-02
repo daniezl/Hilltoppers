@@ -169,7 +169,7 @@ struct ScheduleTypeFetcher {
         testDate: Date?
     ) async throws -> String {
         // print("FIREBASE CALL: predictDayType")
-        let today = testDate ?? Date()
+        let today = testDate ?? Date.currentEST
         
         do {
             // print("Fetching special days from \(dbDate) to \(today)")
@@ -227,7 +227,7 @@ struct ScheduleTypeFetcher {
         testDate: Date?
     ) async throws -> [(date: Date, prediction: String, isToday: Bool)] {
                  // print("FIREBASE CALL: generateCalculationSteps")
-        let today = testDate ?? Date()
+        let today = testDate ?? Date.currentEST
         
         do {
             // print("Fetching special days from \(dbDate) to \(today)")
