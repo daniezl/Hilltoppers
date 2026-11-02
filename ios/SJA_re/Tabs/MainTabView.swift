@@ -219,7 +219,12 @@ private struct TodayTab: View {
             }
             .onEnded { value in
                 guard lockedAxis == .horizontal else { return }
-                if value.translation.width < -width * 0.3 || value.predictedEndTranslation.width < -width * 0.5 {
+                let swipedBack = value.translation.width < -width * 0.3 || value.predictedEndTranslation.width < -width * 0.5
+                // The usual back swipe works here too. It doesn't follow the finger,
+                // since the page leaves the opposite way.
+                let swipedFromEdge = value.startLocation.x < Self.edgeWidth
+                    && (value.translation.width > 60 || value.predictedEndTranslation.width > 140)
+                if swipedBack || swipedFromEdge {
                     router.closeSettings()
                 }
             }

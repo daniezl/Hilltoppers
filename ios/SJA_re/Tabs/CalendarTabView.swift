@@ -70,6 +70,7 @@ struct CalendarTabView: View {
                                     onSelect: { select($0, direction: 0) }
                                 )
                                 .equatable()
+                                .padding(.horizontal, 20)
                                 .id(id)
                             }
                         }
@@ -87,7 +88,6 @@ struct CalendarTabView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .padding(.horizontal, 20)
                         .padding(.vertical, 8)
                     }
                     .scrollDisabled(isSwipingDay)
@@ -120,20 +120,20 @@ struct CalendarTabView: View {
                         dayDirection = 0
                         selectedKey = todayKey
                         scheduleOpen = false
-                        proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
+                        showToday(proxy)
                     }
                     .onAppear {
                         // Switching back to this tab fires onAppear again; keep the user's place.
                         guard scrollToToday == nil else { return }
                         let jump = {
                             select(todayKey, direction: 0)
-                            withAnimation { proxy.scrollTo(todayKey, anchor: Self.todayAnchor) }
+                            withAnimation { showToday(proxy) }
                         }
                         scrollToToday = jump
                         // Twice, since the first can land before a long calendar finishes layout.
                         for delay in [0.1, 0.5] {
                             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                                proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
+                                showToday(proxy)
                             }
                         }
                     }
@@ -194,6 +194,16 @@ struct CalendarTabView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
             }
+        }
+    }
+
+    /// iOS 16 lands on the last month when asked for a day inside a month, though it
+    /// gets the month itself right, so there today's month goes to the top instead.
+    private func showToday(_ proxy: ScrollViewProxy) {
+        if #available(iOS 17.0, *) {
+            proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
+        } else {
+            proxy.scrollTo(String(todayKey.prefix(7)), anchor: UnitPoint(x: 0.5, y: 0.03))
         }
     }
 

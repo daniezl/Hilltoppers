@@ -1561,6 +1561,8 @@ class BlockSettingsManager: ObservableObject {
 struct SettingsView: View {
     @EnvironmentObject private var router: NavigationRouter
     @ObservedObject private var schedulePrefs = SchedulePreferencesManager.shared
+    @State private var contentHeight: CGFloat = 0
+    @State private var viewportHeight: CGFloat = 0
 
     private var prefs: SchedulePreferences { schedulePrefs.preferences }
     private var savedGrade: GradeLevel? { prefs.graduationYear.map(gradeFromGraduationYear) }
@@ -1626,8 +1628,13 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
-            .padding(.bottom, 24)
+            // Clears the floating tab bar, which this page doesn't get a safe area for.
+            .padding(.bottom, 86)
+            .readHeight(into: $contentHeight)
         }
+        // Like Menu: it only scrolls when it doesn't all fit.
+        .scrollDisabled(contentHeight <= viewportHeight)
+        .readHeight(into: $viewportHeight)
         .background(HT.page.ignoresSafeArea())
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
