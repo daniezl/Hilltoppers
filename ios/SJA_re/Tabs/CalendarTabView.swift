@@ -1,6 +1,7 @@
 import SwiftUI
 
 private let calendarScrollSpace = "calendarScroll"
+private let dayPanelScrollSpace = "dayPanelScroll"
 
 struct CalendarTabView: View {
     @StateObject private var store = CalendarStore()
@@ -21,6 +22,10 @@ struct CalendarTabView: View {
     /// In @State so that its changes reach only the card, which observes it.
     @State private var daySwipe = SwipeOffset()
     @State private var isSwipingDay = false
+    @State private var isCardAtTop = true
+    /// Where the card's own scrolling was when a drag on it began, while it lasts.
+    @State private var cardDragStartedAtTop: Bool?
+    @GestureState private var isDraggingCard = false
     @State private var visibleYear = Calendar.sja.component(.year, from: Date.currentEST)
 
     /// Today sits a little above the middle, with the days before it still in view.
@@ -248,9 +253,16 @@ struct CalendarTabView: View {
             .offset(x: swipeOffset)
             .background(
                 GeometryReader { measured in
-                    Color.clear.preference(key: DayPanelContentHeightKey.self, value: measured.size.height)
+                    Color.clear
+                        .preference(key: DayPanelContentHeightKey.self, value: measured.size.height)
+                        .preference(key: DayPanelTopKey.self, value: measured.frame(in: .named(dayPanelScrollSpace)).minY)
                 }
             )
+        }
+        .coordinateSpace(name: dayPanelScrollSpace)
+        .onPreferenceChange(DayPanelTopKey.self) { top in
+            let isAtTop = top > -1
+            if isAtTop != isCardAtTop { isCardAtTop = isAtTop }
         }
         .animation(.easeInOut(duration: 0.2), value: selectedKey)
         .scrollDisabled(dayPanelContentHeight <= maxHeight || isSwipingDay)
@@ -265,7 +277,32 @@ struct CalendarTabView: View {
         .padding(16)
         .glassCard()
         .contentShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .simultaneousGesture(scheduleSwipe(hasSchedule: !info.noSchool))
+        // Here rather than in onEnded, which a cancelled drag never reaches.
+        .onChange(of: isDraggingCard) { dragging in
+            if !dragging { cardDragStartedAtTop = nil }
         }
+        }
+    }
+
+    /// Up opens the schedule and down closes it. A long schedule scrolls inside the
+    /// card, so down only closes it from the top, where there's nothing left to scroll.
+    private func scheduleSwipe(hasSchedule: Bool) -> some Gesture {
+        DragGesture(minimumDistance: 10)
+            .updating($isDraggingCard) { _, state, _ in state = true }
+            .onChanged { _ in
+                if cardDragStartedAtTop == nil { cardDragStartedAtTop = isCardAtTop }
+            }
+            .onEnded { value in
+                let distance = value.translation.height
+                guard hasSchedule, abs(distance) > abs(value.translation.width),
+                      abs(distance) > 30 || abs(value.predictedEndTranslation.height) > 80 else { return }
+                if distance < 0, !scheduleOpen {
+                    withAnimation(.easeInOut(duration: 0.2)) { scheduleOpen = true }
+                } else if distance > 0, scheduleOpen, cardDragStartedAtTop == true {
+                    withAnimation(.easeInOut(duration: 0.2)) { scheduleOpen = false }
+                }
+            }
     }
 
     @ViewBuilder
@@ -372,6 +409,13 @@ struct CalendarTabView: View {
         let isGreen = dayType == "Green Day"
         guard blockManager.shouldShow(block: block.name, onGreenDay: isGreen) else { return "Free Block" }
         return blockManager.getDisplayName(for: block.name, isGreenDay: isGreen)
+    }
+}
+
+private struct DayPanelTopKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
