@@ -187,7 +187,6 @@ struct ConfettiAnimationView: View {
                     animationFinished = true
                     onAnimationComplete()
                 }
-                .offset(y: -200) // Move confetti up 
             }
         }
         .onAppear {
@@ -537,11 +536,12 @@ struct ScheduleView: View {
     @State private var disablePullToRefresh = false
     @State private var showNoSchoolText = false
     @State private var showDetailsText = false
-    @State private var balloonHasExited = false
     @State private var hasStartedTextAnimation = false
     @State private var shouldShowConfetti = false
     @State private var viewingGrade: GradeLevel? = nil
     @State private var showGradePrompt: Bool = false
+    @State private var hasStartedLoad = false
+    @EnvironmentObject private var router: NavigationRouter
 
     
 
@@ -571,45 +571,33 @@ struct ScheduleView: View {
         VStack(spacing: 0) {
             if noSchool {
                 ZStack {
-                    VStack {
-                        VStack(alignment: balloonHasExited ? .center : .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(spacing: 6) {
                             Text("No School")
-                                .font(balloonHasExited ? .system(size: 48, weight: .bold) : .largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.primary)
+                                .font(.system(size: 40, weight: .bold, design: .rounded))
+                                .foregroundColor(HT.green)
                                 .opacity(showNoSchoolText ? 1 : 0)
                                 .scaleEffect(showNoSchoolText ? 1 : 0.8)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.7), value: showNoSchoolText)
-                                .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
-                            
+
                             if let details = noSchoolDetails, !details.isEmpty {
                                 Text(details)
-                                    .font(balloonHasExited ? .system(size: 32, weight: .medium) : .title2)
+                                    .font(.title3)
                                     .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
                                     .opacity(showDetailsText ? 1 : 0)
                                     .scaleEffect(showDetailsText ? 1 : 0.8)
                                     .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3), value: showDetailsText)
-                                    .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
-                                    .onAppear {
-                                        // print("DEBUG: Displaying no school details: '\(details)'")
-                                    }
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: balloonHasExited ? .center : .leading)
-                        .padding(.horizontal, balloonHasExited ? 20 : 40)
-                        .padding(.top, balloonHasExited ? 200 : 160)
-                        .animation(.spring(response: 0.8, dampingFraction: 0.7), value: balloonHasExited)
-                        Spacer()
+                        .frame(maxWidth: .infinity)
                     }
-                    
+
                     // Simple Confetti Animation
                     if shouldShowConfetti {
                         ConfettiAnimationView(
                             showSplashScreen: $showSplashScreen,
-                            onAnimationComplete: {
-                                // Confetti has completed - make text bigger
-                                balloonHasExited = true
-                            }, 
+                            onAnimationComplete: {},
                             onAnimationStart: {
                                 // Start text animation when confetti starts
                                 if !hasStartedTextAnimation {
@@ -618,8 +606,11 @@ struct ScheduleView: View {
                                 }
                             }
                         )
+                        .frame(height: 600)
+                        .allowsHitTesting(false)
                     }
                 }
+                .frame(height: 600)
                 .onAppear {
                     if noSchool && !hasStartedTextAnimation {
                         checkConfettiAndStartText()
@@ -637,192 +628,21 @@ struct ScheduleView: View {
                     }
                 }
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Schedule card
-                        VStack(spacing: 0) {
-                            // Schedule title inside card
-                            HStack {
-                                Text(scheduleTitle.lowercased() == "abdec" ? scheduleTitle.uppercased() : scheduleTitle)
-                                    .font(.headline)
-                                    .fontWeight(.bold)
-                                Spacer()
-                                if hasGradeSpecificBlocks, let g = viewingGrade {
-                                    Menu {
-                                        ForEach(GradeLevel.allCases) { grade in
-                                            Button(grade.labelPlural) { viewingGrade = grade }
-                                        }
-                                    } label: {
-                                        HStack(spacing: 4) {
-                                            Text("")
-                                                .foregroundColor(.secondary)
-                                            Text(g.labelPlural)
-                                                .fontWeight(.semibold)
-                                                .foregroundColor(.secondary)
-                                            Image(systemName: "chevron.down")
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .font(.caption)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
-                            
-                            Divider()
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8) // between title and blocks
-
-                            ForEach(Array(displayBlocks.enumerated()), id: \.element.id) { index, block in
-                                VStack(spacing: 0) {
-                                    // Time info above highlighted block (only if dropdown is closed)
-                                    if expandedBlockID != block.id {
-                                        if isCurrent(block: block) {
-                                            if let (currentBlock, secondsLeft) = currentBlockInfo() {
-                                                HStack {
-                                                    Spacer()
-                                                    Text("Ends in \(formatTime(secondsLeft))")
-                                                        .font(.caption)
-                                                        .foregroundColor(.green)
-                                                }
-                                                .padding(.horizontal, 32) // align with highlight edge
-                                                .padding(.bottom, 4)
-                                            }
-                                        } else if isNextUpcomingBlock(block) {
-                                            if let (nextBlock, seconds) = nextBlockInfo() {
-                                                HStack {
-                                                    Spacer()
-                                                    Text("Starts in \(formatTime(seconds))")
-                                                        .font(.caption)
-                                                        .foregroundColor(.blue)
-                                                }
-                                                .padding(.horizontal, 32) // align with dashed line edge
-                                                .padding(.bottom, 4)
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Main block row
-                                    HStack {
-                                        Text(getBlockDisplayName(for: block))
-                                            .font((isCurrent(block: block) || isNextUpcomingBlock(block)) ? .title2.weight(.bold) : .callout.weight(.medium))
-                                            .foregroundColor(loader.showBlocks ? getBlockTextColor(for: block) : .primary)
-                                        Spacer()
-                                        Text(formatTimeRange(start: block.start, end: block.end))
-                                            .font(.callout.weight(.regular))
-                                            .monospacedDigit()
-                                            .foregroundColor(loader.showBlocks ? (shouldUseGrayColor(for: block) ? .secondary : .primary) : .primary)
-                                        
-                                        // Consistent chevron space for alignment
-                                        if block.subBlocks != nil {
-                                            Image(systemName: expandedBlockID == block.id ? "chevron.down" : "chevron.right")
-                                                .font(.system(size: 12, weight: .semibold))
-                                        } else {
-                                            Image(systemName: "chevron.right")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .opacity(0) // invisible but takes up space
-                                        }
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8) // between blocks
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(isCurrent(block: block) ? Color.green.opacity(0.15) : Color.clear)
-                                            .padding(.horizontal, 8) // gap from card edges
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
-                                            .foregroundColor(isNextUpcomingBlock(block) ? Color.green : Color.clear)
-                                            .padding(.horizontal, 8) // gap from card edges
-                                    )
-                                    .onTapGesture {
-                                        if block.subBlocks != nil {
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                expandedBlockID = expandedBlockID == block.id ? nil : block.id
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Matching bottom padding for current blocks (to balance the timer above)
-                                    if isCurrent(block: block) && expandedBlockID != block.id {
-                                        Color.clear
-                                            .frame(height: 8) // matches timer text height + padding
-                                    }
-                                    
-                                    // SubBlocks dropdown
-                                    if expandedBlockID == block.id, let subBlocks = block.subBlocks {
-                                        VStack(spacing: 0) {
-                                            ForEach(subBlocks) { sub in
-                                                VStack(spacing: 0) {
-                                                    // Time info above current subblock
-                                                    if isCurrent(subBlock: sub) {
-                                                        if let end = timeToday(sub.end) {
-                                                            let secondsLeft = Int(end.timeIntervalSince(currentTime))
-                                                            HStack {
-                                                                Spacer()
-                                                                Text("Ends in \(formatTime(secondsLeft))")
-                                                                    .font(.caption)
-                                                                    .foregroundColor(.green)
-                                                            }
-                                                            .padding(.leading, 32) // align with subblock content
-                                                            .padding(.trailing, 34) // align with subblock times
-                                                            .padding(.bottom, 4)
-                                                        }
-                                                    }
-                                                    
-                                                    // Subblock row
-                                                HStack {
-                                                    Text(sub.name)
-                                                        .font(.caption)
-                                                        .foregroundColor(.secondary)
-                                                    Spacer()
-                                                    Text(formatTimeRange(start: sub.start, end: sub.end))
-                                                        .font(.caption)
-                                                        .monospacedDigit()
-                                                        .foregroundColor(.secondary)
-                                                    
-                                                    // Invisible chevron for alignment
-                                                    Image(systemName: "chevron.right")
-                                                        .font(.system(size: 12, weight: .semibold))
-                                                        .opacity(0)
-                                                }
-                                                .padding(.leading, 32) // indent from left
-                                                .padding(.trailing, 16) // same as main blocks
-                                                .padding(.vertical, 6)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 6)
-                                                        .fill(isCurrent(subBlock: sub) ? Color.green.opacity(0.1) : Color.clear)
-                                                        .padding(.horizontal, 8)
-                                                )
-                                                }
-                                            }
-                                        }
-                                        .background(Color.gray.opacity(0.05))
-                                        .cornerRadius(8)
-                                        .padding(.horizontal, 8)
-                                        .transition(.opacity.combined(with: .move(edge: .top)))
-                                    }
-                                }
-                                .opacity(loader.showBlocks ? 1 : 0)
-                                .offset(x: loader.showBlocks ? 0 : -30)
-                                .animation(.easeOut(duration: 0.2).delay(Double(index) * 0.04), value: loader.showBlocks)
-                            }
-                        }
-                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                        .cornerRadius(12)
-                    }
-                    .padding(.leading, 44) // space on left
-                    .padding(.trailing, 40) // space on right
-                    .padding(.top, 8)
+                VStack(alignment: .leading, spacing: 14) {
+                    countdown
+                    scheduleCard
                 }
+                .opacity(loader.showBlocks ? 1 : 0)
+                .animation(.easeOut(duration: 0.25), value: loader.showBlocks)
             }
         }
         .onAppear {
-            loader.showBlocks = false
             startTimeUpdateTimer()
+            // Switching back to this tab fires onAppear again; `.id(refreshID)` gives
+            // a real refresh a new view, and so a new `hasStartedLoad`.
+            guard !hasStartedLoad else { return }
+            hasStartedLoad = true
+            loader.showBlocks = false
             syncViewingGradeFromPrefs()
             evaluateGradePrompt()
             Task {
@@ -849,6 +669,9 @@ struct ScheduleView: View {
         .onChange(of: currentDayType) { _ in
             updateCountdownWidget()
         }
+        .onChange(of: router.selectedTab) { tab in
+            if tab != .today { expandedBlockID = nil }
+        }
         .onChange(of: currentDayTypeDate) { _ in
             updateCountdownWidget()
         }
@@ -872,6 +695,178 @@ struct ScheduleView: View {
             .presentationDetents([.medium])
             .interactiveDismissDisabled(true)
         }
+    }
+
+    // MARK: - Today's cards
+
+    private var timeFormat: TimeFormat { schedulePrefsManager.preferences.timeFormat }
+
+    /// Which block the time belongs to and what happens when it runs out, so class
+    /// and the break between classes can't be mistaken for each other.
+    @ViewBuilder
+    private var countdown: some View {
+        if let (block, seconds) = currentBlockInfo() {
+            countdownRow(name: getBlockDisplayName(for: block), verb: "Ends in", seconds: seconds)
+        } else if let (block, seconds) = nextBlockInfo() {
+            countdownRow(name: getBlockDisplayName(for: block), verb: "Starts in", seconds: seconds)
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("School Ended")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(HT.green)
+                    .lineLimit(1)
+                Text("Have a good day!")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.bottom, 8)
+        }
+    }
+
+    private func countdownRow(name: String, verb: String, seconds: Int) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .font(.title3.weight(.semibold))
+                    .lineLimit(1)
+                Text(verb)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            Spacer(minLength: 0)
+            Text(SchoolTime.countdown(seconds))
+                .font(.system(size: 56, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundColor(HT.green)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .layoutPriority(1)
+        }
+        .padding(.horizontal, 10)
+        .padding(.bottom, 8)
+    }
+
+    /// A weekday's name would only repeat the date in the header, so the card is
+    /// titled just when the day runs on something special.
+    private var specialScheduleTitle: String? {
+        guard scheduleTitle != getWeekdayTitle() else { return nil }
+        return scheduleTitle.lowercased() == "abdec" ? scheduleTitle.uppercased() : scheduleTitle
+    }
+
+    private var scheduleCard: some View {
+        VStack(spacing: 2) {
+            if specialScheduleTitle != nil || (hasGradeSpecificBlocks && viewingGrade != nil) {
+                HStack {
+                    if let title = specialScheduleTitle {
+                        Text(title)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    if hasGradeSpecificBlocks, let grade = viewingGrade {
+                        Menu {
+                            ForEach(GradeLevel.allCases) { option in
+                                Button(option.labelPlural) { viewingGrade = option }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(grade.labelPlural).fontWeight(.semibold)
+                                Image(systemName: "chevron.down").font(.caption2)
+                            }
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.top, 4)
+                .padding(.bottom, 6)
+            }
+
+            ForEach(displayBlocks) { block in
+                blockRow(block)
+            }
+        }
+        .card(padding: 8)
+    }
+
+    private func blockRow(_ block: Block) -> some View {
+        let isNow = isCurrent(block: block)
+        let isNext = isNextUpcomingBlock(block)
+        let hasSubBlocks = block.subBlocks?.isEmpty == false
+        let isExpanded = expandedBlockID == block.id
+
+        return VStack(spacing: 2) {
+            HStack(spacing: 8) {
+                Text(getBlockDisplayName(for: block))
+                    .font(.subheadline.weight(isNow || isNext ? .semibold : .regular))
+                    .foregroundColor(isNow || isNext ? HT.green : getBlockTextColor(for: block))
+                Spacer(minLength: 8)
+                Text(SchoolTime.range(block.start, block.end, timeFormat))
+                    .font(.footnote)
+                    .monospacedDigit()
+                    .foregroundColor(isNow || isNext ? HT.green : .secondary)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    .opacity(hasSubBlocks ? 1 : 0)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isNow ? HT.softGreen : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                    .foregroundColor(isNext ? Color.green : Color.clear)
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard hasSubBlocks else { return }
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    expandedBlockID = isExpanded ? nil : block.id
+                }
+            }
+
+            if isExpanded, let subBlocks = block.subBlocks {
+                VStack(spacing: 0) {
+                    ForEach(subBlocks) { sub in
+                        subBlockRow(sub)
+                    }
+                }
+                .padding(.bottom, 4)
+                .transition(.opacity)
+            }
+        }
+    }
+
+    private func subBlockRow(_ sub: SubBlock) -> some View {
+        let isMine = lunchWave(fromName: sub.name) == schedulePrefsManager.preferences.lunchWave
+        let isNow = isCurrent(subBlock: sub)
+
+        return HStack {
+            Text(sub.name)
+                .font(.footnote.weight(isMine ? .semibold : .regular))
+            Spacer()
+            Text(SchoolTime.range(sub.start, sub.end, timeFormat))
+                .font(.footnote)
+                .monospacedDigit()
+            Image(systemName: "chevron.down")
+                .font(.system(size: 10, weight: .bold))
+                .opacity(0)
+        }
+        .foregroundColor(isMine ? HT.brightGreen : .secondary)
+        .padding(.leading, 22)
+        .padding(.trailing, 10)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isNow ? HT.softGreen.opacity(0.6) : Color.clear)
+        )
     }
 
     // MARK: - Grade prompt helpers
@@ -1404,45 +1399,6 @@ struct ScheduleView: View {
         }
     }
   }
-
-struct BlockHeader: View {
-    let block: Block
-    let isCurrent: Bool
-    let isNext: Bool
-    let expanded: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(block.name)
-                    .font(.headline)
-                    .foregroundColor(isCurrent ? .green : (isNext ? .green : .primary))
-                Text("\(block.start) - \(block.end)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            if block.subBlocks != nil {
-                Button(action: onTap) {
-                    Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                        .foregroundColor(.gray)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-        }
-        .padding(.vertical, 0)
-        .background(isCurrent ? Color.green.opacity(0.2) : Color.clear)
-        .overlay(
-            isNext ?
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [6]))
-                    .foregroundColor(Color.green.opacity(0.7))
-                : nil
-        )
-        .cornerRadius(8)
-    }
-}
 
 // MARK: - Grade Prompt Sheet
 
