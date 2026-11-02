@@ -107,29 +107,21 @@ struct CalendarTabView: View {
                     }
                     .refreshable { await store.refresh() }
                     .onChange(of: router.calendarRetapCount) { _ in
-                        dayDirection = 0
                         scrollToToday?()
                     }
                     .onChange(of: router.selectedTab) { tab in
-                        guard tab == .calendar else {
-                            dayDirection = 0
-                            selectedKey = todayKey
-                            scheduleOpen = false
-                            return
-                        }
-                        // Scrolling does nothing while the tab is off screen, so this
-                        // part of going back to the default state waits for its return.
-                        for delay in [0.0, 0.1] {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                                proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
-                            }
-                        }
+                        // While it's out of sight, so nothing moves or stalls on the way back.
+                        guard tab != .calendar else { return }
+                        dayDirection = 0
+                        selectedKey = todayKey
+                        scheduleOpen = false
+                        proxy.scrollTo(todayKey, anchor: Self.todayAnchor)
                     }
                     .onAppear {
                         // Switching back to this tab fires onAppear again; keep the user's place.
                         guard scrollToToday == nil else { return }
                         let jump = {
-                            selectedKey = todayKey
+                            select(todayKey, direction: 0)
                             withAnimation { proxy.scrollTo(todayKey, anchor: Self.todayAnchor) }
                         }
                         scrollToToday = jump

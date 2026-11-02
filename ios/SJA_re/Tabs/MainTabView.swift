@@ -9,27 +9,37 @@ enum AppTab: Hashable {
 struct MainTabView: View {
     @ObservedObject var router: NavigationRouter
     @ObservedObject var timeSettings: TimeSettingsModel
+    /// Calendar and Menu wait out the launch, so building them can't hold up its animation.
+    @State private var isReadyForOtherTabs = false
 
     var body: some View {
         GeometryReader { geometry in
-            TabView(selection: Binding(
-                get: { router.selectedTab },
-                set: { router.tabTapped($0) }
-            )) {
+            // Not a TabView: it takes a page off screen when it's left and lays it out
+            // again on return, which is a visible stall for the many days on Calendar.
+            // These stay in place, so switching only changes which one shows.
+            ZStack {
                 // Today leaves room for the bar in its own padding, so it stays centered
                 // in the space above it.
                 TodayTab()
-                    .toolbar(.hidden, for: .tabBar)
-                    .tag(AppTab.today)
+                    .modifier(TabPage(isShown: router.selectedTab == .today))
 
-                CalendarTabView()
-                    .modifier(RoomForTabBar(height: barInset(geometry)))
-                    .tag(AppTab.calendar)
+                if isReadyForOtherTabs || router.selectedTab == .calendar {
+                    CalendarTabView()
+                        .safeAreaInset(edge: .bottom, spacing: 0) { roomForTabBar(geometry) }
+                        .modifier(TabPage(isShown: router.selectedTab == .calendar))
+                }
 
-                MenuTabView()
-                    .modifier(RoomForTabBar(height: barInset(geometry)))
-                    .tag(AppTab.menu)
+                if isReadyForOtherTabs || router.selectedTab == .menu {
+                    MenuTabView()
+                        .safeAreaInset(edge: .bottom, spacing: 0) { roomForTabBar(geometry) }
+                        .modifier(TabPage(isShown: router.selectedTab == .menu))
+                }
             }
+            .task {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                isReadyForOtherTabs = true
+            }
+            .onChange(of: router.selectedTab) { _ in isReadyForOtherTabs = true }
             .overlay(alignment: .bottom) {
                 // The glass bar only answers on its icons. Everything from the Calendar
                 // card down to the screen's edge must not reach the days scrolling behind.
@@ -56,6 +66,10 @@ struct MainTabView: View {
         .preferredColorScheme(.light)
     }
 
+    private func roomForTabBar(_ geometry: GeometryProxy) -> some View {
+        Color.clear.frame(height: barInset(geometry)).allowsHitTesting(false)
+    }
+
     /// How much of each page the bar covers, above the bottom safe area.
     private func barInset(_ geometry: GeometryProxy) -> CGFloat {
         geometry.safeAreaInsets.bottom > 0 ? FloatingTabBar.height - 13 : FloatingTabBar.height + 8
@@ -69,24 +83,36 @@ private struct TodayTab: View {
     @EnvironmentObject private var router: NavigationRouter
     /// How far a swipe has pulled Settings back toward the left, as a negative number.
     @State private var dragOffset: CGFloat = 0
+    /// How far a swipe from the screen's edge has pulled Settings in; nil without one.
+    @State private var edgePull: CGFloat?
     @State private var lockedAxis: Axis?
     @GestureState private var isDragging = false
+    @GestureState private var isPullingFromEdge = false
 
     /// Today shifts this far aside, as a page under a pushed one does.
     private static let todayShift: CGFloat = 80
+    /// How far in from the left edge a swipe can start.
+    private static let edgeWidth: CGFloat = 24
 
     var body: some View {
         GeometryReader { geometry in
             let width = max(geometry.size.width, 1)
 
-            ZStack {
+            ZStack(alignment: .leading) {
                 ContentView()
-                    .offset(x: router.isSettingsOpen ? Self.todayShift * (1 + dragOffset / width) : 0)
+                    .offset(x: todayOffset(width: width))
                     .accessibilityHidden(router.isSettingsOpen)
 
-                if router.isSettingsOpen {
+                if !router.isSettingsOpen {
+                    Color.clear
+                        .frame(width: Self.edgeWidth)
+                        .contentShape(Rectangle())
+                        .gesture(openSwipe(width: width))
+                }
+
+                if router.isSettingsOpen || edgePull != nil {
                     settings(width: width)
-                        .offset(x: dragOffset)
+                        .offset(x: edgePull.map { $0 - width } ?? dragOffset)
                         .shadow(color: .black.opacity(0.14), radius: 14)
                         .transition(.move(edge: .leading))
                         // Without this a page on its way out drops behind Today.
@@ -102,7 +128,45 @@ private struct TodayTab: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 1)) { dragOffset = 0 }
                 }
             }
+            .onChange(of: isPullingFromEdge) { pulling in
+                guard !pulling else { return }
+                lockedAxis = nil
+                guard edgePull != nil else { return }
+                // Slides back out while still in place, and only then goes away.
+                withAnimation(NavigationRouter.settingsAnimation) { edgePull = 0 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if edgePull == 0 { edgePull = nil }
+                }
+            }
         }
+    }
+
+    private func todayOffset(width: CGFloat) -> CGFloat {
+        if let edgePull { return Self.todayShift * edgePull / width }
+        return router.isSettingsOpen ? Self.todayShift * (1 + dragOffset / width) : 0
+    }
+
+    /// Swiping right from the left edge pulls Settings in with the finger.
+    private func openSwipe(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 10, coordinateSpace: .global)
+            .updating($isPullingFromEdge) { _, state, _ in state = true }
+            .onChanged { value in
+                if lockedAxis == nil {
+                    lockedAxis = abs(value.translation.width) > abs(value.translation.height) ? .horizontal : .vertical
+                }
+                if lockedAxis == .horizontal {
+                    edgePull = min(max(value.translation.width, 0), width)
+                }
+            }
+            .onEnded { value in
+                guard lockedAxis == .horizontal else { return }
+                if value.translation.width > width * 0.3 || value.predictedEndTranslation.width > width * 0.5 {
+                    withAnimation(NavigationRouter.settingsAnimation) {
+                        edgePull = nil
+                        router.isSettingsOpen = true
+                    }
+                }
+            }
     }
 
     private func settings(width: CGFloat) -> some View {
@@ -162,19 +226,17 @@ private struct TodayTab: View {
     }
 }
 
-/// Drawn here because the system's bar shrinks to fit its items, and three items
-/// would leave it narrower than the floating card on Calendar.
-/// A TabView doesn't pass a safe area set on it down to its pages, so each page asks
-/// for the room itself.
-private struct RoomForTabBar: ViewModifier {
-    let height: CGFloat
+/// A page that stays alive while another tab shows, out of sight and out of reach.
+private struct TabPage: ViewModifier {
+    let isShown: Bool
 
     func body(content: Content) -> some View {
         content
-            .toolbar(.hidden, for: .tabBar)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                Color.clear.frame(height: height).allowsHitTesting(false)
-            }
+            .opacity(isShown ? 1 : 0)
+            // The tab bar's own animation would otherwise cross-fade the two pages.
+            .animation(nil, value: isShown)
+            .allowsHitTesting(isShown)
+            .accessibilityHidden(!isShown)
     }
 }
 

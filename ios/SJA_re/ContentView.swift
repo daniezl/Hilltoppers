@@ -916,6 +916,10 @@ struct ContentView: View {
             // The tab bar sits above the dismissing layer, and this view stays alive.
             showBulletinConfirmation = false
         }
+        .onChange(of: router.isSettingsOpen) { _ in
+            // So does the edge swipe that opens Settings.
+            showBulletinConfirmation = false
+        }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 logAppOpenIfNeeded()

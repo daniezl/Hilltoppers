@@ -54,7 +54,7 @@ final class NavigationRouter: ObservableObject {
     }
 
     /// No bounce, so it moves like a pushed page does.
-    private static let settingsAnimation = Animation.spring(response: 0.38, dampingFraction: 1)
+    static let settingsAnimation = Animation.spring(response: 0.38, dampingFraction: 1)
 
     func push(_ route: AppRoute) {
         path.append(route)
