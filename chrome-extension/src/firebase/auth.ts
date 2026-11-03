@@ -2,6 +2,7 @@ import { FirebaseError } from 'firebase/app';
 import {
   initializeAuth,
   indexedDBLocalPersistence,
+  linkWithCredential,
   onAuthStateChanged,
   signInWithCredential,
   GoogleAuthProvider,
@@ -149,6 +150,25 @@ export async function signInWithGoogle(): Promise<UserCredential> {
   const auth = getOrInitAuth();
   const { idToken, accessToken } = await requestGoogleTokens();
   return signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken));
+}
+
+/**
+ * Attach a Google credential to the user who is already signed in, so the same
+ * account (and its saved preferences) can be reached with Google from now on.
+ */
+export async function linkGoogleAccount(): Promise<User> {
+  const auth = getOrInitAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Sign in first.');
+  }
+  const { idToken, accessToken } = await requestGoogleTokens();
+  const linked = await linkWithCredential(user, GoogleAuthProvider.credential(idToken, accessToken));
+  return linked.user;
+}
+
+export function googleEmail(user: User | null): string | null {
+  return user?.providerData.find(provider => provider.providerId === 'google.com')?.email ?? null;
 }
 
 export async function signOut(): Promise<void> {
