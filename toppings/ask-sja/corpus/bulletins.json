@@ -1586,5 +1586,39 @@
       }
     ],
     "fetchedAt": "2026-11-02T20:26:37.344Z"
+  },
+  "2026-11-03": {
+    "heading": "Daily Bulletin | Tuesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "White Day"
+      },
+      {
+        "kind": "para",
+        "text": "Plan to vote today? The Academy is here to help. Today, we will be providing a free ride to the polls. If you live in St. J and are 18, you can even register to vote on Election Day, be sure to sign out in the Main Office and head to Brantview Drive. An Academy van will bring you to the Welcome Center so you can vote. Teachers too can take advantage of this."
+      },
+      {
+        "kind": "para",
+        "text": "Don’t forget to bring in coats, gloves, hats, and scarves for The Annual Paul Sweeny Memorial coat drive. Items can be dropped off at Tiner house from now until Thursday. Free coats will be available for pick up on November 7th from 9-12 at the Good Shepherd Catholic School."
+      },
+      {
+        "kind": "para",
+        "text": "If you are a student attending the SkillsUSA Fall Leadership with Mrs. McGarvin and Mr. Carr on Thursday, please remember to return your permission slips. The bus will leave Brantview Drive Thursday at 7:40 AM, and we will return by the end of E block."
+      },
+      {
+        "kind": "para",
+        "text": "Your December 10th could go from ordinary to amazing when you win the senior class raffle for 4 tickets to the New England Patriots vs. the Minnesota Vikings game at Gillette Stadium! Let’s goooooo! Find a senior, Ms. Smith, or the flyers around campus and buy a raffle ticket today! Thank you from the Class of 2027."
+      },
+      {
+        "kind": "para",
+        "text": "A reminder that Bella Annello is looking for donations of school supplies to ship to elementary school students in Little Bay, Jamaica for her Capstone project. She’s seeking basic donations of pencils, colored pencils, paper, rulers, markers, world maps, and play doh. If you are willing to help with this cause, you can find donation boxes in the library and Mrs. Mantius’s classroom, Ranger 115."
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday today to Mya Barney, Bohdan Danforth, and Jay Spence!"
+      }
+    ],
+    "fetchedAt": "2026-11-03T17:56:58.089Z"
   }
 }
