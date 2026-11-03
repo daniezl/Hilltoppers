@@ -120,6 +120,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .login button.login__google-button:not(:disabled):hover { background: #f4f7f1; border-color: #bfd0bc; }
 .login__google-button svg { width: 18px; height: 18px; flex: none; }
 .login__google { display: grid; gap: 4px; }
+.login__notice { margin: 0; padding: 11px 13px; background: #eef4e9; border: 1px solid #cfdcc7; border-radius: 9px; color: #3c5c46; font-size: 12px; line-height: 1.6; }
 .account-continue { display: block; text-align: center; text-decoration: none; }
 .account-verification { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .login__container--account {
