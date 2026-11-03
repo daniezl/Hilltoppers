@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
-import { onAuthState, signInWithGoogle, signOut, isSchoolEmail, getSchoolEmail,
-  requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
+import { onAuthState, signInWithGoogle, signOut, isSchoolEmail, getSchoolEmail, googleEmail,
+  linkGoogleAccount, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail,
+  type AuthUser } from '../firebase/auth';
 import './login.css';
 import CodeInput from './CodeInput';
 import SchoolLinkButton from './SchoolLinkButton';
@@ -14,9 +15,15 @@ function mapAuthError(error: unknown): string {
   if (error instanceof FirebaseError) {
     switch (error.code) {
       case 'auth/account-exists-with-different-credential':
-        return 'This email already has a Hilltoppers account that was made with a password. Try another Google account, or ask the developer to move that account to Google.';
+        return 'This Google account belongs to a Hilltoppers account that already exists. Open the extension where you are still signed in, go to Account, and use Connect next to Google sign-in — then this button works everywhere.';
       case 'auth/user-disabled':
         return 'This account has been disabled. Contact support if you believe this is a mistake.';
+      case 'auth/credential-already-in-use':
+        return 'That Google account is already a separate Hilltoppers account. Use the Google account that belongs to this one.';
+      case 'auth/provider-already-linked':
+        return 'This account is already set up to sign in with Google.';
+      case 'auth/requires-recent-login':
+        return 'This session is too old to connect Google. Ask the developer to connect it for you.';
       case 'auth/network-request-failed':
         return 'Network error. Check your connection and try again.';
       case 'auth/too-many-requests':
@@ -63,6 +70,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
   const [schoolCooldown, setSchoolCooldown] = useState(0);
   const [schoolError, setSchoolError] = useState('');
   const [linkConfirmed,setLinkConfirmed] = useState(false);
+  const [notice, setNotice] = useState('');
   useEffect(()=>{
     if(!linkConfirmed)return;
     const timer=window.setTimeout(()=>setLinkConfirmed(false),2400);
@@ -112,9 +120,22 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
     <div className={`login__container${user ? ' login__container--account' : ' login__container--auth'}`}>
     <header className="login__header"><h1>{heading}</h1>{user ? <p>{user.email}</p> : ready ? <p>Sync your classes across devices.</p> : null}</header>
     {!ready ? <p role="status">Restoring your account…</p> : user ? <div className="account-overview">
+      {notice && <p role="status" className="login__notice">{notice}</p>}
       <section className="account-section" aria-labelledby="school-account-heading">
         <h2 id="school-account-heading">Connections</h2>
         <div className="account-school-card">
+        <div className="account-connection">
+          <span className="account-connection-icon" aria-hidden="true">G</span>
+          <div className="account-connection-copy">
+            <strong>Google sign-in</strong>
+            {googleEmail(user) ? <p>{googleEmail(user)}</p> : <p>Not connected — connect it so this account keeps working after you sign out.</p>}
+          </div>
+          {googleEmail(user) ? <span className="account-school-status">Connected</span> :
+            <button type="button" className="secondary account-action" disabled={busy} onClick={() => void perform(async () => {
+              const linked = await linkGoogleAccount();
+              setNotice(googleEmail(linked) ? `Google connected as ${googleEmail(linked)}.` : 'Google connected.');
+            })}>Connect</button>}
+        </div>
         <div className="account-connection">
           <span className="account-connection-icon" aria-hidden="true">SJA</span>
           <div className="account-connection-copy">
