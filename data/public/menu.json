@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-11-03T09:55:38.311Z",
+  "updatedAt": "2026-11-03T23:06:45.167Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-11-03",
   "menus": {
@@ -51,7 +51,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-03T02:08:02.322Z",
+  "daysUpdatedAt": "2026-11-03T23:06:45.167Z",
   "days": {
     "2026-10-27": {
       "breakfast": {
@@ -593,7 +593,6 @@
         "globalFare": [
           "Scrambled Eggs",
           "Buttermilk Pancake(s)",
-          "Breakfast Quesadilla",
           "Sausage Patty",
           "Hashbrown Patty"
         ]
@@ -628,7 +627,6 @@
           "Pork Bacon",
           "Cinnamon French Toast Homemade",
           "Scrambled Eggs",
-          "Breakfast Quesadilla",
           "Home Fried Potatoes"
         ]
       },
@@ -641,6 +639,7 @@
         ],
         "globalFare": [
           "Roasted Red Pepper Hummus",
+          "Chicken Curry",
           "Naan Bread",
           "Indian Baked Rice",
           "Oven Roasted Cauliflower with Turmeric"
@@ -662,7 +661,9 @@
         "classicKitchen": [
           "Chicken Pot Pie 10 Oz",
           "Vegetarian Pot Pie",
+          "BLT Crispy Chicken Sandwich",
           "Oven Roasted Garlic Potatoes",
+          "Beer Battered Onion Ring",
           "Seasoned Vegetable"
         ],
         "globalFare": [
@@ -685,6 +686,46 @@
           "Lentil, Rice & Spinach Pilaf",
           "Orzo with Lemon Butter",
           "Sauteed Squash & Zucchini"
+        ]
+      }
+    },
+    "2026-11-10": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Kielbasa",
+          "French Toast Sticks",
+          "Tater Tots"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Nacho Bar",
+          "Spicy Refried Beans",
+          "Brown Rice",
+          "Roasted Confetti Corn",
+          "Nacho Cheese Sauce",
+          "Chili con Carne"
+        ],
+        "globalFare": [
+          "General Tso's Chicken",
+          "Braised Gochujang Tofu",
+          "Brown Rice",
+          "Stir Fry Vegetables"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Loaded Bacon Ranch Fries",
+          "Kansas City BBQ Pulled Pork",
+          "Baked Beans",
+          "Seasoned Corn on the Cob"
+        ],
+        "globalFare": [
+          "Garlic Thai Chicken",
+          "Capellini",
+          "Asian Style Snap Peas"
         ]
       }
     }
