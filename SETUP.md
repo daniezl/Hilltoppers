@@ -25,10 +25,11 @@ Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键�
 （`chrome-extension/src/firebase/config.ts` 和 `scheduleService.ts`），
 `npm ci && npm run build` 出来的扩展直接可用。
 
-### 必须：Google 登录
+### 必须：Google 登录（和邮箱密码并存）
 
-登录方式只有「Sign in with Google」。扩展里唯一没法写死的值是 OAuth client id，
-需要在同一个 Google Cloud 项目里配一次：
+登录页最上面是「Sign in with Google」，下面是原来的邮箱 + 密码登录 / 注册，两种方式都能用；
+老账号照常登录，不需要迁移，随时可以在 Account 页把 Google 连到已有账号上。扩展里唯一
+没法写死的值是 OAuth client id，需要在同一个 Google Cloud 项目里配一次：
 
 1. Google Cloud Console → API 和凭据 → 创建凭据 → OAuth 客户端 ID，应用类型选
    **Web 应用**（不要选「Chrome 扩展程序」，那种类型不能自定义重定向 URI）。
@@ -44,11 +45,19 @@ Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键�
    VITE_GOOGLE_OAUTH_CLIENT_ID=....apps.googleusercontent.com
    ```
 
-没配好之前 Account 页面照常打开，按钮会直接说还没设置好，不会弹出 Google 窗口。
+5. 发布 OAuth 同意屏幕（OAuth consent screen → Publishing status → In production）。
+   留在 Testing 时只有名单里的测试用户能授权，上限 100 人。`openid email profile` 是
+   非敏感权限，不需要 Google 审核。
+6. 如果学校的 Workspace 管理员限制了第三方应用，要把这个 client id 加进允许列表，
+   否则学生看到的是 “app blocked”，而不是授权页。
 
-以前用邮箱密码注册的账号不会自动变成 Google 账号：同一个邮箱用 Google 登录会报
-`auth/account-exists-with-different-credential`，页面会说明这一点。要不要把这些
-账号迁移过去，或者让用户换一个 Google 账号，是维护者的决定。
+没配好之前 Account 页面照常打开，Google 按钮会直接说还没设置好，不会弹出窗口；下面的
+邮箱密码登录完全不受影响。
+
+**老账号怎么用上 Google**：先照常用邮箱密码登录，然后在 Account → Connections →
+Google sign-in 点 Connect。uid 不变，课表偏好和 Toppings 都留在原账号上，之后就多了
+Google 这一种登录方式。还没连接的时候用同一个邮箱点 Google 会报
+`auth/account-exists-with-different-credential`，页面会提示先回到邮箱密码登录再连接。
 
 ### 可选：分析上报
 

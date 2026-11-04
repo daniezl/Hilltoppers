@@ -48,11 +48,16 @@ removes a failure mode: a build made without the old `.env.local` was silently
 broken — no sign-in, no preference sync, and the day colour stopped being
 predicted forward, so the popup showed the previous school day's colour.
 
-### Google sign-in
+### Sign-in methods
 
-Signing in uses Google. The one value a build cannot carry for you is the OAuth
-client id; create it once in the same Google Cloud project as the Firebase
-project:
+The Account page offers **Sign in with Google** above the original email and
+password form, so both work: sign in or create an account with either one. An
+existing password account keeps working unchanged and can add Google at any time
+(Account → Connections → Google sign-in → Connect); the uid does not change, so
+saved preferences and Toppings stay with the account.
+
+The one Google value a build cannot carry for you is the OAuth client id; create
+it once in the same Google Cloud project as the Firebase project:
 
 1. Google Cloud Console → APIs & Services → Credentials → Create credentials →
    OAuth client ID → application type **Web application** (not "Chrome").
@@ -68,9 +73,16 @@ project:
    VITE_GOOGLE_OAUTH_CLIENT_ID=....apps.googleusercontent.com
    ```
 
-Until then the Account page still loads and the button says sign-in is not set
-up yet. The `identity` permission exists because `chrome.identity` is what opens
-Google's sign-in window in a Manifest V3 extension.
+5. Publish the OAuth consent screen (OAuth consent screen → Publishing status →
+   In production). While it is in Testing only listed test users can authorize,
+   capped at 100. `openid email profile` are non-sensitive, so no Google review.
+6. If the school's Workspace admin restricts third-party apps, allowlist the
+   client id, otherwise students see "app blocked" instead of the consent page.
+
+Until the id is set the Google button says sign-in is not set up yet and the
+email and password form below it keeps working. The `identity` permission exists
+because `chrome.identity` is what opens Google's sign-in window in a Manifest V3
+extension.
 
 ### Optional: analytics
 
