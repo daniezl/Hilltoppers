@@ -1620,5 +1620,47 @@
       }
     ],
     "fetchedAt": "2026-11-03T17:56:58.089Z"
+  },
+  "2026-11-04": {
+    "heading": "Daily Bulletin | Wednesday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "Green Day"
+      },
+      {
+        "kind": "heading",
+        "text": "Late Start Schedule"
+      },
+      {
+        "kind": "para",
+        "text": "Seniors who couldn’t attend last week’s class photo should meet Mr. Legge immediately after Chapel on Thursday, Nov. 5."
+      },
+      {
+        "kind": "para",
+        "text": "If you are a student attending tomorrow’s SkillsUSA Fall Leadership Conference with Mr. Carr and Mrs. McGarvin, please remember the bus leaves Brantview Drive at 7:40 AM. Feel free to bring a water bottle and a snack too. Dress standard is required. If you have any questions, please see Mrs. McGarvin today in Streeter 210 or send her an email."
+      },
+      {
+        "kind": "para",
+        "text": "Science Olympiad will meet today and future Wednesdays right after school until 4:30 in Streeter 226."
+      },
+      {
+        "kind": "para",
+        "text": "For the rest of the semester, the Art it Out Club will be merging with the Zen Zone on Thursdays. Come to Newell Hall 10 at 3:00 pm this Thursday let your creativity loose in a calming space. All are welcome."
+      },
+      {
+        "kind": "para",
+        "text": "Calling all advisories – a reminder to please write letters of support or create holiday cards or ornaments to include in care packages for VT soldiers deployed over the holidays. All donations are due by 12/1 to Mrs. Holcombe in Streeter 251."
+      },
+      {
+        "kind": "para",
+        "text": "Brooklynn Hibshman is looking for donations of fleece, flannel, thick cotton, or any cozy materials for her Capstone project, making hats to repurpose items that would otherwise be added to landfills. She will donate these hats around Saint Johnsbury. You can find the donation box in Ms. Mantius’ room in Ranger 115."
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday today to Braden Bergeron, Adylaide Boerstler, Henry Calle, Jonah Copans, Molly Groft, Suel Hajibeyli, Carter Heber, Audrey Roy, and Alice Stirling!"
+      }
+    ],
+    "fetchedAt": "2026-11-04T18:07:20.266Z"
   }
 }
