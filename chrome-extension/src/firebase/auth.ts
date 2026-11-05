@@ -12,6 +12,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
+  unlink,
   updateProfile,
   browserLocalPersistence,
   type Auth,
@@ -91,24 +92,32 @@ export function googleRedirectUrl(): string {
 }
 
 /**
- * Read the `nonce` claim out of an ID token. The signature is checked by
- * Firebase, not here; this only confirms the token is the answer to the request
- * we just made.
+ * Read the claims out of an ID token. The signature is checked by Firebase,
+ * not here; this only reads what Google says about the account, so a sign-in
+ * can be refused before Firebase is asked to act on it.
  */
-function idTokenNonce(idToken: string): string | null {
+function idTokenClaims(idToken: string): Record<string, unknown> | null {
   try {
     const payload = idToken.split('.')[1] ?? '';
     const padded = payload.replace(/-/g, '+').replace(/_/g, '/')
       .padEnd(Math.ceil(payload.length / 4) * 4, '=');
-    const claims = JSON.parse(atob(padded));
-    return typeof claims.nonce === 'string' ? claims.nonce : null;
+    return JSON.parse(atob(padded));
   } catch {
     return null;
   }
 }
 
+/** The address Google signed in as, and whether Google has verified it. */
+function googleIdentity(idToken: string): { email: string; verified: boolean } | null {
+  const claims = idTokenClaims(idToken);
+  if (typeof claims?.email !== 'string') {
+    return null;
+  }
+  return { email: claims.email.trim().toLowerCase(), verified: claims.email_verified !== false };
+}
+
 /** Ask Google for an ID token and access token in a Chrome auth window. */
-async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: string }> {
+async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: string; email: string }> {
   if (!googleOAuthClientId) {
     throw new Error('Google sign-in is not set up yet. Ask the developer to add the OAuth client id.');
   }
@@ -164,10 +173,15 @@ async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: st
   if (!idToken || !accessToken) {
     throw new Error('Google did not send a sign-in token. Please try again.');
   }
-  if (idTokenNonce(idToken) !== nonce) {
+  const claims = idTokenClaims(idToken);
+  if (!claims || claims.nonce !== nonce) {
     throw new Error('Sign-in could not be completed. Please try again.');
   }
-  return { idToken, accessToken };
+  const identity = googleIdentity(idToken);
+  if (!identity || !identity.verified) {
+    throw new Error('Google did not confirm your email address. Please try again.');
+  }
+  return { idToken, accessToken, email: identity.email };
 }
 
 /**
@@ -192,9 +206,37 @@ export async function linkGoogleAccount(): Promise<User> {
   if (!user) {
     throw new Error('Sign in first.');
   }
-  const { idToken, accessToken } = await requestGoogleTokens();
+  const { idToken, accessToken, email } = await requestGoogleTokens();
+  // Connecting someone else's address would put two identities on one account,
+  // so only the Google account for this account's own email is accepted.
+  const own = (user.email ?? '').trim().toLowerCase();
+  if (email !== own) {
+    throw new Error(`That Google account is ${email}. Connect the one for ${user.email || 'this account'}, or keep signing in with your password.`);
+  }
   const linked = await linkWithCredential(user, GoogleAuthProvider.credential(idToken, accessToken));
   return linked.user;
+}
+
+/**
+ * Remove Google from an account that still has a password, so a wrong or
+ * unwanted connection can be undone. Refused for Google-only accounts: they
+ * would have no way left to sign in.
+ */
+export async function unlinkGoogleAccount(): Promise<User> {
+  const auth = getOrInitAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Sign in first.');
+  }
+  const providers = user.providerData.map(provider => provider.providerId);
+  if (!providers.includes('google.com')) {
+    throw new Error('Google is not connected to this account.');
+  }
+  if (!providers.includes('password')) {
+    throw new Error('Set a password before disconnecting Google, otherwise you could not sign in again.');
+  }
+  await unlink(user, 'google.com');
+  return (await reloadCurrentUser()) ?? user;
 }
 
 export function googleEmail(user: User | null): string | null {
