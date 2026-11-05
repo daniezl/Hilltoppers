@@ -56,33 +56,32 @@ existing password account keeps working unchanged and can add Google at any time
 (Account → Connections → Google sign-in → Connect); the uid does not change, so
 saved preferences and Toppings stay with the account.
 
-The one Google value a build cannot carry for you is the OAuth client id; create
-it once in the same Google Cloud project as the Firebase project:
+The OAuth client id is committed in `src/firebase/config.ts`, like the rest of the
+web config: it is not a secret, it appears in the URL of every sign-in attempt
+anyway, and a build without it cannot open Google at all. It belongs to the
+Firebase project's own Google Cloud project (number `11216800424`) and authorizes
+`https://bcjpcmlikbccobbpheojlnmiaffilnaa.chromiumapp.org/`, the redirect URL of
+the published extension.
 
-1. Google Cloud Console → APIs & Services → Credentials → Create credentials →
-   OAuth client ID → application type **Web application** (not "Chrome").
-2. Add `https://<extension-id>.chromiumapp.org/` under **Authorized redirect
-   URIs**. The id is on `chrome://extensions`; `googleRedirectUrl()` in
-   `src/firebase/auth.ts` returns the exact string. An unpacked build loaded from
-   a different folder gets a different id, so pin it with a manifest `key` if
-   several machines should share one client.
-3. Firebase Console → Authentication → Sign-in method → enable **Google**.
-4. Put the id in `.env.local` (gitignored) and rebuild:
+Two console settings still have to hold, and neither lives in this repo:
 
-   ```
-   VITE_GOOGLE_OAUTH_CLIENT_ID=....apps.googleusercontent.com
-   ```
+1. Firebase Console → Authentication → Sign-in method → **Google** enabled.
+   `signInWithCredential` is rejected without it.
+2. Google Cloud → OAuth consent screen: the app name is still the default
+   `project-11216800424`, which is what students see when they authorize. Set it
+   to **Hilltoppers**, and move Publishing status from Testing to **In
+   production**, otherwise only listed test users can sign in (100 maximum).
+   `openid email profile` are non-sensitive, so no Google review is needed.
 
-5. Publish the OAuth consent screen (OAuth consent screen → Publishing status →
-   In production). While it is in Testing only listed test users can authorize,
-   capped at 100. `openid email profile` are non-sensitive, so no Google review.
-6. If the school's Workspace admin restricts third-party apps, allowlist the
-   client id, otherwise students see "app blocked" instead of the consent page.
+An unpacked build loaded from another folder gets a different extension id and
+Google answers with `redirect_uri_mismatch`; add that id's
+`https://<extension-id>.chromiumapp.org/` to the same client (10 allowed), or
+build with `VITE_GOOGLE_OAUTH_CLIENT_ID` pointing at a client of its own.
 
-Until the id is set the Google button says sign-in is not set up yet and the
-email and password form below it keeps working. The `identity` permission exists
-because `chrome.identity` is what opens Google's sign-in window in a Manifest V3
-extension.
+Google refuses `response_type=id_token` without a `nonce` (`invalid_request`),
+so `auth.ts` sends one and checks it against the returned token. The `identity`
+permission exists because `chrome.identity` is what opens Google's sign-in window
+in a Manifest V3 extension.
 
 ### Optional: analytics
 
