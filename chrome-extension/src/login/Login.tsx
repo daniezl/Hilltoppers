@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
 import { onAuthState, registerWithEmail, reloadCurrentUser, sendVerificationEmail,
   signInWithEmail, signOut, resetPassword, redeemEmailCode, completeEmailVerification, completePasswordReset,
-  signInWithGoogle, linkGoogleAccount, unlinkGoogleAccount, googleEmail,
+  signInWithGoogle, linkGoogleAccount, unlinkGoogleAccount, googleEmail, hasPassword, setAccountPassword,
   isSchoolEmail, getSchoolEmail, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
 import './login.css';
 import CodeInput from './CodeInput';
@@ -90,6 +90,9 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [googleError, setGoogleError] = useState('');
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [cooldown, setCooldown] = useState(0);
@@ -156,7 +159,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
 
   function switchMode(next: Mode) {
     setMode(next); setChallengeId(''); setCode(''); setResetAction(''); setShowPassword(false); setResetSent(false); setMessage(''); setError('');
-    setGoogleError('');
+    setGoogleError(''); setPasswordOpen(false); setPasswordError('');
   }
   async function perform(action: () => Promise<void>) {
     setBusy(true); setError(''); setMessage('');
@@ -245,6 +248,38 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
               }).catch(e => setGoogleError(mapAuthError(e))).finally(() => setGoogleBusy(false));
             }}>{googleBusy ? 'Connecting…' : 'Connect'}</button>}
         </div>
+        <div className="account-connection">
+          <span className="account-connection-icon" aria-hidden="true">PW</span>
+          <div className="account-connection-copy">
+            <strong>Password</strong>
+            {hasPassword(user) ? <p>Set — you can sign in with your email and password.</p>
+              : <p>Not set — this account signs in with Google only. Set one to keep access without Google.</p>}
+          </div>
+          {hasPassword(user) ? <span className="account-school-status">Set</span> :
+            <button type="button" className="secondary account-action" disabled={busy || passwordBusy} onClick={() => {
+              setPasswordOpen(value => !value); setPasswordError('');
+            }}>{passwordOpen ? 'Cancel' : 'Set password'}</button>}
+        </div>
+        {passwordOpen && !hasPassword(user) && <form className="login__form account-school-form" onSubmit={event => {
+          event.preventDefault();
+          const fields = new FormData(event.currentTarget);
+          const next = String(fields.get('password') ?? '');
+          if (next !== String(fields.get('confirm') ?? '')) { setPasswordError('The two passwords do not match.'); return; }
+          setPasswordBusy(true); setPasswordError(''); setMessage('');
+          void setAccountPassword(next).then(updated => {
+            setUser(updated); setPasswordOpen(false);
+            setMessage('Password set. You can now sign in with your email and password, or disconnect Google.');
+          }).catch(e => setPasswordError(mapAuthError(e))).finally(() => setPasswordBusy(false));
+        }}>
+          <label htmlFor="account-password">New password</label>
+          <input id="account-password" name="password" type="password" autoComplete="new-password" required minLength={6} disabled={passwordBusy}/>
+          <label htmlFor="account-password-confirm">Confirm password</label>
+          <input id="account-password-confirm" name="confirm" type="password" autoComplete="new-password" required minLength={6} disabled={passwordBusy}/>
+          {passwordError && <p role="alert" className="login__error">{passwordError}</p>}
+          <div className="account-school-actions">
+            <button type="submit" className="primary" disabled={passwordBusy}>{passwordBusy ? 'Please wait…' : 'Save password'}</button>
+          </div>
+        </form>}
         <div className="account-connection">
           <span className="account-connection-icon" aria-hidden="true">SJA</span>
           <div className="account-connection-copy">
