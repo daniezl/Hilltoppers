@@ -84,17 +84,24 @@ export const firebaseConfig: FirebaseConfig = {
 };
 
 /**
- * OAuth client id for "Sign in with Google". It is not a secret, but it is
- * specific to the extension id: the client must list
- * `https://<extension-id>.chromiumapp.org/` as an authorized redirect URI, and
- * Google rejects the sign-in with `redirect_uri_mismatch` if the two do not
- * match. `googleRedirectUrl()` in `auth.ts` returns the exact value to
- * register. Left blank, the sign-in button explains that it is not set up yet
- * instead of opening a window that Google will refuse.
+ * OAuth client id for "Sign in with Google", from this project's own Google
+ * Cloud project (`messagingSenderId` above is its project number; the ID token
+ * Google returns is only accepted for an app in that project). Like the web
+ * config it is committed on purpose: it is not a secret — it travels in the URL
+ * of every sign-in attempt — and a build without it cannot open Google at all.
+ *
+ * It is tied to the extension id: the client authorizes
+ * `https://bcjpcmlikbccobbpheojlnmiaffilnaa.chromiumapp.org/`, which is what
+ * `chrome.identity.getRedirectURL()` returns for the published build. A build
+ * loaded unpacked from another folder gets a different id and Google refuses it
+ * with `redirect_uri_mismatch`; add that id's `chromiumapp.org` URL to the same
+ * client (10 are allowed), or point VITE_GOOGLE_OAUTH_CLIENT_ID at a client of
+ * its own.
  *
  * Setup steps are in SETUP.md ("Google 登录").
  */
-const GOOGLE_OAUTH_CLIENT_ID = '';
+export const GOOGLE_OAUTH_CLIENT_ID =
+  '11216800424-9ror74pi64u869h2m0ojdeqehro116qc.apps.googleusercontent.com';
 
 export const googleOAuthClientId = resolve(env.VITE_GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_ID);
 

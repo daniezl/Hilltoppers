@@ -90,6 +90,23 @@ export function googleRedirectUrl(): string {
   return chrome.identity.getRedirectURL();
 }
 
+/**
+ * Read the `nonce` claim out of an ID token. The signature is checked by
+ * Firebase, not here; this only confirms the token is the answer to the request
+ * we just made.
+ */
+function idTokenNonce(idToken: string): string | null {
+  try {
+    const payload = idToken.split('.')[1] ?? '';
+    const padded = payload.replace(/-/g, '+').replace(/_/g, '/')
+      .padEnd(Math.ceil(payload.length / 4) * 4, '=');
+    const claims = JSON.parse(atob(padded));
+    return typeof claims.nonce === 'string' ? claims.nonce : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Ask Google for an ID token and access token in a Chrome auth window. */
 async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: string }> {
   if (!googleOAuthClientId) {
@@ -102,7 +119,10 @@ async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: st
   const redirectUri = googleRedirectUrl();
   // launchWebAuthFlow returns whatever URL the auth window ends on, so a random
   // state is the only proof that the tokens belong to this sign-in attempt.
+  // Google also rejects `response_type=id_token` without a nonce ("Nonce
+  // required for response_type id_token"), so one is sent and then checked.
   const state = crypto.randomUUID();
+  const nonce = crypto.randomUUID();
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   url.search = new URLSearchParams({
     client_id: googleOAuthClientId,
@@ -110,6 +130,7 @@ async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: st
     redirect_uri: redirectUri,
     scope: 'openid email profile',
     state,
+    nonce,
     prompt: 'select_account'
   }).toString();
 
@@ -142,6 +163,9 @@ async function requestGoogleTokens(): Promise<{ idToken: string; accessToken: st
   const accessToken = params.get('access_token');
   if (!idToken || !accessToken) {
     throw new Error('Google did not send a sign-in token. Please try again.');
+  }
+  if (idTokenNonce(idToken) !== nonce) {
+    throw new Error('Sign-in could not be completed. Please try again.');
   }
   return { idToken, accessToken };
 }
