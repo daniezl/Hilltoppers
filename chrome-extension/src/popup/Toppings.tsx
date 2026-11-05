@@ -105,13 +105,7 @@ export default function InstalledToppings() {
     };
     read(); chrome.storage.onChanged.addListener(changed);
     // Withdrawn listings stop loading; an offline catalog does not erase installed modules.
-    void fetchToppings().then(async catalog => {
-      const local = await localToppings();
-      if (!alive) return;
-      await chrome.storage.local.set({ [TOPPINGS_KEY]: local.filter(t => !t.preview).flatMap(t => {
-        const current = catalog.find(x => x.id === t.id); return current ? [current] : [];
-      }) });
-    }).catch(() => {});
+    void fetchToppings().catch(() => {});
     return () => { alive = false; chrome.storage.onChanged.removeListener(changed); };
   }, []);
   return <div className="toppings-dock" ref={dock}>

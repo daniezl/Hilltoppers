@@ -1,3 +1,5 @@
+import { ASK_SJA, withDefaultToppings } from './defaultToppings';
+import { prepareToppingAccount, editToppingAccount, syncToppingAccount, refreshToppingMetadata } from '../storage/toppingSync';
 import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 
 export interface Topping {
@@ -13,12 +15,7 @@ const API = 'https://hilltoppers-topping-bar.danielzhang089.workers.dev/api/topp
 export const TOPPINGS_KEY = 'installedToppings';
 export const TOPPING_ORDER_KEY = 'toppingOrder';
 export const PREVIEW_TOPPING_KEY = 'previewTopping';
-export const ASK_SJA: Topping = {
-  id: '2e318d5f-57cf-4799-8443-f5c41cf0a1e3', icon: 'chat', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
-  url: 'https://ask-sja-topping.danielzhang089.workers.dev/', image: `${API}/2e318d5f-57cf-4799-8443-f5c41cf0a1e3/image`,
-  author: 'Yaoyu Zhang', graduationYear: null, createdAt: 1790260441173, users: 0, rating: null,
-  ratingCount: 0, installed: false, myRating: null, owned: false
-};
+export { ASK_SJA } from './defaultToppings';
 let installIdPromise: Promise<string> | undefined;
 function installId(): Promise<string> {
   // One identifier per browser profile, independent of account sign-in state.
@@ -69,8 +66,36 @@ async function ensureDefaultTopping() {
     });
   });
 }
+async function ensureDefaultToppingList() {
+  await navigator.locks.request('topping-default-install', async () => {
+    const saved = await chrome.storage.local.get(['bulletinDefaultInstalledV1', TOPPINGS_KEY, TOPPING_ORDER_KEY, 'toppingOrderCustomized']);
+    if (saved.bulletinDefaultInstalledV1) return;
+    const installed: Topping[] = saved[TOPPINGS_KEY] || [];
+    const entries = Object.fromEntries(installed.map(t => [t.id, { installed: true, topping: t }]));
+    // The previous migration already ran; absence now means Ask SJA was removed.
+    if (!entries[ASK_SJA.id]) entries[ASK_SJA.id] = { installed: false, topping: ASK_SJA };
+    const next = withDefaultToppings({ entries, order: saved[TOPPING_ORDER_KEY] || installed.map(t => t.id),
+      orderCustomized: saved.toppingOrderCustomized });
+    await chrome.storage.local.set({
+      [TOPPINGS_KEY]: next.order.map(id => next.entries[id].topping),
+      [TOPPING_ORDER_KEY]: next.order, toppingOrderCustomized: next.orderCustomized,
+      bulletinDefaultInstalledV1: true
+    });
+  });
+}
+let accountPreparation: Promise<void> | undefined;
+function prepareAccountInBackground(): Promise<void> {
+  // Auth restoration must not hold up the cached list or run again on every storage event.
+  return accountPreparation ||= prepareToppingAccount().catch(error => {
+    accountPreparation = undefined;
+    console.warn('[toppings] Could not prepare account sync', error);
+  });
+}
+
 export async function localToppings(): Promise<Topping[]> {
   await ensureDefaultTopping();
+  await ensureDefaultToppingList();
+  void prepareAccountInBackground();
   const [data, previewData] = await Promise.all([
     chrome.storage.local.get([TOPPINGS_KEY, TOPPING_ORDER_KEY, 'askSjaToppingEnabled']),
     chrome.storage.session.get(PREVIEW_TOPPING_KEY)
@@ -90,12 +115,8 @@ export async function localToppings(): Promise<Topping[]> {
   return installed.sort((a:Topping,b:Topping)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
 }
 export async function saveToppingOrder(ids:string[]) {
-  await navigator.locks.request('topping-counts',async()=>{
-    const current=await localToppings();
-    const allowed=new Set(current.map(t=>t.id));
-    const order=[...new Set([...ids,...current.map(t=>t.id)])].filter(id=>allowed.has(id));
-    await chrome.storage.local.set({[TOPPING_ORDER_KEY]:order});
-  });
+  await localToppings();
+  await editToppingAccount(undefined, undefined, ids);
 }
 function parsePreviewUrl(address: string): URL {
   try {
@@ -124,7 +145,7 @@ async function syncCounts() {
   for (const [id, added] of Object.entries(pending)) {
     try {
       await toppingRequest(`/${id}/install`, added ? 'POST' : 'DELETE');
-      await navigator.locks.request('topping-counts', async () => {
+      await navigator.locks.request('toppings-account-local', async () => {
         const latest = await chrome.storage.local.get(PENDING);
         const current = latest[PENDING] || {};
         if (current[id] === added) delete current[id];
@@ -135,6 +156,8 @@ async function syncCounts() {
   });
 }
 export async function fetchToppings(): Promise<Topping[]> {
+  await localToppings();
+  void syncToppingAccount().catch(console.warn);
   await syncCounts();
   let data = await toppingRequest();
   let changed = false;
@@ -148,7 +171,11 @@ export async function fetchToppings(): Promise<Topping[]> {
     }
   }
   if (changed) data = await toppingRequest();
-  return data.toppings.map((t: Topping) => ({ ...t, installed: local.some(x => x.id === t.id), owned: Boolean(t.owned) }));
+  // Resolve the account before writing metadata, while cached UI remains usable.
+  await prepareAccountInBackground();
+  await refreshToppingMetadata(data.toppings);
+  const latest = await localToppings();
+  return data.toppings.map((t: Topping) => ({ ...t, installed: latest.some(x => x.id === t.id), owned: Boolean(t.owned) }));
 }
 export async function changeTopping(topping: Topping, added: boolean) {
   if (topping.preview) {
@@ -156,15 +183,8 @@ export async function changeTopping(topping: Topping, added: boolean) {
     else await chrome.storage.session.remove(PREVIEW_TOPPING_KEY);
     return;
   }
-  await navigator.locks.request('topping-counts', async () => {
-    const current = (await localToppings()).filter(t => !t.preview && t.id !== topping.id);
-    if (added) current.push({ ...topping, installed: true });
-    const saved = await chrome.storage.local.get(PENDING);
-    await chrome.storage.local.set({
-      [TOPPINGS_KEY]: current, askSjaToppingEnabled: current.some(t => t.id === ASK_SJA.id),
-      [PENDING]: { ...saved[PENDING], [topping.id]: added }
-    });
-  });
+  await localToppings();
+  await editToppingAccount(topping, added);
   await syncCounts();
 }
 export function openToppingBar() { chrome.tabs.create({ url: chrome.runtime.getURL('toppings.html') }); }

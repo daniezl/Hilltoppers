@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { onAuthState, getSchoolEmail, isSchoolEmail, type AuthUser } from '../firebase/auth';
-import { changeTopping, fetchToppings, toppingRequest, TOPPINGS_KEY, localToppings, savePreviewTopping, type Topping } from '../services/toppingsService';
+import { changeTopping, fetchToppings, toppingRequest, TOPPINGS_KEY, savePreviewTopping, type Topping } from '../services/toppingsService';
 import './toppings.css';
 import ToppingGuide from './ToppingGuide';
 import ToppingInstallButton from './ToppingInstallButton';
@@ -107,14 +107,19 @@ export default function ToppingBar({ onAccount, active = true }: { onAccount?: (
   };
   async function refresh() {
     const list = await fetchToppings(); acceptList(list);
-    // Refresh metadata and remove withdrawn listings without auto-installing on other devices.
-    const local = await localToppings();
-    await chrome.storage.local.set({ [TOPPINGS_KEY]: local.filter(t => !t.preview).flatMap(t => {
-      const current = list.find(x => x.id === t.id); return current ? [current] : [];
-    }) });
     return list;
   }
   useEffect(() => onAuthState(next => { setUser(next); setAccountReady(true); }), []);
+  useEffect(() => {
+    const changed = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area !== 'local' || !changes[TOPPINGS_KEY]) return;
+      const installed = new Set<string>((changes[TOPPINGS_KEY].newValue || []).map((t: Topping) => t.id));
+      setItems(list => list.map(t => ({ ...t, installed: installed.has(t.id) })));
+      setDetail(t => t ? { ...t, installed: installed.has(t.id) } : t);
+    };
+    chrome.storage.onChanged.addListener(changed);
+    return () => chrome.storage.onChanged.removeListener(changed);
+  }, []);
   useEffect(() => {
     let active = true; setLoading(true);
     fetchToppings().then(list => { if (active) acceptList(list); }).catch(e => { if(active) setError(e.message); }).finally(()=>{if(active)setLoading(false);});
