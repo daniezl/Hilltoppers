@@ -1,3 +1,4 @@
+import { ASK_SJA, withDefaultToppings } from './defaultToppings';
 import { prepareToppingAccount, editToppingAccount, syncToppingAccount, refreshToppingMetadata } from '../storage/toppingSync';
 import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 
@@ -14,12 +15,7 @@ const API = 'https://hilltoppers-topping-bar.danielzhang089.workers.dev/api/topp
 export const TOPPINGS_KEY = 'installedToppings';
 export const TOPPING_ORDER_KEY = 'toppingOrder';
 export const PREVIEW_TOPPING_KEY = 'previewTopping';
-export const ASK_SJA: Topping = {
-  id: '2e318d5f-57cf-4799-8443-f5c41cf0a1e3', icon: 'chat', name: 'Ask SJA', description: 'Answers about school life, with sources you can check.',
-  url: 'https://ask-sja-topping.danielzhang089.workers.dev/', image: `${API}/2e318d5f-57cf-4799-8443-f5c41cf0a1e3/image`,
-  author: 'Yaoyu Zhang', graduationYear: null, createdAt: 1790260441173, users: 0, rating: null,
-  ratingCount: 0, installed: false, myRating: null, owned: false
-};
+export { ASK_SJA } from './defaultToppings';
 let installIdPromise: Promise<string> | undefined;
 function installId(): Promise<string> {
   // One identifier per browser profile, independent of account sign-in state.
@@ -70,6 +66,23 @@ async function ensureDefaultTopping() {
     });
   });
 }
+async function ensureDefaultToppingList() {
+  await navigator.locks.request('topping-default-install', async () => {
+    const saved = await chrome.storage.local.get(['bulletinDefaultInstalledV1', TOPPINGS_KEY, TOPPING_ORDER_KEY, 'toppingOrderCustomized']);
+    if (saved.bulletinDefaultInstalledV1) return;
+    const installed: Topping[] = saved[TOPPINGS_KEY] || [];
+    const entries = Object.fromEntries(installed.map(t => [t.id, { installed: true, topping: t }]));
+    // The previous migration already ran; absence now means Ask SJA was removed.
+    if (!entries[ASK_SJA.id]) entries[ASK_SJA.id] = { installed: false, topping: ASK_SJA };
+    const next = withDefaultToppings({ entries, order: saved[TOPPING_ORDER_KEY] || installed.map(t => t.id),
+      orderCustomized: saved.toppingOrderCustomized });
+    await chrome.storage.local.set({
+      [TOPPINGS_KEY]: next.order.map(id => next.entries[id].topping),
+      [TOPPING_ORDER_KEY]: next.order, toppingOrderCustomized: next.orderCustomized,
+      bulletinDefaultInstalledV1: true
+    });
+  });
+}
 let accountPreparation: Promise<void> | undefined;
 function prepareAccountInBackground(): Promise<void> {
   // Auth restoration must not hold up the cached list or run again on every storage event.
@@ -81,6 +94,7 @@ function prepareAccountInBackground(): Promise<void> {
 
 export async function localToppings(): Promise<Topping[]> {
   await ensureDefaultTopping();
+  await ensureDefaultToppingList();
   void prepareAccountInBackground();
   const [data, previewData] = await Promise.all([
     chrome.storage.local.get([TOPPINGS_KEY, TOPPING_ORDER_KEY, 'askSjaToppingEnabled']),

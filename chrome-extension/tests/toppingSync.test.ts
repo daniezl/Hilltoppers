@@ -17,6 +17,9 @@ vi.mock('firebase/firestore', () => ({
 }));
 import { prepareToppingAccount, editToppingAccount, syncToppingAccount, mergeToppingState } from '../src/storage/toppingSync';
 import type { Topping } from '../src/services/toppingsService';
+import { DEFAULT_TOPPINGS } from '../src/services/defaultToppings';
+const nonDefaults = (ids: string[]) => ids.filter(id => !DEFAULT_TOPPINGS.some(t => t.id === id));
+const installedIds = () => nonDefaults(data.installedToppings.map((t: Topping) => t.id));
 const topping = (id: string) => ({ id, name: id, url: `https://${id}.example.com`, installed: true } as Topping);
 const state = (...ids: string[]) => ({ entries: Object.fromEntries(ids.map(id => [id, { installed: true, topping: topping(id) }])), order: ids });
 let data: Record<string, any>;
@@ -37,20 +40,20 @@ beforeEach(() => {
 test('first sign-in merges devices and preserves cloud order', async () => {
   context.cloud.a = { toppingPreferences: state('ask', 'todo') };
   await syncToppingAccount();
-  expect(data.installedToppings.map((t: Topping) => t.id)).toEqual(['ask', 'todo', 'weather']);
-  expect(context.cloud.a.toppingPreferences.order).toEqual(['ask', 'todo', 'weather']);
+  expect(installedIds()).toEqual(['ask', 'todo', 'weather']);
+  expect(nonDefaults(context.cloud.a.toppingPreferences.order)).toEqual(['ask', 'todo', 'weather']);
 });
 test('first-time old device cannot resurrect a cloud removal', async () => {
   const remote = state('weather'); remote.entries.weather.installed = false; remote.order = [];
   context.cloud.a = { toppingPreferences: remote };
   await syncToppingAccount();
-  expect(data.installedToppings).toEqual([]);
+  expect(installedIds()).toEqual([]);
   expect(context.cloud.a.toppingPreferences.entries.weather.installed).toBe(false);
 });
 test('offline removal survives restart and later polls', async () => {
   await syncToppingAccount(); context.offline = true;
   await editToppingAccount(topping('weather'), false); await syncToppingAccount();
-  expect(data.installedToppings).toEqual([]);
+  expect(installedIds()).toEqual([]);
   expect(data['toppingsAccount:a'].pending.weather).toBeDefined();
   context.offline = false; await syncToppingAccount(); await syncToppingAccount();
   expect(context.cloud.a.toppingPreferences.entries.weather.installed).toBe(false);
@@ -60,11 +63,11 @@ test('account switching isolates pending edits and guest state', async () => {
   await syncToppingAccount(); context.offline = true;
   await editToppingAccount(topping('private'), true); await syncToppingAccount();
   context.user = { uid: 'b', emailVerified: true }; context.offline = false;
-  await syncToppingAccount(); expect(data.installedToppings).toEqual([]);
-  expect(context.cloud.b).toBeUndefined();
-  context.user = null; await syncToppingAccount(); expect(data.installedToppings).toEqual([]);
+  await syncToppingAccount(); expect(installedIds()).toEqual([]);
+  expect(context.cloud.b.toppingPreferences.order).toEqual(DEFAULT_TOPPINGS.map(t => t.id));
+  context.user = null; await syncToppingAccount(); expect(installedIds()).toEqual([]);
   context.user = { uid: 'a', emailVerified: true }; await syncToppingAccount();
-  expect(data.installedToppings.map((t: Topping) => t.id)).toEqual(['weather', 'private']);
+  expect(installedIds()).toEqual(['weather', 'private']);
 });
 test('an edit during a slow sync is retained and uploaded afterwards', async () => {
   await syncToppingAccount();
@@ -73,7 +76,7 @@ test('an edit during a slow sync is retained and uploaded afterwards', async () 
   const reading = syncToppingAccount(); await vi.waitFor(() => expect(finish).toBeDefined());
   await editToppingAccount(topping('weather'), false);
   finish(); await reading; await syncToppingAccount();
-  expect(data.installedToppings).toEqual([]);
+  expect(installedIds()).toEqual([]);
   expect(context.cloud.a.toppingPreferences.entries.weather.installed).toBe(false);
 });
 test('a slow response from the previous account cannot replace the current list', async () => {
@@ -83,13 +86,13 @@ test('a slow response from the previous account cannot replace the current list'
   const reading = syncToppingAccount(); await vi.waitFor(() => expect(finish).toBeDefined());
   context.user = { uid: 'b', emailVerified: true }; await prepareToppingAccount();
   finish(); await reading;
-  expect(data.installedToppings).toEqual([]);
+  expect(installedIds()).toEqual([]);
 });
 test('ordering preserves concurrently installed items and excludes previews', async () => {
   await syncToppingAccount();
   context.cloud.a.toppingPreferences = state('weather', 'todo');
   await editToppingAccount(undefined, undefined, ['local-preview', 'weather']); await syncToppingAccount();
-  expect(context.cloud.a.toppingPreferences.order).toEqual(['weather', 'todo']);
+  expect(nonDefaults(context.cloud.a.toppingPreferences.order)).toEqual(['weather', 'todo']);
 });
 test('explicit reinstall overrides a tombstone without losing other additions', () => {
   const remote = state('weather', 'todo'); remote.entries.weather.installed = false;
@@ -105,7 +108,7 @@ test('two migrated devices converge after removal instead of merging stale lists
   data = deviceA;
   await editToppingAccount(topping('weather'), false); await syncToppingAccount();
   data = deviceB; await syncToppingAccount();
-  expect(data.installedToppings.map((t: Topping) => t.id)).toEqual(['todo']);
+  expect(installedIds()).toEqual(['todo']);
   expect(context.cloud.a.toppingPreferences.entries.weather.installed).toBe(false);
 });
 test('unverified accounts keep edits locally until verification', async () => {
@@ -113,5 +116,21 @@ test('unverified accounts keep edits locally until verification', async () => {
   await editToppingAccount(topping('todo'), true); await syncToppingAccount();
   expect(context.cloud.a).toBeUndefined();
   context.user.emailVerified = true; await syncToppingAccount();
-  expect(context.cloud.a.toppingPreferences.order).toEqual(['weather', 'todo']);
+  expect(nonDefaults(context.cloud.a.toppingPreferences.order)).toEqual(['weather', 'todo']);
+});
+test('default removal on another device wins over a fresh default installation', async () => {
+  await syncToppingAccount();
+  const first = DEFAULT_TOPPINGS[0];
+  await editToppingAccount(first, false); await syncToppingAccount();
+  data = { installedToppings: DEFAULT_TOPPINGS, toppingOrder: DEFAULT_TOPPINGS.map(t => t.id) };
+  await syncToppingAccount();
+  expect(data.installedToppings.some((t: Topping) => t.id === first.id)).toBe(false);
+});
+test('manual default order syncs and is not reset by later polling', async () => {
+  await syncToppingAccount();
+  const ids = ['weather', ...DEFAULT_TOPPINGS.map(t => t.id).reverse()];
+  await editToppingAccount(undefined, undefined, ids); await syncToppingAccount();
+  await syncToppingAccount();
+  expect(data.toppingOrder).toEqual(ids);
+  expect(context.cloud.a.toppingPreferences.orderCustomized).toBe(true);
 });

@@ -12,7 +12,7 @@ beforeEach(() => {
   sync.remote.mockResolvedValue(undefined);
   sync.refresh.mockResolvedValue(undefined);
   const data: Record<string, unknown> = {
-    askSjaDefaultInstalledV2: true, installedToppings: [topping], toppingOrder: ['weather'], toppingInstallId: 'test'
+    askSjaDefaultInstalledV2: true, bulletinDefaultInstalledV1: true, installedToppings: [topping], toppingOrder: ['weather'], toppingInstallId: 'test'
   };
   vi.stubGlobal('navigator', { locks: { request: async (_key: string, action: () => unknown) => action() } });
   vi.stubGlobal('chrome', { storage: {

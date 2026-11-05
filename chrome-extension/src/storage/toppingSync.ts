@@ -1,10 +1,11 @@
+import { ASK_SJA, hasCustomOrder, withDefaultToppings } from '../services/defaultToppings';
 import { doc, runTransaction } from 'firebase/firestore';
 import { getDb } from '../firebase/app';
 import { getCurrentUser, onAuthState, waitForAuthReady } from '../firebase/auth';
 import type { Topping } from '../services/toppingsService';
 
 interface Entry { installed: boolean; topping: Topping }
-export interface ToppingState { entries: Record<string, Entry>; order: string[] }
+export interface ToppingState { entries: Record<string, Entry>; order: string[]; orderCustomized?: boolean }
 interface Operation { id: string; entry: Entry }
 interface LocalState {
   state: ToppingState;
@@ -29,11 +30,12 @@ export function mergeToppingState(remote: ToppingState, seed?: ToppingState,
   // Explicit edits are applied in server acceptance order, including offline edits.
   for (const [id, operation] of Object.entries(pending)) entries[id] = operation.entry;
   const ids = [...new Set([...(order || remote.order), ...(seed?.order || []), ...Object.keys(entries)])];
-  return { entries, order: ids.filter(id => entries[id]?.installed) };
+  return withDefaultToppings({ entries, order: ids.filter(id => entries[id]?.installed),
+    orderCustomized: order !== undefined || hasCustomOrder(remote) || (seed ? hasCustomOrder(seed) : false) });
 }
 
 async function project(state: ToppingState) {
-  const saved = await chrome.storage.local.get(['installedToppings', 'toppingOrder', 'toppingPendingCounts', 'toppingCatalogIds']);
+  const saved = await chrome.storage.local.get(['installedToppings', 'toppingOrder', 'toppingPendingCounts', 'toppingCatalogIds', 'toppingOrderCustomized']);
   const available: string[] | undefined = saved.toppingCatalogIds;
   const installed = state.order.filter(id => state.entries[id]?.installed && (!available || available.includes(id)))
     .map(id => ({ ...state.entries[id].topping, installed: true }));
@@ -42,6 +44,7 @@ async function project(state: ToppingState) {
   for (const t of before) if (!installed.some(x => x.id === t.id)) pending[t.id] = false;
   for (const t of installed) if (!before.some(x => x.id === t.id)) pending[t.id] = true;
   const values: Record<string, unknown> = {};
+  if (saved.toppingOrderCustomized !== state.orderCustomized) values.toppingOrderCustomized = state.orderCustomized;
   if (JSON.stringify(before) !== JSON.stringify(installed)) values.installedToppings = installed;
   if (JSON.stringify(saved.toppingOrder) !== JSON.stringify(state.order)) values.toppingOrder = state.order;
   if (JSON.stringify(pending) !== JSON.stringify(saved.toppingPendingCounts)) values.toppingPendingCounts = pending;
@@ -50,7 +53,7 @@ async function project(state: ToppingState) {
 
 // Called only under LOCK; the legacy browser list is claimed by at most one account.
 async function select(uid: string | null): Promise<LocalState> {
-  const saved = await chrome.storage.local.get([OWNER, LEGACY, key(uid), key(null), 'installedToppings', 'toppingOrder']);
+  const saved = await chrome.storage.local.get([OWNER, LEGACY, key(uid), key(null), 'installedToppings', 'toppingOrder', 'toppingOrderCustomized', 'askSjaDefaultInstalledV2']);
   let local = saved[key(uid)] as LocalState | undefined;
   if (!local) {
     local = fresh();
@@ -58,10 +61,15 @@ async function select(uid: string | null): Promise<LocalState> {
       const guest = saved[key(null)] as LocalState | undefined;
       const entries = Object.fromEntries(((saved.installedToppings || []) as Topping[])
         .filter(t => !t.preview).map(t => [t.id, { installed: true, topping: t }]));
-      local.state = guest?.state || { entries, order: saved.toppingOrder || Object.keys(entries) };
+      if (saved.askSjaDefaultInstalledV2 && !entries[ASK_SJA.id]) {
+        entries[ASK_SJA.id] = { installed: false, topping: ASK_SJA };
+      }
+      local.state = guest?.state || { entries, order: saved.toppingOrder || Object.keys(entries),
+        orderCustomized: saved.toppingOrderCustomized };
       if (uid) local.seed = local.state;
     }
   }
+  local.state = withDefaultToppings(local.state);
   await chrome.storage.local.set({ [key(uid)]: local, [OWNER]: uid, ...(uid ? { [LEGACY]: true } : {}) });
   await project(local.state);
   return local;
