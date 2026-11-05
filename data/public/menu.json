@@ -1,8 +1,8 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-11-05T00:17:29.679Z",
+  "updatedAt": "2026-11-05T07:14:35.164Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-04",
+  "menuDate": "2026-11-05",
   "menus": {
     "breakfast": {
       "classicKitchen": [
@@ -17,98 +17,46 @@
         "Shredded Mozzarella Cheese"
       ],
       "globalFare": [
+        "Pork Bacon",
+        "Cheese Quesadilla",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Pancakes",
-        "Hashbrown Patty",
-        "Fresh Banana",
-        "Pecan Pieces Med Roasted Salted"
+        "Black Forest Ham",
+        "Breakfast Quesadilla",
+        "Home Fried Potatoes"
       ]
     },
     "lunch": {
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Penne Pasta with Alfredo Sauce",
-        "Garlic Bread",
-        "Fresh Roasted Broccoli"
+        "Taco Meat",
+        "Potato Baked Bar",
+        "Vegetarian Picadillo",
+        "Mexican Potato Bar",
+        "Cumin Black Beans",
+        "Roasted Confetti Corn",
+        "Nacho Cheese Sauce"
       ],
       "globalFare": [
-        "Sloppy Joe Beef",
-        "Curly Fries",
-        "Buttered Corn"
+        "Breaded Korean Chicken",
+        "Brown Rice",
+        "Stir Fry Vegetables"
       ]
     },
     "dinner": {
       "classicKitchen": [
-        "Corned Beef",
-        "Steamed Potatoes",
-        "Beets n' Sweets Roasted",
-        "Sauteed Green Cabbage & Shallots"
+        "Beef Pot Roast",
+        "Confetti Lentils",
+        "Red Skin Mashed Potatoes",
+        "Sauteed Carrots & Parsnips",
+        "Greek Salad"
       ],
       "globalFare": [
-        "Grilled Swordfish",
-        "Crispy Roasted Tofu",
-        "French Bread",
-        "Roasted Fingerling Potatoes",
-        "Sauteed Broccolini"
+        "Grilled Chicken w/ Tomato Basil Relish",
+        "Roasted Eggplant"
       ]
     }
   },
   "daysUpdatedAt": "2026-11-05T00:17:29.680Z",
   "days": {
-    "2026-10-28": {
-      "breakfast": {
-        "classicKitchen": [
-          "Mild Shredded Cheddar Cheese",
-          "Fresh Green Bell Pepper",
-          "Fresh Clipped Spinach",
-          "Cheese Omelet",
-          "Sliced Smoked Ham",
-          "Sliced Mushrooms",
-          "Fresh Red Onion",
-          "Bacon Bits",
-          "Shredded Mozzarella Cheese",
-          "Fresh Red Bell Pepper(s)"
-        ],
-        "globalFare": [
-          "Scrambled Eggs",
-          "Chicken Sausage Patty",
-          "Pancakes",
-          "Hashbrown Patty",
-          "Banana",
-          "Toasted Pecans"
-        ]
-      },
-      "lunch": {
-        "classicKitchen": [
-          "Tradition Wht Brd Stuffing Mix",
-          "Oven Roasted Turkey Breast",
-          "Garlic Mashed Potatoes",
-          "Peas and Carrots",
-          "Poultry Gravy"
-        ],
-        "globalFare": [
-          "Chicken Stir Fry",
-          "Baked Sesame Tofu",
-          "Brown Rice",
-          "Stir Fry Vegetables"
-        ]
-      },
-      "dinner": {
-        "classicKitchen": [
-          "Meatloaf",
-          "Lentils with Vegetables",
-          "Red Skin Mashed Potatoes",
-          "Mixed Vegetables"
-        ],
-        "globalFare": [
-          "Amazing Crusted Chicken Breast",
-          "Crispy Roasted Tofu",
-          "Beer Battered French Fries",
-          "Whole Kernel Corn"
-        ]
-      }
-    },
     "2026-10-29": {
       "breakfast": {
         "classicKitchen": [
