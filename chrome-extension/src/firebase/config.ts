@@ -90,7 +90,7 @@ export const firebaseConfig: FirebaseConfig = {
  * config it is committed on purpose: it is not a secret — it travels in the URL
  * of every sign-in attempt — and a build without it cannot open Google at all.
  *
- * It is tied to the extension id: the client authorizes
+ * It is bound to the extension id: the client authorizes
  * `https://bcjpcmlikbccobbpheojlnmiaffilnaa.chromiumapp.org/`, which is what
  * `chrome.identity.getRedirectURL()` returns for the published build. A build
  * loaded unpacked from another folder gets a different id and Google refuses it
