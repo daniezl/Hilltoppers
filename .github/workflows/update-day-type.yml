@@ -1,6 +1,6 @@
 name: Update day_type.json
 
-# Reads the Daily Bulletin and publishes which colour each upcoming day is.
+# This reads the Daily Bulletin and publishes which colour each upcoming day is.
 # Runs often because the bulletin appears at an unpredictable time of morning;
 # the script only writes when the answer changes, so most runs commit nothing.
 # A failed run means the school changed its page — the previous file stays
