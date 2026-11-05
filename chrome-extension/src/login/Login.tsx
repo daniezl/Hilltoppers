@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
 import { onAuthState, registerWithEmail, reloadCurrentUser, sendVerificationEmail,
   signInWithEmail, signOut, resetPassword, redeemEmailCode, completeEmailVerification, completePasswordReset,
-  signInWithGoogle, linkGoogleAccount, googleEmail,
+  signInWithGoogle, linkGoogleAccount, unlinkGoogleAccount, googleEmail,
   isSchoolEmail, getSchoolEmail, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
 import './login.css';
 import CodeInput from './CodeInput';
@@ -39,8 +39,10 @@ function mapAuthError(error: unknown): string {
         return 'That Google account is already a separate Hilltoppers account. Try a different Google account.';
       case 'auth/provider-already-linked':
         return 'This account already signs in with Google.';
+      case 'auth/no-such-provider':
+        return 'Google is not connected to this account.';
       case 'auth/requires-recent-login':
-        return 'For security, connecting Google needs a recent sign-in. Sign out, sign in again with your email and password, then retry.';
+        return 'For security, changing the Google connection needs a recent sign-in. Sign out, sign in again with your email and password, then retry.';
       case 'auth/popup-closed-by-user':
         return 'The sign-in window was closed before completing the process.';
       case 'auth/cancelled-popup-request':
@@ -226,7 +228,16 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
             <strong>Google sign-in</strong>
             {googleEmail(user) ? <p>{googleEmail(user)}</p> : <p>Not connected — connect it to sign in with Google as well.</p>}
           </div>
-          {googleEmail(user) ? <span className="account-school-status">Connected</span> :
+          {googleEmail(user) ? <>
+            <span className="account-school-status">Connected</span>
+            <button type="button" className="tertiary account-action" disabled={busy || googleBusy} onClick={() => {
+              if (!window.confirm('Disconnect Google from this account?')) return;
+              setGoogleBusy(true); setGoogleError(''); setMessage('');
+              void unlinkGoogleAccount().then(next => {
+                setUser(next); setMessage('Google disconnected. You can still sign in with your email and password.');
+              }).catch(e => setGoogleError(mapAuthError(e))).finally(() => setGoogleBusy(false));
+            }}>{googleBusy ? 'Disconnecting…' : 'Disconnect'}</button>
+          </> :
             <button type="button" className="secondary account-action" disabled={busy || googleBusy} onClick={() => {
               setGoogleBusy(true); setGoogleError('');
               void linkGoogleAccount().then(linked => {
