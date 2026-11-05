@@ -10,6 +10,7 @@ import {
   reload,
   signInWithCredential,
   signInWithEmailAndPassword,
+  EmailAuthProvider,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   unlink,
@@ -233,7 +234,7 @@ export async function unlinkGoogleAccount(): Promise<User> {
     throw new Error('Google is not connected to this account.');
   }
   if (!providers.includes('password')) {
-    throw new Error('Set a password before disconnecting Google, otherwise you could not sign in again.');
+    throw new Error('Set a password first, otherwise you could not sign in again.');
   }
   await unlink(user, 'google.com');
   return (await reloadCurrentUser()) ?? user;
@@ -241,6 +242,32 @@ export async function unlinkGoogleAccount(): Promise<User> {
 
 export function googleEmail(user: User | null): string | null {
   return user?.providerData.find(provider => provider.providerId === 'google.com')?.email ?? null;
+}
+
+/** Whether this account can sign in without Google. */
+export function hasPassword(user: User | null): boolean {
+  return Boolean(user?.providerData.some(provider => provider.providerId === 'password'));
+}
+
+/**
+ * Give an account that was created with Google a password of its own. The uid
+ * is unchanged, so saved preferences, the school-email link and Toppings stay
+ * with the account; it only adds a second way to sign in.
+ */
+export async function setAccountPassword(password: string): Promise<User> {
+  const auth = getOrInitAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Sign in first.');
+  }
+  if (hasPassword(user)) {
+    throw new Error('This account already has a password.');
+  }
+  if (!user.email) {
+    throw new Error('This account has no email address to sign in with.');
+  }
+  const linked = await linkWithCredential(user, EmailAuthProvider.credential(user.email, password));
+  return linked.user;
 }
 
 const EMAIL_API = 'https://hilltoppers-account-email.danielzhang089.workers.dev/api/account-email';
