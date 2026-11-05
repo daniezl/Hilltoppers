@@ -1,3 +1,4 @@
+import { prepareToppingAccount, editToppingAccount, syncToppingAccount, refreshToppingMetadata } from '../storage/toppingSync';
 import { getCurrentUser, waitForAuthReady } from '../firebase/auth';
 
 export interface Topping {
@@ -69,8 +70,18 @@ async function ensureDefaultTopping() {
     });
   });
 }
+let accountPreparation: Promise<void> | undefined;
+function prepareAccountInBackground(): Promise<void> {
+  // Auth restoration must not hold up the cached list or run again on every storage event.
+  return accountPreparation ||= prepareToppingAccount().catch(error => {
+    accountPreparation = undefined;
+    console.warn('[toppings] Could not prepare account sync', error);
+  });
+}
+
 export async function localToppings(): Promise<Topping[]> {
   await ensureDefaultTopping();
+  void prepareAccountInBackground();
   const [data, previewData] = await Promise.all([
     chrome.storage.local.get([TOPPINGS_KEY, TOPPING_ORDER_KEY, 'askSjaToppingEnabled']),
     chrome.storage.session.get(PREVIEW_TOPPING_KEY)
@@ -90,12 +101,8 @@ export async function localToppings(): Promise<Topping[]> {
   return installed.sort((a:Topping,b:Topping)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
 }
 export async function saveToppingOrder(ids:string[]) {
-  await navigator.locks.request('topping-counts',async()=>{
-    const current=await localToppings();
-    const allowed=new Set(current.map(t=>t.id));
-    const order=[...new Set([...ids,...current.map(t=>t.id)])].filter(id=>allowed.has(id));
-    await chrome.storage.local.set({[TOPPING_ORDER_KEY]:order});
-  });
+  await localToppings();
+  await editToppingAccount(undefined, undefined, ids);
 }
 function parsePreviewUrl(address: string): URL {
   try {
@@ -124,7 +131,7 @@ async function syncCounts() {
   for (const [id, added] of Object.entries(pending)) {
     try {
       await toppingRequest(`/${id}/install`, added ? 'POST' : 'DELETE');
-      await navigator.locks.request('topping-counts', async () => {
+      await navigator.locks.request('toppings-account-local', async () => {
         const latest = await chrome.storage.local.get(PENDING);
         const current = latest[PENDING] || {};
         if (current[id] === added) delete current[id];
@@ -135,6 +142,8 @@ async function syncCounts() {
   });
 }
 export async function fetchToppings(): Promise<Topping[]> {
+  await localToppings();
+  void syncToppingAccount().catch(console.warn);
   await syncCounts();
   let data = await toppingRequest();
   let changed = false;
@@ -148,7 +157,11 @@ export async function fetchToppings(): Promise<Topping[]> {
     }
   }
   if (changed) data = await toppingRequest();
-  return data.toppings.map((t: Topping) => ({ ...t, installed: local.some(x => x.id === t.id), owned: Boolean(t.owned) }));
+  // Resolve the account before writing metadata, while cached UI remains usable.
+  await prepareAccountInBackground();
+  await refreshToppingMetadata(data.toppings);
+  const latest = await localToppings();
+  return data.toppings.map((t: Topping) => ({ ...t, installed: latest.some(x => x.id === t.id), owned: Boolean(t.owned) }));
 }
 export async function changeTopping(topping: Topping, added: boolean) {
   if (topping.preview) {
@@ -156,15 +169,8 @@ export async function changeTopping(topping: Topping, added: boolean) {
     else await chrome.storage.session.remove(PREVIEW_TOPPING_KEY);
     return;
   }
-  await navigator.locks.request('topping-counts', async () => {
-    const current = (await localToppings()).filter(t => !t.preview && t.id !== topping.id);
-    if (added) current.push({ ...topping, installed: true });
-    const saved = await chrome.storage.local.get(PENDING);
-    await chrome.storage.local.set({
-      [TOPPINGS_KEY]: current, askSjaToppingEnabled: current.some(t => t.id === ASK_SJA.id),
-      [PENDING]: { ...saved[PENDING], [topping.id]: added }
-    });
-  });
+  await localToppings();
+  await editToppingAccount(topping, added);
   await syncCounts();
 }
 export function openToppingBar() { chrome.tabs.create({ url: chrome.runtime.getURL('toppings.html') }); }
