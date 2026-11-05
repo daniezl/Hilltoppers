@@ -1,6 +1,6 @@
 {
   "parserVersion": 3,
-  "updatedAt": "2026-11-05T07:14:35.164Z",
+  "updatedAt": "2026-11-05T15:44:21.819Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-11-05",
   "menus": {
@@ -55,7 +55,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-05T00:17:29.680Z",
+  "daysUpdatedAt": "2026-11-05T15:44:21.819Z",
   "days": {
     "2026-10-29": {
       "breakfast": {
@@ -658,6 +658,45 @@
           "Loaded Baked Potato",
           "Pumpkin Quinoa Stew",
           "Honey Roasted Root Vegetables"
+        ]
+      }
+    },
+    "2026-11-12": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": [
+          "Scrambled Eggs",
+          "Grilled Ham",
+          "French Toast",
+          "Hashbrown"
+        ]
+      },
+      "lunch": {
+        "classicKitchen": [
+          "Chicken Fajita Meat",
+          "Seasoned Black Beans",
+          "Brown Rice",
+          "Sauteed Peppers & Onions"
+        ],
+        "globalFare": [
+          "Diced Ham",
+          "Roasted Carrots",
+          "Bacon Bits",
+          "Fire Roasted Corn Chowder"
+        ]
+      },
+      "dinner": {
+        "classicKitchen": [
+          "Gnocchi with Roasted Cauliflower",
+          "Honey Glazed Pork Loin",
+          "Fresh Roasted Broccoli",
+          "White Cheese Sauce"
+        ],
+        "globalFare": [
+          "Teriyaki Glazed Chicken Breast",
+          "Adobo Marinated Egg",
+          "Asian Fried Rice",
+          "Seasoned Asian Vegetables"
         ]
       }
     }
