@@ -104,56 +104,11 @@ struct SJA_reApp: App {
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
         UINavigationBar.appearance().compactAppearance = navAppearance
-
-        let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithOpaqueBackground()
-        tabAppearance.backgroundColor = UIColor.systemBackground
-        tabAppearance.shadowColor = .clear
-        UITabBar.appearance().standardAppearance = tabAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
     }
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $router.path) {
-                ContentView()
-                    .environmentObject(router)
-                    .environmentObject(timeSettings)
-                    .navigationDestination(for: AppRoute.self) { route in
-                        switch route {
-                        case .settings:
-                            SettingsView()
-                                .environmentObject(router)
-                                .environmentObject(timeSettings)
-                        case .settingsFeatureShowcase:
-                            FeatureShowcaseView()
-                                .environmentObject(router)
-                        case .settingsCourses:
-                            NewBlockConfigurationView(
-                                onDismissSettings: { router.popToRoot() }
-                            )
-                            .environmentObject(router)
-                        case .coursesLogin:
-                            LoginView(onDismiss: { router.popToRoot() })
-                                .environmentObject(router)
-                        case .settingsNotifications:
-                            NotificationSettingsView(onDismissSettings: { router.popToRoot() })
-                        case .settingsTime:
-                            TimeSettingsView(onDismissRoot: { router.popToRoot() })
-                                .environmentObject(timeSettings)
-                        case .settingsMore:
-                            MoreInfoView(onDismiss: { router.popToRoot() })
-                        // Sign in feature temporarily commented out
-                        case .settingsAuth:
-                            // AuthView(onDismiss: { router.pop() })
-                            EmptyView()
-                        }
-                    }
-                    .toolbarBackground(.visible, for: .navigationBar)
-                    .toolbarBackground(Color(.systemBackground), for: .navigationBar)
-                    .toolbarBackground(.visible, for: .tabBar)
-                    .toolbarBackground(Color(.systemBackground), for: .tabBar)
-            }
+            MainTabView(router: router, timeSettings: timeSettings)
         }
     }
 }

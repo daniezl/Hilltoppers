@@ -8,32 +8,6 @@
 import SwiftUI
 import SwiftSoup
 
-struct RippleEffect: View {
-    let isGreenDay: Bool
-    let showRipple: Bool
-    @State private var rippleScale: CGFloat = 0.0
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(isGreenDay ? Color(red: 245/255, green: 246/255, blue: 245/255) : Color(red: 20/255, green: 54/255, blue: 27/255))
-            .overlay(
-                Circle()
-                    .fill(isGreenDay ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(red: 245/255, green: 246/255, blue: 245/255))
-                    .scaleEffect(rippleScale)
-                    .animation(.easeOut(duration: 0.8), value: rippleScale)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .onAppear {
-                rippleScale = 0.0
-            }
-            .onChange(of: showRipple) { shouldShow in
-                if shouldShow {
-                    rippleScale = 5.0  // Large enough to fill the rectangle
-                }
-            }
-    }
-}
-
 struct PredictionStep {
     let date: Date
     let prediction: String
@@ -110,7 +84,6 @@ enum DayTypeSource {
 
 struct DayTypeView: View {
     let testDate: Date?
-    let isViewingTomorrow: Bool
     @Binding var firebaseError: Bool
     let onLoadingComplete: () -> Void
     @Binding var triggerRipple: Bool
@@ -123,7 +96,6 @@ struct DayTypeView: View {
     @State private var dailyBulletinHTML: String? = nil
     @State private var isDateToday: Bool? = nil
     @State private var showBulletinInfo = false
-    @State private var showPredictionDetail = false
     @State private var dbDate: Date? = nil
     @State private var predicted: String = "Loading..."
     @State private var calculationSteps: [PredictionStep]? = nil
@@ -136,9 +108,9 @@ struct DayTypeView: View {
     private let maxRetryCount = 3
     @State private var lastRequestTime: Date? = nil
     private let minimumRequestInterval: TimeInterval = 5.0 // 5 seconds between requests
-    @State private var showDailyBulletinConfirm = false
     @State private var dayTypeSource: DayTypeSource = .bulletin
     @State private var announcementMessage: String? = nil
+    @State private var hasStartedFetch = false
     let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
 
     var isWhiteDay: Bool {
@@ -165,99 +137,27 @@ struct DayTypeView: View {
         return isDateToday == false ? predicted : displayDayType
     }
 
-    private var shouldShowOutdatedWarning: Bool {
-        return isDateToday == false && !isViewingTomorrow
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Nothing to show on most days, but this view still has to appear: it works
+            // out the day type that block names and notifications depend on.
+            Color.clear.frame(height: 0)
+
             if let announcement = announcementMessage, !announcement.isEmpty {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "megaphone.fill")
                         .foregroundColor(.orange)
-                        .font(.system(size: 16))
+                        .font(.system(size: 14))
                     Text(announcement)
-                        .font(.callout)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(12)
                 .background(Color.orange.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 12)
-            }
-            if isDateToday == false {
-                VStack(spacing: 0) {
-                    Text(predicted)
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(predicted == "Green Day" ? .white : .black)
-                        .onTapGesture {
-                            if calculationSteps != nil {
-                                showPredictionDetail = true
-                            } else {
-                                showDailyBulletinConfirm = true
-                            }
-                        }
-                        .padding()
-                        .background(
-                            RippleEffect(isGreenDay: predicted == "Green Day", showRipple: showColorRipple)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
-                                .foregroundColor(predicted == "White Day" ? Color(red: 20/255, green: 54/255, blue: 27/255) : Color(white: 0.85))
-                                .padding(4) // inset the dashed border
-                        )
-
-                    if let sourceLabel = dayTypeSource.label {
-                        Text(sourceLabel)
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 6)
-                    }
-                }
-                .padding([.top, .leading, .trailing], 16)
-                .padding(.bottom, 0)
-                .alert(isPresented: $showBulletinInfo) {
-                    Alert(
-                        title: Text("\(dayType)"),
-                        message: Text("Date: \(bulletinDateString())\n\(daysAwayFromBulletin())"),
-                        dismissButton: .default(Text("OK"))
-                    )
-                }
-                .sheet(isPresented: $showPredictionDetail) {
-                    PredictionDetailView(
-                        dayType: dayType,
-                        dbDate: dbDate,
-                        testDate: testDate,
-                        calculationSteps: calculationSteps,
-                        showOutdatedWarning: shouldShowOutdatedWarning,
-                        onDismiss: { showPredictionDetail = false }
-                    )
-                }
-            } else {
-                Spacer()
-                    .frame(height: 24)
-                Text(displayDayType)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(isGreenDay ? .white : .black)
-                    .onTapGesture {
-                        showDailyBulletinConfirm = true
-                    }
-                    .padding()
-                    .background(
-                        RippleEffect(isGreenDay: isGreenDay, showRipple: showColorRipple)
-                    )
-                if let sourceLabel = dayTypeSource.label {
-                    Text(sourceLabel)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 6)
-                }
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .padding(.bottom, 14)
             }
         }
         .alert(isPresented: $showNetworkErrorAlert) {
@@ -290,6 +190,10 @@ struct DayTypeView: View {
             }
         }
         .onAppear {
+            // Switching back to this tab fires onAppear again; `.id(refreshID)` gives
+            // a real refresh a new view, and so a new `hasStartedFetch`.
+            guard !hasStartedFetch else { return }
+            hasStartedFetch = true
             print("🎯 [DAYTYPE] ========== DAYTYPE VIEW APPEARED ==========")
             print("🎯 [DAYTYPE] Splash screen showing: \(showSplashScreen)")
             print("🎯 [DAYTYPE] Test date: \(testDate?.description ?? "nil")")
@@ -393,12 +297,6 @@ struct DayTypeView: View {
             // Initialize the shared day type state with the effective day type
             currentDayType = effectiveDayType
         }
-        .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
-            Button("Yes") {
-                openDailyBulletin()
-            }
-            Button("No", role: .cancel) { }
-        }
     }
 
     private func openAppSettings() {
@@ -409,13 +307,6 @@ struct DayTypeView: View {
         }
     }
     
-    private func openDailyBulletin() {
-        if let bulletinUrl = URL(string: schoolURL) {
-            if UIApplication.shared.canOpenURL(bulletinUrl) {
-                UIApplication.shared.open(bulletinUrl)
-            }
-        }
-    }
     
     
     private func analyzeNetworkError(_ error: Error) -> NetworkErrorType {
@@ -535,7 +426,7 @@ struct DayTypeView: View {
             CloudflareDataLoader.clearCache()
             print("🗑️ [DAYTYPE] Cleared Cloudflare cache")
 
-            let referenceDate = self.testDate ?? Date()
+            let referenceDate = self.testDate ?? Date.currentEST
             if await loadManualOverride(for: referenceDate) {
                 return
             }
@@ -735,7 +626,7 @@ struct DayTypeView: View {
             // Now check if we need to predict (bulletin date != today)
             if let dbDate = bulletinDate {
                 self.dbDate = dbDate
-                let today = self.testDate ?? Date()
+                let today = self.testDate ?? Date.currentEST
                 let isToday = Calendar.current.isDate(dbDate, inSameDayAs: today)
                 self.isDateToday = isToday
                 
@@ -794,7 +685,7 @@ struct DayTypeView: View {
     private func tryFallbackUsingArchive() {
         print("🧭 [SIMPLE] Attempting to recover day type from archive list")
         Task {
-            let referenceDate = self.testDate ?? Date()
+            let referenceDate = self.testDate ?? Date.currentEST
             do {
                 if let fallback = try await fetchLatestKnownDayType(before: referenceDate) {
                     await MainActor.run {
@@ -944,7 +835,7 @@ struct DayTypeView: View {
         
         if let dbDate = self.dbDate {
             let calendar = Calendar.current
-            let today = self.testDate ?? Date()
+            let today = self.testDate ?? Date.currentEST
             self.isDateToday = calendar.isDate(dbDate, inSameDayAs: today)
             
             let formatter = DateFormatter()
@@ -1041,7 +932,7 @@ struct DayTypeView: View {
         print("✅ [DAYTYPE] Final prediction: '\(self.predicted)'")
         print("✅ [DAYTYPE] Is today: \(self.isDateToday ?? false)")
         
-        let referenceDate = self.testDate ?? Date()
+        let referenceDate = self.testDate ?? Date.currentEST
         let effectiveType = self.effectiveDayType
         self.currentDayTypeDate = referenceDate
         DayTypeCache.setCachedDayType(
@@ -1183,7 +1074,7 @@ struct DayTypeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         guard let bulletinDate = formatter.date(from: dateText) else { return "" }
-        let today = self.testDate ?? Date()
+        let today = self.testDate ?? Date.currentEST
         let days = Calendar.current.dateComponents([.day], from: bulletinDate, to: today).day ?? 0
         if days == 1 {
             return "(Yesterday)"
@@ -1227,212 +1118,8 @@ extension Date {
     }
 }
 
-struct PredictionDetailView: View {
-    let dayType: String
-    let dbDate: Date?
-    let testDate: Date?
-    let calculationSteps: [PredictionStep]?
-    let showOutdatedWarning: Bool
-    let onDismiss: () -> Void
-    
-    @State private var showDailyBulletinConfirm = false
-    
-    private let schoolURL = "https://stjacademy.org/a-culture-of-caring-and-respect/sja-news/daily-bulletin/"
-    
-    var body: some View {
-        NavigationView {
-            GeometryReader { proxy in
-                ScrollView {
-                    VStack {
-                        if let dbDate = dbDate {
-                            VStack(spacing: 0) {
-                            if let predictions = calculationSteps {
-                                VStack(spacing: 0) {
-                                    HStack {
-                                        Text(formatShortDate(dbDate))
-                                            .font(.system(.callout, design: .monospaced))
-                                            .fontWeight(.medium)
-                                            .frame(width: 50, alignment: .leading)
-                                        
-                                        Image(systemName: "arrow.right")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                        
-                                        Text(dayType)
-                                            .font(.callout)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.blue)
-                                            .underline()
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    .background(getBackgroundColor(for: dayType))
-                                    .onTapGesture {
-                                        showDailyBulletinConfirm = true
-                                    }
-                                    
-                                    Divider()
-                                        .padding(.horizontal, 16)
-                                    
-                                    ForEach(Array(predictions.enumerated()), id: \.offset) { index, step in
-                                        VStack(spacing: 0) {
-                                            HStack {
-                                                Text(formatShortDate(step.date))
-                                                    .font(.system(.callout, design: .monospaced))
-                                                    .fontWeight(.medium)
-                                                    .frame(width: 50, alignment: .leading)
-                                                
-                                                Image(systemName: "arrow.right")
-                                                    .font(.caption)
-                                                    .foregroundColor(.gray)
-                                                
-                                                HStack(spacing: 4) {
-                                                    if let (mainText, parenthetical) = parseText(step.prediction) {
-                                                        Text(mainText)
-                                                            .font(.callout)
-                                                            .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
-                                                        if !parenthetical.isEmpty {
-                                                            Text("(\(parenthetical))")
-                                                                .font(.caption)
-                                                                .foregroundColor(.secondary)
-                                                        }
-                                                    } else {
-                                                        Text(step.prediction)
-                                                            .font(.callout)
-                                                            .fontWeight(getFontWeight(for: step.prediction, isToday: step.isToday))
-                                                    }
-                                                }
-                                                
-                                                Spacer()
-                                            }
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 12)
-                                            .background(getBackgroundColor(for: step.prediction))
-                                            
-                                            if index < predictions.count - 1 {
-                                                Divider()
-                                                    .padding(.horizontal, 16)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .background(Color(red: 245/255, green: 246/255, blue: 245/255))
-                        .cornerRadius(12)
-                        .padding(.horizontal, 56)
-                        
-                    } else {
-                        Text("No bulletin date available for calculations")
-                            .foregroundColor(.secondary)
-                            .padding()
-                    }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: proxy.size.height, alignment: .top)
-                    .padding(.vertical, max(0, (proxy.size.height - 400) / 4))
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        onDismiss()
-                    }
-                }
-            }
-            .overlay(alignment: .bottom) {
-                if showOutdatedWarning {
-                    VStack(spacing: 8) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                                .font(.system(size: 16))
-                            
-                            Text("The Daily Bulletin is outdated. This prediction is based on the latest information from the school website.")
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.leading)
-                            
-                            Spacer()
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                }
-            }
-            .alert("Do you want to go to the Daily Bulletin?", isPresented: $showDailyBulletinConfirm) {
-                Button("Yes") {
-                    openDailyBulletin()
-                }
-                Button("No", role: .cancel) { }
-            }
-        }
-    }
-    
-    private func openDailyBulletin() {
-        if let bulletinUrl = URL(string: schoolURL) {
-            if UIApplication.shared.canOpenURL(bulletinUrl) {
-                UIApplication.shared.open(bulletinUrl)
-            }
-        }
-    }
-    
-    func getBackgroundColor(for prediction: String) -> Color {
-        let lower = prediction.lowercased()
-        if lower.contains("green day") {
-            return Color.green.opacity(0.1)
-        } else if lower.contains("white day") {
-            return Color(.systemGray6)
-        } else {
-            return Color.white
-        }
-    }
-    
-    func parseText(_ text: String) -> (mainText: String, parenthetical: String)? {
-        // Look for text in parentheses at the end
-        if let range = text.range(of: "\\s*\\([^)]+\\)$", options: .regularExpression) {
-            let mainText = String(text[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
-            let parenthetical = String(text[range]).trimmingCharacters(in: .whitespaces)
-                .replacingOccurrences(of: "(", with: "")
-                .replacingOccurrences(of: ")", with: "")
-            return (mainText, parenthetical)
-        }
-        return nil
-    }
-    
-    func getFontWeight(for prediction: String, isToday: Bool) -> Font.Weight {
-        if isToday {
-            return .semibold
-        } else if prediction.lowercased().contains("no school") {
-            return .light
-        } else {
-            return .medium
-        }
-    }
-    
-    func formatLongDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d, yyyy"
-        return formatter.string(from: date)
-    }
-    
-    func formatShortDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M/d"
-        return formatter.string(from: date)
-    }
-    
-
-}
-
 #Preview {
     VStack(spacing: 0) {
-        DayTypeView(testDate: nil, isViewingTomorrow: false, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"), currentDayTypeDate: .constant(nil))
+        DayTypeView(testDate: nil, firebaseError: .constant(false), onLoadingComplete: {}, triggerRipple: .constant(false), showSplashScreen: .constant(false), currentDayType: .constant("Green Day"), currentDayTypeDate: .constant(nil))
     }
 }
