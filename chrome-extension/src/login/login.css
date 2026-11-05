@@ -118,8 +118,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   border-color: #d5dfce;
   color: #2c3f29;
   font-size: 14px;
+  transform: none;
+  transition: background-color 90ms linear;
 }
-.login button.login__google-button:not(:disabled):hover { background: #f4f7f1; border-color: #bfd0bc; }
+.login button.login__google-button:not(:disabled):hover { background: #f7f7f7; border-color: #d5dfce; }
 .login__google-button svg { width: 18px; height: 18px; flex: none; }
 .login__google { display: grid; gap: 4px; }
 .login__divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 20px; color: var(--muted); font-size: 12px; }
