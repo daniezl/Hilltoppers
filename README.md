@@ -101,7 +101,7 @@ To update, load the new `dist` folder the same way.
 
 ## License
 
-*(to be chosen — see the note in the pull request)*
+[MIT](./LICENSE)
 
 ## Ask SJA: the first independently hosted topping
 
