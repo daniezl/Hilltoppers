@@ -48,6 +48,41 @@ removes a failure mode: a build made without the old `.env.local` was silently
 broken — no sign-in, no preference sync, and the day colour stopped being
 predicted forward, so the popup showed the previous school day's colour.
 
+### Sign-in methods
+
+The Account page offers **Sign in with Google** above the original email and
+password form, so both work: sign in or create an account with either one. An
+existing password account keeps working unchanged and can add Google at any time
+(Account → Connections → Google sign-in → Connect); the uid does not change, so
+saved preferences and Toppings stay with the account.
+
+The OAuth client id is committed in `src/firebase/config.ts`, like the rest of the
+web config: it is not a secret, it appears in the URL of every sign-in attempt
+anyway, and a build without it cannot open Google at all. It belongs to the
+Firebase project's own Google Cloud project (number `11216800424`) and authorizes
+`https://bcjpcmlikbccobbpheojlnmiaffilnaa.chromiumapp.org/`, the redirect URL of
+the published extension.
+
+Two console settings still have to hold, and neither lives in this repo:
+
+1. Firebase Console → Authentication → Sign-in method → **Google** enabled.
+   `signInWithCredential` is rejected without it.
+2. Google Cloud → OAuth consent screen: the app name is still the default
+   `project-11216800424`, which is what students see when they authorize. Set it
+   to **Hilltoppers**, and move Publishing status from Testing to **In
+   production**, otherwise only listed test users can sign in (100 maximum).
+   `openid email profile` are non-sensitive, so no Google review is needed.
+
+An unpacked build loaded from another folder gets a different extension id and
+Google answers with `redirect_uri_mismatch`; add that id's
+`https://<extension-id>.chromiumapp.org/` to the same client (10 allowed), or
+build with `VITE_GOOGLE_OAUTH_CLIENT_ID` pointing at a client of its own.
+
+Google refuses `response_type=id_token` without a `nonce` (`invalid_request`),
+so `auth.ts` sends one and checks it against the returned token. The `identity`
+permission exists because `chrome.identity` is what opens Google's sign-in window
+in a Manifest V3 extension.
+
 ### Optional: analytics
 
 The one value not committed is `VITE_FIREBASE_MEASUREMENT_API_SECRET`. That one

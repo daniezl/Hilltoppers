@@ -18,7 +18,8 @@
   "permissions": [
     "storage",
     "alarms",
-    "idle"
+    "idle",
+    "identity"
   ],
   "host_permissions": [
     "https://firestore.googleapis.com/*",

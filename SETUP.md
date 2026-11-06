@@ -25,6 +25,36 @@ Cloudflare URL 配置在 `ios/SJA_re/Info.plist` 中的 `CloudflareBaseURL` 键�
 （`chrome-extension/src/firebase/config.ts` 和 `scheduleService.ts`），
 `npm ci && npm run build` 出来的扩展直接可用。
 
+### 必须：Google 登录（和邮箱密码并存）
+
+登录页最上面是「Sign in with Google」，下面是原来的邮箱 + 密码登录 / 注册，两种方式都能用；
+老账号照常登录，不需要迁移，随时可以在 Account 页把 Google 连到已有账号上。client id 已经写死在 `config.ts` 里 —— 它不是密钥，和上面的 Firebase web config 一样，
+每个构建都带着它。它属于 Firebase 自己的 Google Cloud 项目（项目号 11216800424），
+已获授权的重定向 URI 是 `https://bcjpcmlikbccobbpheojlnmiaffilnaa.chromiumapp.org/`，
+也就是已发布版本的 `chrome.identity.getRedirectURL()`。控制台里还要确认三件事：
+
+1. Firebase 控制台 → Authentication → 登录方式 → 已启用 **Google**。没启用的话
+   `signInWithCredential` 会被拒绝。
+2. OAuth 同意屏幕（Google Cloud → OAuth consent screen）：应用名现在还是默认的
+   `project-11216800424`，学生授权时看到的就是这个名字，应该改成 **Hilltoppers**。
+3. 同一个页面把 Publishing status 从 Testing 改成 **In production**，否则只有名单里
+   的测试用户能授权，上限 100 人。`openid email profile` 是非敏感权限，不需要审核。
+
+如果学校的 Workspace 管理员限制了第三方应用，要把这个 client id 加进允许列表，否则学生
+看到的是 “app blocked”，而不是授权页。
+
+用「加载已解压的扩展程序」从别的目录加载时扩展 ID 会变，Google 会报 `redirect_uri_mismatch`。
+把这个 id 的 `https://<扩展 ID>.chromiumapp.org/` 补进同一个 client 的重定向 URI（最多 10 个），
+或者在 `.env.local` 里用 `VITE_GOOGLE_OAUTH_CLIENT_ID` 指向另一个 client 再构建。
+
+另外 Google 要求 `response_type=id_token` 必须带 `nonce`（少这一项直接回 `invalid_request`），
+`auth.ts` 已经发送并在拿到 token 后核对。
+
+**老账号怎么用上 Google**：先照常用邮箱密码登录，然后在 Account → Connections →
+Google sign-in 点 Connect。uid 不变，课表偏好和 Toppings 都留在原账号上，之后就多了
+Google 这一种登录方式。还没连接的时候用同一个邮箱点 Google 会报
+`auth/account-exists-with-different-credential`，页面会提示先回到邮箱密码登录再连接。
+
 ### 可选：分析上报
 
 唯一没有写进仓库的是 GA4 的 `VITE_FIREBASE_MEASUREMENT_API_SECRET` —— 它是真正

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
 import { onAuthState, registerWithEmail, reloadCurrentUser, sendVerificationEmail,
-  signInWithEmail, signOut, resetPassword, redeemEmailCode, completeEmailVerification, completePasswordReset, isSchoolEmail, getSchoolEmail, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
+  signInWithEmail, signOut, resetPassword, redeemEmailCode, completeEmailVerification, completePasswordReset,
+  signInWithGoogle, linkGoogleAccount, unlinkGoogleAccount, googleEmail, hasPassword, setAccountPassword,
+  isSchoolEmail, getSchoolEmail, requestSchoolEmailCode, linkSchoolEmail, unlinkSchoolEmail, type AuthUser } from '../firebase/auth';
 import './login.css';
 import CodeInput from './CodeInput';
 import SchoolLinkButton from './SchoolLinkButton';
@@ -31,6 +33,16 @@ function mapAuthError(error: unknown): string {
         return 'Network error. Check your connection and try again.';
       case 'auth/too-many-requests':
         return 'Too many attempts. Please wait a moment before trying again.';
+      case 'auth/account-exists-with-different-credential':
+        return 'That Google account belongs to an existing Hilltoppers account. Sign in with your email and password below, then connect Google from Account.';
+      case 'auth/credential-already-in-use':
+        return 'That Google account is already a separate Hilltoppers account. Try a different Google account.';
+      case 'auth/provider-already-linked':
+        return 'This account already signs in with Google.';
+      case 'auth/no-such-provider':
+        return 'Google is not connected to this account.';
+      case 'auth/requires-recent-login':
+        return 'For security, changing the Google connection needs a recent sign-in. Sign out, sign in again with your email and password, then retry.';
       case 'auth/popup-closed-by-user':
         return 'The sign-in window was closed before completing the process.';
       case 'auth/cancelled-popup-request':
@@ -54,6 +66,15 @@ function nameFromEmail(address: string): string {
     .map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
 }
 
+function GoogleMark() {
+  return <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"/>
+    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"/>
+    <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z"/>
+    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"/>
+  </svg>;
+}
+
 export default function Login({ returnPage, onNavigate }: { returnPage?: string; onNavigate?: (page: string) => void }) {
   const requested = returnPage ?? new URLSearchParams(location.search).get('returnTo') ?? '';
   const returnTo = Object.prototype.hasOwnProperty.call(destinations, requested) ? requested : '';
@@ -67,6 +88,11 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
   const [email, setEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [googleError, setGoogleError] = useState('');
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [cooldown, setCooldown] = useState(0);
@@ -133,6 +159,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
 
   function switchMode(next: Mode) {
     setMode(next); setChallengeId(''); setCode(''); setResetAction(''); setShowPassword(false); setResetSent(false); setMessage(''); setError('');
+    setGoogleError(''); setPasswordOpen(false); setPasswordError('');
   }
   async function perform(action: () => Promise<void>) {
     setBusy(true); setError(''); setMessage('');
@@ -187,7 +214,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
       {returnTo && <a className="login__back" href={returnTo} onClick={followReturn}>← {destinations[returnTo]}</a>}
     </nav>
     <div className={`login__container${user ? ' login__container--account' : ' login__container--auth'}`}>
-    <header className="login__header"><h1>{heading}</h1>{user ? <p>{user.email}</p> : ready && mode === 'reset' && !resetSent ? <p>Get a reset link and code.</p> : null}</header>
+    <header className="login__header"><h1>{heading}</h1>{user ? <p>{user.email}</p> : !ready ? null : mode === 'reset' ? (!resetSent ? <p>Get a reset link and code.</p> : null) : <p>Sync your classes across devices.</p>}</header>
     {!ready ? <p role="status">Restoring your account…</p> : user ? <div className="account-overview">
       {!user.emailVerified && <section className="account-section">
         <h2>Verify your email</h2>
@@ -198,6 +225,61 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
       <section className="account-section" aria-labelledby="school-account-heading">
         <h2 id="school-account-heading">Connections</h2>
         <div className="account-school-card">
+        <div className="account-connection">
+          <span className="account-connection-icon" aria-hidden="true">G</span>
+          <div className="account-connection-copy">
+            <strong>Google sign-in</strong>
+            {googleEmail(user) ? <p>{googleEmail(user)}</p> : <p>Not connected — connect it to sign in with Google as well.</p>}
+          </div>
+          {googleEmail(user) ? <>
+            <span className="account-school-status">Connected</span>
+            <button type="button" className="tertiary account-action" disabled={busy || googleBusy} onClick={() => {
+              if (!window.confirm('Disconnect Google from this account?')) return;
+              setGoogleBusy(true); setGoogleError(''); setMessage('');
+              void unlinkGoogleAccount().then(next => {
+                setUser(next); setMessage('Google disconnected. You can still sign in with your email and password.');
+              }).catch(e => setGoogleError(mapAuthError(e))).finally(() => setGoogleBusy(false));
+            }}>{googleBusy ? 'Disconnecting…' : 'Disconnect'}</button>
+          </> :
+            <button type="button" className="secondary account-action" disabled={busy || googleBusy} onClick={() => {
+              setGoogleBusy(true); setGoogleError('');
+              void linkGoogleAccount().then(linked => {
+                setMessage(googleEmail(linked) ? `Google connected as ${googleEmail(linked)}.` : 'Google connected.');
+              }).catch(e => setGoogleError(mapAuthError(e))).finally(() => setGoogleBusy(false));
+            }}>{googleBusy ? 'Connecting…' : 'Connect'}</button>}
+        </div>
+        <div className="account-connection">
+          <span className="account-connection-icon" aria-hidden="true">PW</span>
+          <div className="account-connection-copy">
+            <strong>Password</strong>
+            {hasPassword(user) ? <p>Set — you can sign in with your email and password.</p>
+              : <p>Not set — this account signs in with Google only. Set one to keep access without Google.</p>}
+          </div>
+          {hasPassword(user) ? <span className="account-school-status">Set</span> :
+            <button type="button" className="secondary account-action" disabled={busy || passwordBusy} onClick={() => {
+              setPasswordOpen(value => !value); setPasswordError('');
+            }}>{passwordOpen ? 'Cancel' : 'Set password'}</button>}
+        </div>
+        {passwordOpen && !hasPassword(user) && <form className="login__form account-school-form" onSubmit={event => {
+          event.preventDefault();
+          const fields = new FormData(event.currentTarget);
+          const next = String(fields.get('password') ?? '');
+          if (next !== String(fields.get('confirm') ?? '')) { setPasswordError('The two passwords do not match.'); return; }
+          setPasswordBusy(true); setPasswordError(''); setMessage('');
+          void setAccountPassword(next).then(updated => {
+            setUser(updated); setPasswordOpen(false);
+            setMessage('Password set. You can now sign in with your email and password, or disconnect Google.');
+          }).catch(e => setPasswordError(mapAuthError(e))).finally(() => setPasswordBusy(false));
+        }}>
+          <label htmlFor="account-password">New password</label>
+          <input id="account-password" name="password" type="password" autoComplete="new-password" required minLength={6} disabled={passwordBusy}/>
+          <label htmlFor="account-password-confirm">Confirm password</label>
+          <input id="account-password-confirm" name="confirm" type="password" autoComplete="new-password" required minLength={6} disabled={passwordBusy}/>
+          {passwordError && <p role="alert" className="login__error">{passwordError}</p>}
+          <div className="account-school-actions">
+            <button type="submit" className="primary" disabled={passwordBusy}>{passwordBusy ? 'Please wait…' : 'Save password'}</button>
+          </div>
+        </form>}
         <div className="account-connection">
           <span className="account-connection-icon" aria-hidden="true">SJA</span>
           <div className="account-connection-copy">
@@ -244,6 +326,7 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
           </div>
         </form>}
         {schoolError && <p role="alert" className="login__error school-link-error">{schoolError}</p>}
+        {googleError && <p role="alert" className="login__error school-link-error">{googleError}</p>}
         </div>
       </section>
       <div className="account-sign-out-row">
@@ -269,7 +352,21 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
         <button className="primary" disabled={busy}>{busy ? 'Please wait…' : 'Save password'}</button>
       </form> : codeForm(false)}
       <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode('signIn')}>Back to sign in</button>
-    </div> : <form key={mode} id={`${mode}-form`} method="post" autoComplete="on" className="login__form" onSubmit={submit}>
+    </div> : <>
+      {mode !== 'reset' && <>
+        <div className="login__google">
+          <button type="button" className="login__google-button" disabled={busy || googleBusy} onClick={() => {
+            setGoogleBusy(true); setGoogleError('');
+            void signInWithGoogle().catch(e => setGoogleError(mapAuthError(e))).finally(() => setGoogleBusy(false));
+          }}>
+            <GoogleMark/>
+            <span>{googleBusy ? 'Signing in…' : 'Sign in with Google'}</span>
+          </button>
+          {googleError && <p role="alert" className="login__error">{googleError}</p>}
+        </div>
+        <div className="login__divider" aria-hidden="true"><span>or</span></div>
+      </>}
+      <form key={mode} id={`${mode}-form`} method="post" autoComplete="on" className="login__form" onSubmit={submit}>
       <label htmlFor="login-email">Email</label>
       <input id="login-email" name="username" type="email" autoCapitalize="none" spellCheck={false} required defaultValue={email} onChange={e => { setEmail(e.target.value); setError(''); }} autoComplete="username" disabled={busy}/>
       {mode !== 'reset' && <>
@@ -286,7 +383,8 @@ export default function Login({ returnPage, onNavigate }: { returnPage?: string;
         {mode === 'signIn' && <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode('reset')}>Forgot password?</button>}
         <button type="button" className="tertiary" disabled={busy} onClick={() => switchMode(mode === 'signIn' ? 'register' : 'signIn')}>{mode === 'signIn' ? 'Create an account' : 'Back to sign in'}</button>
       </div>
-    </form>}
+      </form>
+    </>}
     {user && (error || message) && <div className="account-status" aria-live="polite">{error ? <p role="alert" className="account-error">{error}</p> : <p role="status">{message}</p>}</div>}
   </div></main>;
 }
