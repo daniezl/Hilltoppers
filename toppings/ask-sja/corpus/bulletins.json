@@ -1716,5 +1716,47 @@
       }
     ],
     "fetchedAt": "2026-11-05T20:25:07.126Z"
+  },
+  "2026-11-06": {
+    "heading": "Daily Bulletin | Friday",
+    "blocks": [
+      {
+        "kind": "heading",
+        "text": "Green Day"
+      },
+      {
+        "kind": "heading",
+        "text": "Variety Day"
+      },
+      {
+        "kind": "para",
+        "text": "There will be no classes on Monday, November 9, 2027. Please enjoy a restful weekend! Tuesday will be a White day."
+      },
+      {
+        "kind": "para",
+        "text": "What’s better than a Variety Day today? A Variety Day on Tuesday, too! Join the Holcombe Advisory in supporting deployed soldiers from Vermont this holiday season. Tuesday will be a red, white, blue, or camo Variety Day with a cost of $1.00. All proceeds will be donated to VT SUPPORTS."
+      },
+      {
+        "kind": "para",
+        "text": "Senior Beau Roper is directing a short play for their capstone project. If you wish to audition or learn more, come to the short informational meeting in Mrs. Mantius’ room; Ranger 115 on Thursday the 12th of November or email Beau at Sydney.Roper@student.stjacademy.org. All are welcome, no acting experience necessary."
+      },
+      {
+        "kind": "para",
+        "text": "Objective self-observation is challenging; the face in the mirror is familiar, but do you really see it? Ms. Darling’s Anatomy and Figure drawing classes faced themselves, unfiltered, mirror only, for one week, to create larger than life observational self-portraits. They will be on display in the Midway Morse Gallery. Find out which one’s have eyes that follow you down the hall!"
+      },
+      {
+        "kind": "para",
+        "text": "Now it’s time for Michael’s Joke of the Week: Knock, Knock…who’s there?…Who…Who who?…Is there an owl in here? 😉"
+      },
+      {
+        "kind": "para",
+        "text": "Happy Birthday tomorrow to Zikora Okereke, on Sunday to Elijah Alexander, Brynn Bullard, and Cassandra Kisch, and on Monday to Earnest Bai, Amelie Baker, Kaleigh Campbell, Henry Elliott, and Autumn Warner!"
+      },
+      {
+        "kind": "para",
+        "text": "SATURDAY VARSITY FOOTBALL SEMI-FINAL – HOME vs. SOUTH BURLINGTON/BURLINGTON SEAWOLVES 6:00"
+      }
+    ],
+    "fetchedAt": "2026-11-06T15:29:14.337Z"
   }
 }
